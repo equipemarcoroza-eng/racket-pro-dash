@@ -21,7 +21,7 @@ const AppLayout = () => {
             <img src={logo} alt="Beach Tennis Equipe Marco Roza" className="h-10 w-10 rounded-full" />
             <div>
               <h1 className="text-base font-bold tracking-tight leading-tight">Equipe Marco Roza</h1>
-              <p className="text-xs opacity-70">Pro Manager</p>
+              <p className="text-xs opacity-70">Beach Tennis</p>
             </div>
           </div>
         </div>
