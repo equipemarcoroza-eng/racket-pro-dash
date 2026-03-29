@@ -1,5 +1,6 @@
 import { NavLink, Outlet } from "react-router-dom";
 import { LayoutDashboard, Users, Calendar, CreditCard, TrendingUp, TrendingDown, DollarSign, ClipboardList, LogOut } from "lucide-react";
+import logo from "@/assets/logo.png";
 
 const navItems = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -16,8 +17,13 @@ const AppLayout = () => {
     <div className="flex min-h-screen">
       <aside className="w-64 bg-sidebar text-sidebar-foreground flex flex-col shrink-0">
         <div className="p-6 border-b border-sidebar-border">
-          <h1 className="text-xl font-bold tracking-tight">🏐 Beach Tennis</h1>
-          <p className="text-sm opacity-70 mt-1">Pro Manager</p>
+          <div className="flex items-center gap-3">
+            <img src={logo} alt="Beach Tennis Equipe Marco Roza" className="h-10 w-10 rounded-full" />
+            <div>
+              <h1 className="text-base font-bold tracking-tight leading-tight">Equipe Marco Roza</h1>
+              <p className="text-xs opacity-70">Pro Manager</p>
+            </div>
+          </div>
         </div>
         <nav className="flex-1 p-4 space-y-1">
           {navItems.map((item) => (
