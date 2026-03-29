@@ -1,5 +1,6 @@
 import { NavLink, Outlet } from "react-router-dom";
 import { LayoutDashboard, Users, Calendar, CreditCard, TrendingUp, TrendingDown, DollarSign, ClipboardList, LogOut } from "lucide-react";
+import logo from "@/assets/logo.png";
 
 const navItems = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
