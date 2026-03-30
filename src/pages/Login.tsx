@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import logo from "@/assets/logo.png";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -18,8 +19,8 @@ const Login = () => {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background">
       <Card className="w-full max-w-md">
-        <CardHeader>
-          <p className="text-sm text-primary font-medium">Autenticação</p>
+        <CardHeader className="items-center">
+          <img src={logo} alt="Equipe Marco Roza" className="h-20 w-20 rounded-full mb-2" />
           <CardTitle className="text-2xl">Login e Acesso</CardTitle>
           <CardDescription />
         </CardHeader>
