@@ -2,11 +2,54 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { mockRevenue } from "@/data/mockData";
+import { mockRevenue, mockStudents, mockPlans, type Revenue as RevenueType } from "@/data/mockData";
+import { toast } from "sonner";
 
 const Revenue = () => {
   const [filter, setFilter] = useState<string | null>(null);
-  const filtered = filter ? mockRevenue.filter((r) => r.plano === filter) : mockRevenue;
+  const [receitas, setReceitas] = useState<RevenueType[]>(mockRevenue);
+
+  const filtered = filter ? receitas.filter((r) => r.plano === filter) : receitas;
+
+  const gerarParcelas = () => {
+    const now = new Date();
+    const mes = String(now.getMonth() + 1).padStart(2, "0");
+    const ano = now.getFullYear();
+    const valorPadrao = mockPlans[0]?.valor ?? 120;
+
+    const alunosAtivos = mockStudents.filter((s) => s.status === "Ativo");
+    let count = 0;
+
+    const novas: RevenueType[] = [];
+
+    for (const aluno of alunosAtivos) {
+      const dia = aluno.vencimento.split("/")[0];
+      const vencimento = `${dia}/${mes}/${ano}`;
+
+      const jaExiste = receitas.some(
+        (r) => r.aluno === aluno.nome && r.vencimento.includes(`/${mes}/${ano}`)
+      );
+
+      if (!jaExiste) {
+        novas.push({
+          id: crypto.randomUUID(),
+          aluno: aluno.nome,
+          plano: "Mensalidade",
+          vencimento,
+          valor: valorPadrao,
+          status: "Gerada",
+        });
+        count++;
+      }
+    }
+
+    if (count > 0) {
+      setReceitas((prev) => [...prev, ...novas]);
+      toast.success(`${count} parcela(s) gerada(s) para ${mes}/${ano}`);
+    } else {
+      toast.info("Todas as parcelas do mês já foram geradas.");
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -19,6 +62,7 @@ const Revenue = () => {
           </div>
           <div className="flex gap-2">
             <Button variant="outline">Filtrar</Button>
+            <Button variant="secondary" onClick={gerarParcelas}>Gerar Parcelas do Mês</Button>
             <Button>Registrar Recebimento Mitigado</Button>
           </div>
         </CardHeader>
