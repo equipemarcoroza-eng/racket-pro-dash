@@ -1,36 +1,29 @@
 
 
-## Gerar Parcelas do Mês Corrente - Contas a Receber
+## Controle de Presença dentro da Agenda
 
-### O que será feito
+### Resumo
 
-Adicionar um botão "Gerar Parcelas do Mês" na tela de Contas a Receber. Ao clicar, o sistema percorre todos os alunos com status "Ativo", e para cada um cria uma nova parcela (Revenue) com:
-- **Aluno**: nome do aluno
-- **Plano**: "Mensalidade"
-- **Valor**: valor do primeiro plano cadastrado (R$ 120,00 como padrão, já que alunos não têm plano vinculado)
-- **Vencimento**: dia extraído do campo `vencimento` do aluno (ex: "05/11" → dia 05) + mês/ano corrente
-- **Status**: "Gerada"
+Adicionar um botão "Presença" em cada slot da grade semanal que abre um **Dialog (modal)** com a lista de chamada dos alunos daquela turma, seguindo o layout da imagem de referência. O modal permite marcar Presente/Falta e registrar a presença sem sair da tela de Agenda.
 
-Parcelas já existentes para o mesmo aluno no mesmo mês não serão duplicadas.
+### Alterações
 
-### Alterações nos arquivos
-
-**1. `src/pages/Revenue.tsx`**
-- Converter `mockRevenue` de import estático para estado local (`useState`)
-- Adicionar botão "Gerar Parcelas do Mês" no header, ao lado dos botões existentes
-- Implementar função `gerarParcelas` que:
-  1. Obtém mês/ano corrente
-  2. Filtra `mockStudents` por `status === "Ativo"`
-  3. Para cada aluno ativo, extrai o dia do campo `vencimento` (parte antes da `/`)
-  4. Monta a data de vencimento: `dd/MM/AAAA` com mês e ano atuais
-  5. Verifica se já existe parcela para esse aluno no mês corrente (evitar duplicatas)
-  6. Cria entrada Revenue com status "Gerada" e valor padrão do plano
-  7. Adiciona ao estado local
-- Exibir toast de confirmação com quantidade de parcelas geradas
+**1. `src/pages/Schedule.tsx`**
+- Importar `Dialog`, `DialogContent`, `DialogHeader`, `DialogTitle` do shadcn
+- Adicionar estado para controlar qual slot está aberto (`selectedSlot`) e os registros de presença desse slot
+- Em cada slot preenchido, adicionar botão **"Presença"** ao lado de "Editar"
+- Ao clicar, abrir o Dialog com:
+  - Header: "Presença da Turma" + badges "Turma {turmaId}" e "Horário {horario}"
+  - Lista de chamada com alunos mockados (filtrados pelo horário do slot, usando `mockStudents` que tenham o mesmo `horario`)
+  - Botões "Presente" / "Falta" para cada aluno (toggle visual)
+  - Botão "Registrar Presença" que fecha o modal com toast de confirmação
+  - Rodapé com resumo: "Total registrado: X alunos"
 
 **2. `src/data/mockData.ts`**
-- Adicionar campo opcional `planoId` na interface `Student` para vincular ao plano (ou usar valor padrão do primeiro plano)
+- Sem alterações estruturais. Os alunos serão filtrados pelo campo `horario` existente para popular a lista de chamada de cada slot.
 
-### Observação sobre valor
-Como os alunos atualmente não possuem um plano vinculado, o valor será o do primeiro plano cadastrado (Plano Básico, R$ 120). Futuramente pode-se vincular cada aluno a um plano específico.
+### Comportamento
+- O filtro de alunos usa o campo `horario` do `mockStudents` comparado ao horário do slot (ex: slot "08:00" mostra alunos com horário "08h00")
+- Se nenhum aluno corresponder ao horário, exibe mensagem "Nenhum aluno cadastrado neste horário"
+- O estado de presença é local ao modal (não persiste entre aberturas, dado que são dados mockados)
 
