@@ -2,15 +2,51 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { mockSchedule } from "@/data/mockData";
+import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { mockSchedule, mockStudents, ClassSlot } from "@/data/mockData";
+import { toast } from "sonner";
 
 const dias = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
 const horarios = ["07:00", "09:00", "11:00", "13:00", "15:00", "17:00"];
 
 const Schedule = () => {
   const [periodo, setPeriodo] = useState("Semana Atual");
+  const [selectedSlot, setSelectedSlot] = useState<ClassSlot | null>(null);
+  const [presencas, setPresencas] = useState<Record<string, boolean | null>>({});
 
   const getSlot = (dia: string, horario: string) => mockSchedule.find((s) => s.dia === dia && s.horario === horario);
+
+  const normalizeHorario = (h: string) => h.replace("h", ":").replace(/^(\d):/, "0$1:");
+
+  const getAlunosDoSlot = (slot: ClassSlot) => {
+    const slotTime = slot.horario;
+    return mockStudents.filter((s) => {
+      const studentTime = normalizeHorario(s.horario);
+      return studentTime === slotTime && s.status === "Ativo";
+    });
+  };
+
+  const openPresenca = (slot: ClassSlot) => {
+    setSelectedSlot(slot);
+    const alunos = getAlunosDoSlot(slot);
+    const initial: Record<string, boolean | null> = {};
+    alunos.forEach((a) => { initial[a.id] = null; });
+    setPresencas(initial);
+  };
+
+  const togglePresenca = (alunoId: string, value: boolean) => {
+    setPresencas((prev) => ({ ...prev, [alunoId]: prev[alunoId] === value ? null : value }));
+  };
+
+  const registrarPresenca = () => {
+    const total = Object.values(presencas).filter((v) => v !== null).length;
+    toast.success(`Presença registrada para ${total} aluno(s)`);
+    setSelectedSlot(null);
+  };
+
+  const alunos = selectedSlot ? getAlunosDoSlot(selectedSlot) : [];
+  const totalRegistrado = Object.values(presencas).filter((v) => v !== null).length;
 
   return (
     <div className="space-y-6">
@@ -67,6 +103,7 @@ const Schedule = () => {
                                   <p className="text-muted-foreground">{slot.alunos} alunos</p>
                                   <div className="flex gap-1 mt-1">
                                     <Button variant="outline" size="sm" className="text-xs h-6 px-2">Editar</Button>
+                                    <Button variant="outline" size="sm" className="text-xs h-6 px-2" onClick={() => openPresenca(slot)}>Presença</Button>
                                   </div>
                                   <Button variant="ghost" size="sm" className="text-xs h-6 px-0 mt-1">Ver detalhes</Button>
                                 </div>
@@ -136,6 +173,59 @@ const Schedule = () => {
           </Card>
         </div>
       </div>
+
+      {/* Modal de Presença */}
+      <Dialog open={!!selectedSlot} onOpenChange={(open) => !open && setSelectedSlot(null)}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="text-xl">Presença da Turma</DialogTitle>
+            {selectedSlot && (
+              <div className="flex gap-2 mt-2">
+                <Badge variant="secondary">Turma {selectedSlot.turmaId}</Badge>
+                <Badge variant="outline">{selectedSlot.horario}</Badge>
+                <Badge variant="outline">{selectedSlot.quadra}</Badge>
+              </div>
+            )}
+          </DialogHeader>
+
+          <div className="space-y-3 max-h-[400px] overflow-y-auto">
+            {alunos.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-6">Nenhum aluno cadastrado neste horário</p>
+            ) : (
+              alunos.map((aluno) => (
+                <div key={aluno.id} className="flex items-center justify-between border rounded-md p-3">
+                  <div>
+                    <p className="font-medium text-sm">{aluno.nome}</p>
+                    <p className="text-xs text-muted-foreground">{aluno.categoria}</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant={presencas[aluno.id] === true ? "default" : "outline"}
+                      className={presencas[aluno.id] === true ? "bg-green-600 hover:bg-green-700 text-white" : ""}
+                      onClick={() => togglePresenca(aluno.id, true)}
+                    >
+                      Presente
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant={presencas[aluno.id] === false ? "destructive" : "outline"}
+                      onClick={() => togglePresenca(aluno.id, false)}
+                    >
+                      Falta
+                    </Button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          <div className="flex items-center justify-between pt-4 border-t">
+            <p className="text-sm text-muted-foreground">Total registrado: {totalRegistrado} aluno(s)</p>
+            <Button onClick={registrarPresenca} disabled={alunos.length === 0}>Registrar Presença</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
