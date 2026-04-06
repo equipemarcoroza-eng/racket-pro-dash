@@ -2,20 +2,32 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { mockSchedule, mockStudents, ClassSlot } from "@/data/mockData";
+import { mockSchedule, mockStudents, type ClassSlot } from "@/data/mockData";
 import { toast } from "sonner";
 
 const dias = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
 const horarios = ["07:00", "09:00", "11:00", "13:00", "15:00", "17:00"];
+const quadras = ["Quadra 1", "Quadra 2", "Quadra 3"];
+
+const emptySlotForm = { quadra: "Quadra 1", dia: "Seg", horario: "07:00", turmaId: "" };
 
 const Schedule = () => {
+  const [schedule, setSchedule] = useState<ClassSlot[]>(mockSchedule);
   const [periodo, setPeriodo] = useState("Semana Atual");
   const [selectedSlot, setSelectedSlot] = useState<ClassSlot | null>(null);
   const [presencas, setPresencas] = useState<Record<string, boolean | null>>({});
+  const [timestamps, setTimestamps] = useState<Record<string, string>>({});
 
-  const getSlot = (dia: string, horario: string) => mockSchedule.find((s) => s.dia === dia && s.horario === horario);
+  // Slot form state
+  const [showSlotForm, setShowSlotForm] = useState(false);
+  const [editingSlotId, setEditingSlotId] = useState<string | null>(null);
+  const [slotForm, setSlotForm] = useState(emptySlotForm);
+
+  const getSlot = (dia: string, horario: string) => schedule.find((s) => s.dia === dia && s.horario === horario);
 
   const normalizeHorario = (h: string) => h.replace("h", ":").replace(/^(\d):/, "0$1:");
 
@@ -33,9 +45,8 @@ const Schedule = () => {
     const initial: Record<string, boolean | null> = {};
     alunos.forEach((a) => { initial[a.id] = null; });
     setPresencas(initial);
+    setTimestamps({});
   };
-
-  const [timestamps, setTimestamps] = useState<Record<string, string>>({});
 
   const togglePresenca = (alunoId: string, value: boolean) => {
     setPresencas((prev) => ({ ...prev, [alunoId]: prev[alunoId] === value ? null : value }));
@@ -56,6 +67,41 @@ const Schedule = () => {
     return "Noturno";
   };
 
+  const openNewSlot = (dia?: string, horario?: string) => {
+    setEditingSlotId(null);
+    setSlotForm({ ...emptySlotForm, dia: dia || "Seg", horario: horario || "07:00", turmaId: `SE${String(schedule.length + 1).padStart(2, "0")}` });
+    setShowSlotForm(true);
+  };
+
+  const openEditSlot = (slot: ClassSlot) => {
+    setEditingSlotId(slot.id);
+    setSlotForm({ quadra: slot.quadra, dia: slot.dia, horario: slot.horario, turmaId: slot.turmaId });
+    setShowSlotForm(true);
+  };
+
+  const handleSaveSlot = () => {
+    if (!slotForm.turmaId) { toast.error("ID da turma é obrigatório"); return; }
+    if (editingSlotId) {
+      setSchedule((prev) => prev.map((s) => s.id === editingSlotId ? { ...s, ...slotForm } : s));
+      toast.success("Turma atualizada");
+    } else {
+      const conflict = schedule.find((s) => s.dia === slotForm.dia && s.horario === slotForm.horario);
+      if (conflict) { toast.error("Já existe uma turma neste horário/dia"); return; }
+      setSchedule((prev) => [...prev, { id: String(Date.now()), ...slotForm, alunos: 0 }]);
+      toast.success("Turma cadastrada");
+    }
+    setShowSlotForm(false);
+    setEditingSlotId(null);
+  };
+
+  const handleDeleteSlot = () => {
+    if (!editingSlotId) return;
+    setSchedule((prev) => prev.filter((s) => s.id !== editingSlotId));
+    toast.success("Turma removida");
+    setShowSlotForm(false);
+    setEditingSlotId(null);
+  };
+
   const alunos = selectedSlot ? getAlunosDoSlot(selectedSlot) : [];
   const totalRegistrado = Object.values(presencas).filter((v) => v !== null).length;
 
@@ -69,7 +115,7 @@ const Schedule = () => {
           </div>
           <div className="flex gap-2 items-center">
             <Input placeholder="Buscar quadra ou turma" className="w-48" />
-            <Button>Nova Turma</Button>
+            <Button onClick={() => openNewSlot()}>Nova Turma</Button>
           </div>
         </CardHeader>
         <CardContent>
@@ -113,13 +159,16 @@ const Schedule = () => {
                                   <p className="font-semibold">{slot.quadra}</p>
                                   <p className="text-muted-foreground">{slot.alunos} alunos</p>
                                   <div className="flex gap-1 mt-1">
-                                    <Button variant="outline" size="sm" className="text-xs h-6 px-2">Editar</Button>
+                                    <Button variant="outline" size="sm" className="text-xs h-6 px-2" onClick={() => openEditSlot(slot)}>Editar</Button>
                                     <Button variant="outline" size="sm" className="text-xs h-6 px-2" onClick={() => openPresenca(slot)}>Presença</Button>
                                   </div>
                                   <Button variant="ghost" size="sm" className="text-xs h-6 px-0 mt-1">Ver detalhes</Button>
                                 </div>
                               ) : (
-                                <div className="border border-dashed rounded-md p-2 text-xs text-center text-muted-foreground cursor-pointer hover:bg-secondary transition-colors">
+                                <div
+                                  className="border border-dashed rounded-md p-2 text-xs text-center text-muted-foreground cursor-pointer hover:bg-secondary transition-colors"
+                                  onClick={() => openNewSlot(d, h)}
+                                >
                                   Cadastrar turma
                                 </div>
                               )}
@@ -152,7 +201,7 @@ const Schedule = () => {
               </div>
               <div className="border rounded-md p-3">
                 <p className="text-sm text-muted-foreground">Slots livres</p>
-                <p className="font-bold">8 horários disponíveis</p>
+                <p className="font-bold">{dias.length * horarios.length - schedule.length} horários disponíveis</p>
               </div>
               <div className="bg-secondary rounded-md p-3 text-sm text-muted-foreground">
                 A ocupação é calculada com base na capacidade de cada quadra e no número de alunos registrados.
@@ -173,7 +222,7 @@ const Schedule = () => {
                 </div>
               </div>
               <div className="grid grid-cols-3 gap-2">
-                {[{ label: "Turmas ativas", value: "24" }, { label: "Alunos confirmados", value: "136" }, { label: "Quadras disponíveis", value: "3" }].map((item) => (
+                {[{ label: "Turmas ativas", value: String(schedule.length) }, { label: "Alunos confirmados", value: String(schedule.reduce((a, b) => a + b.alunos, 0)) }, { label: "Quadras disponíveis", value: "3" }].map((item) => (
                   <div key={item.label} className="border rounded-md p-3">
                     <p className="text-xs text-muted-foreground">{item.label}</p>
                     <p className="text-lg font-bold">{item.value}</p>
@@ -184,6 +233,41 @@ const Schedule = () => {
           </Card>
         </div>
       </div>
+
+      {/* Modal Nova/Editar Turma */}
+      <Dialog open={showSlotForm} onOpenChange={(open) => { if (!open) { setShowSlotForm(false); setEditingSlotId(null); } }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{editingSlotId ? "Editar Turma" : "Nova Turma"}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div><Label>Quadra</Label>
+              <Select value={slotForm.quadra} onValueChange={(v) => setSlotForm({ ...slotForm, quadra: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>{quadras.map((q) => <SelectItem key={q} value={q}>{q}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+            <div><Label>Dia</Label>
+              <Select value={slotForm.dia} onValueChange={(v) => setSlotForm({ ...slotForm, dia: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>{dias.map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+            <div><Label>Horário</Label>
+              <Select value={slotForm.horario} onValueChange={(v) => setSlotForm({ ...slotForm, horario: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>{horarios.map((h) => <SelectItem key={h} value={h}>{h}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+            <div><Label>ID da Turma</Label><Input value={slotForm.turmaId} onChange={(e) => setSlotForm({ ...slotForm, turmaId: e.target.value })} /></div>
+            <div className="flex justify-end gap-2">
+              {editingSlotId && <Button variant="destructive" onClick={handleDeleteSlot}>Excluir</Button>}
+              <Button variant="outline" onClick={() => { setShowSlotForm(false); setEditingSlotId(null); }}>Cancelar</Button>
+              <Button onClick={handleSaveSlot}>{editingSlotId ? "Atualizar" : "Cadastrar"}</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Modal de Presença */}
       <Dialog open={!!selectedSlot} onOpenChange={(open) => !open && setSelectedSlot(null)}>
@@ -213,7 +297,6 @@ const Schedule = () => {
                 <Button onClick={registrarPresenca} disabled={alunos.length === 0}>Registrar Presença</Button>
               </div>
 
-              {/* Header da tabela */}
               <div className="grid grid-cols-3 gap-4 bg-secondary rounded-md p-3 mb-2">
                 <div>
                   <p className="text-xs font-semibold text-muted-foreground">Aluno</p>
@@ -229,7 +312,6 @@ const Schedule = () => {
                 </div>
               </div>
 
-              {/* Linhas de alunos */}
               <div className="space-y-2 max-h-[350px] overflow-y-auto">
                 {alunos.length === 0 ? (
                   <p className="text-sm text-muted-foreground text-center py-6">Nenhum aluno cadastrado neste horário</p>
@@ -241,21 +323,8 @@ const Schedule = () => {
                         <p className="font-medium text-sm">{aluno.nome}</p>
                       </div>
                       <div className="flex gap-2 justify-center">
-                        <Button
-                          size="sm"
-                          variant={presencas[aluno.id] === true ? "default" : "outline"}
-                          className={presencas[aluno.id] === true ? "bg-green-600 hover:bg-green-700 text-white" : ""}
-                          onClick={() => togglePresenca(aluno.id, true)}
-                        >
-                          Presente
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant={presencas[aluno.id] === false ? "destructive" : "outline"}
-                          onClick={() => togglePresenca(aluno.id, false)}
-                        >
-                          Falta
-                        </Button>
+                        <Button size="sm" variant={presencas[aluno.id] === true ? "default" : "outline"} className={presencas[aluno.id] === true ? "bg-green-600 hover:bg-green-700 text-white" : ""} onClick={() => togglePresenca(aluno.id, true)}>Presente</Button>
+                        <Button size="sm" variant={presencas[aluno.id] === false ? "destructive" : "outline"} onClick={() => togglePresenca(aluno.id, false)}>Falta</Button>
                       </div>
                       <div className="text-right">
                         <p className="text-sm text-muted-foreground">{timestamps[aluno.id] || "—"}</p>
@@ -265,7 +334,6 @@ const Schedule = () => {
                 )}
               </div>
 
-              {/* Footer */}
               <div className="flex items-center justify-between bg-secondary rounded-md p-3 mt-4">
                 <p className="text-sm font-medium text-muted-foreground">Resumo diário</p>
                 <p className="text-sm font-medium">Total registrado: {totalRegistrado} aluno(s)</p>

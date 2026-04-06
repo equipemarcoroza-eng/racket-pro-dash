@@ -5,25 +5,69 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { mockStudents, type Student } from "@/data/mockData";
+import { toast } from "sonner";
 
 const categorias = ["Infantil", "Juvenil", "Adulto"] as const;
 const statuses = ["Ativo", "Inativo", "Em análise"] as const;
 
+const emptyForm = { nome: "", responsavel: "", dataNascimento: "", categoria: "Infantil" as Student["categoria"], horario: "", vencimento: "" };
+
 const Students = () => {
   const [students, setStudents] = useState<Student[]>(mockStudents);
   const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [viewingStudent, setViewingStudent] = useState<Student | null>(null);
   const [catFilter, setCatFilter] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
-  const [form, setForm] = useState({ nome: "", responsavel: "", dataNascimento: "", categoria: "Infantil" as Student["categoria"], horario: "", vencimento: "" });
+  const [form, setForm] = useState(emptyForm);
 
   const filtered = students.filter((s) => (!catFilter || s.categoria === catFilter) && (!statusFilter || s.status === statusFilter));
 
+  const openNew = () => {
+    setEditingId(null);
+    setForm(emptyForm);
+    setShowForm(true);
+  };
+
+  const openEdit = (s: Student) => {
+    setEditingId(s.id);
+    setForm({ nome: s.nome, responsavel: s.responsavel, dataNascimento: s.dataNascimento, categoria: s.categoria, horario: s.horario, vencimento: s.vencimento });
+    setShowForm(true);
+  };
+
   const handleSave = () => {
-    if (!form.nome) return;
-    setStudents([...students, { ...form, id: String(Date.now()), status: "Ativo" }]);
+    if (!form.nome) { toast.error("Nome é obrigatório"); return; }
+    if (editingId) {
+      setStudents((prev) => prev.map((s) => s.id === editingId ? { ...s, ...form } : s));
+      toast.success("Aluno atualizado com sucesso");
+    } else {
+      setStudents((prev) => [...prev, { ...form, id: String(Date.now()), status: "Ativo" }]);
+      toast.success("Aluno cadastrado com sucesso");
+    }
     setShowForm(false);
-    setForm({ nome: "", responsavel: "", dataNascimento: "", categoria: "Infantil", horario: "", vencimento: "" });
+    setEditingId(null);
+    setForm(emptyForm);
+  };
+
+  const handleDelete = (id: string) => {
+    setStudents((prev) => prev.filter((s) => s.id !== id));
+    toast.success("Aluno excluído");
+  };
+
+  const handleExport = () => {
+    const headers = ["Nome", "Responsável", "Data Nascimento", "Categoria", "Horário", "Vencimento", "Status"];
+    const rows = filtered.map((s) => [s.nome, s.responsavel, s.dataNascimento, s.categoria, s.horario, s.vencimento, s.status]);
+    const csv = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "alunos.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success("Arquivo CSV exportado");
   };
 
   return (
@@ -31,7 +75,7 @@ const Students = () => {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-2xl">Gestão de Alunos</CardTitle>
-          <Button onClick={() => setShowForm(!showForm)}>Novo Aluno</Button>
+          <Button onClick={openNew}>Novo Aluno</Button>
         </CardHeader>
       </Card>
 
@@ -69,7 +113,7 @@ const Students = () => {
         <Card>
           <CardContent className="pt-6">
             <p className="text-sm text-primary font-medium">Cadastro rápido</p>
-            <p className="font-semibold text-lg mb-4">Novo aluno</p>
+            <p className="font-semibold text-lg mb-4">{editingId ? "Editar aluno" : "Novo aluno"}</p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div><Label>Nome do aluno</Label><Input value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} /></div>
               <div><Label>Responsável</Label><Input value={form.responsavel} onChange={(e) => setForm({ ...form, responsavel: e.target.value })} /></div>
@@ -84,8 +128,8 @@ const Students = () => {
               <div><Label>Vencimento</Label><Input value={form.vencimento} onChange={(e) => setForm({ ...form, vencimento: e.target.value })} /></div>
             </div>
             <div className="flex justify-end gap-2 mt-4">
-              <Button variant="outline" onClick={() => setShowForm(false)}>Cancelar</Button>
-              <Button onClick={handleSave}>Salvar aluno</Button>
+              <Button variant="outline" onClick={() => { setShowForm(false); setEditingId(null); }}>Cancelar</Button>
+              <Button onClick={handleSave}>{editingId ? "Atualizar" : "Salvar aluno"}</Button>
             </div>
           </CardContent>
         </Card>
@@ -99,8 +143,8 @@ const Students = () => {
               <p className="font-semibold text-lg">Registros ativos</p>
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" size="sm">Exportar</Button>
-              <Button size="sm" onClick={() => setShowForm(true)}>Novo aluno</Button>
+              <Button variant="outline" size="sm" onClick={handleExport}>Exportar</Button>
+              <Button size="sm" onClick={openNew}>Novo aluno</Button>
             </div>
           </div>
           <Table>
@@ -119,9 +163,9 @@ const Students = () => {
                   <TableCell>{s.vencimento}</TableCell>
                   <TableCell>
                     <div className="flex gap-1">
-                      <Button variant="outline" size="sm">Visualizar</Button>
-                      <Button variant="outline" size="sm">Editar</Button>
-                      <Button variant="outline" size="sm" onClick={() => setStudents(students.filter((st) => st.id !== s.id))}>Excluir</Button>
+                      <Button variant="outline" size="sm" onClick={() => setViewingStudent(s)}>Visualizar</Button>
+                      <Button variant="outline" size="sm" onClick={() => openEdit(s)}>Editar</Button>
+                      <Button variant="outline" size="sm" onClick={() => handleDelete(s.id)}>Excluir</Button>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -130,6 +174,28 @@ const Students = () => {
           </Table>
         </CardContent>
       </Card>
+
+      {/* Dialog Visualizar */}
+      <Dialog open={!!viewingStudent} onOpenChange={(open) => !open && setViewingStudent(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Detalhes do Aluno</DialogTitle>
+          </DialogHeader>
+          {viewingStudent && (
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-4">
+                <div><p className="text-sm text-muted-foreground">Nome</p><p className="font-medium">{viewingStudent.nome}</p></div>
+                <div><p className="text-sm text-muted-foreground">Responsável</p><p className="font-medium">{viewingStudent.responsavel}</p></div>
+                <div><p className="text-sm text-muted-foreground">Data de Nascimento</p><p className="font-medium">{viewingStudent.dataNascimento}</p></div>
+                <div><p className="text-sm text-muted-foreground">Categoria</p><p className="font-medium">{viewingStudent.categoria}</p></div>
+                <div><p className="text-sm text-muted-foreground">Horário</p><p className="font-medium">{viewingStudent.horario}</p></div>
+                <div><p className="text-sm text-muted-foreground">Vencimento</p><p className="font-medium">{viewingStudent.vencimento}</p></div>
+                <div><p className="text-sm text-muted-foreground">Status</p><p className="font-medium">{viewingStudent.status}</p></div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
