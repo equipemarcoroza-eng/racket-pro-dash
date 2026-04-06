@@ -1,29 +1,55 @@
 
 
-## Controle de Presença dentro da Agenda
+## Redesenhar Modal de Presença conforme Layout de Referência
 
-### Resumo
+### O que muda
 
-Adicionar um botão "Presença" em cada slot da grade semanal que abre um **Dialog (modal)** com a lista de chamada dos alunos daquela turma, seguindo o layout da imagem de referência. O modal permite marcar Presente/Falta e registrar a presença sem sair da tela de Agenda.
+O modal atual é funcional mas tem um layout diferente da referência. Precisa ser reestruturado para seguir exatamente o modelo enviado, que tem duas seções (cards) distintas dentro do dialog.
+
+### Layout da Referência (estrutura)
+
+```text
+┌─────────────────────────────────────────────────────┐
+│ Controle                                            │
+│ Presença da Turma          [Turma SE01] [Horário]   │
+├─────────────────────────────────────────────────────┤
+│ ┌─────────────────────────────────────────────────┐ │
+│ │ Lista de Chamada                                │ │
+│ │ Horário Matutino          [Registrar Presença]  │ │
+│ │                                                 │ │
+│ │ ┌─ Header ─────────────────────────────────────┐│ │
+│ │ │ Aluno          Presença        Status        ││ │
+│ │ │ Nome Completo  Marcador        Atualizado    ││ │
+│ │ └──────────────────────────────────────────────┘│ │
+│ │                                                 │ │
+│ │ ┌─ Row ────────────────────────────────────────┐│ │
+│ │ │ Aluno                                        ││ │
+│ │ │ Mariana Costa    [Presente] [Falta]   08:05  ││ │
+│ │ └──────────────────────────────────────────────┘│ │
+│ │ (mais linhas...)                                │ │
+│ │                                                 │ │
+│ │ ┌─ Footer ─────────────────────────────────────┐│ │
+│ │ │ Resumo diário        Total registrado: X     ││ │
+│ │ └──────────────────────────────────────────────┘│ │
+│ └─────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────┘
+```
 
 ### Alterações
 
-**1. `src/pages/Schedule.tsx`**
-- Importar `Dialog`, `DialogContent`, `DialogHeader`, `DialogTitle` do shadcn
-- Adicionar estado para controlar qual slot está aberto (`selectedSlot`) e os registros de presença desse slot
-- Em cada slot preenchido, adicionar botão **"Presença"** ao lado de "Editar"
-- Ao clicar, abrir o Dialog com:
-  - Header: "Presença da Turma" + badges "Turma {turmaId}" e "Horário {horario}"
-  - Lista de chamada com alunos mockados (filtrados pelo horário do slot, usando `mockStudents` que tenham o mesmo `horario`)
-  - Botões "Presente" / "Falta" para cada aluno (toggle visual)
-  - Botão "Registrar Presença" que fecha o modal com toast de confirmação
-  - Rodapé com resumo: "Total registrado: X alunos"
+**`src/pages/Schedule.tsx`** - Redesenhar o Dialog de presença:
 
-**2. `src/data/mockData.ts`**
-- Sem alterações estruturais. Os alunos serão filtrados pelo campo `horario` existente para popular a lista de chamada de cada slot.
+1. **Aumentar o modal** (`sm:max-w-3xl`) para acomodar o layout mais espaçoso
+2. **Header**: Adicionar label "Controle" acima de "Presença da Turma", mover badges para a direita
+3. **Card interna "Lista de Chamada"**: Nova seção com subtítulo "Horário Matutino" e botão "Registrar Presença" alinhado à direita
+4. **Header da tabela**: Linha cinza com colunas "Aluno / Nome Completo", "Presença / Marcador", "Status / Atualizado"
+5. **Linhas de aluno**: Cada aluno em um card com label "Aluno" + nome, botões "Presente"/"Falta", e timestamp (horário do registro extraído do mockAttendance ou hora atual)
+6. **Footer**: Barra cinza com "Resumo diário" à esquerda e "Total registrado: X alunos" à direita
 
-### Comportamento
-- O filtro de alunos usa o campo `horario` do `mockStudents` comparado ao horário do slot (ex: slot "08:00" mostra alunos com horário "08h00")
-- Se nenhum aluno corresponder ao horário, exibe mensagem "Nenhum aluno cadastrado neste horário"
-- O estado de presença é local ao modal (não persiste entre aberturas, dado que são dados mockados)
+**`src/data/mockData.ts`** - Sem alterações (já possui `mockAttendance` com timestamps)
+
+### Detalhes técnicos
+- O turno ("Horário Matutino"/"Vespertino"/"Noturno") será inferido do horário do slot (antes das 12h = Matutino, 12-18h = Vespertino, depois = Noturno)
+- Os timestamps mostrados ao lado dos botões usarão a hora atual formatada quando o aluno for marcado
+- Manter toda a lógica existente de filtragem e toggle, apenas mudar a apresentação visual
 
