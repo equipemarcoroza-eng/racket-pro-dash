@@ -35,14 +35,25 @@ const Schedule = () => {
     setPresencas(initial);
   };
 
+  const [timestamps, setTimestamps] = useState<Record<string, string>>({});
+
   const togglePresenca = (alunoId: string, value: boolean) => {
     setPresencas((prev) => ({ ...prev, [alunoId]: prev[alunoId] === value ? null : value }));
+    const now = new Date();
+    setTimestamps((prev) => ({ ...prev, [alunoId]: `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}` }));
   };
 
   const registrarPresenca = () => {
     const total = Object.values(presencas).filter((v) => v !== null).length;
     toast.success(`Presença registrada para ${total} aluno(s)`);
     setSelectedSlot(null);
+  };
+
+  const getTurno = (horario: string) => {
+    const hour = parseInt(horario.split(":")[0], 10);
+    if (hour < 12) return "Matutino";
+    if (hour < 18) return "Vespertino";
+    return "Noturno";
   };
 
   const alunos = selectedSlot ? getAlunosDoSlot(selectedSlot) : [];
@@ -176,54 +187,91 @@ const Schedule = () => {
 
       {/* Modal de Presença */}
       <Dialog open={!!selectedSlot} onOpenChange={(open) => !open && setSelectedSlot(null)}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="sm:max-w-3xl">
           <DialogHeader>
-            <DialogTitle className="text-xl">Presença da Turma</DialogTitle>
-            {selectedSlot && (
-              <div className="flex gap-2 mt-2">
-                <Badge variant="secondary">Turma {selectedSlot.turmaId}</Badge>
-                <Badge variant="outline">{selectedSlot.horario}</Badge>
-                <Badge variant="outline">{selectedSlot.quadra}</Badge>
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-sm text-primary font-medium">Controle</p>
+                <DialogTitle className="text-xl">Presença da Turma</DialogTitle>
               </div>
-            )}
+              {selectedSlot && (
+                <div className="flex gap-2">
+                  <Badge variant="secondary">Turma {selectedSlot.turmaId}</Badge>
+                  <Badge variant="outline">{selectedSlot.horario}</Badge>
+                </div>
+              )}
+            </div>
           </DialogHeader>
 
-          <div className="space-y-3 max-h-[400px] overflow-y-auto">
-            {alunos.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-6">Nenhum aluno cadastrado neste horário</p>
-            ) : (
-              alunos.map((aluno) => (
-                <div key={aluno.id} className="flex items-center justify-between border rounded-md p-3">
-                  <div>
-                    <p className="font-medium text-sm">{aluno.nome}</p>
-                    <p className="text-xs text-muted-foreground">{aluno.categoria}</p>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      variant={presencas[aluno.id] === true ? "default" : "outline"}
-                      className={presencas[aluno.id] === true ? "bg-green-600 hover:bg-green-700 text-white" : ""}
-                      onClick={() => togglePresenca(aluno.id, true)}
-                    >
-                      Presente
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant={presencas[aluno.id] === false ? "destructive" : "outline"}
-                      onClick={() => togglePresenca(aluno.id, false)}
-                    >
-                      Falta
-                    </Button>
-                  </div>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <p className="text-sm text-primary font-medium">Lista de Chamada</p>
+                  <p className="text-lg font-bold">Horário {selectedSlot ? getTurno(selectedSlot.horario) : ""}</p>
                 </div>
-              ))
-            )}
-          </div>
+                <Button onClick={registrarPresenca} disabled={alunos.length === 0}>Registrar Presença</Button>
+              </div>
 
-          <div className="flex items-center justify-between pt-4 border-t">
-            <p className="text-sm text-muted-foreground">Total registrado: {totalRegistrado} aluno(s)</p>
-            <Button onClick={registrarPresenca} disabled={alunos.length === 0}>Registrar Presença</Button>
-          </div>
+              {/* Header da tabela */}
+              <div className="grid grid-cols-3 gap-4 bg-secondary rounded-md p-3 mb-2">
+                <div>
+                  <p className="text-xs font-semibold text-muted-foreground">Aluno</p>
+                  <p className="text-xs text-muted-foreground">Nome Completo</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-xs font-semibold text-muted-foreground">Presença</p>
+                  <p className="text-xs text-muted-foreground">Marcador</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs font-semibold text-muted-foreground">Status</p>
+                  <p className="text-xs text-muted-foreground">Atualizado</p>
+                </div>
+              </div>
+
+              {/* Linhas de alunos */}
+              <div className="space-y-2 max-h-[350px] overflow-y-auto">
+                {alunos.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-6">Nenhum aluno cadastrado neste horário</p>
+                ) : (
+                  alunos.map((aluno) => (
+                    <div key={aluno.id} className="grid grid-cols-3 gap-4 items-center border rounded-md p-3">
+                      <div>
+                        <p className="text-xs text-muted-foreground">Aluno</p>
+                        <p className="font-medium text-sm">{aluno.nome}</p>
+                      </div>
+                      <div className="flex gap-2 justify-center">
+                        <Button
+                          size="sm"
+                          variant={presencas[aluno.id] === true ? "default" : "outline"}
+                          className={presencas[aluno.id] === true ? "bg-green-600 hover:bg-green-700 text-white" : ""}
+                          onClick={() => togglePresenca(aluno.id, true)}
+                        >
+                          Presente
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant={presencas[aluno.id] === false ? "destructive" : "outline"}
+                          onClick={() => togglePresenca(aluno.id, false)}
+                        >
+                          Falta
+                        </Button>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm text-muted-foreground">{timestamps[aluno.id] || "—"}</p>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              {/* Footer */}
+              <div className="flex items-center justify-between bg-secondary rounded-md p-3 mt-4">
+                <p className="text-sm font-medium text-muted-foreground">Resumo diário</p>
+                <p className="text-sm font-medium">Total registrado: {totalRegistrado} aluno(s)</p>
+              </div>
+            </CardContent>
+          </Card>
         </DialogContent>
       </Dialog>
     </div>
