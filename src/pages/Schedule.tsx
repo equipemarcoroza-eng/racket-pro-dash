@@ -35,14 +35,25 @@ const Schedule = () => {
     setPresencas(initial);
   };
 
+  const [timestamps, setTimestamps] = useState<Record<string, string>>({});
+
   const togglePresenca = (alunoId: string, value: boolean) => {
     setPresencas((prev) => ({ ...prev, [alunoId]: prev[alunoId] === value ? null : value }));
+    const now = new Date();
+    setTimestamps((prev) => ({ ...prev, [alunoId]: `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}` }));
   };
 
   const registrarPresenca = () => {
     const total = Object.values(presencas).filter((v) => v !== null).length;
     toast.success(`Presença registrada para ${total} aluno(s)`);
     setSelectedSlot(null);
+  };
+
+  const getTurno = (horario: string) => {
+    const hour = parseInt(horario.split(":")[0], 10);
+    if (hour < 12) return "Matutino";
+    if (hour < 18) return "Vespertino";
+    return "Noturno";
   };
 
   const alunos = selectedSlot ? getAlunosDoSlot(selectedSlot) : [];
