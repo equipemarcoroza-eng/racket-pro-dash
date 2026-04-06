@@ -1,55 +1,58 @@
 
 
-## Redesenhar Modal de Presença conforme Layout de Referência
+## Revisão Completa de CRUD em Todas as Telas
 
-### O que muda
+### Problemas Identificados
 
-O modal atual é funcional mas tem um layout diferente da referência. Precisa ser reestruturado para seguir exatamente o modelo enviado, que tem duas seções (cards) distintas dentro do dialog.
+Após análise de todas as telas, os seguintes botões/ações **não funcionam**:
 
-### Layout da Referência (estrutura)
+| Tela | Botão sem função |
+|------|-----------------|
+| **Alunos** | "Visualizar", "Editar", "Exportar" |
+| **Agenda** | "Nova Turma", "Editar" (slot), "Cadastrar turma" (slot vazio) |
+| **Despesas** | "Nova Despesa", "Adicionar Categoria", filtros de categoria, "Gerar Relatório" — nenhum estado local |
+| **Receitas** | "Detalhar", "Baixar/Enviar aviso/Programar", "Registrar Recebimento Mitigado" |
 
-```text
-┌─────────────────────────────────────────────────────┐
-│ Controle                                            │
-│ Presença da Turma          [Turma SE01] [Horário]   │
-├─────────────────────────────────────────────────────┤
-│ ┌─────────────────────────────────────────────────┐ │
-│ │ Lista de Chamada                                │ │
-│ │ Horário Matutino          [Registrar Presença]  │ │
-│ │                                                 │ │
-│ │ ┌─ Header ─────────────────────────────────────┐│ │
-│ │ │ Aluno          Presença        Status        ││ │
-│ │ │ Nome Completo  Marcador        Atualizado    ││ │
-│ │ └──────────────────────────────────────────────┘│ │
-│ │                                                 │ │
-│ │ ┌─ Row ────────────────────────────────────────┐│ │
-│ │ │ Aluno                                        ││ │
-│ │ │ Mariana Costa    [Presente] [Falta]   08:05  ││ │
-│ │ └──────────────────────────────────────────────┘│ │
-│ │ (mais linhas...)                                │ │
-│ │                                                 │ │
-│ │ ┌─ Footer ─────────────────────────────────────┐│ │
-│ │ │ Resumo diário        Total registrado: X     ││ │
-│ │ └──────────────────────────────────────────────┘│ │
-│ └─────────────────────────────────────────────────┘ │
-└─────────────────────────────────────────────────────┘
-```
+**PlansManage** e **Attendance** já funcionam corretamente.
 
-### Alterações
+---
 
-**`src/pages/Schedule.tsx`** - Redesenhar o Dialog de presença:
+### Alterações por Arquivo
 
-1. **Aumentar o modal** (`sm:max-w-3xl`) para acomodar o layout mais espaçoso
-2. **Header**: Adicionar label "Controle" acima de "Presença da Turma", mover badges para a direita
-3. **Card interna "Lista de Chamada"**: Nova seção com subtítulo "Horário Matutino" e botão "Registrar Presença" alinhado à direita
-4. **Header da tabela**: Linha cinza com colunas "Aluno / Nome Completo", "Presença / Marcador", "Status / Atualizado"
-5. **Linhas de aluno**: Cada aluno em um card com label "Aluno" + nome, botões "Presente"/"Falta", e timestamp (horário do registro extraído do mockAttendance ou hora atual)
-6. **Footer**: Barra cinza com "Resumo diário" à esquerda e "Total registrado: X alunos" à direita
+#### 1. `src/pages/Students.tsx`
+- Adicionar estado `editingStudent` e `viewingStudent`
+- **Editar**: Ao clicar, carrega os dados no formulário existente (reutilizar o form de criação com flag de edição, como em PlansManage)
+- **Visualizar**: Abre um Dialog read-only com todos os dados do aluno
+- **Exportar**: Gera download de CSV com os alunos filtrados
+- Adicionar toast de confirmação ao salvar/excluir
 
-**`src/data/mockData.ts`** - Sem alterações (já possui `mockAttendance` com timestamps)
+#### 2. `src/pages/Schedule.tsx`
+- Adicionar estado local `schedule` com `useState(mockSchedule)` (hoje usa mockSchedule diretamente sem estado)
+- **Nova Turma / Cadastrar turma**: Abre Dialog com formulário (quadra, dia, horário, turmaId)
+- **Editar**: Abre o mesmo Dialog preenchido com dados do slot
+- Salvar adiciona/atualiza no estado local
+- Popular mais dados mockados para preencher melhor a grade
 
-### Detalhes técnicos
-- O turno ("Horário Matutino"/"Vespertino"/"Noturno") será inferido do horário do slot (antes das 12h = Matutino, 12-18h = Vespertino, depois = Noturno)
-- Os timestamps mostrados ao lado dos botões usarão a hora atual formatada quando o aluno for marcado
-- Manter toda a lógica existente de filtragem e toggle, apenas mudar a apresentação visual
+#### 3. `src/pages/Expenses.tsx`
+- Converter para componente com estado local (`useState` para categorias e pagamentos)
+- **Nova Despesa**: Dialog com formulário (fornecedor, valor, categoria)
+- **Adicionar Categoria**: Dialog simples (nome da categoria, valor inicial)
+- **Filtros de categoria**: Funcionar como toggle para filtrar as categorias exibidas
+- Excluir categoria e pagamento programado
+- Atualizar totais dinamicamente com base no estado
+
+#### 4. `src/pages/Revenue.tsx`
+- **Detalhar**: Abre Dialog read-only com dados da receita
+- **Ações por status**: "Baixar" muda status para "Pago" removido, "Enviar aviso" exibe toast, "Programar" exibe toast de confirmação
+- **Registrar Recebimento Mitigado**: Abre Dialog para selecionar aluno e registrar valor parcial/total, adicionando ao estado
+
+#### 5. `src/data/mockData.ts`
+- Adicionar mais alunos mockados com horários variados (para popular melhor a agenda e presença)
+- Adicionar mais dados de despesas/pagamentos para demonstrar melhor a tela
+
+### Resumo
+- 5 arquivos alterados
+- Foco em tornar todos os botões existentes funcionais com operações em estado local
+- Toasts de confirmação em todas as ações
+- Sem mudanças de layout — apenas conectar a lógica aos botões já existentes
 
