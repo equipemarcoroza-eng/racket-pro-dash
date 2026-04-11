@@ -9,9 +9,9 @@ export interface Plan {
 }
 
 export const mockPlans: Plan[] = [
-  { id: "1", nome: "Plano Básico", valor: 120, turno: "Matutino", frequencia: "Semanal", periodicidade: "Mensal" },
-  { id: "2", nome: "Plano Avançado", valor: 220, turno: "Vespertino", frequencia: "Diária", periodicidade: "Trimestral" },
-  { id: "3", nome: "Pacote Premium", valor: 350, turno: "Noturno", frequencia: "Semanal", periodicidade: "Anual" },
+  { id: "1", nome: "Plano Básico", valor: 120, turno: "Matutino", frequencia: "1x por semana", periodicidade: "Mensal" },
+  { id: "2", nome: "Plano Avançado", valor: 220, turno: "Vespertino", frequencia: "2x por semana", periodicidade: "Trimestral" },
+  { id: "3", nome: "Pacote Premium", valor: 350, turno: "Noturno", frequencia: "3x por semana", periodicidade: "Anual" },
 ];
 
 // Students

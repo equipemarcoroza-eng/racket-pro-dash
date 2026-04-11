@@ -10,7 +10,7 @@ import { mockPlans, type Plan } from "@/data/mockData";
 const PlansManage = () => {
   const [plans, setPlans] = useState<Plan[]>(mockPlans);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [form, setForm] = useState({ nome: "", valor: "", turno: "Matutino", frequencia: "Diária", periodicidade: "Trimestral" });
+  const [form, setForm] = useState({ nome: "", valor: "", turno: "Matutino", frequencia: "1x por semana", periodicidade: "Trimestral" });
 
   const handleSave = () => {
     if (!form.nome || !form.valor) return;
@@ -20,7 +20,7 @@ const PlansManage = () => {
     } else {
       setPlans([...plans, { id: String(Date.now()), ...form, valor: Number(form.valor) }]);
     }
-    setForm({ nome: "", valor: "", turno: "Matutino", frequencia: "Diária", periodicidade: "Trimestral" });
+    setForm({ nome: "", valor: "", turno: "Matutino", frequencia: "1x por semana", periodicidade: "Trimestral" });
   };
 
   const handleLoad = (plan: Plan) => {
@@ -61,7 +61,7 @@ const PlansManage = () => {
               <div><Label>Frequência</Label>
                 <Select value={form.frequencia} onValueChange={(v) => setForm({ ...form, frequencia: v })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent><SelectItem value="Diária">Diária</SelectItem><SelectItem value="Semanal">Semanal</SelectItem></SelectContent>
+                  <SelectContent><SelectItem value="1x por semana">1x por semana</SelectItem><SelectItem value="2x por semana">2x por semana</SelectItem><SelectItem value="3x por semana">3x por semana</SelectItem></SelectContent>
                 </Select>
               </div>
               <div><Label>Periodicidade</Label>
