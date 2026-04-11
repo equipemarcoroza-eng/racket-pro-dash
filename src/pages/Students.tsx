@@ -42,8 +42,11 @@ const Students = () => {
     setShowForm(true);
   };
 
+  const vencimentoOptions = ["05", "10", "15", "20", "25", "30"];
+
   const handleSave = () => {
     if (!form.nome) { toast.error("Nome é obrigatório"); return; }
+    if (!form.vencimento) { toast.error("Vencimento é obrigatório"); return; }
     if (editingId) {
       setStudents((prev) => prev.map((s) => s.id === editingId ? { ...s, ...form } : s));
       toast.success("Aluno atualizado com sucesso");
@@ -135,7 +138,12 @@ const Students = () => {
                   <SelectContent>{mockPlans.map((p) => <SelectItem key={p.id} value={p.id}>{p.nome}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
-              <div><Label>Vencimento</Label><Input value={form.vencimento} onChange={(e) => setForm({ ...form, vencimento: e.target.value })} /></div>
+              <div><Label>Dia de Vencimento</Label>
+                <Select value={form.vencimento} onValueChange={(v) => setForm({ ...form, vencimento: v })}>
+                  <SelectTrigger><SelectValue placeholder="Selecione o dia" /></SelectTrigger>
+                  <SelectContent>{vencimentoOptions.map((d) => <SelectItem key={d} value={d}>Dia {d}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
             </div>
             <div className="flex justify-end gap-2 mt-4">
               <Button variant="outline" onClick={() => { setShowForm(false); setEditingId(null); }}>Cancelar</Button>

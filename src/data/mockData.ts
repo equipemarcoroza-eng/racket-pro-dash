@@ -36,16 +36,16 @@ export interface Student {
 }
 
 export const mockStudents: Student[] = [
-  { id: "1", nome: "Marina Oliveira", responsavel: "Paula Oliveira", dataNascimento: "2012-05-10", categoria: "Juvenil", planoId: "2", vencimento: "05/11", status: "Ativo" },
-  { id: "2", nome: "Diego Fernandes", responsavel: "Carlos Fernandes", dataNascimento: "2000-03-22", categoria: "Adulto", planoId: "3", vencimento: "12/11", status: "Ativo" },
-  { id: "3", nome: "Lucas Pereira", responsavel: "Ana Pereira", dataNascimento: "2015-08-15", categoria: "Infantil", planoId: "1", vencimento: "10/11", status: "Ativo" },
-  { id: "4", nome: "Sofia Almeida", responsavel: "Marcos Almeida", dataNascimento: "2010-01-20", categoria: "Juvenil", planoId: "2", vencimento: "15/11", status: "Em análise" },
-  { id: "5", nome: "Mariana Costa", responsavel: "Roberto Costa", dataNascimento: "1995-11-30", categoria: "Adulto", planoId: "1", vencimento: "20/11", status: "Ativo" },
-  { id: "6", nome: "Pedro Santos", responsavel: "Lucia Santos", dataNascimento: "2013-07-12", categoria: "Juvenil", planoId: "1", vencimento: "08/11", status: "Ativo" },
-  { id: "7", nome: "Juliana Lima", responsavel: "Fernando Lima", dataNascimento: "2016-02-28", categoria: "Infantil", planoId: "2", vencimento: "18/11", status: "Ativo" },
-  { id: "8", nome: "Rafael Souza", responsavel: "Carla Souza", dataNascimento: "1998-09-05", categoria: "Adulto", planoId: "1", vencimento: "25/11", status: "Ativo" },
-  { id: "9", nome: "Beatriz Rocha", responsavel: "Thiago Rocha", dataNascimento: "2014-12-18", categoria: "Juvenil", planoId: "3", vencimento: "03/11", status: "Inativo" },
-  { id: "10", nome: "Gabriel Martins", responsavel: "Renata Martins", dataNascimento: "2017-04-22", categoria: "Infantil", planoId: "2", vencimento: "22/11", status: "Ativo" },
+  { id: "1", nome: "Marina Oliveira", responsavel: "Paula Oliveira", dataNascimento: "2012-05-10", categoria: "Juvenil", planoId: "2", vencimento: "05", status: "Ativo" },
+  { id: "2", nome: "Diego Fernandes", responsavel: "Carlos Fernandes", dataNascimento: "2000-03-22", categoria: "Adulto", planoId: "3", vencimento: "10", status: "Ativo" },
+  { id: "3", nome: "Lucas Pereira", responsavel: "Ana Pereira", dataNascimento: "2015-08-15", categoria: "Infantil", planoId: "1", vencimento: "10", status: "Ativo" },
+  { id: "4", nome: "Sofia Almeida", responsavel: "Marcos Almeida", dataNascimento: "2010-01-20", categoria: "Juvenil", planoId: "2", vencimento: "15", status: "Em análise" },
+  { id: "5", nome: "Mariana Costa", responsavel: "Roberto Costa", dataNascimento: "1995-11-30", categoria: "Adulto", planoId: "1", vencimento: "20", status: "Ativo" },
+  { id: "6", nome: "Pedro Santos", responsavel: "Lucia Santos", dataNascimento: "2013-07-12", categoria: "Juvenil", planoId: "1", vencimento: "10", status: "Ativo" },
+  { id: "7", nome: "Juliana Lima", responsavel: "Fernando Lima", dataNascimento: "2016-02-28", categoria: "Infantil", planoId: "2", vencimento: "20", status: "Ativo" },
+  { id: "8", nome: "Rafael Souza", responsavel: "Carla Souza", dataNascimento: "1998-09-05", categoria: "Adulto", planoId: "1", vencimento: "25", status: "Ativo" },
+  { id: "9", nome: "Beatriz Rocha", responsavel: "Thiago Rocha", dataNascimento: "2014-12-18", categoria: "Juvenil", planoId: "3", vencimento: "05", status: "Inativo" },
+  { id: "10", nome: "Gabriel Martins", responsavel: "Renata Martins", dataNascimento: "2017-04-22", categoria: "Infantil", planoId: "2", vencimento: "20", status: "Ativo" },
 ];
 
 // Schedule / Classes
