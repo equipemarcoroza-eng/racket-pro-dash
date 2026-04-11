@@ -6,13 +6,18 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { mockStudents, type Student } from "@/data/mockData";
+import { mockStudents, mockPlans, type Student } from "@/data/mockData";
 import { toast } from "sonner";
 
 const categorias = ["Infantil", "Juvenil", "Adulto"] as const;
 const statuses = ["Ativo", "Inativo", "Em análise"] as const;
 
-const emptyForm = { nome: "", responsavel: "", dataNascimento: "", categoria: "Infantil" as Student["categoria"], horario: "", vencimento: "" };
+const emptyForm = { nome: "", responsavel: "", dataNascimento: "", categoria: "Infantil" as Student["categoria"], planoId: "", vencimento: "" };
+
+const getPlanoNome = (planoId: string) => {
+  const plano = mockPlans.find((p) => p.id === planoId);
+  return plano ? plano.nome : "—";
+};
 
 const Students = () => {
   const [students, setStudents] = useState<Student[]>(mockStudents);
@@ -33,7 +38,7 @@ const Students = () => {
 
   const openEdit = (s: Student) => {
     setEditingId(s.id);
-    setForm({ nome: s.nome, responsavel: s.responsavel, dataNascimento: s.dataNascimento, categoria: s.categoria, horario: s.horario, vencimento: s.vencimento });
+    setForm({ nome: s.nome, responsavel: s.responsavel, dataNascimento: s.dataNascimento, categoria: s.categoria, planoId: s.planoId, vencimento: s.vencimento });
     setShowForm(true);
   };
 
@@ -57,8 +62,8 @@ const Students = () => {
   };
 
   const handleExport = () => {
-    const headers = ["Nome", "Responsável", "Data Nascimento", "Categoria", "Horário", "Vencimento", "Status"];
-    const rows = filtered.map((s) => [s.nome, s.responsavel, s.dataNascimento, s.categoria, s.horario, s.vencimento, s.status]);
+    const headers = ["Nome", "Responsável", "Data Nascimento", "Categoria", "Plano", "Vencimento", "Status"];
+    const rows = filtered.map((s) => [s.nome, s.responsavel, s.dataNascimento, s.categoria, getPlanoNome(s.planoId), s.vencimento, s.status]);
     const csv = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
@@ -124,7 +129,12 @@ const Students = () => {
                   <SelectContent>{categorias.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
-              <div><Label>Horário</Label><Input value={form.horario} onChange={(e) => setForm({ ...form, horario: e.target.value })} /></div>
+              <div><Label>Plano</Label>
+                <Select value={form.planoId} onValueChange={(v) => setForm({ ...form, planoId: v })}>
+                  <SelectTrigger><SelectValue placeholder="Selecione um plano" /></SelectTrigger>
+                  <SelectContent>{mockPlans.map((p) => <SelectItem key={p.id} value={p.id}>{p.nome}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
               <div><Label>Vencimento</Label><Input value={form.vencimento} onChange={(e) => setForm({ ...form, vencimento: e.target.value })} /></div>
             </div>
             <div className="flex justify-end gap-2 mt-4">
@@ -150,7 +160,7 @@ const Students = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Nome</TableHead><TableHead>Responsável</TableHead><TableHead>Categoria</TableHead><TableHead>Horário</TableHead><TableHead>Vencimento</TableHead><TableHead>Ações</TableHead>
+                <TableHead>Nome</TableHead><TableHead>Responsável</TableHead><TableHead>Categoria</TableHead><TableHead>Plano</TableHead><TableHead>Vencimento</TableHead><TableHead>Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -159,7 +169,7 @@ const Students = () => {
                   <TableCell className="font-medium">{s.nome}</TableCell>
                   <TableCell>{s.responsavel}</TableCell>
                   <TableCell>{s.categoria}</TableCell>
-                  <TableCell>{s.horario}</TableCell>
+                  <TableCell>{getPlanoNome(s.planoId)}</TableCell>
                   <TableCell>{s.vencimento}</TableCell>
                   <TableCell>
                     <div className="flex gap-1">
@@ -188,7 +198,7 @@ const Students = () => {
                 <div><p className="text-sm text-muted-foreground">Responsável</p><p className="font-medium">{viewingStudent.responsavel}</p></div>
                 <div><p className="text-sm text-muted-foreground">Data de Nascimento</p><p className="font-medium">{viewingStudent.dataNascimento}</p></div>
                 <div><p className="text-sm text-muted-foreground">Categoria</p><p className="font-medium">{viewingStudent.categoria}</p></div>
-                <div><p className="text-sm text-muted-foreground">Horário</p><p className="font-medium">{viewingStudent.horario}</p></div>
+                <div><p className="text-sm text-muted-foreground">Plano</p><p className="font-medium">{getPlanoNome(viewingStudent.planoId)}</p></div>
                 <div><p className="text-sm text-muted-foreground">Vencimento</p><p className="font-medium">{viewingStudent.vencimento}</p></div>
                 <div><p className="text-sm text-muted-foreground">Status</p><p className="font-medium">{viewingStudent.status}</p></div>
               </div>
