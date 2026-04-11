@@ -30,7 +30,9 @@ const App = () => (
             <Route path="/plans/manage" element={<PlansManage />} />
             <Route path="/students" element={<Students />} />
             <Route path="/schedule" element={<Schedule />} />
-            <Route path="/attendance/:classId" element={<Attendance />} />
+            <Route path="/classes" element={<ClassManagement />} />
+            <Route path="/attendance" element={<AttendanceControl />} />
+            <Route path="/frequency" element={<FrequencyReport />} />
             <Route path="/finance/revenue" element={<Revenue />} />
             <Route path="/finance/expenses" element={<Expenses />} />
             <Route path="/finance/cash-flow" element={<CashFlow />} />
