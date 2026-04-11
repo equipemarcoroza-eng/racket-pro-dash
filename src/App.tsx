@@ -8,7 +8,9 @@ import Dashboard from "./pages/Dashboard";
 import PlansManage from "./pages/PlansManage";
 import Students from "./pages/Students";
 import Schedule from "./pages/Schedule";
-import Attendance from "./pages/Attendance";
+import ClassManagement from "./pages/ClassManagement";
+import AttendanceControl from "./pages/AttendanceControl";
+import FrequencyReport from "./pages/FrequencyReport";
 import Revenue from "./pages/Revenue";
 import Expenses from "./pages/Expenses";
 import CashFlow from "./pages/CashFlow";
@@ -30,7 +32,9 @@ const App = () => (
             <Route path="/plans/manage" element={<PlansManage />} />
             <Route path="/students" element={<Students />} />
             <Route path="/schedule" element={<Schedule />} />
-            <Route path="/attendance/:classId" element={<Attendance />} />
+            <Route path="/classes" element={<ClassManagement />} />
+            <Route path="/attendance" element={<AttendanceControl />} />
+            <Route path="/frequency" element={<FrequencyReport />} />
             <Route path="/finance/revenue" element={<Revenue />} />
             <Route path="/finance/expenses" element={<Expenses />} />
             <Route path="/finance/cash-flow" element={<CashFlow />} />

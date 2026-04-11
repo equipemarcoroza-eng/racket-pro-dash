@@ -1,5 +1,5 @@
 import { NavLink, Outlet } from "react-router-dom";
-import { LayoutDashboard, Users, Calendar, CreditCard, TrendingUp, TrendingDown, DollarSign, ClipboardList, LogOut } from "lucide-react";
+import { LayoutDashboard, Users, Calendar, CreditCard, TrendingUp, TrendingDown, DollarSign, ClipboardList, LogOut, ClipboardCheck, BarChart3 } from "lucide-react";
 import logo from "@/assets/logo.png";
 
 const navItems = [
@@ -7,6 +7,9 @@ const navItems = [
   { to: "/students", label: "Alunos", icon: Users },
   { to: "/schedule", label: "Agenda", icon: Calendar },
   { to: "/plans/manage", label: "Planos", icon: ClipboardList },
+  { to: "/classes", label: "Controle de Turmas", icon: Users },
+  { to: "/attendance", label: "Controle de Presença", icon: ClipboardCheck },
+  { to: "/frequency", label: "Frequência", icon: BarChart3 },
   { to: "/finance/revenue", label: "Contas a Receber", icon: TrendingUp },
   { to: "/finance/expenses", label: "Contas a Pagar", icon: TrendingDown },
   { to: "/finance/cash-flow", label: "Fluxo de Caixa", icon: DollarSign },
