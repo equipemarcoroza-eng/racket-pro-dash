@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { mockSchedule, mockStudents, type ClassSlot } from "@/data/mockData";
+import { mockSchedule, mockStudents, mockPlans, type ClassSlot } from "@/data/mockData";
 import { toast } from "sonner";
 
 const dias = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
@@ -29,13 +29,13 @@ const Schedule = () => {
 
   const getSlot = (dia: string, horario: string) => schedule.find((s) => s.dia === dia && s.horario === horario);
 
-  const normalizeHorario = (h: string) => h.replace("h", ":").replace(/^(\d):/, "0$1:");
-
   const getAlunosDoSlot = (slot: ClassSlot) => {
     const slotTime = slot.horario;
     return mockStudents.filter((s) => {
-      const studentTime = normalizeHorario(s.horario);
-      return studentTime === slotTime && s.status === "Ativo";
+      const plano = mockPlans.find((p) => p.id === s.planoId);
+      if (!plano || s.status !== "Ativo") return false;
+      const turnoSlot = getTurno(slotTime);
+      return plano.turno === turnoSlot;
     });
   };
 
