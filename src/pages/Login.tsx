@@ -20,7 +20,7 @@ const Login = () => {
     <div className="flex min-h-screen items-center justify-center bg-background">
       <Card className="w-full max-w-md">
         <CardHeader className="items-center">
-          <img src={logo} alt="Equipe Marco Roza" className="h-20 w-20 rounded-full mb-2" />
+          <img src={logo} alt="Equipe Marco Roza" className="h-28 w-28 rounded-full mb-2" />
           <CardTitle className="text-2xl">Login e Acesso</CardTitle>
           <CardDescription />
         </CardHeader>

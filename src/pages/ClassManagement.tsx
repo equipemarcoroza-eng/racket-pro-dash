@@ -6,17 +6,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { mockStudents, mockPlans, mockSchedule, mockEnrollments, getFrequenciaCount, CLASS_LIMIT, type Enrollment, type ClassSlot } from "@/data/mockData";
+import { mockPlans, mockSchedule, getFrequenciaCount, CLASS_LIMIT, type Enrollment, type ClassSlot } from "@/data/mockData";
+import { useAppContext } from "@/contexts/AppContext";
 import { toast } from "sonner";
 
 const ClassManagement = () => {
-  const [enrollments, setEnrollments] = useState<Enrollment[]>(mockEnrollments);
+  const { students, enrollments, setEnrollments } = useAppContext();
   const [showEnrollDialog, setShowEnrollDialog] = useState(false);
   const [selectedAlunoId, setSelectedAlunoId] = useState<string>("");
   const [slotSelections, setSlotSelections] = useState<string[]>([]);
   const [editingAlunoId, setEditingAlunoId] = useState<string | null>(null);
 
-  const activeStudents = mockStudents.filter((s) => s.status === "Ativo");
+  const activeStudents = students.filter((s) => s.status === "Ativo");
 
   const getSlotCount = (slotId: string) => enrollments.filter((e) => e.turmaId === slotId).length;
 
@@ -36,7 +37,7 @@ const ClassManagement = () => {
     if (alunoId) {
       setSelectedAlunoId(alunoId);
       const existing = getAlunoEnrollments(alunoId).map((e) => e.turmaId);
-      const plano = getPlano(mockStudents.find((s) => s.id === alunoId)?.planoId || "");
+      const plano = getPlano(students.find((s) => s.id === alunoId)?.planoId || "");
       const count = plano ? getFrequenciaCount(plano.frequencia) : 1;
       const selections = [...existing];
       while (selections.length < count) selections.push("");
@@ -50,7 +51,7 @@ const ClassManagement = () => {
 
   const handleAlunoChange = (alunoId: string) => {
     setSelectedAlunoId(alunoId);
-    const student = mockStudents.find((s) => s.id === alunoId);
+    const student = students.find((s) => s.id === alunoId);
     if (!student) return;
     const plano = getPlano(student.planoId);
     if (!plano) return;
@@ -216,7 +217,7 @@ const ClassManagement = () => {
                   {enrolled.length > 0 ? (
                     <div className="space-y-1">
                       {enrolled.map((e) => {
-                        const st = mockStudents.find((s) => s.id === e.alunoId);
+                        const st = students.find((s) => s.id === e.alunoId);
                         return <p key={e.id} className="text-xs">{st?.nome || "?"}</p>;
                       })}
                     </div>

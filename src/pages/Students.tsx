@@ -6,29 +6,57 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { mockStudents, mockPlans, type Student } from "@/data/mockData";
+import { Badge } from "@/components/ui/badge";
+import { mockPlans, type Student } from "@/data/mockData";
+import { useAppContext } from "@/contexts/AppContext";
 import { toast } from "sonner";
 
 const categorias = ["Infantil", "Juvenil", "Adulto"] as const;
 const statuses = ["Ativo", "Inativo", "Em análise"] as const;
 
-const emptyForm = { nome: "", responsavel: "", dataNascimento: "", categoria: "Infantil" as Student["categoria"], planoId: "", vencimento: "" };
+type FormState = {
+  nome: string;
+  responsavel: string;
+  dataNascimento: string;
+  categoria: Student["categoria"];
+  planoId: string;
+  vencimento: string;
+  status: Student["status"];
+};
+
+const emptyForm: FormState = {
+  nome: "",
+  responsavel: "",
+  dataNascimento: "",
+  categoria: "Infantil",
+  planoId: "",
+  vencimento: "",
+  status: "Ativo",
+};
 
 const getPlanoNome = (planoId: string) => {
   const plano = mockPlans.find((p) => p.id === planoId);
   return plano ? plano.nome : "—";
 };
 
+const statusVariant: Record<Student["status"], "default" | "secondary" | "destructive"> = {
+  Ativo: "default",
+  "Em análise": "secondary",
+  Inativo: "destructive",
+};
+
 const Students = () => {
-  const [students, setStudents] = useState<Student[]>(mockStudents);
+  const { students, setStudents, enrollments, setEnrollments } = useAppContext();
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [viewingStudent, setViewingStudent] = useState<Student | null>(null);
   const [catFilter, setCatFilter] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
-  const [form, setForm] = useState(emptyForm);
+  const [form, setForm] = useState<FormState>(emptyForm);
 
-  const filtered = students.filter((s) => (!catFilter || s.categoria === catFilter) && (!statusFilter || s.status === statusFilter));
+  const filtered = students.filter(
+    (s) => (!catFilter || s.categoria === catFilter) && (!statusFilter || s.status === statusFilter)
+  );
 
   const openNew = () => {
     setEditingId(null);
@@ -38,7 +66,15 @@ const Students = () => {
 
   const openEdit = (s: Student) => {
     setEditingId(s.id);
-    setForm({ nome: s.nome, responsavel: s.responsavel, dataNascimento: s.dataNascimento, categoria: s.categoria, planoId: s.planoId, vencimento: s.vencimento });
+    setForm({
+      nome: s.nome,
+      responsavel: s.responsavel,
+      dataNascimento: s.dataNascimento,
+      categoria: s.categoria,
+      planoId: s.planoId,
+      vencimento: s.vencimento,
+      status: s.status,
+    });
     setShowForm(true);
   };
 
@@ -47,13 +83,30 @@ const Students = () => {
   const handleSave = () => {
     if (!form.nome) { toast.error("Nome é obrigatório"); return; }
     if (!form.vencimento) { toast.error("Vencimento é obrigatório"); return; }
+
     if (editingId) {
+      // Check if status is changing to Inativo
+      const previous = students.find((s) => s.id === editingId);
+      const becomingInactive = form.status === "Inativo" && previous?.status !== "Inativo";
+
+      if (becomingInactive) {
+        const alunoEnrollments = enrollments.filter((e) => e.alunoId === editingId);
+        if (alunoEnrollments.length > 0) {
+          setEnrollments((prev) => prev.filter((e) => e.alunoId !== editingId));
+          toast.info(`Aluno inativado — ${alunoEnrollments.length} vaga(s) liberada(s) nas turmas.`);
+        }
+      }
+
       setStudents((prev) => prev.map((s) => s.id === editingId ? { ...s, ...form } : s));
       toast.success("Aluno atualizado com sucesso");
     } else {
-      setStudents((prev) => [...prev, { ...form, id: String(Date.now()), status: "Ativo" }]);
+      setStudents((prev) => [
+        ...prev,
+        { ...form, id: String(Date.now()) },
+      ]);
       toast.success("Aluno cadastrado com sucesso");
     }
+
     setShowForm(false);
     setEditingId(null);
     setForm(emptyForm);
@@ -61,12 +114,16 @@ const Students = () => {
 
   const handleDelete = (id: string) => {
     setStudents((prev) => prev.filter((s) => s.id !== id));
+    setEnrollments((prev) => prev.filter((e) => e.alunoId !== id));
     toast.success("Aluno excluído");
   };
 
   const handleExport = () => {
     const headers = ["Nome", "Responsável", "Data Nascimento", "Categoria", "Plano", "Vencimento", "Status"];
-    const rows = filtered.map((s) => [s.nome, s.responsavel, s.dataNascimento, s.categoria, getPlanoNome(s.planoId), s.vencimento, s.status]);
+    const rows = filtered.map((s) => [
+      s.nome, s.responsavel, s.dataNascimento, s.categoria,
+      getPlanoNome(s.planoId), s.vencimento, s.status,
+    ]);
     const csv = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
@@ -144,7 +201,20 @@ const Students = () => {
                   <SelectContent>{vencimentoOptions.map((d) => <SelectItem key={d} value={d}>Dia {d}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
+              <div><Label>Status</Label>
+                <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v as Student["status"] })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {statuses.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
+            {form.status === "Inativo" && editingId && enrollments.some((e) => e.alunoId === editingId) && (
+              <p className="mt-3 text-sm text-destructive font-medium">
+                ⚠️ Ao salvar como Inativo, todas as matrículas deste aluno serão removidas e as vagas serão liberadas.
+              </p>
+            )}
             <div className="flex justify-end gap-2 mt-4">
               <Button variant="outline" onClick={() => { setShowForm(false); setEditingId(null); }}>Cancelar</Button>
               <Button onClick={handleSave}>{editingId ? "Atualizar" : "Salvar aluno"}</Button>
@@ -158,7 +228,7 @@ const Students = () => {
           <div className="flex items-center justify-between mb-4">
             <div>
               <p className="text-sm text-primary font-medium">Tabela de Alunos</p>
-              <p className="font-semibold text-lg">Registros ativos</p>
+              <p className="font-semibold text-lg">Registros</p>
             </div>
             <div className="flex gap-2">
               <Button variant="outline" size="sm" onClick={handleExport}>Exportar</Button>
@@ -168,7 +238,13 @@ const Students = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Nome</TableHead><TableHead>Responsável</TableHead><TableHead>Categoria</TableHead><TableHead>Plano</TableHead><TableHead>Vencimento</TableHead><TableHead>Ações</TableHead>
+                <TableHead>Nome</TableHead>
+                <TableHead>Responsável</TableHead>
+                <TableHead>Categoria</TableHead>
+                <TableHead>Plano</TableHead>
+                <TableHead>Vencimento</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -179,6 +255,9 @@ const Students = () => {
                   <TableCell>{s.categoria}</TableCell>
                   <TableCell>{getPlanoNome(s.planoId)}</TableCell>
                   <TableCell>{s.vencimento}</TableCell>
+                  <TableCell>
+                    <Badge variant={statusVariant[s.status]}>{s.status}</Badge>
+                  </TableCell>
                   <TableCell>
                     <div className="flex gap-1">
                       <Button variant="outline" size="sm" onClick={() => setViewingStudent(s)}>Visualizar</Button>
@@ -208,7 +287,10 @@ const Students = () => {
                 <div><p className="text-sm text-muted-foreground">Categoria</p><p className="font-medium">{viewingStudent.categoria}</p></div>
                 <div><p className="text-sm text-muted-foreground">Plano</p><p className="font-medium">{getPlanoNome(viewingStudent.planoId)}</p></div>
                 <div><p className="text-sm text-muted-foreground">Vencimento</p><p className="font-medium">{viewingStudent.vencimento}</p></div>
-                <div><p className="text-sm text-muted-foreground">Status</p><p className="font-medium">{viewingStudent.status}</p></div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Status</p>
+                  <Badge variant={statusVariant[viewingStudent.status]}>{viewingStudent.status}</Badge>
+                </div>
               </div>
             </div>
           )}
