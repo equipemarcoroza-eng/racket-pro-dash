@@ -18,6 +18,8 @@ type FormState = {
   nome: string;
   responsavel: string;
   dataNascimento: string;
+  sexo: Student["sexo"];
+  dataEntrada: string;
   categoria: Student["categoria"];
   planoId: string;
   vencimento: string;
@@ -28,6 +30,8 @@ const emptyForm: FormState = {
   nome: "",
   responsavel: "",
   dataNascimento: "",
+  sexo: "M",
+  dataEntrada: new Date().toISOString().split("T")[0],
   categoria: "Infantil",
   planoId: "",
   vencimento: "",
@@ -70,6 +74,8 @@ const Students = () => {
       nome: s.nome,
       responsavel: s.responsavel,
       dataNascimento: s.dataNascimento,
+      sexo: s.sexo,
+      dataEntrada: s.dataEntrada,
       categoria: s.categoria,
       planoId: s.planoId,
       vencimento: s.vencimento,
@@ -119,9 +125,9 @@ const Students = () => {
   };
 
   const handleExport = () => {
-    const headers = ["Nome", "Responsável", "Data Nascimento", "Categoria", "Plano", "Vencimento", "Status"];
+    const headers = ["Nome", "Responsável", "Data Nascimento", "Sexo", "Data Entrada", "Categoria", "Plano", "Vencimento", "Status"];
     const rows = filtered.map((s) => [
-      s.nome, s.responsavel, s.dataNascimento, s.categoria,
+      s.nome, s.responsavel, s.dataNascimento, s.sexo, s.dataEntrada, s.categoria,
       getPlanoNome(s.planoId), s.vencimento, s.status,
     ]);
     const csv = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
@@ -181,8 +187,18 @@ const Students = () => {
             <p className="font-semibold text-lg mb-4">{editingId ? "Editar aluno" : "Novo aluno"}</p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div><Label>Nome do aluno</Label><Input value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} /></div>
-              <div><Label>Responsável</Label><Input value={form.responsavel} onChange={(e) => setForm({ ...form, responsavel: e.target.value })} /></div>
+              <div><Label>Avaliador/Responsável</Label><Input value={form.responsavel} onChange={(e) => setForm({ ...form, responsavel: e.target.value })} /></div>
               <div><Label>Data de nascimento</Label><Input type="date" value={form.dataNascimento} onChange={(e) => setForm({ ...form, dataNascimento: e.target.value })} /></div>
+              <div><Label>Sexo</Label>
+                <Select value={form.sexo} onValueChange={(v) => setForm({ ...form, sexo: v as Student["sexo"] })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="M">Masculino</SelectItem>
+                    <SelectItem value="F">Feminino</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div><Label>Data de Entrada</Label><Input type="date" value={form.dataEntrada} onChange={(e) => setForm({ ...form, dataEntrada: e.target.value })} /></div>
               <div><Label>Categoria</Label>
                 <Select value={form.categoria} onValueChange={(v) => setForm({ ...form, categoria: v as Student["categoria"] })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
@@ -239,7 +255,8 @@ const Students = () => {
             <TableHeader>
               <TableRow>
                 <TableHead>Nome</TableHead>
-                <TableHead>Responsável</TableHead>
+                <TableHead>Sexo</TableHead>
+                <TableHead>Data Entrada</TableHead>
                 <TableHead>Categoria</TableHead>
                 <TableHead>Plano</TableHead>
                 <TableHead>Vencimento</TableHead>
@@ -251,7 +268,8 @@ const Students = () => {
               {filtered.map((s) => (
                 <TableRow key={s.id}>
                   <TableCell className="font-medium">{s.nome}</TableCell>
-                  <TableCell>{s.responsavel}</TableCell>
+                  <TableCell>{s.sexo}</TableCell>
+                  <TableCell>{new Date(s.dataEntrada).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}</TableCell>
                   <TableCell>{s.categoria}</TableCell>
                   <TableCell>{getPlanoNome(s.planoId)}</TableCell>
                   <TableCell>{s.vencimento}</TableCell>
@@ -283,7 +301,9 @@ const Students = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div><p className="text-sm text-muted-foreground">Nome</p><p className="font-medium">{viewingStudent.nome}</p></div>
                 <div><p className="text-sm text-muted-foreground">Responsável</p><p className="font-medium">{viewingStudent.responsavel}</p></div>
-                <div><p className="text-sm text-muted-foreground">Data de Nascimento</p><p className="font-medium">{viewingStudent.dataNascimento}</p></div>
+                <div><p className="text-sm text-muted-foreground">Data de Nascimento</p><p className="font-medium">{new Date(viewingStudent.dataNascimento).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}</p></div>
+                <div><p className="text-sm text-muted-foreground">Sexo</p><p className="font-medium">{viewingStudent.sexo === "M" ? "Masculino" : "Feminino"}</p></div>
+                <div><p className="text-sm text-muted-foreground">Data de Entrada</p><p className="font-medium">{new Date(viewingStudent.dataEntrada).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}</p></div>
                 <div><p className="text-sm text-muted-foreground">Categoria</p><p className="font-medium">{viewingStudent.categoria}</p></div>
                 <div><p className="text-sm text-muted-foreground">Plano</p><p className="font-medium">{getPlanoNome(viewingStudent.planoId)}</p></div>
                 <div><p className="text-sm text-muted-foreground">Vencimento</p><p className="font-medium">{viewingStudent.vencimento}</p></div>

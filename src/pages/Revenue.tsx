@@ -78,6 +78,7 @@ const Revenue = () => {
 
   const totalPago = receitas.filter((r) => r.status === "Pago").reduce((a, b) => a + b.valor, 0);
   const totalAtrasado = receitas.filter((r) => r.status === "Em atraso").reduce((a, b) => a + b.valor, 0);
+  const totalAReceber = receitas.filter((r) => r.status === "Gerada" || r.status === "Em atraso").reduce((a, b) => a + b.valor, 0);
 
   return (
     <div className="space-y-6">
@@ -146,6 +147,10 @@ const Revenue = () => {
             <div>
               <p className="text-sm text-primary font-medium">Resumo</p>
               <p className="text-lg font-bold">Visão Geral</p>
+            </div>
+            <div className="border rounded-md p-3">
+              <p className="text-sm text-muted-foreground">Total a receber</p>
+              <p className="text-xl font-bold text-blue-600">R$ {totalAReceber.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
             </div>
             <div className="border rounded-md p-3">
               <p className="text-sm text-muted-foreground">Total recebido</p>

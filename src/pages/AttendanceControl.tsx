@@ -14,7 +14,7 @@ const diasReverse: Record<number, string> = { 0: "Dom", 1: "Seg", 2: "Ter", 3: "
 const AttendanceControl = () => {
   const [selectedDate, setSelectedDate] = useState(format(new Date(), "yyyy-MM-dd"));
   const [attendanceLogs, setAttendanceLogs] = useState<AttendanceLog[]>(mockAttendanceLogs);
-  const [presencas, setPresencas] = useState<Record<string, Record<string, boolean | null>>>({});
+  const [presencas, setPresencas] = useState<Record<string, Record<string, "Presente" | "Falta" | "Cancelado" | null>>>({});
 
   const dayOfWeek = new Date(selectedDate + "T12:00:00").getDay();
   const diaLabel = diasReverse[dayOfWeek];
@@ -32,7 +32,7 @@ const AttendanceControl = () => {
     return enrolled.every((s) => attendanceLogs.some((l) => l.turmaId === slotId && l.data === selectedDate && l.alunoId === s.id));
   };
 
-  const togglePresenca = (slotId: string, alunoId: string, value: boolean) => {
+  const togglePresenca = (slotId: string, alunoId: string, value: "Presente" | "Falta" | "Cancelado") => {
     setPresencas((prev) => {
       const slotPresencas = prev[slotId] || {};
       return {
@@ -45,7 +45,7 @@ const AttendanceControl = () => {
     });
   };
 
-  const getPresenca = (slotId: string, alunoId: string): boolean | null => {
+  const getPresenca = (slotId: string, alunoId: string): "Presente" | "Falta" | "Cancelado" | null => {
     return presencas[slotId]?.[alunoId] ?? null;
   };
 
@@ -63,7 +63,7 @@ const AttendanceControl = () => {
       alunoId: s.id,
       turmaId: slotId,
       data: selectedDate,
-      presente: slotPresencas[s.id] as boolean,
+      presente: slotPresencas[s.id] as "Presente" | "Falta" | "Cancelado",
     }));
 
     // Remove existing logs for this slot/date, add new
@@ -134,18 +134,25 @@ const AttendanceControl = () => {
                           <div className="flex gap-2">
                             <Button
                               size="sm"
-                              variant={displayValue === true ? "default" : "outline"}
-                              className={displayValue === true ? "bg-green-600 hover:bg-green-700 text-white" : ""}
-                              onClick={() => togglePresenca(slot.id, aluno.id, true)}
+                              variant={displayValue === "Presente" ? "default" : "outline"}
+                              className={displayValue === "Presente" ? "bg-green-600 hover:bg-green-700 text-white" : ""}
+                              onClick={() => togglePresenca(slot.id, aluno.id, "Presente")}
                             >
                               Presente
                             </Button>
                             <Button
                               size="sm"
-                              variant={displayValue === false ? "destructive" : "outline"}
-                              onClick={() => togglePresenca(slot.id, aluno.id, false)}
+                              variant={displayValue === "Falta" ? "destructive" : "outline"}
+                              onClick={() => togglePresenca(slot.id, aluno.id, "Falta")}
                             >
-                              Falta
+                              Ausente
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant={displayValue === "Cancelado" ? "secondary" : "outline"}
+                              onClick={() => togglePresenca(slot.id, aluno.id, "Cancelado")}
+                            >
+                              Cancelado
                             </Button>
                           </div>
                         </div>
