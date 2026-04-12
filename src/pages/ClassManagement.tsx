@@ -253,7 +253,7 @@ const ClassManagement = () => {
             {selectedAlunoId && (
               <>
                 {(() => {
-                  const student = mockStudents.find((s) => s.id === selectedAlunoId);
+                  const student = students.find((s) => s.id === selectedAlunoId);
                   const plano = student ? getPlano(student.planoId) : null;
                   return plano ? (
                     <div className="bg-secondary rounded-md p-3 text-sm">
