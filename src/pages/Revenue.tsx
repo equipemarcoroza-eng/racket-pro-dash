@@ -28,7 +28,12 @@ const Revenue = () => {
     const novas: RevenueType[] = [];
 
     for (const aluno of alunosAtivos) {
-      const dia = aluno.vencimento.split("/")[0];
+      let dia = aluno.vencimento.split("/")[0];
+      
+      if (mes === "02" && (dia === "30" || dia === "31")) {
+        dia = "28";
+      }
+
       const vencimento = `${dia}/${mes}/${ano}`;
       const jaExiste = receitas.some((r) => r.aluno === aluno.nome && r.vencimento.includes(`/${mes}/${ano}`));
       if (!jaExiste) {
