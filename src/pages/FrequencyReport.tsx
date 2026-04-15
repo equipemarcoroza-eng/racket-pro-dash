@@ -55,14 +55,15 @@ const FrequencyReport = () => {
           turmaId: slot.turmaId,
           horario: slot.horario,
           quadra: slot.quadra,
-          status: log ? (log.presente ? "Presente" : "Ausente") : "Não lançado",
+          status: log ? (log.presente === "Presente" ? "Presente" : log.presente === "Cancelado" ? "Cancelado" : "Ausente") : "Não lançado",
         });
       }
     }
     reportRows.sort((a, b) => a.data.localeCompare(b.data));
   }
 
-  const totalAulas = reportRows.length;
+  const filteredRows = reportRows.filter((r) => r.status !== "Cancelado");
+  const totalAulas = filteredRows.length;
   const presencas = reportRows.filter((r) => r.status === "Presente").length;
   const faltas = reportRows.filter((r) => r.status === "Ausente").length;
   const percentual = totalAulas > 0 ? Math.round((presencas / totalAulas) * 100) : 0;
@@ -142,7 +143,10 @@ const FrequencyReport = () => {
                         <TableCell>{row.horario}</TableCell>
                         <TableCell>{row.quadra}</TableCell>
                         <TableCell>
-                          <Badge variant={row.status === "Presente" ? "default" : row.status === "Ausente" ? "destructive" : "outline"}>
+                          <Badge 
+                            variant={row.status === "Presente" ? "default" : row.status === "Ausente" ? "destructive" : "outline"}
+                            className={row.status === "Presente" ? "bg-green-600" : row.status === "Cancelado" ? "bg-yellow-500 text-white border-yellow-500" : ""}
+                          >
                             {row.status}
                           </Badge>
                         </TableCell>

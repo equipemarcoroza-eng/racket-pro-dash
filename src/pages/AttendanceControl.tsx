@@ -115,9 +115,20 @@ const AttendanceControl = () => {
                     </div>
                     <Badge variant={lancado ? "default" : "outline"}>{lancado ? "Lançada" : "Pendente"}</Badge>
                   </div>
-                  <Button size="sm" onClick={() => salvarPresenca(slot.id)} disabled={alunos.length === 0}>
-                    Salvar Presença
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button size="sm" variant="outline" className="text-yellow-600 border-yellow-600 hover:bg-yellow-50" onClick={() => {
+                      alunos.forEach(aluno => {
+                        if (getPresenca(slot.id, aluno.id) !== "Cancelado") {
+                          togglePresenca(slot.id, aluno.id, "Cancelado");
+                        }
+                      });
+                    }} disabled={alunos.length === 0}>
+                      Cancelar Turma
+                    </Button>
+                    <Button size="sm" onClick={() => salvarPresenca(slot.id)} disabled={alunos.length === 0}>
+                      Salvar Presença
+                    </Button>
+                  </div>
                 </div>
 
                 {alunos.length === 0 ? (
@@ -149,7 +160,8 @@ const AttendanceControl = () => {
                             </Button>
                             <Button
                               size="sm"
-                              variant={displayValue === "Cancelado" ? "secondary" : "outline"}
+                              variant={displayValue === "Cancelado" ? "default" : "outline"}
+                              className={displayValue === "Cancelado" ? "bg-yellow-500 hover:bg-yellow-600 text-white border-yellow-500" : ""}
                               onClick={() => togglePresenca(slot.id, aluno.id, "Cancelado")}
                             >
                               Cancelado
