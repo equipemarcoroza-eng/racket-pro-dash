@@ -4,6 +4,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { useAppContext } from "@/contexts/AppContext";
 import { mockSchedule, type AttendanceLog } from "@/data/mockData";
 import { toast } from "sonner";
@@ -63,7 +64,7 @@ const FrequencyReport = () => {
   };
 
   // Build report rows
-  const reportRows: { data: string; turmaId: string; horario: string; quadra: string; status: "Presente" | "Ausente" | "Não lançado" }[] = [];
+  const reportRows: { data: string; turmaId: string; turmaLabel: string; horario: string; quadra: string; status: "Presente" | "Ausente" | "Cancelado" | "Não lançado" }[] = [];
   if (selectedAlunoId) {
     for (const slot of enrolledSlots) {
       const dates = getDatesForSlot(slot);
@@ -71,8 +72,8 @@ const FrequencyReport = () => {
         const log = attendanceLogs.find((l) => l.alunoId === selectedAlunoId && l.turmaId === slot.id && l.data === date);
         reportRows.push({
           data: date,
-          turmaId: slot.id, // Using the slot.id (serial 1, 2, 3...)
-          turmaLabel: slot.turmaId, // Using the label (BTsegQ107...)
+          turmaId: slot.id,
+          turmaLabel: slot.turmaId,
           horario: slot.horario,
           quadra: slot.quadra,
           status: log ? (log.presente === "Presente" ? "Presente" : log.presente === "Cancelado" ? "Cancelado" : "Ausente") : "Não lançado",
@@ -166,7 +167,7 @@ const FrequencyReport = () => {
                           {row.status === "Não lançado" ? (
                             <div className="flex gap-1">
                               <Button
-                                size="xs"
+                                size="sm"
                                 variant="outline"
                                 className="h-7 text-[10px] px-2 bg-green-50 text-green-700 border-green-200 hover:bg-green-100"
                                 onClick={() => handleDirectRegister(row.data, row.turmaId, "Presente")}
@@ -174,7 +175,7 @@ const FrequencyReport = () => {
                                 Pres.
                               </Button>
                               <Button
-                                size="xs"
+                                size="sm"
                                 variant="outline"
                                 className="h-7 text-[10px] px-2 bg-red-50 text-red-700 border-red-200 hover:bg-red-100"
                                 onClick={() => handleDirectRegister(row.data, row.turmaId, "Falta")}
@@ -182,7 +183,7 @@ const FrequencyReport = () => {
                                 Aus.
                               </Button>
                               <Button
-                                size="xs"
+                                size="sm"
                                 variant="outline"
                                 className="h-7 text-[10px] px-2 bg-yellow-50 text-yellow-700 border-yellow-200 hover:bg-yellow-100"
                                 onClick={() => handleDirectRegister(row.data, row.turmaId, "Cancelado")}
