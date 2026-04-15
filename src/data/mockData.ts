@@ -237,6 +237,75 @@ export const mockRevenue: Revenue[] = [
 ];
 
 // Expenses
+export interface ExpenseLog {
+  id: string;
+  categoria: string;
+  valor: number;
+  data: string; // "2026-04-07"
+}
+
+export const mockExpenseLogs: ExpenseLog[] = [
+  // 2025 Expenses
+  { id: "x101", categoria: "Aluguel", valor: 18000, data: "2025-01-05" },
+  { id: "x102", categoria: "Materiais", valor: 8200, data: "2025-01-12" },
+  { id: "x103", categoria: "Professores freelancers", valor: 9500, data: "2025-01-28" },
+  
+  { id: "x104", categoria: "Aluguel", valor: 18000, data: "2025-02-05" },
+  { id: "x105", categoria: "Serviços terceirizados", valor: 4200, data: "2025-02-15" },
+  { id: "x106", categoria: "Manutenção", valor: 2100, data: "2025-02-20" },
+
+  { id: "x107", categoria: "Aluguel", valor: 18500, data: "2025-03-05" },
+  { id: "x108", categoria: "Materiais", valor: 9100, data: "2025-03-10" },
+  { id: "x109", categoria: "Professores freelancers", valor: 10400, data: "2025-03-25" },
+
+  { id: "x110", categoria: "Aluguel", valor: 18500, data: "2025-04-05" },
+  { id: "x111", categoria: "Manutenção", valor: 3200, data: "2025-04-18" },
+
+  { id: "x112", categoria: "Aluguel", valor: 18500, data: "2025-05-05" },
+  { id: "x113", categoria: "Materiais", valor: 7500, data: "2025-05-15" },
+
+  { id: "x114", categoria: "Aluguel", valor: 18500, data: "2025-06-05" },
+  { id: "x115", categoria: "Professores freelancers", valor: 11200, data: "2025-06-25" },
+
+  { id: "x116", categoria: "Aluguel", valor: 18500, data: "2025-07-05" },
+  { id: "x117", categoria: "Manutenção", valor: 1800, data: "2025-07-12" },
+
+  { id: "x118", categoria: "Aluguel", valor: 18500, data: "2025-08-05" },
+  { id: "x119", categoria: "Materiais", valor: 10500, data: "2025-08-20" },
+
+  { id: "x120", categoria: "Aluguel", valor: 18500, data: "2025-09-05" },
+  { id: "x121", categoria: "Serviços terceirizados", valor: 5100, data: "2025-09-15" },
+
+  { id: "x122", categoria: "Aluguel", valor: 19000, data: "2025-10-05" },
+  { id: "x123", categoria: "Professores freelancers", valor: 12100, data: "2025-10-25" },
+
+  { id: "x124", categoria: "Aluguel", valor: 19000, data: "2025-11-05" },
+  { id: "x125", categoria: "Manutenção", valor: 4500, data: "2025-11-18" },
+
+  { id: "x126", categoria: "Aluguel", valor: 19000, data: "2025-12-05" },
+  { id: "x127", categoria: "Materiais", valor: 12500, data: "2025-12-20" },
+
+  // 2026 Expenses
+  { id: "x128", categoria: "Aluguel", valor: 19000, data: "2026-01-05" },
+  { id: "x129", categoria: "Professores freelancers", valor: 10800, data: "2026-01-25" },
+  
+  { id: "x130", categoria: "Aluguel", valor: 19000, data: "2026-02-05" },
+  { id: "x131", categoria: "Serviços terceirizados", valor: 4800, data: "2026-02-15" },
+
+  { id: "x132", categoria: "Aluguel", valor: 19000, data: "2026-03-05" },
+  { id: "x133", categoria: "Materiais", valor: 11200, data: "2026-03-20" },
+
+  { id: "x134", categoria: "Aluguel", valor: 20000, data: "2026-04-05" },
+  { id: "x135", categoria: "Professores freelancers", valor: 11500, data: "2026-04-10" },
+  { id: "x136", categoria: "Manutenção", valor: 2800, data: "2026-04-12" },
+
+  { id: "x137", categoria: "Aluguel", valor: 20000, data: "2026-05-05" },
+  { id: "x138", categoria: "Materiais", valor: 9800, data: "2026-05-15" },
+
+  { id: "x139", categoria: "Aluguel", valor: 20000, data: "2026-06-05" },
+  { id: "x140", categoria: "Serviços terceirizados", valor: 5500, data: "2026-06-20" },
+];
+
 export interface Expense {
   id: string;
   categoria: string;

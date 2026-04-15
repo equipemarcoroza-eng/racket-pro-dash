@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, type ReactNode } from "react";
-import { mockStudents, mockEnrollments, mockRevenue, mockAttendanceLogs, type Student, type Enrollment, type Revenue, type AttendanceLog } from "@/data/mockData";
+import { mockStudents, mockEnrollments, mockRevenue, mockAttendanceLogs, mockExpenseLogs, type Student, type Enrollment, type Revenue, type AttendanceLog, type ExpenseLog } from "@/data/mockData";
 
 interface AppContextType {
   students: Student[];
@@ -10,6 +10,8 @@ interface AppContextType {
   setRevenues: React.Dispatch<React.SetStateAction<Revenue[]>>;
   attendanceLogs: AttendanceLog[];
   setAttendanceLogs: React.Dispatch<React.SetStateAction<AttendanceLog[]>>;
+  expenseLogs: ExpenseLog[];
+  setExpenseLogs: React.Dispatch<React.SetStateAction<ExpenseLog[]>>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -19,13 +21,15 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [enrollments, setEnrollments] = useState<Enrollment[]>(mockEnrollments);
   const [revenues, setRevenues] = useState<Revenue[]>(mockRevenue);
   const [attendanceLogs, setAttendanceLogs] = useState<AttendanceLog[]>(mockAttendanceLogs);
+  const [expenseLogs, setExpenseLogs] = useState<ExpenseLog[]>(mockExpenseLogs);
 
   return (
     <AppContext.Provider value={{ 
       students, setStudents, 
       enrollments, setEnrollments, 
       revenues, setRevenues,
-      attendanceLogs, setAttendanceLogs
+      attendanceLogs, setAttendanceLogs,
+      expenseLogs, setExpenseLogs
     }}>
       {children}
     </AppContext.Provider>
@@ -37,3 +41,4 @@ export const useAppContext = () => {
   if (!ctx) throw new Error("useAppContext must be used within AppProvider");
   return ctx;
 };
+
