@@ -17,6 +17,15 @@ const quadras = ["Quadra 1", "Quadra 2", "Quadra 3"];
 
 const emptySlotForm = { quadra: "Quadra 1", dia: "Seg", horario: "07:00", turmaId: "" };
 
+const generateTurmaId = (dia: string, quadra: string, horario: string) => {
+  const diaMap: Record<string, string> = { 
+    "Seg": "seg", "Ter": "ter", "Qua": "qua", "Qui": "qui", "Sex": "sex", "Sáb": "sab", "Dom": "dom" 
+  };
+  const qNum = quadra.replace("Quadra ", "");
+  const hora = horario.split(":")[0];
+  return `BT${diaMap[dia]}Q${qNum}${hora}`;
+};
+
 const Schedule = () => {
   const [schedule, setSchedule] = useState<ClassSlot[]>(mockSchedule);
   const [showSlotForm, setShowSlotForm] = useState(false);
@@ -36,8 +45,11 @@ const Schedule = () => {
   const getSlotCount = (slotId: string) => mockEnrollments.filter((e) => e.turmaId === slotId).length;
 
   const openNewSlot = (dia?: string, horario?: string) => {
+    const d = dia || "Seg";
+    const h = horario || "07:00";
+    const q = "Quadra 1";
     setEditingSlotId(null);
-    setSlotForm({ ...emptySlotForm, dia: dia || "Seg", horario: horario || "07:00", turmaId: `SE${String(schedule.length + 1).padStart(2, "0")}` });
+    setSlotForm({ quadra: q, dia: d, horario: h, turmaId: generateTurmaId(d, q, h) });
     setShowSlotForm(true);
   };
 
@@ -120,8 +132,8 @@ const Schedule = () => {
                             <td key={d} className="p-1">
                               {slot ? (
                                 <div className="border rounded-md p-2 text-xs bg-card">
-                                  <p className="font-semibold">{slot.quadra}</p>
-                                  <Badge variant={getSlotCount(slot.id) >= CLASS_LIMIT ? "destructive" : "secondary"} className="text-xs mt-1">
+                                  <p className="font-bold text-primary">{slot.turmaId}</p>
+                                  <Badge variant={getSlotCount(slot.id) >= CLASS_LIMIT ? "destructive" : "secondary"} className="text-[10px] mt-1 px-1 h-4">
                                     {getSlotCount(slot.id)}/{CLASS_LIMIT}
                                   </Badge>
                                   <div className="flex gap-1 mt-1">
@@ -180,26 +192,25 @@ const Schedule = () => {
           </DialogHeader>
           <div className="space-y-4">
             <div><Label>Quadra</Label>
-              <Select value={slotForm.quadra} onValueChange={(v) => setSlotForm({ ...slotForm, quadra: v })}>
+              <Select value={slotForm.quadra} onValueChange={(v) => setSlotForm({ ...slotForm, quadra: v, turmaId: generateTurmaId(slotForm.dia, v, slotForm.horario) })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>{quadras.map((q) => <SelectItem key={q} value={q}>{q}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div><Label>Dia</Label>
-              <Select value={slotForm.dia} onValueChange={(v) => setSlotForm({ ...slotForm, dia: v })}>
+              <Select value={slotForm.dia} onValueChange={(v) => setSlotForm({ ...slotForm, dia: v, turmaId: generateTurmaId(v, slotForm.quadra, slotForm.horario) })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>{dias.map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div><Label>Horário</Label>
-              <Select value={slotForm.horario} onValueChange={(v) => setSlotForm({ ...slotForm, horario: v })}>
+              <Select value={slotForm.horario} onValueChange={(v) => setSlotForm({ ...slotForm, horario: v, turmaId: generateTurmaId(slotForm.dia, slotForm.quadra, v) })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>{horarios.map((h) => <SelectItem key={h} value={h}>{h}</SelectItem>)}</SelectContent>
               </Select>
             </div>
-            <div><Label>ID da Turma</Label><Input value={slotForm.turmaId} onChange={(e) => setSlotForm({ ...slotForm, turmaId: e.target.value })} /></div>
+            <div><Label>ID da Turma</Label><Input value={slotForm.turmaId} readOnly className="bg-muted" /></div>
             <div className="flex justify-end gap-2">
-              {editingSlotId && <Button variant="destructive" onClick={handleDeleteSlot}>Excluir</Button>}
               <Button variant="outline" onClick={() => { setShowSlotForm(false); setEditingSlotId(null); }}>Cancelar</Button>
               <Button onClick={handleSaveSlot}>{editingSlotId ? "Atualizar" : "Cadastrar"}</Button>
             </div>

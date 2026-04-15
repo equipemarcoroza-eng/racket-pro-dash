@@ -60,18 +60,18 @@ export interface ClassSlot {
 }
 
 export const mockSchedule: ClassSlot[] = [
-  { id: "1", quadra: "Quadra 1", dia: "Seg", horario: "07:00", turmaId: "SE01" },
-  { id: "2", quadra: "Quadra 2", dia: "Ter", horario: "07:00", turmaId: "SE02" },
-  { id: "3", quadra: "Quadra 1", dia: "Qua", horario: "07:00", turmaId: "SE03" },
-  { id: "4", quadra: "Quadra 3", dia: "Qui", horario: "07:00", turmaId: "SE04" },
-  { id: "5", quadra: "Quadra 2", dia: "Sex", horario: "07:00", turmaId: "SE05" },
-  { id: "6", quadra: "Quadra 1", dia: "Sáb", horario: "07:00", turmaId: "SE06" },
-  { id: "7", quadra: "Quadra 3", dia: "Dom", horario: "07:00", turmaId: "SE07" },
-  { id: "8", quadra: "Quadra 2", dia: "Seg", horario: "09:00", turmaId: "SE08" },
-  { id: "9", quadra: "Quadra 1", dia: "Ter", horario: "09:00", turmaId: "SE09" },
-  { id: "10", quadra: "Quadra 3", dia: "Qua", horario: "11:00", turmaId: "SE10" },
-  { id: "11", quadra: "Quadra 1", dia: "Qui", horario: "13:00", turmaId: "SE11" },
-  { id: "12", quadra: "Quadra 2", dia: "Sex", horario: "15:00", turmaId: "SE12" },
+  { id: "1", quadra: "Quadra 1", dia: "Seg", horario: "07:00", turmaId: "BTsegQ107" },
+  { id: "2", quadra: "Quadra 2", dia: "Ter", horario: "07:00", turmaId: "BTterQ207" },
+  { id: "3", quadra: "Quadra 1", dia: "Qua", horario: "07:00", turmaId: "BTquaQ107" },
+  { id: "4", quadra: "Quadra 3", dia: "Qui", horario: "07:00", turmaId: "BTquiQ307" },
+  { id: "5", quadra: "Quadra 2", dia: "Sex", horario: "07:00", turmaId: "BTsexQ207" },
+  { id: "6", quadra: "Quadra 1", dia: "Sáb", horario: "07:00", turmaId: "BTsabQ107" },
+  { id: "7", quadra: "Quadra 3", dia: "Dom", horario: "07:00", turmaId: "BTdomQ307" },
+  { id: "8", quadra: "Quadra 2", dia: "Seg", horario: "09:00", turmaId: "BTsegQ209" },
+  { id: "9", quadra: "Quadra 1", dia: "Ter", horario: "09:00", turmaId: "BTterQ109" },
+  { id: "10", quadra: "Quadra 3", dia: "Qua", horario: "11:00", turmaId: "BTquaQ311" },
+  { id: "11", quadra: "Quadra 1", dia: "Qui", horario: "13:00", turmaId: "BTquiQ113" },
+  { id: "12", quadra: "Quadra 2", dia: "Sex", horario: "15:00", turmaId: "BTsexQ215" },
 ];
 
 // Enrollments

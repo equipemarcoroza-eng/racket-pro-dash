@@ -160,7 +160,7 @@ const ClassManagement = () => {
                           const slot = getSlotById(e.turmaId);
                           return slot ? (
                             <Badge key={e.id} variant="secondary" className="text-xs">
-                              {slot.dia} {slot.horario} · {slot.quadra}
+                              {slot.dia} {slot.horario} · {slot.turmaId}
                             </Badge>
                           ) : null;
                         })}
