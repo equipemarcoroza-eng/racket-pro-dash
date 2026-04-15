@@ -167,7 +167,7 @@ const FrequencyReport = () => {
                           {row.status === "Não lançado" ? (
                             <div className="flex gap-1">
                               <Button
-                                size="xs"
+                                size="sm"
                                 variant="outline"
                                 className="h-7 text-[10px] px-2 bg-green-50 text-green-700 border-green-200 hover:bg-green-100"
                                 onClick={() => handleDirectRegister(row.data, row.turmaId, "Presente")}
@@ -175,7 +175,7 @@ const FrequencyReport = () => {
                                 Pres.
                               </Button>
                               <Button
-                                size="xs"
+                                size="sm"
                                 variant="outline"
                                 className="h-7 text-[10px] px-2 bg-red-50 text-red-700 border-red-200 hover:bg-red-100"
                                 onClick={() => handleDirectRegister(row.data, row.turmaId, "Falta")}
@@ -183,7 +183,7 @@ const FrequencyReport = () => {
                                 Aus.
                               </Button>
                               <Button
-                                size="xs"
+                                size="sm"
                                 variant="outline"
                                 className="h-7 text-[10px] px-2 bg-yellow-50 text-yellow-700 border-yellow-200 hover:bg-yellow-100"
                                 onClick={() => handleDirectRegister(row.data, row.turmaId, "Cancelado")}
