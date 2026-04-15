@@ -51,24 +51,61 @@ const Revenue = () => {
     }
   };
 
-  const handleAction = (r: RevenueType) => {
-    if (r.status === "Pago") {
-      const headers = ["Aluno", "Plano", "Vencimento", "Valor", "Status"];
-      const row = [r.aluno, r.plano, r.vencimento, String(r.valor), r.status];
-      const csv = [headers.join(","), row.join(",")].join("\n");
-      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `recibo-${r.aluno.replace(/\s/g, "_")}.csv`;
-      a.click();
-      URL.revokeObjectURL(url);
-      toast.success("Recibo baixado");
-    } else if (r.status === "Em atraso") {
-      toast.success(`Aviso de cobrança enviado para ${r.aluno}`);
-    } else {
-      setReceitas((prev) => prev.map((rec) => rec.id === r.id ? { ...rec, status: "Em atraso" } : rec));
-      toast.success(`Cobrança programada para ${r.aluno}`);
+  const handleBaixar = (r: RevenueType) => {
+    setReceitas((prev) => prev.map((rec) => rec.id === r.id ? { ...rec, status: "Pago" } : rec));
+    toast.success(`Pagamento de ${r.aluno} registrado`);
+  };
+
+  const handleIsentar = (r: RevenueType) => {
+    setReceitas((prev) => prev.map((rec) => rec.id === r.id ? { ...rec, status: "Isento" } : rec));
+    toast.success(`Isenção de ${r.aluno} registrada`);
+  };
+
+  const handleRecibo = async (r: RevenueType) => {
+    try {
+      const { jsPDF } = await import("jspdf");
+      const doc = new jsPDF();
+      
+      // Logo
+      try {
+        doc.addImage("/src/assets/logo.png", "PNG", 85, 10, 40, 40);
+      } catch (e) {
+        console.error("Erro ao carregar o logotipo no PDF", e);
+      }
+
+      doc.setFontSize(22);
+      doc.setTextColor(20, 40, 100);
+      doc.text("Recibo de Pagamento", 105, 60, { align: "center" });
+      
+      doc.setFontSize(16);
+      doc.setTextColor(0, 0, 0);
+      doc.text("Equipe Marco Roza", 105, 70, { align: "center" });
+      
+      doc.setDrawColor(200, 200, 200);
+      doc.line(20, 80, 190, 80);
+      
+      doc.setFontSize(12);
+      let y = 95;
+      doc.text(`Aluno: ${r.aluno}`, 25, y); y += 10;
+      doc.text(`Plano/Serviço: ${r.plano}`, 25, y); y += 10;
+      doc.text(`Data de Vencimento: ${r.vencimento}`, 25, y); y += 10;
+      doc.text(`Valor: R$ ${r.valor.toFixed(2).replace(".", ",")}`, 25, y); y += 10;
+      doc.text(`Status: ${r.status}`, 25, y); y += 15;
+      
+      doc.setFontSize(11);
+      doc.setTextColor(100, 100, 100);
+      doc.text(`Este documento é um comprovante oficial de transação financeira.`, 105, y, { align: "center" }); y += 10;
+      doc.text(`Emitido em: ${new Date().toLocaleDateString('pt-BR')} ${new Date().toLocaleTimeString('pt-BR')}`, 105, y, { align: "center" });
+      
+      doc.setDrawColor(0, 0, 0);
+      doc.line(65, 160, 145, 160);
+      doc.text("Assinatura do Responsável", 105, 165, { align: "center" });
+      
+      doc.save(`recibo-${r.aluno.replace(/\s/g, "_")}-${Date.now()}.pdf`);
+      toast.success("Recibo gerado com sucesso");
+    } catch (err) {
+      console.error("Falha ao gerar PDF", err);
+      toast.error("Erro ao gerar o recibo em PDF");
     }
   };
 
@@ -135,9 +172,9 @@ const Revenue = () => {
                       <TableCell>
                         <div className="flex gap-1">
                           <Button variant="outline" size="sm" onClick={() => setViewingReceita(r)}>Detalhar</Button>
-                          <Button variant="outline" size="sm" onClick={() => handleAction(r)}>
-                            {r.status === "Pago" ? "Baixar" : r.status === "Em atraso" ? "Enviar aviso" : "Programar"}
-                          </Button>
+                          <Button variant="outline" size="sm" onClick={() => handleBaixar(r)} disabled={r.status === "Pago" || r.status === "Isento"}>Baixar</Button>
+                          <Button variant="outline" size="sm" onClick={() => handleIsentar(r)} disabled={r.status === "Pago" || r.status === "Isento"}>Isentar</Button>
+                          <Button variant="outline" size="sm" onClick={() => handleRecibo(r)}>Recibo</Button>
                         </div>
                       </TableCell>
                     </TableRow>

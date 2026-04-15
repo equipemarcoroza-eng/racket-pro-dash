@@ -146,7 +146,7 @@ export interface Revenue {
   plano: string;
   vencimento: string;
   valor: number;
-  status: "Pago" | "Em atraso" | "Gerada";
+  status: "Pago" | "Em atraso" | "Gerada" | "Isento";
 }
 
 export const mockRevenue: Revenue[] = [
