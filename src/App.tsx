@@ -17,7 +17,7 @@ import CashFlow from "./pages/CashFlow";
 import Birthdays from "./pages/Birthdays";
 import AppLayout from "./components/AppLayout";
 import NotFound from "./pages/NotFound";
-import { AppProvider } from "./contexts/AppContext";
+import { AppProvider } from "@/contexts/AppContext";
 
 const queryClient = new QueryClient();
 
