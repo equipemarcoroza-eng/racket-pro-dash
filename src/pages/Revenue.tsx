@@ -39,16 +39,18 @@ const Revenue = () => {
       const plano = mockPlans.find((p) => p.id === aluno.planoId);
       if (!plano) continue;
 
-      // 1. Verificação de duplicidade para o mês atual
+      // 1. Verificação de duplicidade para o mês atual (específica por plano)
       const mesFormatado = String(targetMonth).padStart(2, "0");
       const jaExisteEsteMes = receitas.some(
-        (r) => r.aluno === aluno.nome && r.vencimento.includes(`/${mesFormatado}/${targetYear}`)
+        (r) => r.aluno === aluno.nome && 
+               r.plano === plano.nome && 
+               r.vencimento.includes(`/${mesFormatado}/${targetYear}`)
       );
       if (jaExisteEsteMes) continue;
 
-      // 2. Encontrar última parcela gerada para este aluno
+      // 2. Encontrar última parcela gerada para este aluno (específica para este plano)
       const parcelasAluno = receitas
-        .filter((rec) => rec.aluno === aluno.nome)
+        .filter((rec) => rec.aluno === aluno.nome && rec.plano === plano.nome)
         .map((rec) => ({ ...rec, date: parseDate(rec.vencimento) }))
         .sort((a, b) => b.date.getTime() - a.date.getTime());
 
