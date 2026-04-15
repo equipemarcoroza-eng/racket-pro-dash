@@ -12,7 +12,10 @@ import { startOfWeek, addDays, format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 const dias = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
-const horarios = ["07:00", "09:00", "11:00", "13:00", "15:00", "17:00"];
+const horarios = [
+  "07:00", "08:00", "09:00", "10:00", "11:00", "12:00", "13:00", 
+  "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00"
+];
 const quadras = ["Quadra 1", "Quadra 2", "Quadra 3"];
 
 const emptySlotForm = { quadra: "Quadra 1", dia: "Seg", horario: "07:00", turmaId: "" };
