@@ -135,11 +135,7 @@ const Students = () => {
     setForm(emptyForm);
   };
 
-  const handleDelete = (id: string) => {
-    setStudents((prev) => prev.filter((s) => s.id !== id));
-    setEnrollments((prev) => prev.filter((e) => e.alunoId !== id));
-    toast.success("Aluno excluído");
-  };
+
 
   const handleExport = () => {
     const headers = ["Nome", "Responsável", "Data Nascimento", "Sexo", "Data Entrada", "Categoria", "Plano", "Vencimento", "Status"];
@@ -297,7 +293,6 @@ const Students = () => {
                     <div className="flex gap-1">
                       <Button variant="outline" size="sm" onClick={() => setViewingStudent(s)}>Visualizar</Button>
                       <Button variant="outline" size="sm" onClick={() => openEdit(s)}>Editar</Button>
-                      <Button variant="outline" size="sm" onClick={() => handleDelete(s.id)}>Excluir</Button>
                     </div>
                   </TableCell>
                 </TableRow>
