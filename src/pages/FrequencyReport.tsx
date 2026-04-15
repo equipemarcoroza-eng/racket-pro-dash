@@ -4,7 +4,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { mockStudents, mockSchedule, mockEnrollments, mockAttendanceLogs } from "@/data/mockData";
+import { useAppContext } from "@/contexts/AppContext";
+import { mockSchedule, type AttendanceLog } from "@/data/mockData";
+import { toast } from "sonner";
 
 const diasMap: Record<string, number> = { "Dom": 0, "Seg": 1, "Ter": 2, "Qua": 3, "Qui": 4, "Sex": 5, "Sáb": 6 };
 
@@ -16,16 +18,33 @@ const months = [
 ];
 
 const FrequencyReport = () => {
+  const { students, enrollments, attendanceLogs, setAttendanceLogs } = useAppContext();
   const now = new Date();
   const [selectedMonth, setSelectedMonth] = useState(String(now.getMonth() + 1).padStart(2, "0"));
   const [selectedYear, setSelectedYear] = useState(String(now.getFullYear()));
   const [selectedAlunoId, setSelectedAlunoId] = useState("");
 
-  const activeStudents = mockStudents.filter((s) => s.status === "Ativo");
+  const activeStudents = students.filter((s) => s.status === "Ativo");
 
   // Get enrolled slots for student
-  const enrolledSlotIds = mockEnrollments.filter((e) => e.alunoId === selectedAlunoId).map((e) => e.turmaId);
+  const enrolledSlotIds = enrollments.filter((e) => e.alunoId === selectedAlunoId).map((e) => e.turmaId);
   const enrolledSlots = mockSchedule.filter((s) => enrolledSlotIds.includes(s.id));
+
+  const handleDirectRegister = (data: string, turmaId: string, status: "Presente" | "Falta" | "Cancelado") => {
+    const newLog: AttendanceLog = {
+      id: `al-${Date.now()}-${selectedAlunoId}`,
+      alunoId: selectedAlunoId,
+      turmaId,
+      data,
+      presente: status,
+    };
+
+    setAttendanceLogs((prev) => [
+      ...prev.filter((l) => !(l.alunoId === selectedAlunoId && l.turmaId === turmaId && l.data === data)),
+      newLog,
+    ]);
+    toast.success("Presença registrada");
+  };
 
   // Calculate all dates in the month for the enrolled day-of-week
   const getDatesForSlot = (slot: typeof mockSchedule[0]) => {
@@ -49,10 +68,11 @@ const FrequencyReport = () => {
     for (const slot of enrolledSlots) {
       const dates = getDatesForSlot(slot);
       for (const date of dates) {
-        const log = mockAttendanceLogs.find((l) => l.alunoId === selectedAlunoId && l.turmaId === slot.id && l.data === date);
+        const log = attendanceLogs.find((l) => l.alunoId === selectedAlunoId && l.turmaId === slot.id && l.data === date);
         reportRows.push({
           data: date,
-          turmaId: slot.turmaId,
+          turmaId: slot.id, // Using the slot.id (serial 1, 2, 3...)
+          turmaLabel: slot.turmaId, // Using the label (BTsegQ107...)
           horario: slot.horario,
           quadra: slot.quadra,
           status: log ? (log.presente === "Presente" ? "Presente" : log.presente === "Cancelado" ? "Cancelado" : "Ausente") : "Não lançado",
@@ -139,16 +159,45 @@ const FrequencyReport = () => {
                     reportRows.map((row, i) => (
                       <TableRow key={i}>
                         <TableCell>{formatDate(row.data)}</TableCell>
-                        <TableCell>{row.turmaId}</TableCell>
+                        <TableCell>{row.turmaLabel}</TableCell>
                         <TableCell>{row.horario}</TableCell>
                         <TableCell>{row.quadra}</TableCell>
                         <TableCell>
-                          <Badge 
-                            variant={row.status === "Presente" ? "default" : row.status === "Ausente" ? "destructive" : "outline"}
-                            className={row.status === "Presente" ? "bg-green-600" : row.status === "Cancelado" ? "bg-yellow-500 text-white border-yellow-500" : ""}
-                          >
-                            {row.status}
-                          </Badge>
+                          {row.status === "Não lançado" ? (
+                            <div className="flex gap-1">
+                              <Button
+                                size="xs"
+                                variant="outline"
+                                className="h-7 text-[10px] px-2 bg-green-50 text-green-700 border-green-200 hover:bg-green-100"
+                                onClick={() => handleDirectRegister(row.data, row.turmaId, "Presente")}
+                              >
+                                Pres.
+                              </Button>
+                              <Button
+                                size="xs"
+                                variant="outline"
+                                className="h-7 text-[10px] px-2 bg-red-50 text-red-700 border-red-200 hover:bg-red-100"
+                                onClick={() => handleDirectRegister(row.data, row.turmaId, "Falta")}
+                              >
+                                Aus.
+                              </Button>
+                              <Button
+                                size="xs"
+                                variant="outline"
+                                className="h-7 text-[10px] px-2 bg-yellow-50 text-yellow-700 border-yellow-200 hover:bg-yellow-100"
+                                onClick={() => handleDirectRegister(row.data, row.turmaId, "Cancelado")}
+                              >
+                                Canc.
+                              </Button>
+                            </div>
+                          ) : (
+                            <Badge 
+                              variant={row.status === "Presente" ? "default" : row.status === "Ausente" ? "destructive" : "outline"}
+                              className={row.status === "Presente" ? "bg-green-600" : row.status === "Cancelado" ? "bg-yellow-500 text-white border-yellow-500" : ""}
+                            >
+                              {row.status}
+                            </Badge>
+                          )}
                         </TableCell>
                       </TableRow>
                     ))

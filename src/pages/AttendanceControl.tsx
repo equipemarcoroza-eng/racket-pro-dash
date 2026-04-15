@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { mockSchedule, mockStudents, mockEnrollments, mockAttendanceLogs, type AttendanceLog } from "@/data/mockData";
+import { useAppContext } from "@/contexts/AppContext";
+import { mockSchedule, type AttendanceLog } from "@/data/mockData";
 import { toast } from "sonner";
 import { format } from "date-fns";
 
@@ -12,8 +13,8 @@ const diasMap: Record<string, number> = { "Dom": 0, "Seg": 1, "Ter": 2, "Qua": 3
 const diasReverse: Record<number, string> = { 0: "Dom", 1: "Seg", 2: "Ter", 3: "Qua", 4: "Qui", 5: "Sex", 6: "Sáb" };
 
 const AttendanceControl = () => {
+  const { students: mockStudents, enrollments: mockEnrollments, attendanceLogs, setAttendanceLogs } = useAppContext();
   const [selectedDate, setSelectedDate] = useState(format(new Date(), "yyyy-MM-dd"));
-  const [attendanceLogs, setAttendanceLogs] = useState<AttendanceLog[]>(mockAttendanceLogs);
   const [presencas, setPresencas] = useState<Record<string, Record<string, "Presente" | "Falta" | "Cancelado" | null>>>({});
 
   const dayOfWeek = new Date(selectedDate + "T12:00:00").getDay();
