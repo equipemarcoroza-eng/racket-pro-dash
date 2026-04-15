@@ -150,12 +150,90 @@ export interface Revenue {
 }
 
 export const mockRevenue: Revenue[] = [
-  { id: "1", aluno: "Mariana Silva", plano: "Mensalidade", vencimento: "05/10/2024", valor: 120, status: "Pago" },
-  { id: "2", aluno: "Bruno Costa", plano: "Trimestral", vencimento: "12/10/2024", valor: 330, status: "Em atraso" },
-  { id: "3", aluno: "Larissa Mendes", plano: "Anual", vencimento: "20/11/2024", valor: 1200, status: "Gerada" },
-  { id: "4", aluno: "Pedro Santos", plano: "Mensalidade", vencimento: "08/10/2024", valor: 120, status: "Pago" },
-  { id: "5", aluno: "Juliana Lima", plano: "Mensalidade", vencimento: "18/10/2024", valor: 120, status: "Gerada" },
-  { id: "6", aluno: "Rafael Souza", plano: "Trimestral", vencimento: "25/10/2024", valor: 330, status: "Em atraso" },
+  // 2025 Records
+  { id: "101", aluno: "Marina Oliveira", plano: "Plano Avançado", vencimento: "05/01/2025", valor: 220, status: "Pago" },
+  { id: "102", aluno: "Diego Fernandes", plano: "Pacote Premium", vencimento: "10/01/2025", valor: 350, status: "Pago" },
+  { id: "103", aluno: "Lucas Pereira", plano: "Plano Básico", vencimento: "10/01/2025", valor: 120, status: "Pago" },
+  { id: "104", aluno: "Mariana Costa", plano: "Plano Básico", vencimento: "20/01/2025", valor: 120, status: "Pago" },
+  { id: "105", aluno: "Pedro Santos", plano: "Plano Básico", vencimento: "10/01/2025", valor: 120, status: "Pago" },
+  { id: "106", aluno: "Juliana Lima", plano: "Plano Avançado", vencimento: "20/01/2025", valor: 220, status: "Pago" },
+  
+  { id: "107", aluno: "Marina Oliveira", plano: "Plano Avançado", vencimento: "05/02/2025", valor: 220, status: "Pago" },
+  { id: "108", aluno: "Diego Fernandes", plano: "Pacote Premium", vencimento: "10/02/2025", valor: 350, status: "Pago" },
+  { id: "109", aluno: "Lucas Pereira", plano: "Plano Básico", vencimento: "10/02/2025", valor: 120, status: "Pago" },
+  { id: "110", aluno: "Rafael Souza", plano: "Plano Básico", vencimento: "25/02/2025", valor: 120, status: "Pago" },
+  
+  { id: "111", aluno: "Marina Oliveira", plano: "Plano Avançado", vencimento: "05/03/2025", valor: 220, status: "Pago" },
+  { id: "112", aluno: "Diego Fernandes", plano: "Pacote Premium", vencimento: "10/03/2025", valor: 350, status: "Pago" },
+  { id: "113", aluno: "Gabriel Martins", plano: "Plano Avançado", vencimento: "20/03/2025", valor: 220, status: "Pago" },
+  
+  { id: "114", aluno: "Marina Oliveira", plano: "Plano Avançado", vencimento: "05/04/2025", valor: 220, status: "Pago" },
+  { id: "115", aluno: "Pedro Santos", plano: "Plano Básico", vencimento: "10/04/2025", valor: 120, status: "Pago" },
+  { id: "116", aluno: "Juliana Lima", plano: "Plano Avançado", vencimento: "20/04/2025", valor: 220, status: "Pago" },
+  
+  { id: "117", aluno: "Marina Oliveira", plano: "Plano Avançado", vencimento: "05/05/2025", valor: 220, status: "Pago" },
+  { id: "118", aluno: "Mariana Costa", plano: "Plano Básico", vencimento: "20/05/2025", valor: 120, status: "Pago" },
+  { id: "119", aluno: "Rafael Souza", plano: "Plano Básico", vencimento: "25/05/2025", valor: 120, status: "Pago" },
+
+  { id: "120", aluno: "Diego Fernandes", plano: "Pacote Premium", vencimento: "10/06/2025", valor: 350, status: "Pago" },
+  { id: "121", aluno: "Lucas Pereira", plano: "Plano Básico", vencimento: "10/06/2025", valor: 120, status: "Pago" },
+  { id: "122", aluno: "Gabriel Martins", plano: "Plano Avançado", vencimento: "20/06/2025", valor: 220, status: "Pago" },
+
+  { id: "123", aluno: "Marina Oliveira", plano: "Plano Avançado", vencimento: "05/07/2025", valor: 220, status: "Pago" },
+  { id: "124", aluno: "Pedro Santos", plano: "Plano Básico", vencimento: "10/07/2025", valor: 120, status: "Pago" },
+  { id: "125", aluno: "Juliana Lima", plano: "Plano Avançado", vencimento: "20/07/2025", valor: 220, status: "Pago" },
+
+  { id: "126", aluno: "Diego Fernandes", plano: "Pacote Premium", vencimento: "10/08/2025", valor: 350, status: "Pago" },
+  { id: "127", aluno: "Mariana Costa", plano: "Plano Básico", vencimento: "20/08/2025", valor: 120, status: "Pago" },
+  { id: "128", aluno: "Rafael Souza", plano: "Plano Básico", vencimento: "25/08/2025", valor: 120, status: "Pago" },
+
+  { id: "129", aluno: "Marina Oliveira", plano: "Plano Avançado", vencimento: "05/09/2025", valor: 220, status: "Pago" },
+  { id: "130", aluno: "Lucas Pereira", plano: "Plano Básico", vencimento: "10/09/2025", valor: 120, status: "Pago" },
+  { id: "131", aluno: "Gabriel Martins", plano: "Plano Avançado", vencimento: "20/09/2025", valor: 220, status: "Pago" },
+
+  { id: "132", aluno: "Marina Oliveira", plano: "Plano Avançado", vencimento: "05/10/2025", valor: 220, status: "Pago" },
+  { id: "133", aluno: "Diego Fernandes", plano: "Pacote Premium", vencimento: "10/10/2025", valor: 350, status: "Pago" },
+  { id: "134", aluno: "Pedro Santos", plano: "Plano Básico", vencimento: "10/10/2025", valor: 120, status: "Pago" },
+
+  { id: "135", aluno: "Juliana Lima", plano: "Plano Avançado", vencimento: "20/11/2025", valor: 220, status: "Pago" },
+  { id: "136", aluno: "Mariana Costa", plano: "Plano Básico", vencimento: "20/11/2025", valor: 120, status: "Pago" },
+  { id: "137", aluno: "Rafael Souza", plano: "Plano Básico", vencimento: "25/11/2025", valor: 120, status: "Pago" },
+
+  { id: "138", aluno: "Marina Oliveira", plano: "Plano Avançado", vencimento: "05/12/2025", valor: 220, status: "Pago" },
+  { id: "139", aluno: "Diego Fernandes", plano: "Pacote Premium", vencimento: "10/12/2025", valor: 350, status: "Pago" },
+  { id: "140", aluno: "Lucas Pereira", plano: "Plano Básico", vencimento: "10/12/2025", valor: 120, status: "Pago" },
+
+  // 2026 Records
+  { id: "141", aluno: "Marina Oliveira", plano: "Plano Avançado", vencimento: "05/01/2026", valor: 220, status: "Pago" },
+  { id: "142", aluno: "Diego Fernandes", plano: "Pacote Premium", vencimento: "10/01/2026", valor: 350, status: "Pago" },
+  { id: "143", aluno: "Gabriel Martins", plano: "Plano Avançado", vencimento: "20/01/2026", valor: 220, status: "Pago" },
+
+  { id: "144", aluno: "Marina Oliveira", plano: "Plano Avançado", vencimento: "05/02/2026", valor: 220, status: "Pago" },
+  { id: "145", aluno: "Pedro Santos", plano: "Plano Básico", vencimento: "10/02/2026", valor: 120, status: "Pago" },
+  { id: "146", aluno: "Juliana Lima", plano: "Plano Avançado", vencimento: "20/02/2026", valor: 220, status: "Pago" },
+
+  { id: "147", aluno: "Marina Oliveira", plano: "Plano Avançado", vencimento: "05/03/2026", valor: 220, status: "Pago" },
+  { id: "148", aluno: "Mariana Costa", plano: "Plano Básico", vencimento: "20/03/2026", valor: 120, status: "Pago" },
+  { id: "149", aluno: "Rafael Souza", plano: "Plano Básico", vencimento: "25/03/2026", valor: 120, status: "Pago" },
+
+  { id: "150", aluno: "Marina Oliveira", plano: "Plano Avançado", vencimento: "05/04/2026", valor: 220, status: "Pago" },
+  { id: "151", aluno: "Diego Fernandes", plano: "Pacote Premium", vencimento: "10/04/2026", valor: 350, status: "Pago" },
+  { id: "152", aluno: "Lucas Pereira", plano: "Plano Básico", vencimento: "10/04/2026", valor: 120, status: "Pago" },
+  { id: "153", aluno: "Gabriel Martins", plano: "Plano Avançado", vencimento: "20/04/2026", valor: 220, status: "Em atraso" },
+  { id: "154", aluno: "Pedro Santos", plano: "Plano Básico", vencimento: "10/04/2026", valor: 120, status: "Pago" },
+
+  { id: "155", aluno: "Marina Oliveira", plano: "Plano Avançado", vencimento: "05/05/2026", valor: 220, status: "Gerada" },
+  { id: "156", aluno: "Diego Fernandes", plano: "Pacote Premium", vencimento: "10/05/2026", valor: 350, status: "Gerada" },
+  { id: "157", aluno: "Juliana Lima", plano: "Plano Avançado", vencimento: "20/05/2026", valor: 220, status: "Gerada" },
+  { id: "158", aluno: "Mariana Costa", plano: "Plano Básico", vencimento: "20/05/2026", valor: 120, status: "Gerada" },
+  { id: "159", aluno: "Rafael Souza", plano: "Plano Básico", vencimento: "25/05/2026", valor: 120, status: "Gerada" },
+
+  { id: "160", aluno: "Marina Oliveira", plano: "Plano Avançado", vencimento: "05/06/2026", valor: 220, status: "Gerada" },
+  { id: "161", aluno: "Diego Fernandes", plano: "Pacote Premium", vencimento: "10/06/2026", valor: 350, status: "Gerada" },
+  { id: "162", aluno: "Lucas Pereira", plano: "Plano Básico", vencimento: "10/06/2026", valor: 120, status: "Gerada" },
+  { id: "163", aluno: "Gabriel Martins", plano: "Plano Avançado", vencimento: "20/06/2026", valor: 220, status: "Gerada" },
+  { id: "164", aluno: "Pedro Santos", plano: "Plano Básico", vencimento: "10/06/2026", valor: 120, status: "Gerada" },
+  { id: "165", aluno: "Juliana Lima", plano: "Plano Avançado", vencimento: "20/06/2026", valor: 220, status: "Gerada" },
 ];
 
 // Expenses
