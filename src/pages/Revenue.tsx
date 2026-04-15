@@ -6,12 +6,13 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { mockRevenue, mockStudents, mockPlans, type Revenue as RevenueType } from "@/data/mockData";
+import { mockPlans, type Revenue as RevenueType } from "@/data/mockData";
+import { useAppContext } from "@/contexts/AppContext";
 import { toast } from "sonner";
 
 const Revenue = () => {
+  const { students, revenues: receitas, setRevenues: setReceitas } = useAppContext();
   const [filter, setFilter] = useState<string | null>(null);
-  const [receitas, setReceitas] = useState<RevenueType[]>(mockRevenue);
   const [viewingReceita, setViewingReceita] = useState<RevenueType | null>(null);
   const [showRecebimento, setShowRecebimento] = useState(false);
   const [recebimentoForm, setRecebimentoForm] = useState({ aluno: "", valor: "", plano: "Mensalidade" });
@@ -23,7 +24,7 @@ const Revenue = () => {
     const mes = String(now.getMonth() + 1).padStart(2, "0");
     const ano = now.getFullYear();
     const valorPadrao = mockPlans[0]?.valor ?? 120;
-    const alunosAtivos = mockStudents.filter((s) => s.status === "Ativo");
+    const alunosAtivos = students.filter((s) => s.status === "Ativo");
     let count = 0;
     const novas: RevenueType[] = [];
 
@@ -202,7 +203,7 @@ const Revenue = () => {
             <div><Label>Aluno</Label>
               <Select value={recebimentoForm.aluno} onValueChange={(v) => setRecebimentoForm({ ...recebimentoForm, aluno: v })}>
                 <SelectTrigger><SelectValue placeholder="Selecione o aluno" /></SelectTrigger>
-                <SelectContent>{mockStudents.map((s) => <SelectItem key={s.id} value={s.nome}>{s.nome}</SelectItem>)}</SelectContent>
+                <SelectContent>{students.map((s) => <SelectItem key={s.id} value={s.nome}>{s.nome}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div><Label>Plano</Label>

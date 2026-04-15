@@ -50,7 +50,7 @@ const statusVariant: Record<Student["status"], "default" | "secondary" | "destru
 };
 
 const Students = () => {
-  const { students, setStudents, enrollments, setEnrollments } = useAppContext();
+  const { students, setStudents, enrollments, setEnrollments, setRevenues } = useAppContext();
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [viewingStudent, setViewingStudent] = useState<Student | null>(null);
@@ -110,7 +110,24 @@ const Students = () => {
         ...prev,
         { ...form, id: String(Date.now()) },
       ]);
-      toast.success("Aluno cadastrado com sucesso");
+
+      // Gerar Taxa de Matrícula automaticamente
+      const now = new Date();
+      const vencimento = `${String(now.getDate()).padStart(2, "0")}/${String(now.getMonth() + 1).padStart(2, "0")}/${now.getFullYear()}`;
+      
+      setRevenues((prev) => [
+        ...prev,
+        {
+          id: crypto.randomUUID(),
+          aluno: form.nome,
+          plano: "Taxa de Matrícula",
+          vencimento,
+          valor: 32.90,
+          status: "Gerada"
+        }
+      ]);
+
+      toast.success("Aluno cadastrado com sucesso e Taxa de Matrícula gerada");
     }
 
     setShowForm(false);
