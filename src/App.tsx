@@ -14,6 +14,7 @@ import FrequencyReport from "./pages/FrequencyReport";
 import Revenue from "./pages/Revenue";
 import Expenses from "./pages/Expenses";
 import CashFlow from "./pages/CashFlow";
+import Birthdays from "./pages/Birthdays";
 import AppLayout from "./components/AppLayout";
 import NotFound from "./pages/NotFound";
 import { AppProvider } from "./contexts/AppContext";
@@ -33,6 +34,7 @@ const App = () => (
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/plans/manage" element={<PlansManage />} />
               <Route path="/students" element={<Students />} />
+              <Route path="/birthdays" element={<Birthdays />} />
               <Route path="/schedule" element={<Schedule />} />
               <Route path="/classes" element={<ClassManagement />} />
               <Route path="/attendance" element={<AttendanceControl />} />
