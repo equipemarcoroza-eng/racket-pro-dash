@@ -1,19 +1,100 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { useAppContext } from "@/contexts/AppContext";
+import { mockSchedule, CLASS_LIMIT } from "@/data/mockData";
 
 const periodos = ["Mês Atual", "Mês Anterior", "Últimos 3 meses", "Últimos 6 meses", "Últimos 12 meses"];
 
-const revenueData = [
-  { mes: "Jan", ganhos: 38000, gastos: 29000 },
-  { mes: "Fev", ganhos: 42000, gastos: 31000 },
-  { mes: "Mar", ganhos: 45000, gastos: 33000 },
-];
-
 const Dashboard = () => {
+  const { students, enrollments, revenues } = useAppContext();
   const [periodo, setPeriodo] = useState("Mês Atual");
+
+  const parseDate = (dateStr: string) => {
+    const [d, m, y] = dateStr.split("/").map(Number);
+    return new Date(y, m - 1, d);
+  };
+
+  const metrics = useMemo(() => {
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+
+    let startDate = new Date(currentYear, currentMonth, 1);
+    let endDate = new Date(currentYear, currentMonth + 1, 0);
+
+    if (periodo === "Mês Anterior") {
+      startDate = new Date(currentYear, currentMonth - 1, 1);
+      endDate = new Date(currentYear, currentMonth, 0);
+    } else if (periodo === "Últimos 3 meses") {
+      startDate = new Date(currentYear, currentMonth - 2, 1);
+    } else if (periodo === "Últimos 6 meses") {
+      startDate = new Date(currentYear, currentMonth - 5, 1);
+    } else if (periodo === "Últimos 12 meses") {
+      startDate = new Date(currentYear, currentMonth - 11, 1);
+    }
+
+    // Alunos Ativos (Contamos todos ativos no momento, ou que entraram até o fim do período)
+    const alunosAtivos = students.filter(s => {
+      const entryDate = new Date(s.dataEntrada);
+      return s.status === "Ativo" && entryDate <= endDate;
+    }).length;
+
+    // Faturamento no Período
+    const faturamentoPeriodo = revenues
+      .filter(r => {
+        const vDate = parseDate(r.vencimento);
+        return vDate >= startDate && vDate <= endDate && (r.status === "Pago" || r.status === "Gerada" || r.status === "Em atraso");
+      })
+      .reduce((acc, curr) => acc + curr.valor, 0);
+
+    // Ocupação por Turma
+    const occupancyData = mockSchedule.map(slot => {
+      const count = enrollments.filter(e => e.turmaId === slot.id).length;
+      return {
+        nome: slot.turmaId,
+        pct: Math.round((count / CLASS_LIMIT) * 100),
+      };
+    });
+
+    const sortedOccupancy = [...occupancyData].sort((a, b) => b.pct - a.pct);
+    const top3 = sortedOccupancy.slice(0, 3);
+    const bottom3 = sortedOccupancy.slice(-3).reverse();
+
+    // Dados do Gráfico (Evolução mensal)
+    const chartMonths = periodo === "Mês Atual" || periodo === "Mês Anterior" ? 6 : 
+                       periodo === "Últimos 3 meses" ? 3 :
+                       periodo === "Últimos 6 meses" ? 6 : 12;
+
+    const dynamicRevenueData = [];
+    for (let i = chartMonths - 1; i >= 0; i--) {
+      const d = new Date(currentYear, currentMonth - i, 1);
+      const mLabel = d.toLocaleString("pt-BR", { month: "short" });
+      const mIdx = d.getMonth();
+      const yIdx = d.getFullYear();
+
+      const ganhos = revenues
+        .filter(r => {
+          const vDate = parseDate(r.vencimento);
+          return vDate.getMonth() === mIdx && vDate.getFullYear() === yIdx && r.status === "Pago";
+        })
+        .reduce((acc, curr) => acc + curr.valor, 0);
+
+      const gastos = 25000 + Math.random() * 5000; // Simulado para o exemplo, já que não temos histórico de gastos real no AppContext ainda
+
+      dynamicRevenueData.push({ mes: mLabel, ganhos, gastos });
+    }
+
+    return {
+      alunosAtivos,
+      faturamentoPeriodo,
+      top3,
+      bottom3,
+      dynamicRevenueData
+    };
+  }, [periodo, students, enrollments, revenues]);
 
   return (
     <div className="space-y-6">
@@ -24,7 +105,7 @@ const Dashboard = () => {
             <CardTitle className="text-2xl">Dashboard Operacional</CardTitle>
             <p className="text-sm text-muted-foreground mt-1">Visualização rápida de indicadores de desempenho, ocupação e financeiro.</p>
           </div>
-          <Button>Atualizar</Button>
+          <Button onClick={() => window.location.reload()}>Atualizar</Button>
         </CardHeader>
       </Card>
 
@@ -51,15 +132,17 @@ const Dashboard = () => {
           <CardContent className="pt-6">
             <p className="text-sm text-primary font-medium">Métrica</p>
             <p className="text-xl font-bold mt-1">Alunos Ativos</p>
-            <div className="mt-4 p-3 bg-secondary rounded-md text-center font-semibold">1.250 alunos</div>
+            <div className="mt-4 p-3 bg-secondary rounded-md text-center font-semibold">{metrics.alunosAtivos} alunos</div>
             <p className="text-xs text-muted-foreground mt-2">Atualizado conforme filtro</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6">
             <p className="text-sm text-primary font-medium">Métrica</p>
-            <p className="text-xl font-bold mt-1">Faturamento Mensal</p>
-            <div className="mt-4 p-3 bg-secondary rounded-md text-center font-semibold">R$ 420.000</div>
+            <p className="text-xl font-bold mt-1">Faturamento {periodo}</p>
+            <div className="mt-4 p-3 bg-secondary rounded-md text-center font-semibold">
+              R$ {metrics.faturamentoPeriodo.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+            </div>
             <p className="text-xs text-muted-foreground mt-2">Baseado no período selecionado</p>
           </CardContent>
         </Card>
@@ -76,9 +159,9 @@ const Dashboard = () => {
               <Button variant="outline" size="sm">Ranking</Button>
             </div>
             <div className="space-y-3">
-              {[{ nome: "Turma A", pct: 92 }, { nome: "Turma B", pct: 88 }, { nome: "Turma C", pct: 81 }].map((t) => (
+              {metrics.top3.map((t) => (
                 <div key={t.nome} className="flex items-center gap-3">
-                  <span className="w-16 text-sm font-medium">{t.nome}</span>
+                  <span className="w-24 text-sm font-medium truncate">{t.nome}</span>
                   <Progress value={t.pct} className="flex-1" />
                   <span className="text-sm font-medium w-10 text-right">{t.pct}%</span>
                 </div>
@@ -91,14 +174,14 @@ const Dashboard = () => {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <p className="text-sm text-primary font-medium">Ocupação</p>
-                <p className="text-xl font-bold">Últimas 3 com menor ocupação</p>
+                <p className="text-xl font-bold">Menor ocupação</p>
               </div>
               <Button variant="outline" size="sm">Ranking</Button>
             </div>
             <div className="space-y-3">
-              {[{ nome: "Turma X", pct: 48 }, { nome: "Turma Y", pct: 42 }, { nome: "Turma Z", pct: 35 }].map((t) => (
+              {metrics.bottom3.map((t) => (
                 <div key={t.nome} className="flex items-center gap-3">
-                  <span className="w-16 text-sm font-medium">{t.nome}</span>
+                  <span className="w-24 text-sm font-medium truncate">{t.nome}</span>
                   <Progress value={t.pct} className="flex-1" />
                   <span className="text-sm font-medium w-10 text-right">{t.pct}%</span>
                 </div>
@@ -119,25 +202,25 @@ const Dashboard = () => {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <p className="text-sm font-medium mb-2">Ganhos</p>
+              <p className="text-sm font-medium mb-2">Ganhos (R$)</p>
               <ResponsiveContainer width="100%" height={200}>
-                <BarChart data={revenueData}>
+                <BarChart data={metrics.dynamicRevenueData}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="mes" />
                   <YAxis />
-                  <Tooltip />
+                  <Tooltip formatter={(value: number) => `R$ ${value.toLocaleString("pt-BR")}`} />
                   <Bar dataKey="ganhos" fill="hsl(240, 49%, 34%)" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
             <div>
-              <p className="text-sm font-medium mb-2">Gastos</p>
+              <p className="text-sm font-medium mb-2">Gastos (R$)</p>
               <ResponsiveContainer width="100%" height={200}>
-                <BarChart data={revenueData}>
+                <BarChart data={metrics.dynamicRevenueData}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="mes" />
                   <YAxis />
-                  <Tooltip />
+                  <Tooltip formatter={(value: number) => `R$ ${value.toLocaleString("pt-BR")}`} />
                   <Bar dataKey="gastos" fill="hsl(0, 0%, 73%)" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
@@ -150,3 +233,4 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+
