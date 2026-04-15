@@ -20,35 +20,81 @@ const Revenue = () => {
 
   const filtered = filter ? receitas.filter((r) => r.plano === filter) : receitas;
 
+  const parseDate = (dateStr: string) => {
+    const [d, m, y] = dateStr.split("/").map(Number);
+    return new Date(y, m - 1, d);
+  };
+
   const gerarParcelas = () => {
     const now = new Date();
-    const mes = String(now.getMonth() + 1).padStart(2, "0");
-    const ano = now.getFullYear();
-    const valorPadrao = mockPlans[0]?.valor ?? 120;
+    const targetMonth = now.getMonth() + 1;
+    const targetYear = now.getFullYear();
+    const targetTotalMonths = targetYear * 12 + targetMonth;
+    
     const alunosAtivos = students.filter((s) => s.status === "Ativo");
     let count = 0;
     const novas: RevenueType[] = [];
 
     for (const aluno of alunosAtivos) {
-      let dia = aluno.vencimento.split("/")[0];
-      
-      if (mes === "02" && (dia === "30" || dia === "31")) {
-        dia = "28";
+      const plano = mockPlans.find((p) => p.id === aluno.planoId);
+      if (!plano) continue;
+
+      // 1. Verificação de duplicidade para o mês atual
+      const mesFormatado = String(targetMonth).padStart(2, "0");
+      const jaExisteEsteMes = receitas.some(
+        (r) => r.aluno === aluno.nome && r.vencimento.includes(`/${mesFormatado}/${targetYear}`)
+      );
+      if (jaExisteEsteMes) continue;
+
+      // 2. Encontrar última parcela gerada para este aluno
+      const parcelasAluno = receitas
+        .filter((rec) => rec.aluno === aluno.nome)
+        .map((rec) => ({ ...rec, date: parseDate(rec.vencimento) }))
+        .sort((a, b) => b.date.getTime() - a.date.getTime());
+
+      const ultimaParcela = parcelasAluno[0];
+      let deveGerar = false;
+
+      if (!ultimaParcela) {
+        deveGerar = true;
+      } else {
+        const lastMonth = ultimaParcela.date.getMonth() + 1;
+        const lastYear = ultimaParcela.date.getFullYear();
+        const lastTotalMonths = lastYear * 12 + lastMonth;
+        const diffMonths = targetTotalMonths - lastTotalMonths;
+
+        const periodicity = plano.periodicidade;
+        if (periodicity === "Mensal" && diffMonths >= 1) deveGerar = true;
+        else if (periodicity === "Trimestral" && diffMonths >= 3) deveGerar = true;
+        else if (periodicity === "Semestral" && diffMonths >= 6) deveGerar = true;
+        else if (periodicity === "Anual" && diffMonths >= 12) deveGerar = true;
       }
 
-      const vencimento = `${dia}/${mes}/${ano}`;
-      const jaExiste = receitas.some((r) => r.aluno === aluno.nome && r.vencimento.includes(`/${mes}/${ano}`));
-      if (!jaExiste) {
-        novas.push({ id: crypto.randomUUID(), aluno: aluno.nome, plano: "Mensalidade", vencimento, valor: valorPadrao, status: "Gerada" });
+      if (deveGerar) {
+        let dia = aluno.vencimento;
+        if (targetMonth === 2 && (dia === "29" || dia === "30" || dia === "31")) {
+          // Ajuste básico para Fevereiro
+          dia = "28";
+        }
+        const vencimento = `${dia.padStart(2, "0")}/${mesFormatado}/${targetYear}`;
+        
+        novas.push({ 
+          id: crypto.randomUUID(), 
+          aluno: aluno.nome, 
+          plano: plano.nome, 
+          vencimento, 
+          valor: plano.valor, 
+          status: "Gerada" 
+        });
         count++;
       }
     }
 
     if (count > 0) {
       setReceitas((prev) => [...prev, ...novas]);
-      toast.success(`${count} parcela(s) gerada(s) para ${mes}/${ano}`);
+      toast.success(`${count} parcela(s) gerada(s) para ${String(targetMonth).padStart(2, "0")}/${targetYear}`);
     } else {
-      toast.info("Todas as parcelas do mês já foram geradas.");
+      toast.info("Nenhuma nova parcela pendente para geração baseada na periodicidade.");
     }
   };
 
