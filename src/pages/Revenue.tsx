@@ -203,13 +203,6 @@ const Revenue = () => {
               <p className="text-sm text-muted-foreground">Em atraso</p>
               <p className="text-xl font-bold text-destructive">R$ {totalAtrasado.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
             </div>
-            <div>
-              <p className="text-sm text-primary font-medium">Taxa de Matrícula</p>
-              <p className="text-2xl font-bold">R$ 32,90</p>
-              <p className="text-sm text-muted-foreground">Aplicações automáticas para novos contratos.</p>
-            </div>
-            <Button variant="outline" className="w-full">Isentar taxa</Button>
-            <Button variant="outline" className="w-full">Alterar valor</Button>
           </CardContent>
         </Card>
       </div>
