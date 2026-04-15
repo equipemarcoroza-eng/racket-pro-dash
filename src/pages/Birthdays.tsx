@@ -6,6 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useAppContext } from "@/contexts/AppContext";
 import { toast } from "sonner";
 import { Cake, Printer } from "lucide-react";
+import logo from "@/assets/logo.png";
 
 const months = [
   { value: "01", label: "Janeiro" },
@@ -46,7 +47,7 @@ const Birthdays = () => {
 
       // Logo
       try {
-        doc.addImage("/src/assets/logo.png", "PNG", 85, 10, 40, 40);
+        doc.addImage(logo, "PNG", 85, 10, 40, 40);
       } catch (e) {
         console.error("Erro ao carregar o logotipo", e);
       }

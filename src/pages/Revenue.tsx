@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { mockPlans, type Revenue as RevenueType } from "@/data/mockData";
 import { useAppContext } from "@/contexts/AppContext";
 import { toast } from "sonner";
+import logo from "@/assets/logo.png";
 
 const Revenue = () => {
   const { students, revenues: receitas, setRevenues: setReceitas } = useAppContext();
@@ -68,7 +69,7 @@ const Revenue = () => {
       
       // Logo
       try {
-        doc.addImage("/src/assets/logo.png", "PNG", 85, 10, 40, 40);
+        doc.addImage(logo, "PNG", 85, 10, 40, 40);
       } catch (e) {
         console.error("Erro ao carregar o logotipo no PDF", e);
       }
