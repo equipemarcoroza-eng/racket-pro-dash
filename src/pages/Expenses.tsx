@@ -175,16 +175,16 @@ const Expenses = () => {
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="font-medium">{p.fornecedor}</span>
-                        <span className="text-[10px] bg-muted px-1.5 py-0.5 rounded text-muted-foreground font-mono">Venc. {p.vencimento.split('-').reverse().join('/')}</span>
+                        <span className="text-[10px] bg-muted px-1.5 py-0.5 rounded text-muted-foreground font-mono">Venc. {p.vencimento ? p.vencimento.split('-').reverse().join('/') : "—"}</span>
                       </div>
                       <span className="text-xs text-muted-foreground">{p.categoria}</span>
                     </div>
                     <div className="flex items-center gap-3">
                       <span className="font-semibold mr-2">R$ {p.valor.toLocaleString("pt-BR")}</span>
                       <div className="flex gap-1">
-                        <Button variant="outline" size="xs" className="h-7 px-2 text-[10px]" onClick={() => setViewingPayment(p)}>Visualizar</Button>
-                        <Button variant="outline" size="xs" className="h-7 px-2 text-[10px]" onClick={() => openEdit(p)}>Editar</Button>
-                        <Button variant="default" size="xs" className="h-7 px-2 text-[10px] bg-green-600 hover:bg-green-700" onClick={() => handlePay(p.id)}>Baixa</Button>
+                        <Button variant="outline" size="sm" className="h-7 px-2 text-[10px]" onClick={() => setViewingPayment(p)}>Visualizar</Button>
+                        <Button variant="outline" size="sm" className="h-7 px-2 text-[10px]" onClick={() => openEdit(p)}>Editar</Button>
+                        <Button variant="default" size="sm" className="h-7 px-2 text-[10px] bg-green-600 hover:bg-green-700" onClick={() => handlePay(p.id)}>Baixa</Button>
                       </div>
                       <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 text-xs h-7 w-7 p-0" onClick={() => handleDeletePayment(p.id)}>✕</Button>
                     </div>
@@ -249,7 +249,7 @@ const Expenses = () => {
                 <div><p className="text-xs text-muted-foreground uppercase font-bold">Fornecedor</p><p className="font-medium text-lg">{viewingPayment.fornecedor}</p></div>
                 <div><p className="text-xs text-muted-foreground uppercase font-bold">Categoria</p><p className="font-medium text-lg">{viewingPayment.categoria}</p></div>
                 <div><p className="text-xs text-muted-foreground uppercase font-bold">Valor</p><p className="font-bold text-xl text-primary">R$ {viewingPayment.valor.toLocaleString("pt-BR")}</p></div>
-                <div><p className="text-xs text-muted-foreground uppercase font-bold">Vencimento</p><p className="font-medium text-lg">{viewingPayment.vencimento.split('-').reverse().join('/')}</p></div>
+                <div><p className="text-xs text-muted-foreground uppercase font-bold">Vencimento</p><p className="font-medium text-lg">{viewingPayment.vencimento ? viewingPayment.vencimento.split('-').reverse().join('/') : "—"}</p></div>
                 <div><p className="text-xs text-muted-foreground uppercase font-bold">Status</p><p className="font-medium text-lg uppercase text-orange-500">{viewingPayment.status}</p></div>
               </div>
               <div className="flex justify-end mt-4">
