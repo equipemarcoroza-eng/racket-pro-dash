@@ -16,7 +16,9 @@ const Revenue = () => {
   const [filter, setFilter] = useState<string | null>(null);
   const [viewingReceita, setViewingReceita] = useState<RevenueType | null>(null);
   const [showRecebimento, setShowRecebimento] = useState(false);
+  const [showAvulso, setShowAvulso] = useState(false);
   const [recebimentoForm, setRecebimentoForm] = useState({ aluno: "", valor: "", plano: "Mensalidade" });
+  const [avulsoForm, setAvulsoForm] = useState({ aluno: "", valor: "", plano: "Mensalidade" });
 
   const filtered = filter ? receitas.filter((r) => r.plano === filter) : receitas;
 
@@ -168,6 +170,16 @@ const Revenue = () => {
     setRecebimentoForm({ aluno: "", valor: "", plano: "Mensalidade" });
   };
 
+  const handleAvulso = () => {
+    if (!avulsoForm.aluno || !avulsoForm.valor) { toast.error("Preencha todos os campos"); return; }
+    const now = new Date();
+    const venc = `${String(now.getDate()).padStart(2, "0")}/${String(now.getMonth() + 1).padStart(2, "0")}/${now.getFullYear()}`;
+    setReceitas((prev) => [...prev, { id: crypto.randomUUID(), aluno: avulsoForm.aluno, plano: avulsoForm.plano, vencimento: venc, valor: Number(avulsoForm.valor), status: "Gerada" }]);
+    toast.success("Recebível avulso gerado");
+    setShowAvulso(false);
+    setAvulsoForm({ aluno: "", valor: "", plano: "Mensalidade" });
+  };
+
   const totalPago = receitas.filter((r) => r.status === "Pago").reduce((a, b) => a + b.valor, 0);
   const totalAtrasado = receitas.filter((r) => r.status === "Em atraso").reduce((a, b) => a + b.valor, 0);
   const totalAReceber = receitas.filter((r) => r.status === "Gerada" || r.status === "Em atraso").reduce((a, b) => a + b.valor, 0);
@@ -184,6 +196,7 @@ const Revenue = () => {
           <div className="flex gap-2">
             <Button variant="outline">Filtrar</Button>
             <Button variant="secondary" onClick={gerarParcelas}>Gerar Parcelas do Mês</Button>
+            <Button variant="outline" onClick={() => setShowAvulso(true)}>Gerar Recebível Avulso</Button>
             <Button onClick={() => setShowRecebimento(true)}>Registrar Recebimento Mitigado</Button>
           </div>
         </CardHeader>
@@ -299,6 +312,37 @@ const Revenue = () => {
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setShowRecebimento(false)}>Cancelar</Button>
               <Button onClick={handleRecebimento}>Registrar</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog Recebível Avulso */}
+      <Dialog open={showAvulso} onOpenChange={setShowAvulso}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Gerar Recebível Avulso</DialogTitle></DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">Esta ação criará uma cobrança com status "Gerada", que aparecerá no total a receber.</p>
+            <div><Label>Aluno</Label>
+              <Select value={avulsoForm.aluno} onValueChange={(v) => setAvulsoForm({ ...avulsoForm, aluno: v })}>
+                <SelectTrigger><SelectValue placeholder="Selecione o aluno" /></SelectTrigger>
+                <SelectContent>{students.map((s) => <SelectItem key={s.id} value={s.nome}>{s.nome}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+            <div><Label>Plano</Label>
+              <Select value={avulsoForm.plano} onValueChange={(v) => setAvulsoForm({ ...avulsoForm, plano: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Mensalidade">Mensalidade</SelectItem>
+                  <SelectItem value="Trimestral">Trimestral</SelectItem>
+                  <SelectItem value="Anual">Anual</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div><Label>Valor (R$)</Label><Input type="number" value={avulsoForm.valor} onChange={(e) => setAvulsoForm({ ...avulsoForm, valor: e.target.value })} /></div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setShowAvulso(false)}>Cancelar</Button>
+              <Button onClick={handleAvulso}>Gerar Cobrança</Button>
             </div>
           </div>
         </DialogContent>
