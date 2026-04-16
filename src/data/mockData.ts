@@ -74,6 +74,9 @@ export const mockSchedule: ClassSlot[] = [
   { id: "10", quadra: "Quadra 3", dia: "Qua", horario: "11:00", turmaId: "BTquaQ311" },
   { id: "11", quadra: "Quadra 1", dia: "Qui", horario: "13:00", turmaId: "BTquiQ113" },
   { id: "12", quadra: "Quadra 2", dia: "Sex", horario: "15:00", turmaId: "BTsexQ215" },
+  { id: "13", quadra: "Quadra 1", dia: "Seg", horario: "18:00", turmaId: "BTsegQ118" },
+  { id: "14", quadra: "Quadra 2", dia: "Ter", horario: "19:00", turmaId: "BTterQ219" },
+  { id: "15", quadra: "Quadra 3", dia: "Qua", horario: "20:00", turmaId: "BTquaQ320" },
 ];
 
 // Enrollments
@@ -84,15 +87,18 @@ export interface Enrollment {
 }
 
 export const mockEnrollments: Enrollment[] = [
-  // Marina (plano 2 = 2x/sem) → slots 2, 5
+  // Marina (plano 2 = 2x/sem) → slots 2, 5, 13
   { id: "e1", alunoId: "1", turmaId: "2" },
   { id: "e2", alunoId: "1", turmaId: "5" },
-  // Diego (plano 3 = 3x/sem) → slots 1, 3, 4
+  { id: "e14", alunoId: "1", turmaId: "13" }, // Ativa na Turma das 18:00 (Seg)
+  // Diego (plano 3 = 3x/sem) → slots 1, 3, 4, 14
   { id: "e3", alunoId: "2", turmaId: "1" },
   { id: "e4", alunoId: "2", turmaId: "3" },
   { id: "e5", alunoId: "2", turmaId: "4" },
-  // Lucas (plano 1 = 1x/sem) → slot 1
+  { id: "e15", alunoId: "2", turmaId: "14" }, // Ativo na Turma das 19:00 (Ter)
+  // Lucas (plano 1 = 1x/sem) → slot 1, 15
   { id: "e6", alunoId: "3", turmaId: "1" },
+  { id: "e16", alunoId: "3", turmaId: "15" }, // Ativo na Turma das 20:00 (Qua)
   // Mariana Costa (plano 1 = 1x/sem) → slot 6
   { id: "e7", alunoId: "5", turmaId: "6" },
   // Pedro (plano 1 = 1x/sem) → slot 8
