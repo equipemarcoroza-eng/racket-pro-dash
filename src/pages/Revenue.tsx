@@ -18,7 +18,7 @@ const Revenue = () => {
   const [showRecebimento, setShowRecebimento] = useState(false);
   const [showAvulso, setShowAvulso] = useState(false);
   const [recebimentoForm, setRecebimentoForm] = useState({ aluno: "", valor: "", plano: "Mensalidade" });
-  const [avulsoForm, setAvulsoForm] = useState({ aluno: "", valor: "", plano: "Mensalidade" });
+  const [avulsoForm, setAvulsoForm] = useState({ aluno: "", valor: "", plano: "Selecione um aluno", vencimento: new Date().toISOString().split("T")[0] });
 
   const filtered = filter ? receitas.filter((r) => r.plano === filter) : receitas;
 
@@ -171,13 +171,16 @@ const Revenue = () => {
   };
 
   const handleAvulso = () => {
-    if (!avulsoForm.aluno || !avulsoForm.valor) { toast.error("Preencha todos os campos"); return; }
-    const now = new Date();
-    const venc = `${String(now.getDate()).padStart(2, "0")}/${String(now.getMonth() + 1).padStart(2, "0")}/${now.getFullYear()}`;
+    if (!avulsoForm.aluno || !avulsoForm.valor || !avulsoForm.vencimento) { toast.error("Preencha todos os campos"); return; }
+    
+    // Converter YYYY-MM-DD para DD/MM/YYYY
+    const [y, m, d] = avulsoForm.vencimento.split("-");
+    const venc = `${d}/${m}/${y}`;
+    
     setReceitas((prev) => [...prev, { id: crypto.randomUUID(), aluno: avulsoForm.aluno, plano: avulsoForm.plano, vencimento: venc, valor: Number(avulsoForm.valor), status: "Gerada" }]);
     toast.success("Recebível avulso gerado");
     setShowAvulso(false);
-    setAvulsoForm({ aluno: "", valor: "", plano: "Mensalidade" });
+    setAvulsoForm({ aluno: "", valor: "", plano: "Selecione um aluno", vencimento: new Date().toISOString().split("T")[0] });
   };
 
   const totalPago = receitas.filter((r) => r.status === "Pago").reduce((a, b) => a + b.valor, 0);
@@ -324,20 +327,20 @@ const Revenue = () => {
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground">Esta ação criará uma cobrança com status "Gerada", que aparecerá no total a receber.</p>
             <div><Label>Aluno</Label>
-              <Select value={avulsoForm.aluno} onValueChange={(v) => setAvulsoForm({ ...avulsoForm, aluno: v })}>
+              <Select value={avulsoForm.aluno} onValueChange={(v) => {
+                const aluno = students.find(s => s.nome === v);
+                const plano = mockPlans.find(p => p.id === aluno?.planoId);
+                setAvulsoForm({ ...avulsoForm, aluno: v, plano: plano?.nome || "Sem plano" });
+              }}>
                 <SelectTrigger><SelectValue placeholder="Selecione o aluno" /></SelectTrigger>
                 <SelectContent>{students.map((s) => <SelectItem key={s.id} value={s.nome}>{s.nome}</SelectItem>)}</SelectContent>
               </Select>
             </div>
-            <div><Label>Plano</Label>
-              <Select value={avulsoForm.plano} onValueChange={(v) => setAvulsoForm({ ...avulsoForm, plano: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Mensalidade">Mensalidade</SelectItem>
-                  <SelectItem value="Trimestral">Trimestral</SelectItem>
-                  <SelectItem value="Anual">Anual</SelectItem>
-                </SelectContent>
-              </Select>
+            <div><Label>Plano contratado</Label>
+              <Input value={avulsoForm.plano} readOnly className="bg-muted" />
+            </div>
+            <div><Label>Data de Vencimento</Label>
+              <Input type="date" value={avulsoForm.vencimento} onChange={(e) => setAvulsoForm({ ...avulsoForm, vencimento: e.target.value })} />
             </div>
             <div><Label>Valor (R$)</Label><Input type="number" value={avulsoForm.valor} onChange={(e) => setAvulsoForm({ ...avulsoForm, valor: e.target.value })} /></div>
             <div className="flex justify-end gap-2">
