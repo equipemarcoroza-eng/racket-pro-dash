@@ -259,8 +259,6 @@ const Expenses = () => {
           )}
         </DialogContent>
       </Dialog>
-        </DialogContent>
-      </Dialog>
 
       {/* Dialog Nova Categoria */}
       <Dialog open={showCategoryForm} onOpenChange={setShowCategoryForm}>
