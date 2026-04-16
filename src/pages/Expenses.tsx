@@ -21,7 +21,9 @@ const Expenses = () => {
 
   const totalCategorias = categories.reduce((a, b) => a + b.valor, 0);
   const totalPagamentos = payments.reduce((a, b) => a + b.valor, 0);
-  const totalPrevisto = totalCategorias + totalPagamentos;
+  const totalPendentes = payments.filter(p => p.status === "Em Aberto").reduce((a, b) => a + b.valor, 0);
+  const totalPagas = payments.filter(p => p.status === "Pago").reduce((a, b) => a + b.valor, 0);
+  const totalPrevisto = totalCategorias + totalPendentes;
 
   const filteredCategories = catFilter ? categories.filter((c) => c.categoria === catFilter) : categories;
 
@@ -207,8 +209,16 @@ const Expenses = () => {
               <span className="font-semibold">R$ {totalCategorias.toLocaleString("pt-BR")}</span>
             </div>
             <div className="border rounded-md p-3 flex justify-between">
-              <span className="text-sm">Pagamentos</span>
+              <span className="text-sm">Pagamentos Totais</span>
               <span className="font-semibold">R$ {totalPagamentos.toLocaleString("pt-BR")}</span>
+            </div>
+            <div className="border rounded-md p-3 flex justify-between bg-orange-50/50">
+              <span className="text-sm font-medium text-orange-700">Contas Pendentes</span>
+              <span className="font-bold text-orange-700">R$ {totalPendentes.toLocaleString("pt-BR")}</span>
+            </div>
+            <div className="border rounded-md p-3 flex justify-between bg-green-50/50">
+              <span className="text-sm font-medium text-green-700">Contas Pagas</span>
+              <span className="font-bold text-green-700">R$ {totalPagas.toLocaleString("pt-BR")}</span>
             </div>
             <Button variant="outline" className="w-full" onClick={handleReport}>Gerar Relatório</Button>
           </CardContent>
