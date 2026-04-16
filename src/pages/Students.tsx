@@ -53,6 +53,22 @@ const statusVariant: Record<Student["status"], "default" | "secondary" | "destru
   Inativo: "destructive",
 };
 
+const getCategoryFromBirthDate = (birthDateStr: string): Student["categoria"] => {
+  if (!birthDateStr) return "Infantil";
+  const birthDate = new Date(birthDateStr);
+  const today = new Date();
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const m = today.getMonth() - birthDate.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
+
+  if (age >= 7 && age <= 12) return "Infantil";
+  if (age >= 13 && age <= 17) return "Juvenil";
+  if (age > 17) return "Adulto";
+  return "Infantil"; // Padrão se for menor que 7
+};
+
 const Students = () => {
   const { students, setStudents, enrollments, setEnrollments, setRevenues } = useAppContext();
   const [showForm, setShowForm] = useState(false);
@@ -209,7 +225,12 @@ const Students = () => {
               <div><Label>WhatsApp Aluno</Label><Input value={form.whatsappAluno} onChange={(e) => setForm({ ...form, whatsappAluno: e.target.value })} placeholder="(00) 00000-0000" /></div>
               <div><Label>Responsável</Label><Input value={form.responsavel} onChange={(e) => setForm({ ...form, responsavel: e.target.value })} /></div>
               <div><Label>WhatsApp Responsável</Label><Input value={form.whatsappResponsavel} onChange={(e) => setForm({ ...form, whatsappResponsavel: e.target.value })} placeholder="(00) 00000-0000" /></div>
-              <div><Label>Data de nascimento</Label><Input type="date" value={form.dataNascimento} onChange={(e) => setForm({ ...form, dataNascimento: e.target.value })} /></div>
+              <div><Label>Data de nascimento</Label>
+                <Input type="date" value={form.dataNascimento} onChange={(e) => {
+                  const date = e.target.value;
+                  setForm({ ...form, dataNascimento: date, categoria: getCategoryFromBirthDate(date) });
+                }} />
+              </div>
               <div><Label>Sexo</Label>
                 <Select value={form.sexo} onValueChange={(v) => setForm({ ...form, sexo: v as Student["sexo"] })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
