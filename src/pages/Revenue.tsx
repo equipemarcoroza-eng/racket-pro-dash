@@ -197,7 +197,6 @@ const Revenue = () => {
             <p className="text-sm text-muted-foreground">Gestão de cobranças, planos e vencimentos de mensalidades, trimestrais e anuais.</p>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline">Filtrar</Button>
             <Button variant="secondary" onClick={gerarParcelas}>Gerar Parcelas do Mês</Button>
             <Button variant="outline" onClick={() => setShowAvulso(true)}>Gerar Recebível Avulso</Button>
             <Button onClick={() => setShowRecebimento(true)}>Registrar Recebimento Mitigado</Button>
