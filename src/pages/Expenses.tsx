@@ -15,7 +15,8 @@ const Expenses = () => {
   const [catFilter, setCatFilter] = useState<string | null>(null);
   const [showExpenseForm, setShowExpenseForm] = useState(false);
   const [showCategoryForm, setShowCategoryForm] = useState(false);
-  const [expenseForm, setExpenseForm] = useState({ fornecedor: "", valor: "", categoria: "" });
+  const [viewingPayment, setViewingPayment] = useState<ScheduledPayment | null>(null);
+  const [expenseForm, setExpenseForm] = useState({ id: "", fornecedor: "", valor: "", categoria: "", vencimento: "", status: "Em Aberto" as const });
   const [categoryForm, setCategoryForm] = useState({ categoria: "", valor: "" });
 
   const totalCategorias = categories.reduce((a, b) => a + b.valor, 0);
@@ -25,11 +26,48 @@ const Expenses = () => {
   const filteredCategories = catFilter ? categories.filter((c) => c.categoria === catFilter) : categories;
 
   const handleAddExpense = () => {
-    if (!expenseForm.fornecedor || !expenseForm.valor) { toast.error("Preencha todos os campos"); return; }
-    setPayments((prev) => [...prev, { id: String(Date.now()), fornecedor: expenseForm.fornecedor, valor: Number(expenseForm.valor), categoria: expenseForm.categoria || "Outros" }]);
-    toast.success("Despesa adicionada");
+    if (!expenseForm.fornecedor || !expenseForm.valor || !expenseForm.vencimento) { toast.error("Preencha todos os campos obrigatórios"); return; }
+    
+    if (expenseForm.id) {
+      setPayments((prev) => prev.map((p) => p.id === expenseForm.id ? { 
+        ...p, 
+        fornecedor: expenseForm.fornecedor, 
+        valor: Number(expenseForm.valor), 
+        categoria: expenseForm.categoria || "Outros",
+        vencimento: expenseForm.vencimento
+      } : p));
+      toast.success("Pagamento atualizado");
+    } else {
+      setPayments((prev) => [...prev, { 
+        id: String(Date.now()), 
+        fornecedor: expenseForm.fornecedor, 
+        valor: Number(expenseForm.valor), 
+        categoria: expenseForm.categoria || "Outros",
+        vencimento: expenseForm.vencimento,
+        status: "Em Aberto"
+      }]);
+      toast.success("Despesa adicionada");
+    }
+    
     setShowExpenseForm(false);
-    setExpenseForm({ fornecedor: "", valor: "", categoria: "" });
+    setExpenseForm({ id: "", fornecedor: "", valor: "", categoria: "", vencimento: "", status: "Em Aberto" });
+  };
+
+  const handlePay = (id: string) => {
+    setPayments((prev) => prev.map((p) => p.id === id ? { ...p, status: "Pago" } : p));
+    toast.success("Baixa realizada com sucesso");
+  };
+
+  const openEdit = (p: ScheduledPayment) => {
+    setExpenseForm({
+      id: p.id,
+      fornecedor: p.fornecedor,
+      valor: String(p.valor),
+      categoria: p.categoria,
+      vencimento: p.vencimento,
+      status: p.status
+    });
+    setShowExpenseForm(true);
   };
 
   const handleAddCategory = () => {
@@ -126,21 +164,29 @@ const Expenses = () => {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <p className="text-xl font-bold">Pagamentos Programados</p>
-                  <p className="text-sm text-muted-foreground">Próximas saídas de caixa.</p>
+                  <p className="text-xl font-bold">Contas a Pagar</p>
+                  <p className="text-sm text-muted-foreground">Contas pendentes de pagamento.</p>
                 </div>
-                <Button variant="outline" size="sm" onClick={() => setShowExpenseForm(true)}>Novo pagamento</Button>
+                <Button variant="outline" size="sm" onClick={() => { setExpenseForm({ id: "", fornecedor: "", valor: "", categoria: "", vencimento: "", status: "Em Aberto" }); setShowExpenseForm(true); }}>Novo pagamento</Button>
               </div>
               <div className="space-y-3">
-                {payments.map((p) => (
+                {payments.filter(p => p.status === "Em Aberto").map((p) => (
                   <div key={p.id} className="flex items-center justify-between border rounded-md p-3 group">
                     <div>
-                      <span className="font-medium">{p.fornecedor}</span>
-                      <span className="text-xs text-muted-foreground ml-2">{p.categoria}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">{p.fornecedor}</span>
+                        <span className="text-[10px] bg-muted px-1.5 py-0.5 rounded text-muted-foreground font-mono">Venc. {p.vencimento.split('-').reverse().join('/')}</span>
+                      </div>
+                      <span className="text-xs text-muted-foreground">{p.categoria}</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold">R$ {p.valor.toLocaleString("pt-BR")}</span>
-                      <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 text-xs" onClick={() => handleDeletePayment(p.id)}>✕</Button>
+                    <div className="flex items-center gap-3">
+                      <span className="font-semibold mr-2">R$ {p.valor.toLocaleString("pt-BR")}</span>
+                      <div className="flex gap-1">
+                        <Button variant="outline" size="xs" className="h-7 px-2 text-[10px]" onClick={() => setViewingPayment(p)}>Visualizar</Button>
+                        <Button variant="outline" size="xs" className="h-7 px-2 text-[10px]" onClick={() => openEdit(p)}>Editar</Button>
+                        <Button variant="default" size="xs" className="h-7 px-2 text-[10px] bg-green-600 hover:bg-green-700" onClick={() => handlePay(p.id)}>Baixa</Button>
+                      </div>
+                      <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 text-xs h-7 w-7 p-0" onClick={() => handleDeletePayment(p.id)}>✕</Button>
                     </div>
                   </div>
                 ))}
@@ -175,7 +221,10 @@ const Expenses = () => {
           <DialogHeader><DialogTitle>Nova Despesa</DialogTitle></DialogHeader>
           <div className="space-y-4">
             <div><Label>Fornecedor</Label><Input value={expenseForm.fornecedor} onChange={(e) => setExpenseForm({ ...expenseForm, fornecedor: e.target.value })} /></div>
-            <div><Label>Valor (R$)</Label><Input type="number" value={expenseForm.valor} onChange={(e) => setExpenseForm({ ...expenseForm, valor: e.target.value })} /></div>
+            <div className="grid grid-cols-2 gap-4">
+              <div><Label>Valor (R$)</Label><Input type="number" value={expenseForm.valor} onChange={(e) => setExpenseForm({ ...expenseForm, valor: e.target.value })} /></div>
+              <div><Label>Vencimento</Label><Input type="date" value={expenseForm.vencimento} onChange={(e) => setExpenseForm({ ...expenseForm, vencimento: e.target.value })} /></div>
+            </div>
             <div><Label>Categoria</Label>
               <Select value={expenseForm.categoria} onValueChange={(v) => setExpenseForm({ ...expenseForm, categoria: v })}>
                 <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
@@ -183,10 +232,33 @@ const Expenses = () => {
               </Select>
             </div>
             <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setShowExpenseForm(false)}>Cancelar</Button>
-              <Button onClick={handleAddExpense}>Salvar</Button>
+              <Button variant="outline" onClick={() => { setShowExpenseForm(false); setExpenseForm({ id: "", fornecedor: "", valor: "", categoria: "", vencimento: "", status: "Em Aberto" }); }}>Cancelar</Button>
+              <Button onClick={handleAddExpense}>{expenseForm.id ? "Atualizar" : "Salvar"}</Button>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog Visualizar Pagamento */}
+      <Dialog open={!!viewingPayment} onOpenChange={(open) => !open && setViewingPayment(null)}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Detalhes da Conta</DialogTitle></DialogHeader>
+          {viewingPayment && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div><p className="text-xs text-muted-foreground uppercase font-bold">Fornecedor</p><p className="font-medium text-lg">{viewingPayment.fornecedor}</p></div>
+                <div><p className="text-xs text-muted-foreground uppercase font-bold">Categoria</p><p className="font-medium text-lg">{viewingPayment.categoria}</p></div>
+                <div><p className="text-xs text-muted-foreground uppercase font-bold">Valor</p><p className="font-bold text-xl text-primary">R$ {viewingPayment.valor.toLocaleString("pt-BR")}</p></div>
+                <div><p className="text-xs text-muted-foreground uppercase font-bold">Vencimento</p><p className="font-medium text-lg">{viewingPayment.vencimento.split('-').reverse().join('/')}</p></div>
+                <div><p className="text-xs text-muted-foreground uppercase font-bold">Status</p><p className="font-medium text-lg uppercase text-orange-500">{viewingPayment.status}</p></div>
+              </div>
+              <div className="flex justify-end mt-4">
+                <Button onClick={() => setViewingPayment(null)}>Fechar</Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
         </DialogContent>
       </Dialog>
 

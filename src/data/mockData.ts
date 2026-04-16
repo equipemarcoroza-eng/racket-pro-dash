@@ -328,12 +328,14 @@ export interface ScheduledPayment {
   fornecedor: string;
   valor: number;
   categoria: string;
+  vencimento: string;
+  status: "Em Aberto" | "Pago";
 }
 
 export const mockScheduledPayments: ScheduledPayment[] = [
-  { id: "1", fornecedor: "Fornecedor A", valor: 5200, categoria: "Materiais" },
-  { id: "2", fornecedor: "Fornecedor B", valor: 3600, categoria: "Serviços terceirizados" },
-  { id: "3", fornecedor: "Fornecedor C", valor: 4100, categoria: "Manutenção" },
-  { id: "4", fornecedor: "Fornecedor D", valor: 2800, categoria: "Materiais" },
-  { id: "5", fornecedor: "Fornecedor E", valor: 1500, categoria: "Outros" },
+  { id: "1", fornecedor: "Fornecedor A", valor: 5200, categoria: "Materiais", vencimento: "2026-04-10", status: "Em Aberto" },
+  { id: "2", fornecedor: "Fornecedor B", valor: 3600, categoria: "Serviços terceirizados", vencimento: "2026-04-15", status: "Em Aberto" },
+  { id: "3", fornecedor: "Fornecedor C", valor: 4100, categoria: "Manutenção", vencimento: "2026-04-20", status: "Em Aberto" },
+  { id: "4", fornecedor: "Fornecedor D", valor: 2800, categoria: "Materiais", vencimento: "2026-04-25", status: "Em Aberto" },
+  { id: "5", fornecedor: "Fornecedor E", valor: 1500, categoria: "Outros", vencimento: "2026-04-05", status: "Em Aberto" },
 ];
