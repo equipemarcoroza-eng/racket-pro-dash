@@ -69,6 +69,22 @@ const getCategoryFromBirthDate = (birthDateStr: string): Student["categoria"] =>
   return "Infantil"; // Padrão se for menor que 7
 };
 
+const maskPhone = (value: string) => {
+  if (!value) return "";
+  const numeric = value.replace(/\D/g, "");
+  if (numeric.length <= 10) {
+    return numeric
+      .replace(/^(\d{2})(\d)/, "($1) $2")
+      .replace(/(\d{4})(\d)/, "$1-$2")
+      .replace(/(-\d{4})\d+?$/, "$1");
+  } else {
+    return numeric
+      .replace(/^(\d{2})(\d)/, "($1) $2")
+      .replace(/(\d{5})(\d)/, "$1-$2")
+      .replace(/(-\d{4})\d+?$/, "$1");
+  }
+};
+
 const Students = () => {
   const { students, setStudents, enrollments, setEnrollments, setRevenues } = useAppContext();
   const [showForm, setShowForm] = useState(false);
@@ -222,9 +238,9 @@ const Students = () => {
             <p className="font-semibold text-lg mb-4">{editingId ? "Editar aluno" : "Novo aluno"}</p>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <div><Label>Nome do aluno</Label><Input value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} /></div>
-              <div><Label>WhatsApp Aluno</Label><Input value={form.whatsappAluno} onChange={(e) => setForm({ ...form, whatsappAluno: e.target.value })} placeholder="(00) 00000-0000" /></div>
+              <div><Label>WhatsApp Aluno</Label><Input value={form.whatsappAluno} onChange={(e) => setForm({ ...form, whatsappAluno: maskPhone(e.target.value) })} placeholder="(00) 00000-0000" /></div>
               <div><Label>Responsável</Label><Input value={form.responsavel} onChange={(e) => setForm({ ...form, responsavel: e.target.value })} /></div>
-              <div><Label>WhatsApp Responsável</Label><Input value={form.whatsappResponsavel} onChange={(e) => setForm({ ...form, whatsappResponsavel: e.target.value })} placeholder="(00) 00000-0000" /></div>
+              <div><Label>WhatsApp Responsável</Label><Input value={form.whatsappResponsavel} onChange={(e) => setForm({ ...form, whatsappResponsavel: maskPhone(e.target.value) })} placeholder="(00) 00000-0000" /></div>
               <div><Label>Data de nascimento</Label>
                 <Input type="date" value={form.dataNascimento} onChange={(e) => {
                   const date = e.target.value;
