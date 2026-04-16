@@ -226,16 +226,16 @@ const Expenses = () => {
         <DialogContent>
           <DialogHeader><DialogTitle>Nova Despesa</DialogTitle></DialogHeader>
           <div className="space-y-4">
-            <div><Label>Fornecedor</Label><Input value={expenseForm.fornecedor} onChange={(e) => setExpenseForm({ ...expenseForm, fornecedor: e.target.value })} /></div>
-            <div className="grid grid-cols-2 gap-4">
-              <div><Label>Valor (R$)</Label><Input type="number" value={expenseForm.valor} onChange={(e) => setExpenseForm({ ...expenseForm, valor: e.target.value })} /></div>
-              <div><Label>Vencimento</Label><Input type="date" value={expenseForm.vencimento} onChange={(e) => setExpenseForm({ ...expenseForm, vencimento: e.target.value })} /></div>
-            </div>
             <div><Label>Categoria</Label>
               <Select value={expenseForm.categoria} onValueChange={(v) => setExpenseForm({ ...expenseForm, categoria: v })}>
                 <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
                 <SelectContent>{categories.map((c) => <SelectItem key={c.id} value={c.categoria}>{c.categoria}</SelectItem>)}</SelectContent>
               </Select>
+            </div>
+            <div><Label>Fornecedor</Label><Input value={expenseForm.fornecedor} onChange={(e) => setExpenseForm({ ...expenseForm, fornecedor: e.target.value })} /></div>
+            <div className="grid grid-cols-2 gap-4">
+              <div><Label>Valor (R$)</Label><Input type="number" value={expenseForm.valor} onChange={(e) => setExpenseForm({ ...expenseForm, valor: e.target.value })} /></div>
+              <div><Label>Vencimento</Label><Input type="date" value={expenseForm.vencimento} onChange={(e) => setExpenseForm({ ...expenseForm, vencimento: e.target.value })} /></div>
             </div>
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => { setShowExpenseForm(false); setExpenseForm({ id: "", fornecedor: "", valor: "", categoria: "", vencimento: "", status: "Em Aberto" }); }}>Cancelar</Button>
