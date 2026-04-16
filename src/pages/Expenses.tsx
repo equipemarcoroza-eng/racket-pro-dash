@@ -23,7 +23,7 @@ const Expenses = () => {
   const totalPagamentos = payments.reduce((a, b) => a + b.valor, 0);
   const totalPendentes = payments.filter(p => p.status === "Em Aberto").reduce((a, b) => a + b.valor, 0);
   const totalPagas = payments.filter(p => p.status === "Pago").reduce((a, b) => a + b.valor, 0);
-  const totalPrevisto = totalCategorias + totalPendentes;
+  const totalPrevisto = totalPendentes; // Agora reflete apenas o pendente no período
 
   const filteredCategories = catFilter ? categories.filter((c) => c.categoria === catFilter) : categories;
 
@@ -205,11 +205,7 @@ const Expenses = () => {
           <CardContent className="pt-6 space-y-3">
             <p className="text-xl font-bold">Resumo Geral</p>
             <div className="border rounded-md p-3 flex justify-between">
-              <span className="text-sm">Categorias</span>
-              <span className="font-semibold">R$ {totalCategorias.toLocaleString("pt-BR")}</span>
-            </div>
-            <div className="border rounded-md p-3 flex justify-between">
-              <span className="text-sm">Pagamentos Totais</span>
+              <span className="text-sm">Pagamentos Totais (Geral)</span>
               <span className="font-semibold">R$ {totalPagamentos.toLocaleString("pt-BR")}</span>
             </div>
             <div className="border rounded-md p-3 flex justify-between bg-orange-50/50">
