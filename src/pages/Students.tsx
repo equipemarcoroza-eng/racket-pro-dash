@@ -16,8 +16,9 @@ const statuses = ["Ativo", "Inativo", "Em análise"] as const;
 
 type FormState = {
   nome: string;
+  whatsappAluno: string;
   responsavel: string;
-  whatsapp: string;
+  whatsappResponsavel: string;
   dataNascimento: string;
   sexo: Student["sexo"];
   dataEntrada: string;
@@ -29,8 +30,9 @@ type FormState = {
 
 const emptyForm: FormState = {
   nome: "",
+  whatsappAluno: "",
   responsavel: "",
-  whatsapp: "",
+  whatsappResponsavel: "",
   dataNascimento: "",
   sexo: "M",
   dataEntrada: new Date().toISOString().split("T")[0],
@@ -74,8 +76,9 @@ const Students = () => {
     setEditingId(s.id);
     setForm({
       nome: s.nome,
+      whatsappAluno: s.whatsappAluno,
       responsavel: s.responsavel,
-      whatsapp: s.whatsapp,
+      whatsappResponsavel: s.whatsappResponsavel,
       dataNascimento: s.dataNascimento,
       sexo: s.sexo,
       dataEntrada: s.dataEntrada,
@@ -141,9 +144,9 @@ const Students = () => {
 
 
   const handleExport = () => {
-    const headers = ["Nome", "Responsável", "WhatsApp", "Data Nascimento", "Sexo", "Data Entrada", "Categoria", "Plano", "Vencimento", "Status"];
+    const headers = ["Nome", "WhatsApp Aluno", "Responsável", "WhatsApp Responsável", "Data Nascimento", "Sexo", "Data Entrada", "Categoria", "Plano", "Vencimento", "Status"];
     const rows = filtered.map((s) => [
-      s.nome, s.responsavel, s.whatsapp, s.dataNascimento, s.sexo, s.dataEntrada, s.categoria,
+      s.nome, s.whatsappAluno, s.responsavel, s.whatsappResponsavel, s.dataNascimento, s.sexo, s.dataEntrada, s.categoria,
       getPlanoNome(s.planoId), s.vencimento, s.status,
     ]);
     const csv = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
@@ -201,10 +204,11 @@ const Students = () => {
           <CardContent className="pt-6">
             <p className="text-sm text-primary font-medium">Cadastro rápido</p>
             <p className="font-semibold text-lg mb-4">{editingId ? "Editar aluno" : "Novo aluno"}</p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <div><Label>Nome do aluno</Label><Input value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} /></div>
-              <div><Label>Avaliador/Responsável</Label><Input value={form.responsavel} onChange={(e) => setForm({ ...form, responsavel: e.target.value })} /></div>
-              <div><Label>WhatsApp</Label><Input value={form.whatsapp} onChange={(e) => setForm({ ...form, whatsapp: e.target.value })} placeholder="(00) 00000-0000" /></div>
+              <div><Label>WhatsApp Aluno</Label><Input value={form.whatsappAluno} onChange={(e) => setForm({ ...form, whatsappAluno: e.target.value })} placeholder="(00) 00000-0000" /></div>
+              <div><Label>Responsável</Label><Input value={form.responsavel} onChange={(e) => setForm({ ...form, responsavel: e.target.value })} /></div>
+              <div><Label>WhatsApp Responsável</Label><Input value={form.whatsappResponsavel} onChange={(e) => setForm({ ...form, whatsappResponsavel: e.target.value })} placeholder="(00) 00000-0000" /></div>
               <div><Label>Data de nascimento</Label><Input type="date" value={form.dataNascimento} onChange={(e) => setForm({ ...form, dataNascimento: e.target.value })} /></div>
               <div><Label>Sexo</Label>
                 <Select value={form.sexo} onValueChange={(v) => setForm({ ...form, sexo: v as Student["sexo"] })}>
@@ -272,11 +276,10 @@ const Students = () => {
             <TableHeader>
               <TableRow>
                 <TableHead>Nome</TableHead>
+                <TableHead>WhatsApp Aluno</TableHead>
                 <TableHead>Responsável</TableHead>
-                <TableHead>WhatsApp</TableHead>
+                <TableHead>WhatsApp Responsável</TableHead>
                 <TableHead>Data Entrada</TableHead>
-                <TableHead>Categoria</TableHead>
-                <TableHead>Vencimento</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Ações</TableHead>
               </TableRow>
@@ -285,11 +288,10 @@ const Students = () => {
               {filtered.map((s) => (
                 <TableRow key={s.id}>
                   <TableCell className="font-medium">{s.nome}</TableCell>
+                  <TableCell>{s.whatsappAluno || "—"}</TableCell>
                   <TableCell>{s.responsavel || "—"}</TableCell>
-                  <TableCell>{s.whatsapp || "—"}</TableCell>
+                  <TableCell>{s.whatsappResponsavel || "—"}</TableCell>
                   <TableCell>{new Date(s.dataEntrada).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}</TableCell>
-                  <TableCell>{s.categoria}</TableCell>
-                  <TableCell>{s.vencimento}</TableCell>
                   <TableCell>
                     <Badge variant={statusVariant[s.status]}>{s.status}</Badge>
                   </TableCell>
@@ -316,8 +318,9 @@ const Students = () => {
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-4">
                 <div><p className="text-sm text-muted-foreground">Nome</p><p className="font-medium">{viewingStudent.nome}</p></div>
+                <div><p className="text-sm text-muted-foreground">WhatsApp Aluno</p><p className="font-medium">{viewingStudent.whatsappAluno || "—"}</p></div>
                 <div><p className="text-sm text-muted-foreground">Responsável</p><p className="font-medium">{viewingStudent.responsavel}</p></div>
-                <div><p className="text-sm text-muted-foreground">WhatsApp</p><p className="font-medium">{viewingStudent.whatsapp || "—"}</p></div>
+                <div><p className="text-sm text-muted-foreground">WhatsApp Responsável</p><p className="font-medium">{viewingStudent.whatsappResponsavel || "—"}</p></div>
                 <div><p className="text-sm text-muted-foreground">Data de Nascimento</p><p className="font-medium">{new Date(viewingStudent.dataNascimento).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}</p></div>
                 <div><p className="text-sm text-muted-foreground">Sexo</p><p className="font-medium">{viewingStudent.sexo === "M" ? "Masculino" : "Feminino"}</p></div>
                 <div><p className="text-sm text-muted-foreground">Data de Entrada</p><p className="font-medium">{new Date(viewingStudent.dataEntrada).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}</p></div>

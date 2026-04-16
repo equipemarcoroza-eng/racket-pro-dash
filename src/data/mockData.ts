@@ -27,8 +27,9 @@ export const CLASS_LIMIT = 6;
 export interface Student {
   id: string;
   nome: string;
+  whatsappAluno: string;
   responsavel: string;
-  whatsapp: string;
+  whatsappResponsavel: string;
   dataNascimento: string;
   sexo: "M" | "F";
   dataEntrada: string;
@@ -39,16 +40,16 @@ export interface Student {
 }
 
 export const mockStudents: Student[] = [
-  { id: "1", nome: "Marina Oliveira", responsavel: "Paula Oliveira", whatsapp: "(11) 98888-7777", dataNascimento: "2012-05-10", sexo: "F", dataEntrada: "2024-01-15", categoria: "Juvenil", planoId: "2", vencimento: "05", status: "Ativo" },
-  { id: "2", nome: "Diego Fernandes", responsavel: "Carlos Fernandes", whatsapp: "(11) 97777-6666", dataNascimento: "2000-03-22", sexo: "M", dataEntrada: "2023-11-05", categoria: "Adulto", planoId: "3", vencimento: "10", status: "Ativo" },
-  { id: "3", nome: "Lucas Pereira", responsavel: "Ana Pereira", whatsapp: "(11) 96666-5555", dataNascimento: "2015-08-15", sexo: "M", dataEntrada: "2024-02-10", categoria: "Infantil", planoId: "1", vencimento: "10", status: "Ativo" },
-  { id: "4", nome: "Sofia Almeida", responsavel: "Marcos Almeida", whatsapp: "(11) 95555-4444", dataNascimento: "2010-01-20", sexo: "F", dataEntrada: "2024-03-01", categoria: "Juvenil", planoId: "2", vencimento: "15", status: "Em análise" },
-  { id: "5", nome: "Mariana Costa", responsavel: "Roberto Costa", whatsapp: "(11) 94444-3333", dataNascimento: "1995-11-30", sexo: "F", dataEntrada: "2023-08-20", categoria: "Adulto", planoId: "1", vencimento: "20", status: "Ativo" },
-  { id: "6", nome: "Pedro Santos", responsavel: "Lucia Santos", whatsapp: "(11) 93333-2222", dataNascimento: "2013-07-12", sexo: "M", dataEntrada: "2024-01-05", categoria: "Juvenil", planoId: "1", vencimento: "10", status: "Ativo" },
-  { id: "7", nome: "Juliana Lima", responsavel: "Fernando Lima", whatsapp: "(11) 92222-1111", dataNascimento: "2016-02-28", sexo: "F", dataEntrada: "2024-04-10", categoria: "Infantil", planoId: "2", vencimento: "20", status: "Ativo" },
-  { id: "8", nome: "Rafael Souza", responsavel: "Carla Souza", whatsapp: "(11) 91111-0000", dataNascimento: "1998-09-05", sexo: "M", dataEntrada: "2023-09-15", categoria: "Adulto", planoId: "1", vencimento: "25", status: "Ativo" },
-  { id: "9", nome: "Beatriz Rocha", responsavel: "Thiago Rocha", whatsapp: "(11) 90000-9999", dataNascimento: "2014-12-18", sexo: "F", dataEntrada: "2024-02-25", categoria: "Juvenil", planoId: "3", vencimento: "05", status: "Inativo" },
-  { id: "10", nome: "Gabriel Martins", responsavel: "Renata Martins", whatsapp: "(11) 99999-8888", dataNascimento: "2017-04-22", sexo: "M", dataEntrada: "2024-03-20", categoria: "Infantil", planoId: "2", vencimento: "20", status: "Ativo" },
+  { id: "1", nome: "Marina Oliveira", whatsappAluno: "(11) 99999-0001", responsavel: "Paula Oliveira", whatsappResponsavel: "(11) 98888-7777", dataNascimento: "2012-05-10", sexo: "F", dataEntrada: "2024-01-15", categoria: "Juvenil", planoId: "2", vencimento: "05", status: "Ativo" },
+  { id: "2", nome: "Diego Fernandes", whatsappAluno: "(11) 99999-0002", responsavel: "Carlos Fernandes", whatsappResponsavel: "(11) 97777-6666", dataNascimento: "2000-03-22", sexo: "M", dataEntrada: "2023-11-05", categoria: "Adulto", planoId: "3", vencimento: "10", status: "Ativo" },
+  { id: "3", nome: "Lucas Pereira", whatsappAluno: "(11) 99999-0003", responsavel: "Ana Pereira", whatsappResponsavel: "(11) 96666-5555", dataNascimento: "2015-08-15", sexo: "M", dataEntrada: "2024-02-10", categoria: "Infantil", planoId: "1", vencimento: "10", status: "Ativo" },
+  { id: "4", nome: "Sofia Almeida", whatsappAluno: "(11) 99999-0004", responsavel: "Marcos Almeida", whatsappResponsavel: "(11) 95555-4444", dataNascimento: "2010-01-20", sexo: "F", dataEntrada: "2024-03-01", categoria: "Juvenil", planoId: "2", vencimento: "15", status: "Em análise" },
+  { id: "5", nome: "Mariana Costa", whatsappAluno: "(11) 99999-0005", responsavel: "Roberto Costa", whatsappResponsavel: "(11) 94444-3333", dataNascimento: "1995-11-30", sexo: "F", dataEntrada: "2023-08-20", categoria: "Adulto", planoId: "1", vencimento: "20", status: "Ativo" },
+  { id: "6", nome: "Pedro Santos", whatsappAluno: "(11) 99999-0006", responsavel: "Lucia Santos", whatsappResponsavel: "(11) 93333-2222", dataNascimento: "2013-07-12", sexo: "M", dataEntrada: "2024-01-05", categoria: "Juvenil", planoId: "1", vencimento: "10", status: "Ativo" },
+  { id: "7", nome: "Juliana Lima", whatsappAluno: "(11) 99999-0007", responsavel: "Fernando Lima", whatsappResponsavel: "(11) 92222-1111", dataNascimento: "2016-02-28", sexo: "F", dataEntrada: "2024-04-10", categoria: "Infantil", planoId: "2", vencimento: "20", status: "Ativo" },
+  { id: "8", nome: "Rafael Souza", whatsappAluno: "(11) 99999-0008", responsavel: "Carla Souza", whatsappResponsavel: "(11) 91111-0000", dataNascimento: "1998-09-05", sexo: "M", dataEntrada: "2023-09-15", categoria: "Adulto", planoId: "1", vencimento: "25", status: "Ativo" },
+  { id: "9", nome: "Beatriz Rocha", whatsappAluno: "(11) 99999-0009", responsavel: "Thiago Rocha", whatsappResponsavel: "(11) 90000-9999", dataNascimento: "2014-12-18", sexo: "F", dataEntrada: "2024-02-25", categoria: "Juvenil", planoId: "3", vencimento: "05", status: "Inativo" },
+  { id: "10", nome: "Gabriel Martins", whatsappAluno: "(11) 99999-0010", responsavel: "Renata Martins", whatsappResponsavel: "(11) 99999-8888", dataNascimento: "2017-04-22", sexo: "M", dataEntrada: "2024-03-20", categoria: "Infantil", planoId: "2", vencimento: "20", status: "Ativo" },
 ];
 
 // Schedule / Classes
