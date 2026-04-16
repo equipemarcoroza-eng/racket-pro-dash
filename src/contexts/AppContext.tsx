@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, type ReactNode } from "react";
-import { mockStudents, mockEnrollments, mockRevenue, mockAttendanceLogs, mockExpenseLogs, type Student, type Enrollment, type Revenue, type AttendanceLog, type ExpenseLog } from "@/data/mockData";
+import { mockStudents, mockEnrollments, mockRevenue, mockAttendanceLogs, mockExpenseLogs, mockSchedule, type Student, type Enrollment, type Revenue, type AttendanceLog, type ExpenseLog, type ClassSlot } from "@/data/mockData";
 
 interface AppContextType {
   students: Student[];
@@ -12,6 +12,8 @@ interface AppContextType {
   setAttendanceLogs: React.Dispatch<React.SetStateAction<AttendanceLog[]>>;
   expenseLogs: ExpenseLog[];
   setExpenseLogs: React.Dispatch<React.SetStateAction<ExpenseLog[]>>;
+  schedule: ClassSlot[];
+  setSchedule: React.Dispatch<React.SetStateAction<ClassSlot[]>>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -22,6 +24,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [revenues, setRevenues] = useState<Revenue[]>(mockRevenue);
   const [attendanceLogs, setAttendanceLogs] = useState<AttendanceLog[]>(mockAttendanceLogs);
   const [expenseLogs, setExpenseLogs] = useState<ExpenseLog[]>(mockExpenseLogs);
+  const [schedule, setSchedule] = useState<ClassSlot[]>(mockSchedule);
 
   return (
     <AppContext.Provider value={{ 
@@ -29,7 +32,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       enrollments, setEnrollments, 
       revenues, setRevenues,
       attendanceLogs, setAttendanceLogs,
-      expenseLogs, setExpenseLogs
+      expenseLogs, setExpenseLogs,
+      schedule, setSchedule
     }}>
       {children}
     </AppContext.Provider>

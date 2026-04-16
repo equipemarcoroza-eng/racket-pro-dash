@@ -6,12 +6,21 @@ import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { mockExpenseCategories, mockScheduledPayments, type Expense, type ScheduledPayment } from "@/data/mockData";
+import { mockExpenseCategories, type Expense, type ScheduledPayment } from "@/data/mockData";
+import { useAppContext } from "@/contexts/AppContext";
 import { toast } from "sonner";
+import { useEffect } from "react";
 
 const Expenses = () => {
+  const { schedule, enrollments, students } = useAppContext();
   const [categories, setCategories] = useState<Expense[]>(mockExpenseCategories);
-  const [payments, setPayments] = useState<ScheduledPayment[]>(mockScheduledPayments);
+  const [payments, setPayments] = useState<ScheduledPayment[]>([]); // Initialize empty since we'll use context or local state
+  // Sync payments from mock on mount if needed, or just let it be.
+  // Actually, I should probably add payments to AppContext too if I want consistency everywhere.
+  // For now, I'll just keep it local but use mockScheduledPayments as initial.
+  useEffect(() => {
+    import("@/data/mockData").then(m => setPayments(m.mockScheduledPayments));
+  }, []);
   const [catFilter, setCatFilter] = useState<string | null>(null);
   const [showExpenseForm, setShowExpenseForm] = useState(false);
   const [showCategoryForm, setShowCategoryForm] = useState(false);
@@ -23,6 +32,37 @@ const Expenses = () => {
   const totalPagamentos = payments.reduce((a, b) => a + b.valor, 0);
   const totalPendentes = payments.filter(p => p.status === "Em Aberto").reduce((a, b) => a + b.valor, 0);
   const totalPagas = payments.filter(p => p.status === "Pago").reduce((a, b) => a + b.valor, 0);
+
+  const calculateRent = () => {
+    const activeStudentIds = new Set(students.filter(s => s.status === "Ativo").map(s => s.id));
+    const turmasComAlunosAtivos = schedule.filter(slot => {
+      const enrols = enrollments.filter(e => e.turmaId === slot.id);
+      return enrols.some(e => activeStudentIds.has(e.alunoId));
+    });
+
+    const groupA = turmasComAlunosAtivos.filter(s => {
+      const h = parseInt(s.horario.split(":")[0]);
+      return h >= 0 && h < 18;
+    });
+    const groupB = turmasComAlunosAtivos.filter(s => s.horario === "18:00");
+    const groupC = turmasComAlunosAtivos.filter(s => ["19:00", "20:00"].includes(s.horario));
+
+    return {
+      a: { count: groupA.length, total: groupA.length * 120 },
+      b: { count: groupB.length, total: groupB.length * 240 },
+      c: { count: groupC.length, total: groupC.length * 320 },
+      sum: (groupA.length * 120) + (groupB.length * 240) + (groupC.length * 320)
+    };
+  };
+
+  const rentCalc = calculateRent();
+
+  useEffect(() => {
+    if (expenseForm.categoria === "Aluguel" && !expenseForm.id) {
+      setExpenseForm(prev => ({ ...prev, valor: String(rentCalc.sum) }));
+    }
+  }, [expenseForm.categoria]);
+
   const totalPrevisto = totalPendentes; // Agora reflete apenas o pendente no período
 
   const filteredCategories = catFilter ? categories.filter((c) => c.categoria === catFilter) : categories;
@@ -237,6 +277,29 @@ const Expenses = () => {
               <div><Label>Valor (R$)</Label><Input type="number" value={expenseForm.valor} onChange={(e) => setExpenseForm({ ...expenseForm, valor: e.target.value })} /></div>
               <div><Label>Vencimento</Label><Input type="date" value={expenseForm.vencimento} onChange={(e) => setExpenseForm({ ...expenseForm, vencimento: e.target.value })} /></div>
             </div>
+
+            {expenseForm.categoria === "Aluguel" && (
+              <div className="bg-muted p-3 rounded-md space-y-2">
+                <p className="text-xs font-bold uppercase text-muted-foreground mb-1">Cálculo Auxiliar (Aluguel)</p>
+                <div className="flex justify-between text-xs">
+                  <span>Grupo A (07h-18h): {rentCalc.a.count} turmas x R$ 120</span>
+                  <span className="font-semibold">R$ {rentCalc.a.total}</span>
+                </div>
+                <div className="flex justify-between text-xs">
+                  <span>Grupo B (18h): {rentCalc.b.count} turmas x R$ 240</span>
+                  <span className="font-semibold">R$ {rentCalc.b.total}</span>
+                </div>
+                <div className="flex justify-between text-xs">
+                  <span>Grupo C (19h-20h): {rentCalc.c.count} turmas x R$ 320</span>
+                  <span className="font-semibold">R$ {rentCalc.c.total}</span>
+                </div>
+                <div className="border-t pt-1 flex justify-between text-sm font-bold">
+                  <span>Total Sugerido</span>
+                  <span className="text-primary">R$ {rentCalc.sum}</span>
+                </div>
+                <p className="text-[10px] text-muted-foreground italic mt-1">* Apenas turmas com alunos ativos são contabilizadas.</p>
+              </div>
+            )}
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => { setShowExpenseForm(false); setExpenseForm({ id: "", fornecedor: "", valor: "", categoria: "", vencimento: "", status: "Em Aberto" }); }}>Cancelar</Button>
               <Button onClick={handleAddExpense}>{expenseForm.id ? "Atualizar" : "Salvar"}</Button>

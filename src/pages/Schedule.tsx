@@ -6,7 +6,8 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { mockSchedule, mockEnrollments, mockStudents, CLASS_LIMIT, type ClassSlot } from "@/data/mockData";
+import { CLASS_LIMIT, type ClassSlot } from "@/data/mockData";
+import { useAppContext } from "@/contexts/AppContext";
 import { toast } from "sonner";
 import { startOfWeek, addDays, format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -30,7 +31,7 @@ const generateTurmaId = (dia: string, quadra: string, horario: string) => {
 };
 
 const Schedule = () => {
-  const [schedule, setSchedule] = useState<ClassSlot[]>(mockSchedule);
+  const { schedule, setSchedule, enrollments, students } = useAppContext();
   const [showSlotForm, setShowSlotForm] = useState(false);
   const [editingSlotId, setEditingSlotId] = useState<string | null>(null);
   const [slotForm, setSlotForm] = useState(emptySlotForm);
@@ -45,7 +46,7 @@ const Schedule = () => {
   });
 
   const getSlot = (dia: string, horario: string) => schedule.find((s) => s.dia === dia && s.horario === horario);
-  const getSlotCount = (slotId: string) => mockEnrollments.filter((e) => e.turmaId === slotId).length;
+  const getSlotCount = (slotId: string) => enrollments.filter((e) => e.turmaId === slotId).length;
 
   const openNewSlot = (dia?: string, horario?: string) => {
     const d = dia || "Seg";
@@ -85,7 +86,7 @@ const Schedule = () => {
     setEditingSlotId(null);
   };
 
-  const totalEnrolled = mockEnrollments.length;
+  const totalEnrolled = enrollments.length;
 
   return (
     <div className="space-y-6">
