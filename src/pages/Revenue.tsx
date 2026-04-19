@@ -214,7 +214,7 @@ const Revenue = () => {
                   <p className="text-xl font-bold">Mensalidades e planos</p>
                 </div>
                 <div className="flex gap-2 text-sm">
-                  {["Mensalidade", "Trimestral", "Anual"].map((f) => (
+                  {["Mensalidade", "Trimestral", "Semestral", "Anual"].map((f) => (
                     <button key={f} className={`font-medium ${filter === f ? "text-foreground" : "text-muted-foreground"}`} onClick={() => setFilter(filter === f ? null : f)}>{f}</button>
                   ))}
                 </div>
@@ -306,6 +306,7 @@ const Revenue = () => {
                 <SelectContent>
                   <SelectItem value="Mensalidade">Mensalidade</SelectItem>
                   <SelectItem value="Trimestral">Trimestral</SelectItem>
+                  <SelectItem value="Semestral">Semestral</SelectItem>
                   <SelectItem value="Anual">Anual</SelectItem>
                 </SelectContent>
               </Select>
