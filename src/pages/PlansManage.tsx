@@ -5,20 +5,21 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { mockPlans, type Plan } from "@/data/mockData";
+import { useAppContext } from "@/contexts/AppContext";
+import type { Plan } from "@/data/mockData";
 
 const PlansManage = () => {
-  const [plans, setPlans] = useState<Plan[]>(mockPlans);
+  const { plans, setPlans, loading } = useAppContext();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState({ nome: "", valor: "", turno: "Matutino", frequencia: "1x por semana", periodicidade: "Trimestral" });
 
   const handleSave = () => {
     if (!form.nome || !form.valor) return;
     if (editingId) {
-      setPlans(plans.map((p) => (p.id === editingId ? { ...p, ...form, valor: Number(form.valor) } : p)));
+      setPlans((prev) => prev.map((p) => (p.id === editingId ? { ...p, ...form, valor: Number(form.valor) } : p)));
       setEditingId(null);
     } else {
-      setPlans([...plans, { id: String(Date.now()), ...form, valor: Number(form.valor) }]);
+      setPlans((prev) => [...prev, { id: crypto.randomUUID(), ...form, valor: Number(form.valor) }]);
     }
     setForm({ nome: "", valor: "", turno: "Matutino", frequencia: "1x por semana", periodicidade: "Trimestral" });
   };
@@ -29,7 +30,7 @@ const PlansManage = () => {
   };
 
   const handleDelete = (id: string) => {
-    setPlans(plans.filter((p) => p.id !== id));
+    setPlans((prev) => prev.filter((p) => p.id !== id));
   };
 
   return (
@@ -82,7 +83,6 @@ const PlansManage = () => {
                 <p className="text-sm text-primary font-medium">Tabela de Planos Cadastrados</p>
                 <p className="font-semibold text-lg">Planos ativos</p>
               </div>
-              <Button variant="outline" size="sm">Atualizar lista</Button>
             </div>
             <Table>
               <TableHeader>
@@ -91,7 +91,9 @@ const PlansManage = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {plans.map((plan) => (
+                {plans.length === 0 ? (
+                  <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-6">{loading ? "Carregando…" : "Nenhum plano cadastrado"}</TableCell></TableRow>
+                ) : plans.map((plan) => (
                   <TableRow key={plan.id}>
                     <TableCell className="font-medium">{plan.nome}</TableCell>
                     <TableCell>R$ {plan.valor.toFixed(2).replace(".", ",")}</TableCell>
