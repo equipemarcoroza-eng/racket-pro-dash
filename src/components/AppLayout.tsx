@@ -1,6 +1,7 @@
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { LayoutDashboard, Users, Calendar, CreditCard, TrendingUp, TrendingDown, DollarSign, ClipboardList, LogOut, ClipboardCheck, BarChart3, Cake } from "lucide-react";
 import logo from "@/assets/logo.png";
+import { useAuth } from "@/contexts/AuthContext";
 
 const navItems = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -17,6 +18,14 @@ const navItems = [
 ];
 
 const AppLayout = () => {
+  const navigate = useNavigate();
+  const { signOut } = useAuth();
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate("/", { replace: true });
+  };
+
   return (
     <div className="flex min-h-screen">
       <aside className="w-64 bg-sidebar text-sidebar-foreground flex flex-col shrink-0">
@@ -48,13 +57,13 @@ const AppLayout = () => {
           ))}
         </nav>
         <div className="p-4 border-t border-sidebar-border">
-          <NavLink
-            to="/"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium hover:bg-sidebar-accent/50 text-sidebar-foreground/80 transition-colors"
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium hover:bg-sidebar-accent/50 text-sidebar-foreground/80 transition-colors"
           >
             <LogOut className="h-4 w-4" />
             Sair
-          </NavLink>
+          </button>
         </div>
       </aside>
       <main className="flex-1 overflow-auto p-6 lg:p-8">
