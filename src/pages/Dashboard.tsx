@@ -4,12 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { useAppContext } from "@/contexts/AppContext";
-import { mockSchedule, CLASS_LIMIT } from "@/data/mockData";
+import { CLASS_LIMIT } from "@/data/mockData";
 
 const periodos = ["Mês Atual", "Mês Anterior", "Últimos 3 meses", "Últimos 6 meses", "Últimos 12 meses"];
 
 const Dashboard = () => {
-  const { students, enrollments, revenues } = useAppContext();
+  const { students, enrollments, revenues, schedule: mockSchedule } = useAppContext();
   const [periodo, setPeriodo] = useState("Mês Atual");
 
   const parseDate = (dateStr: string) => {

@@ -6,21 +6,21 @@ import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { mockExpenseCategories, type Expense, type ScheduledPayment } from "@/data/mockData";
+import type { Expense, ScheduledPayment } from "@/data/mockData";
 import { useAppContext } from "@/contexts/AppContext";
 import { toast } from "sonner";
 import { useEffect } from "react";
 
 const Expenses = () => {
-  const { schedule, enrollments, students } = useAppContext();
-  const [categories, setCategories] = useState<Expense[]>(mockExpenseCategories);
-  const [payments, setPayments] = useState<ScheduledPayment[]>([]); // Initialize empty since we'll use context or local state
-  // Sync payments from mock on mount if needed, or just let it be.
-  // Actually, I should probably add payments to AppContext too if I want consistency everywhere.
-  // For now, I'll just keep it local but use mockScheduledPayments as initial.
-  useEffect(() => {
-    import("@/data/mockData").then(m => setPayments(m.mockScheduledPayments));
-  }, []);
+  const {
+    schedule,
+    enrollments,
+    students,
+    scheduledPayments: payments,
+    setScheduledPayments: setPayments,
+    expenseCategories: categories,
+    setExpenseCategories: setCategories,
+  } = useAppContext();
   const [catFilter, setCatFilter] = useState<string | null>(null);
   const [showExpenseForm, setShowExpenseForm] = useState(false);
   const [showCategoryForm, setShowCategoryForm] = useState(false);
@@ -81,7 +81,7 @@ const Expenses = () => {
       toast.success("Pagamento atualizado");
     } else {
       setPayments((prev) => [...prev, { 
-        id: String(Date.now()), 
+        id: crypto.randomUUID(), 
         fornecedor: expenseForm.fornecedor, 
         valor: Number(expenseForm.valor), 
         categoria: expenseForm.categoria || "Outros",
@@ -114,7 +114,7 @@ const Expenses = () => {
 
   const handleAddCategory = () => {
     if (!categoryForm.categoria) { toast.error("Nome da categoria é obrigatório"); return; }
-    setCategories((prev) => [...prev, { id: String(Date.now()), categoria: categoryForm.categoria, valor: Number(categoryForm.valor) || 0 }]);
+    setCategories((prev) => [...prev, { id: crypto.randomUUID(), categoria: categoryForm.categoria, valor: Number(categoryForm.valor) || 0 }]);
     toast.success("Categoria adicionada");
     setShowCategoryForm(false);
     setCategoryForm({ categoria: "", valor: "" });

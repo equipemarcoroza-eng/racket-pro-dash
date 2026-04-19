@@ -6,12 +6,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { mockPlans, mockSchedule, getFrequenciaCount, CLASS_LIMIT, type Enrollment, type ClassSlot } from "@/data/mockData";
+import { getFrequenciaCount, CLASS_LIMIT, type ClassSlot } from "@/data/mockData";
 import { useAppContext } from "@/contexts/AppContext";
 import { toast } from "sonner";
 
 const ClassManagement = () => {
-  const { students, enrollments, setEnrollments } = useAppContext();
+  const { students, enrollments, setEnrollments, schedule, plans } = useAppContext();
   const [showEnrollDialog, setShowEnrollDialog] = useState(false);
   const [selectedAlunoId, setSelectedAlunoId] = useState<string>("");
   const [slotSelections, setSlotSelections] = useState<string[]>([]);
@@ -28,9 +28,9 @@ const ClassManagement = () => {
 
   const getAlunoEnrollments = (alunoId: string) => enrollments.filter((e) => e.alunoId === alunoId);
 
-  const getSlotById = (id: string) => mockSchedule.find((s) => s.id === id);
+  const getSlotById = (id: string) => schedule.find((s) => s.id === id);
 
-  const getPlano = (planoId: string) => mockPlans.find((p) => p.id === planoId);
+  const getPlano = (planoId: string) => plans.find((p) => p.id === planoId);
 
   const openEnroll = (alunoId?: string) => {
     setEditingAlunoId(alunoId || null);
@@ -99,8 +99,8 @@ const ClassManagement = () => {
     // Remove old enrollments for this student
     const filtered = enrollments.filter((e) => e.alunoId !== selectedAlunoId);
     // Add new
-    const newEnrollments = slotSelections.map((turmaId, i) => ({
-      id: `e-${Date.now()}-${i}`,
+    const newEnrollments = slotSelections.map((turmaId) => ({
+      id: crypto.randomUUID(),
       alunoId: selectedAlunoId,
       turmaId,
     }));
@@ -203,7 +203,7 @@ const ClassManagement = () => {
           <p className="text-sm text-primary font-medium">Ocupação</p>
           <p className="font-semibold text-lg mb-4">Turmas e Vagas</p>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {mockSchedule.map((slot) => {
+            {schedule.map((slot) => {
               const count = getSlotCount(slot.id);
               const full = count >= CLASS_LIMIT;
               const enrolled = enrollments.filter((e) => e.turmaId === slot.id);
@@ -269,7 +269,7 @@ const ClassManagement = () => {
                     <Select value={selected} onValueChange={(v) => handleSlotChange(index, v)}>
                       <SelectTrigger><SelectValue placeholder="Selecione dia/horário" /></SelectTrigger>
                       <SelectContent>
-                        {mockSchedule.map((slot) => {
+                        {schedule.map((slot) => {
                           const available = isSlotAvailable(slot.id, index);
                           return (
                             <SelectItem key={slot.id} value={slot.id} disabled={!available && slot.id !== selected}>
