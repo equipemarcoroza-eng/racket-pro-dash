@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { mockPlans, type Student } from "@/data/mockData";
+import type { Student } from "@/data/mockData";
 import { useAppContext } from "@/contexts/AppContext";
 import { toast } from "sonner";
 
@@ -42,10 +42,7 @@ const emptyForm: FormState = {
   status: "Ativo",
 };
 
-const getPlanoNome = (planoId: string) => {
-  const plano = mockPlans.find((p) => p.id === planoId);
-  return plano ? plano.nome : "—";
-};
+// getPlanoNome agora usa o array `plans` do contexto (definido dentro do componente)
 
 const statusVariant: Record<Student["status"], "default" | "secondary" | "destructive"> = {
   Ativo: "default",
@@ -86,7 +83,8 @@ const maskPhone = (value: string) => {
 };
 
 const Students = () => {
-  const { students, setStudents, enrollments, setEnrollments, setRevenues } = useAppContext();
+  const { students, setStudents, enrollments, setEnrollments, setRevenues, plans } = useAppContext();
+  const getPlanoNome = (planoId: string) => plans.find((p) => p.id === planoId)?.nome ?? "—";
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [viewingStudent, setViewingStudent] = useState<Student | null>(null);
@@ -146,7 +144,7 @@ const Students = () => {
     } else {
       setStudents((prev) => [
         ...prev,
-        { ...form, id: String(Date.now()) },
+        { ...form, id: crypto.randomUUID() },
       ]);
 
       // Gerar Taxa de Matrícula automaticamente
@@ -266,7 +264,7 @@ const Students = () => {
               <div><Label>Plano</Label>
                 <Select value={form.planoId} onValueChange={(v) => setForm({ ...form, planoId: v })}>
                   <SelectTrigger><SelectValue placeholder="Selecione um plano" /></SelectTrigger>
-                  <SelectContent>{mockPlans.map((p) => <SelectItem key={p.id} value={p.id}>{p.nome}</SelectItem>)}</SelectContent>
+                  <SelectContent>{plans.map((p) => <SelectItem key={p.id} value={p.id}>{p.nome}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div><Label>Dia de Vencimento</Label>

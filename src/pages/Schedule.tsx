@@ -71,7 +71,7 @@ const Schedule = () => {
     } else {
       const conflict = schedule.find((s) => s.dia === slotForm.dia && s.horario === slotForm.horario && s.quadra === slotForm.quadra);
       if (conflict) { toast.error("Já existe uma turma neste horário/dia/quadra"); return; }
-      setSchedule((prev) => [...prev, { id: String(Date.now()), ...slotForm }]);
+      setSchedule((prev) => [...prev, { id: crypto.randomUUID(), ...slotForm }]);
       toast.success("Turma cadastrada");
     }
     setShowSlotForm(false);
