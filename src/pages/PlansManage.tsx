@@ -68,7 +68,7 @@ const PlansManage = () => {
               <div><Label>Periodicidade</Label>
                 <Select value={form.periodicidade} onValueChange={(v) => setForm({ ...form, periodicidade: v })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent><SelectItem value="Mensal">Mensal</SelectItem><SelectItem value="Trimestral">Trimestral</SelectItem><SelectItem value="Anual">Anual</SelectItem></SelectContent>
+                  <SelectContent><SelectItem value="Mensal">Mensal</SelectItem><SelectItem value="Trimestral">Trimestral</SelectItem><SelectItem value="Semestral">Semestral</SelectItem><SelectItem value="Anual">Anual</SelectItem></SelectContent>
                 </Select>
               </div>
               <Button onClick={handleSave} className="w-full">Salvar Plano</Button>
