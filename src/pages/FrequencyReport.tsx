@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useAppContext } from "@/contexts/AppContext";
-import { mockSchedule, type AttendanceLog } from "@/data/mockData";
+import type { AttendanceLog, ClassSlot } from "@/data/mockData";
 import { toast } from "sonner";
 
 const diasMap: Record<string, number> = { "Dom": 0, "Seg": 1, "Ter": 2, "Qua": 3, "Qui": 4, "Sex": 5, "Sáb": 6 };
@@ -19,7 +19,7 @@ const months = [
 ];
 
 const FrequencyReport = () => {
-  const { students, enrollments, attendanceLogs, setAttendanceLogs } = useAppContext();
+  const { students, enrollments, attendanceLogs, setAttendanceLogs, schedule: mockSchedule } = useAppContext();
   const now = new Date();
   const [selectedMonth, setSelectedMonth] = useState(String(now.getMonth() + 1).padStart(2, "0"));
   const [selectedYear, setSelectedYear] = useState(String(now.getFullYear()));
@@ -33,7 +33,7 @@ const FrequencyReport = () => {
 
   const handleDirectRegister = (data: string, turmaId: string, status: "Presente" | "Falta" | "Cancelado") => {
     const newLog: AttendanceLog = {
-      id: `al-${Date.now()}-${selectedAlunoId}`,
+      id: crypto.randomUUID(),
       alunoId: selectedAlunoId,
       turmaId,
       data,
@@ -48,7 +48,7 @@ const FrequencyReport = () => {
   };
 
   // Calculate all dates in the month for the enrolled day-of-week
-  const getDatesForSlot = (slot: typeof mockSchedule[0]) => {
+  const getDatesForSlot = (slot: ClassSlot) => {
     const dayTarget = diasMap[slot.dia];
     const year = parseInt(selectedYear);
     const month = parseInt(selectedMonth) - 1;

@@ -6,13 +6,13 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { mockPlans, type Revenue as RevenueType } from "@/data/mockData";
+import type { Revenue as RevenueType } from "@/data/mockData";
 import { useAppContext } from "@/contexts/AppContext";
 import { toast } from "sonner";
 import logo from "@/assets/logo.png";
 
 const Revenue = () => {
-  const { students, revenues: receitas, setRevenues: setReceitas } = useAppContext();
+  const { students, revenues: receitas, setRevenues: setReceitas, plans: mockPlans } = useAppContext();
   const [filter, setFilter] = useState<string | null>(null);
   const [viewingReceita, setViewingReceita] = useState<RevenueType | null>(null);
   const [showRecebimento, setShowRecebimento] = useState(false);
