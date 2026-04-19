@@ -264,7 +264,7 @@ const Students = () => {
               <div><Label>Plano</Label>
                 <Select value={form.planoId} onValueChange={(v) => setForm({ ...form, planoId: v })}>
                   <SelectTrigger><SelectValue placeholder="Selecione um plano" /></SelectTrigger>
-                  <SelectContent>{plans.map((p) => <SelectItem key={p.id} value={p.id}>{p.nome}</SelectItem>)}</SelectContent>
+                  <SelectContent>{plans.map((p) => <SelectItem key={p.id} value={p.id}>{p.nome} - R$ {p.valor.toFixed(2).replace(".", ",")}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div><Label>Dia de Vencimento</Label>
