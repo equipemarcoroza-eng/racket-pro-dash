@@ -25,7 +25,7 @@ const Expenses = () => {
   const [showExpenseForm, setShowExpenseForm] = useState(false);
   const [showCategoryForm, setShowCategoryForm] = useState(false);
   const [viewingPayment, setViewingPayment] = useState<ScheduledPayment | null>(null);
-  const [expenseForm, setExpenseForm] = useState({ id: "", fornecedor: "", valor: "", categoria: "", vencimento: "", status: "Em Aberto" as const });
+  const [expenseForm, setExpenseForm] = useState<{ id: string; fornecedor: string; valor: string; categoria: string; vencimento: string; status: "Em Aberto" | "Pago" }>({ id: "", fornecedor: "", valor: "", categoria: "", vencimento: "", status: "Em Aberto" });
   const [categoryForm, setCategoryForm] = useState({ categoria: "", valor: "" });
 
   const totalCategorias = categories.reduce((a, b) => a + b.valor, 0);
