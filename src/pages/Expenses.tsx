@@ -81,7 +81,7 @@ const Expenses = () => {
       toast.success("Pagamento atualizado");
     } else {
       setPayments((prev) => [...prev, { 
-        id: String(Date.now()), 
+        id: crypto.randomUUID(), 
         fornecedor: expenseForm.fornecedor, 
         valor: Number(expenseForm.valor), 
         categoria: expenseForm.categoria || "Outros",
@@ -114,7 +114,7 @@ const Expenses = () => {
 
   const handleAddCategory = () => {
     if (!categoryForm.categoria) { toast.error("Nome da categoria é obrigatório"); return; }
-    setCategories((prev) => [...prev, { id: String(Date.now()), categoria: categoryForm.categoria, valor: Number(categoryForm.valor) || 0 }]);
+    setCategories((prev) => [...prev, { id: crypto.randomUUID(), categoria: categoryForm.categoria, valor: Number(categoryForm.valor) || 0 }]);
     toast.success("Categoria adicionada");
     setShowCategoryForm(false);
     setCategoryForm({ categoria: "", valor: "" });
