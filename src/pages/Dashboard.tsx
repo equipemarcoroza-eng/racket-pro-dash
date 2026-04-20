@@ -36,17 +36,19 @@ const Dashboard = () => {
       startDate = new Date(currentYear, currentMonth - 11, 1);
     }
 
-    // Alunos Ativos (Contamos todos ativos no momento, ou que entraram até o fim do período)
+    // Alunos Ativos (Contamos todos os alunos ativos que já haviam entrado até o fim do período selecionado)
     const alunosAtivos = students.filter(s => {
-      const entryDate = new Date(s.dataEntrada);
+      // dataEntrada is usually YYYY-MM-DD
+      const [y, m, d] = s.dataEntrada.split("-").map(Number);
+      const entryDate = new Date(y, m - 1, d);
       return s.status === "Ativo" && entryDate <= endDate;
     }).length;
 
-    // Faturamento no Período
+    // Faturamento no Período (Apenas o que foi efetivamente recebido/pago)
     const faturamentoPeriodo = revenues
       .filter(r => {
         const vDate = parseDate(r.vencimento);
-        return vDate >= startDate && vDate <= endDate && (r.status === "Pago" || r.status === "Gerada" || r.status === "Em atraso");
+        return vDate >= startDate && vDate <= endDate && (r.status === "Pago");
       })
       .reduce((acc, curr) => acc + curr.valor, 0);
 
