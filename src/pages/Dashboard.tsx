@@ -44,11 +44,11 @@ const Dashboard = () => {
       return s.status === "Ativo" && entryDate <= endDate;
     }).length;
 
-    // Faturamento no Período (Apenas o que foi efetivamente recebido/pago)
+    // Faturamento no Período (Apenas o que foi efetivamente recebido/pago, e também inclui a Taxa de Matrícula)
     const faturamentoPeriodo = revenues
       .filter(r => {
         const vDate = parseDate(r.vencimento);
-        return vDate >= startDate && vDate <= endDate && (r.status === "Pago");
+        return vDate >= startDate && vDate <= endDate && (r.status === "Pago" || r.plano === "Taxa de Matrícula");
       })
       .reduce((acc, curr) => acc + curr.valor, 0);
 
@@ -80,7 +80,7 @@ const Dashboard = () => {
       const ganhos = revenues
         .filter(r => {
           const vDate = parseDate(r.vencimento);
-          return vDate.getMonth() === mIdx && vDate.getFullYear() === yIdx && r.status === "Pago";
+          return vDate.getMonth() === mIdx && vDate.getFullYear() === yIdx && (r.status === "Pago" || r.plano === "Taxa de Matrícula");
         })
         .reduce((acc, curr) => acc + curr.valor, 0);
 
