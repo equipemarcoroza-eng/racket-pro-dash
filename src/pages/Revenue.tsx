@@ -191,6 +191,10 @@ const Revenue = () => {
   const alunosComGerada = new Set(parcelasGeradas.map(r => r.aluno)).size;
   const valorGerado = parcelasGeradas.reduce((a, b) => a + b.valor, 0);
 
+  const totalTaxaMatricula = receitas.filter(r => r.plano === "Taxa de Matrícula").reduce((a, b) => a + b.valor, 0);
+  const totalPlanos = receitas.filter(r => r.plano !== "Taxa de Matrícula").reduce((a, b) => a + b.valor, 0);
+  const totalIsentos = receitas.filter(r => r.status === "Isento").reduce((a, b) => a + b.valor, 0);
+
   return (
     <div className="space-y-6">
       <Card>
@@ -259,6 +263,21 @@ const Revenue = () => {
               <p className="text-sm text-primary font-medium">Resumo</p>
               <p className="text-lg font-bold">Visão Geral</p>
             </div>
+            
+            <div className="border rounded-md p-3">
+              <p className="text-sm text-muted-foreground">Taxa de Matrícula (Total)</p>
+              <p className="text-xl font-bold">R$ {totalTaxaMatricula.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
+            </div>
+            <div className="border rounded-md p-3">
+              <p className="text-sm text-muted-foreground">Mensalidades e Planos</p>
+              <p className="text-xl font-bold">R$ {totalPlanos.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
+            </div>
+            <div className="border rounded-md p-3">
+              <p className="text-sm text-muted-foreground">Total Isenções</p>
+              <p className="text-xl font-bold text-muted-foreground">R$ {totalIsentos.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
+            </div>
+            <div className="border border-b-0 border-x-0 border-t-2 my-2" />
+
             <div className="border flex flex-col gap-1 rounded-md p-3 bg-secondary/30">
               <p className="text-sm text-muted-foreground">Parcelas Geradas ({alunosComGerada} alunos)</p>
               <p className="text-xl font-bold text-orange-600">R$ {valorGerado.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
