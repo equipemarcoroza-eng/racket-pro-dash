@@ -44,13 +44,25 @@ const Dashboard = () => {
       return s.status === "Ativo" && entryDate <= endDate;
     }).length;
 
-    // Faturamento no Período (Apenas o que foi efetivamente recebido/pago, e também inclui a Taxa de Matrícula)
-    const faturamentoPeriodo = revenues
+    // Faturamento no Período (Apenas o que foi efetivamente recebido, inclui Taxa de Matrícula, subtraindo isenções)
+    const receitasValidas = revenues.filter(r => {
+      const vDate = parseDate(r.vencimento);
+      return vDate >= startDate && vDate <= endDate && (r.status === "Pago" || r.plano === "Taxa de Matrícula");
+    });
+    
+    // Ignoramos a Taxa de Matrícula se ela própria estiver Isenta para não somar duas vezes antes de retirar
+    const faturamentoBruto = receitasValidas
+      .filter(r => r.status !== "Isento")
+      .reduce((acc, curr) => acc + curr.valor, 0);
+
+    const isencoes = revenues
       .filter(r => {
         const vDate = parseDate(r.vencimento);
-        return vDate >= startDate && vDate <= endDate && (r.status === "Pago" || r.plano === "Taxa de Matrícula");
+        return vDate >= startDate && vDate <= endDate && r.status === "Isento";
       })
       .reduce((acc, curr) => acc + curr.valor, 0);
+
+    const faturamentoPeriodo = faturamentoBruto - isencoes;
 
     // Ocupação por Turma
     const occupancyData = mockSchedule.map(slot => {
@@ -142,6 +154,7 @@ const Dashboard = () => {
           <CardContent className="pt-6">
             <p className="text-sm text-primary font-medium">Métrica</p>
             <p className="text-xl font-bold mt-1">Faturamento {periodo}</p>
+            <p className="text-xs text-muted-foreground">(não computadas as isenções)</p>
             <div className="mt-4 p-3 bg-secondary rounded-md text-center font-semibold">
               R$ {metrics.faturamentoPeriodo.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
             </div>
