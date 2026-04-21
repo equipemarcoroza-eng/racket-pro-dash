@@ -187,6 +187,10 @@ const Revenue = () => {
   const totalAtrasado = receitas.filter((r) => r.status === "Em atraso").reduce((a, b) => a + b.valor, 0);
   const totalAReceber = receitas.filter((r) => r.status === "Gerada" || r.status === "Em atraso").reduce((a, b) => a + b.valor, 0);
 
+  const parcelasGeradas = receitas.filter(r => r.status === "Gerada");
+  const alunosComGerada = new Set(parcelasGeradas.map(r => r.aluno)).size;
+  const valorGerado = parcelasGeradas.reduce((a, b) => a + b.valor, 0);
+
   return (
     <div className="space-y-6">
       <Card>
@@ -254,6 +258,10 @@ const Revenue = () => {
             <div>
               <p className="text-sm text-primary font-medium">Resumo</p>
               <p className="text-lg font-bold">Visão Geral</p>
+            </div>
+            <div className="border flex flex-col gap-1 rounded-md p-3 bg-secondary/30">
+              <p className="text-sm text-muted-foreground">Parcelas Geradas ({alunosComGerada} alunos)</p>
+              <p className="text-xl font-bold text-orange-600">R$ {valorGerado.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
             </div>
             <div className="border rounded-md p-3">
               <p className="text-sm text-muted-foreground">Total a receber</p>
