@@ -62,7 +62,8 @@ export interface AttendanceLog {
   alunoId: string;
   turmaId: string;
   data: string;
-  presente: "Presente" | "Falta" | "Cancelado";
+  presente: "Presente" | "Falta" | "Cancelado" | "Miniliga" | "Reposição";
+  dataRealizacao?: string;
 }
 
 export const mockAttendanceLogs: AttendanceLog[] = [];

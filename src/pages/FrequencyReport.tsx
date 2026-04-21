@@ -5,6 +5,8 @@ import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { useAppContext } from "@/contexts/AppContext";
 import type { AttendanceLog, ClassSlot } from "@/data/mockData";
 import { toast } from "sonner";
@@ -31,20 +33,32 @@ const FrequencyReport = () => {
   const enrolledSlotIds = enrollments.filter((e) => e.alunoId === selectedAlunoId).map((e) => e.turmaId);
   const enrolledSlots = mockSchedule.filter((s) => enrolledSlotIds.includes(s.id));
 
-  const handleDirectRegister = (data: string, turmaId: string, status: "Presente" | "Falta" | "Cancelado") => {
+  const handleDirectRegister = (data: string, turmaId: string, status: AttendanceLog["presente"], dataRealizacao?: string) => {
     const newLog: AttendanceLog = {
       id: crypto.randomUUID(),
       alunoId: selectedAlunoId,
       turmaId,
       data,
       presente: status,
+      ...(dataRealizacao ? { dataRealizacao } : {})
     };
 
     setAttendanceLogs((prev) => [
       ...prev.filter((l) => !(l.alunoId === selectedAlunoId && l.turmaId === turmaId && l.data === data)),
       newLog,
     ]);
-    toast.success("Presença registrada");
+    toast.success("Status atualizado");
+  };
+
+  const [specialDialog, setSpecialDialog] = useState<{ open: boolean; dateToUpdate: string; turmaId: string; status: "Miniliga" | "Reposição" | null }>({ open: false, dateToUpdate: "", turmaId: "", status: null });
+  const [dataConfirmada, setDataConfirmada] = useState(String(new Date().toISOString().split("T")[0]));
+
+  const confirmSpecialAction = () => {
+    if (!dataConfirmada) { toast.error("Informe a data"); return; }
+    if (specialDialog.status && specialDialog.dateToUpdate) {
+       handleDirectRegister(specialDialog.dateToUpdate, specialDialog.turmaId, specialDialog.status, dataConfirmada);
+    }
+    setSpecialDialog({ open: false, dateToUpdate: "", turmaId: "", status: null });
   };
 
   // Calculate all dates in the month for the enrolled day-of-week
@@ -64,7 +78,7 @@ const FrequencyReport = () => {
   };
 
   // Build report rows
-  const reportRows: { data: string; turmaId: string; turmaLabel: string; horario: string; quadra: string; status: "Presente" | "Ausente" | "Cancelado" | "Não lançado" }[] = [];
+  const reportRows: { data: string; turmaId: string; turmaLabel: string; horario: string; quadra: string; status: AttendanceLog["presente"] | "Não lançado"; dataRealizacao?: string }[] = [];
   if (selectedAlunoId) {
     for (const slot of enrolledSlots) {
       const dates = getDatesForSlot(slot);
@@ -76,7 +90,8 @@ const FrequencyReport = () => {
           turmaLabel: slot.turmaId,
           horario: slot.horario,
           quadra: slot.quadra,
-          status: log ? (log.presente === "Presente" ? "Presente" : log.presente === "Cancelado" ? "Cancelado" : "Ausente") : "Não lançado",
+          status: log ? log.presente : "Não lançado",
+          dataRealizacao: log?.dataRealizacao
         });
       }
     }
@@ -85,8 +100,8 @@ const FrequencyReport = () => {
 
   const filteredRows = reportRows.filter((r) => r.status !== "Cancelado");
   const totalAulas = filteredRows.length;
-  const presencas = reportRows.filter((r) => r.status === "Presente").length;
-  const faltas = reportRows.filter((r) => r.status === "Ausente").length;
+  const presencas = reportRows.filter((r) => r.status === "Presente" || r.status === "Miniliga" || r.status === "Reposição").length;
+  const faltas = reportRows.filter((r) => r.status === "Falta").length;
   const percentual = totalAulas > 0 ? Math.round((presencas / totalAulas) * 100) : 0;
 
   const formatDate = (dateStr: string) => {
@@ -165,39 +180,30 @@ const FrequencyReport = () => {
                         <TableCell>{row.quadra}</TableCell>
                         <TableCell>
                           {row.status === "Não lançado" ? (
-                            <div className="flex gap-1">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="h-7 text-[10px] px-2 bg-green-50 text-green-700 border-green-200 hover:bg-green-100"
-                                onClick={() => handleDirectRegister(row.data, row.turmaId, "Presente")}
-                              >
-                                Pres.
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="h-7 text-[10px] px-2 bg-red-50 text-red-700 border-red-200 hover:bg-red-100"
-                                onClick={() => handleDirectRegister(row.data, row.turmaId, "Falta")}
-                              >
-                                Aus.
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="h-7 text-[10px] px-2 bg-yellow-50 text-yellow-700 border-yellow-200 hover:bg-yellow-100"
-                                onClick={() => handleDirectRegister(row.data, row.turmaId, "Cancelado")}
-                              >
-                                Canc.
-                              </Button>
+                            <div className="flex gap-1 flex-wrap">
+                              <Button size="sm" variant="outline" className="h-7 text-[10px] px-2 bg-green-50 text-green-700 border-green-200 hover:bg-green-100" onClick={() => handleDirectRegister(row.data, row.turmaId, "Presente")}>Pres.</Button>
+                              <Button size="sm" variant="outline" className="h-7 text-[10px] px-2 bg-red-50 text-red-700 border-red-200 hover:bg-red-100" onClick={() => handleDirectRegister(row.data, row.turmaId, "Falta")}>Aus.</Button>
+                              <Button size="sm" variant="outline" className="h-7 text-[10px] px-2 bg-yellow-50 text-yellow-700 border-yellow-200 hover:bg-yellow-100" onClick={() => handleDirectRegister(row.data, row.turmaId, "Cancelado")}>Canc.</Button>
+                              <Button size="sm" variant="outline" className="h-7 text-[10px] px-2 bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100" onClick={() => setSpecialDialog({ open: true, dateToUpdate: row.data, turmaId: row.turmaId, status: "Miniliga" })}>Miniliga</Button>
+                              <Button size="sm" variant="outline" className="h-7 text-[10px] px-2 bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100" onClick={() => setSpecialDialog({ open: true, dateToUpdate: row.data, turmaId: row.turmaId, status: "Reposição" })}>Repos.</Button>
                             </div>
                           ) : (
-                            <Badge 
-                              variant={row.status === "Presente" ? "default" : row.status === "Ausente" ? "destructive" : "outline"}
-                              className={row.status === "Presente" ? "bg-green-600" : row.status === "Cancelado" ? "bg-yellow-500 text-white border-yellow-500" : ""}
-                            >
-                              {row.status}
-                            </Badge>
+                            <div className="flex items-center gap-2">
+                              <Badge 
+                                variant={row.status === "Presente" || row.status === "Miniliga" || row.status === "Reposição" ? "default" : row.status === "Falta" ? "destructive" : "outline"}
+                                className={row.status === "Presente" ? "bg-green-600" : row.status === "Cancelado" ? "bg-yellow-500 text-white border-yellow-500" : row.status === "Miniliga" ? "bg-blue-600" : row.status === "Reposição" ? "bg-purple-600" : ""}
+                              >
+                                {row.status === "Falta" ? "Ausente" : row.status}
+                                {row.dataRealizacao && ` (${formatDate(row.dataRealizacao)})`}
+                              </Badge>
+
+                              {(row.status === "Falta" || row.status === "Cancelado") && (
+                                <div className="flex gap-1 ml-2">
+                                  <Button size="icon" variant="ghost" title="Mudar para Miniliga" className="h-6 w-6 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-full" onClick={() => setSpecialDialog({ open: true, dateToUpdate: row.data, turmaId: row.turmaId, status: "Miniliga" })}><span className="text-[10px] font-bold">M</span></Button>
+                                  <Button size="icon" variant="ghost" title="Mudar para Reposição" className="h-6 w-6 text-purple-600 bg-purple-50 hover:bg-purple-100 rounded-full" onClick={() => setSpecialDialog({ open: true, dateToUpdate: row.data, turmaId: row.turmaId, status: "Reposição" })}><span className="text-[10px] font-bold">R</span></Button>
+                                </div>
+                              )}
+                            </div>
                           )}
                         </TableCell>
                       </TableRow>
@@ -209,6 +215,25 @@ const FrequencyReport = () => {
           </Card>
         </>
       )}
+
+      {/* Dialog Especial */}
+      <Dialog open={specialDialog.open} onOpenChange={(open) => !open && setSpecialDialog({ ...specialDialog, open: false })}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Registrar {specialDialog.status}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Data da {specialDialog.status}</Label>
+              <Input type="date" value={dataConfirmada} onChange={(e) => setDataConfirmada(e.target.value)} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSpecialDialog({ ...specialDialog, open: false })}>Cancelar</Button>
+            <Button onClick={confirmSpecialAction}>Confirmar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
