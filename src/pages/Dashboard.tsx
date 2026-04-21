@@ -44,24 +44,21 @@ const Dashboard = () => {
       return s.status === "Ativo" && entryDate <= endDate;
     }).length;
 
-    // Faturamento no Período (Apenas o que foi efetivamente recebido, inclui Taxa de Matrícula, subtraindo isenções)
+    // Faturamento no Período = (Total de Parcelas e Taxas Geradas) - (Isenções)
     const receitasValidas = revenues.filter(r => {
       const vDate = parseDate(r.vencimento);
-      return vDate >= startDate && vDate <= endDate && (r.status === "Pago" || r.plano === "Taxa de Matrícula");
+      return vDate >= startDate && vDate <= endDate;
     });
     
-    // Ignoramos a Taxa de Matrícula se ela própria estiver Isenta para não somar duas vezes antes de retirar
-    const faturamentoBruto = receitasValidas
-      .filter(r => r.status !== "Isento")
+    // Todas as taxas de matrículas, mensalidades e planos gerados no período
+    const faturamentoBruto = receitasValidas.reduce((acc, curr) => acc + curr.valor, 0);
+
+    // Valores correspondentes a isenções concedidas no mesmo período
+    const isencoes = receitasValidas
+      .filter(r => r.status === "Isento")
       .reduce((acc, curr) => acc + curr.valor, 0);
 
-    const isencoes = revenues
-      .filter(r => {
-        const vDate = parseDate(r.vencimento);
-        return vDate >= startDate && vDate <= endDate && r.status === "Isento";
-      })
-      .reduce((acc, curr) => acc + curr.valor, 0);
-
+    // O total líquido efetivamente faturado na competência matemática exigida
     const faturamentoPeriodo = faturamentoBruto - isencoes;
 
     // Ocupação por Turma
