@@ -10,6 +10,8 @@ import { Badge } from "@/components/ui/badge";
 import type { Student } from "@/data/mockData";
 import { useAppContext } from "@/contexts/AppContext";
 import { toast } from "sonner";
+import { Printer } from "lucide-react";
+import logo from "@/assets/logo.png";
 
 const categorias = ["Infantil", "Juvenil", "Adulto"] as const;
 const statuses = ["Ativo", "Inativo", "Em análise"] as const;
@@ -153,6 +155,91 @@ const Students = () => {
         return { ...l, slotInfo: slot ? `${slot.horario} - ${slot.quadra}` : "Turma removida" };
       })
       .sort((a, b) => new Date(a.data).getTime() - new Date(b.data).getTime());
+  };
+
+  const handlePrintFinancePDF = async () => {
+    if (!reportStudent) return;
+    try {
+      const { jsPDF } = await import("jspdf");
+      const autoTable = (await import("jspdf-autotable")).default;
+      const doc = new jsPDF();
+      
+      doc.addImage(logo, "PNG", 85, 10, 40, 40);
+      doc.setFontSize(18);
+      doc.setTextColor(20, 40, 100);
+      doc.text("Relatório Financeiro Individual", 105, 55, { align: "center" });
+      
+      doc.setFontSize(12);
+      doc.setTextColor(0, 0, 0);
+      doc.text(`Aluno: ${reportStudent.nome}`, 20, 65);
+      doc.text(`Período: ${new Date(dateRange.start).toLocaleDateString('pt-BR')} até ${new Date(dateRange.end).toLocaleDateString('pt-BR')}`, 20, 72);
+      
+      const { list, totals } = getStudentFinance();
+      
+      doc.setFontSize(10);
+      doc.text(`Total Faturado: R$ ${totals.faturado.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`, 20, 82);
+      doc.text(`Total Pago: R$ ${totals.pago.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`, 80, 82);
+      doc.text(`A Receber: R$ ${totals.aReceber.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`, 140, 82);
+      
+      const tableData = list.map(r => [
+        r.vencimento,
+        r.plano,
+        `R$ ${r.valor.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`,
+        r.status
+      ]);
+      
+      autoTable(doc, {
+        startY: 90,
+        head: [["Vencimento", "Plano", "Valor", "Status"]],
+        body: tableData,
+        theme: 'striped',
+        headStyles: { fillColor: [20, 40, 100] }
+      });
+      
+      doc.save(`financeiro-${reportStudent.nome.toLowerCase().replace(/\s+/g, '-')}.pdf`);
+      toast.success("PDF gerado com sucesso");
+    } catch (e) {
+      toast.error("Erro ao gerar PDF");
+    }
+  };
+
+  const handlePrintFrequencyPDF = async () => {
+    if (!reportStudent) return;
+    try {
+      const { jsPDF } = await import("jspdf");
+      const autoTable = (await import("jspdf-autotable")).default;
+      const doc = new jsPDF();
+      
+      doc.addImage(logo, "PNG", 85, 10, 40, 40);
+      doc.setFontSize(18);
+      doc.setTextColor(20, 40, 100);
+      doc.text("Relatório de Frequência Individual", 105, 55, { align: "center" });
+      
+      doc.setFontSize(12);
+      doc.setTextColor(0, 0, 0);
+      doc.text(`Aluno: ${reportStudent.nome}`, 20, 65);
+      doc.text(`Período: ${new Date(dateRange.start).toLocaleDateString('pt-BR')} até ${new Date(dateRange.end).toLocaleDateString('pt-BR')}`, 20, 72);
+      
+      const list = getStudentFrequency();
+      const tableData = list.map(l => [
+        new Date(l.data).toLocaleDateString('pt-BR', {timeZone: 'UTC'}),
+        l.slotInfo,
+        l.presente + (l.dataRealizacao ? ` (${new Date(l.dataRealizacao).toLocaleDateString('pt-BR', {timeZone: 'UTC'})})` : "")
+      ]);
+      
+      autoTable(doc, {
+        startY: 80,
+        head: [["Data", "Turma / Horário", "Status"]],
+        body: tableData,
+        theme: 'striped',
+        headStyles: { fillColor: [20, 40, 100] }
+      });
+      
+      doc.save(`frequencia-${reportStudent.nome.toLowerCase().replace(/\s+/g, '-')}.pdf`);
+      toast.success("PDF gerado com sucesso");
+    } catch (e) {
+      toast.error("Erro ao gerar PDF");
+    }
   };
 
   const openNew = () => {
@@ -405,10 +492,13 @@ const Students = () => {
       </Card>
       <Dialog open={!!reportType} onOpenChange={(open) => !open && setReportType(null)}>
         <DialogContent className="max-w-4xl">
-          <DialogHeader>
+          <DialogHeader className="flex flex-row items-center justify-between space-y-0">
             <DialogTitle>
               {reportType === "finance" ? "Histórico Financeiro" : "Histórico de Frequência"} - {reportStudent?.nome}
             </DialogTitle>
+            <Button variant="outline" size="sm" onClick={reportType === "finance" ? handlePrintFinancePDF : handlePrintFrequencyPDF} className="gap-2 border-primary/20 hover:bg-primary/5">
+              <Printer className="h-4 w-4" /> Imprimir PDF
+            </Button>
           </DialogHeader>
           
           <div className="space-y-4">
