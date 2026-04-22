@@ -187,6 +187,20 @@ const Revenue = () => {
   const totalAtrasado = receitas.filter((r) => r.status === "Em atraso").reduce((a, b) => a + b.valor, 0);
   const totalAReceber = receitas.filter((r) => r.status === "Gerada" || r.status === "Em atraso").reduce((a, b) => a + b.valor, 0);
 
+  const aReceberPorData = receitas
+    .filter((r) => r.status === "Gerada" || r.status === "Em atraso")
+    .reduce((acc, curr) => {
+      const data = curr.vencimento;
+      acc[data] = (acc[data] || 0) + curr.valor;
+      return acc;
+    }, {} as Record<string, number>);
+
+  const datasOrdenadas = Object.keys(aReceberPorData).sort((a, b) => {
+    const [da, ma, ya] = a.split("/").map(Number);
+    const [db, mb, yb] = b.split("/").map(Number);
+    return new Date(ya, ma - 1, da).getTime() - new Date(yb, mb - 1, db).getTime();
+  });
+
   const parcelasGeradas = receitas.filter(r => r.status === "Gerada");
   const alunosComGerada = new Set(parcelasGeradas.map(r => r.aluno)).size;
   const valorGerado = parcelasGeradas.reduce((a, b) => a + b.valor, 0);
@@ -285,6 +299,18 @@ const Revenue = () => {
             <div className="border rounded-md p-3">
               <p className="text-sm text-muted-foreground">Total a receber</p>
               <p className="text-xl font-bold text-blue-600">R$ {totalAReceber.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
+              
+              {datasOrdenadas.length > 0 && (
+                <div className="mt-3 pt-3 border-t border-dashed space-y-1">
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Por Vencimento:</p>
+                  {datasOrdenadas.map(data => (
+                    <div key={data} className="flex justify-between text-xs">
+                      <span className="text-muted-foreground">{data}:</span>
+                      <span className="font-semibold text-blue-600">R$ {aReceberPorData[data].toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
             <div className="border rounded-md p-3">
               <p className="text-sm text-muted-foreground">Total recebido</p>
