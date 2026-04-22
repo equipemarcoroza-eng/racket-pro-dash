@@ -226,103 +226,106 @@ const Revenue = () => {
         </CardHeader>
       </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        <div className="lg:col-span-3">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <p className="text-sm text-primary font-medium">Lista de Receitas</p>
-                  <p className="text-xl font-bold">Mensalidades e planos</p>
-                </div>
-                <div className="flex gap-2 text-sm">
-                  {["Mensalidade", "Trimestral", "Semestral", "Anual"].map((f) => (
-                    <button key={f} className={`font-medium ${filter === f ? "text-foreground" : "text-muted-foreground"}`} onClick={() => setFilter(filter === f ? null : f)}>{f}</button>
-                  ))}
-                </div>
-              </div>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Aluno</TableHead><TableHead>Plano</TableHead><TableHead>Vencimento</TableHead><TableHead>Valor</TableHead><TableHead>Status</TableHead><TableHead>Ações</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filtered.map((r) => (
-                    <TableRow key={r.id}>
-                      <TableCell className="font-medium">{r.aluno}</TableCell>
-                      <TableCell>{r.plano}</TableCell>
-                      <TableCell>{r.vencimento}</TableCell>
-                      <TableCell>R$ {r.valor.toFixed(2).replace(".", ",")}</TableCell>
-                      <TableCell>{r.status}</TableCell>
-                      <TableCell>
-                        <div className="flex gap-1">
-                          <Button variant="outline" size="sm" onClick={() => setViewingReceita(r)}>Detalhar</Button>
-                          <Button variant="outline" size="sm" onClick={() => handleBaixar(r)} disabled={r.status === "Pago" || r.status === "Isento"}>Baixar</Button>
-                          <Button variant="outline" size="sm" onClick={() => handleIsentar(r)} disabled={r.status === "Pago" || r.status === "Isento"}>Isentar</Button>
-                          <Button variant="outline" size="sm" onClick={() => handleRecibo(r)}>Recibo</Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </div>
-
-        <Card>
-          <CardContent className="pt-6 space-y-4">
-            <div>
-              <p className="text-sm text-primary font-medium">Resumo</p>
-              <p className="text-lg font-bold">Visão Geral</p>
-            </div>
-            
-            <div className="border rounded-md p-3">
+      {/* 2. Resumo (Visão Geral) */}
+      <Card>
+        <CardContent className="pt-6">
+          <div className="mb-4">
+            <p className="text-sm text-primary font-medium">Resumo</p>
+            <p className="text-xl font-bold">Visão Geral</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div className="border rounded-md p-3 bg-card shadow-sm">
               <p className="text-sm text-muted-foreground">Taxa de Matrícula (Total)</p>
-              <p className="text-xl font-bold">R$ {totalTaxaMatricula.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
+              <p className="text-xl font-bold text-primary">R$ {totalTaxaMatricula.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
             </div>
-            <div className="border rounded-md p-3">
+            <div className="border rounded-md p-3 bg-card shadow-sm">
               <p className="text-sm text-muted-foreground">Mensalidades e Planos</p>
-              <p className="text-xl font-bold">R$ {totalPlanos.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
+              <p className="text-xl font-bold text-primary">R$ {totalPlanos.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
             </div>
-            <div className="border rounded-md p-3">
-              <p className="text-sm text-muted-foreground">Total Isenções</p>
-              <p className="text-xl font-bold text-muted-foreground">R$ {totalIsentos.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
-            </div>
-            <div className="border border-b-0 border-x-0 border-t-2 my-2" />
-
-            <div className="border flex flex-col gap-1 rounded-md p-3 bg-secondary/30">
-              <p className="text-sm text-muted-foreground">Parcelas Geradas ({alunosComGerada} alunos)</p>
-              <p className="text-xl font-bold text-orange-600">R$ {valorGerado.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
-            </div>
-            <div className="border rounded-md p-3">
+            <div className="border rounded-md p-3 bg-card shadow-sm">
               <p className="text-sm text-muted-foreground">Total a receber</p>
               <p className="text-xl font-bold text-blue-600">R$ {totalAReceber.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
-              
-              {datasOrdenadas.length > 0 && (
-                <div className="mt-3 pt-3 border-t border-dashed space-y-1">
-                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Por Vencimento:</p>
-                  {datasOrdenadas.map(data => (
-                    <div key={data} className="flex justify-between text-xs">
-                      <span className="text-muted-foreground">{data}:</span>
-                      <span className="font-semibold text-blue-600">R$ {aReceberPorData[data].toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
-            <div className="border rounded-md p-3">
+            <div className="border rounded-md p-3 bg-card shadow-sm">
               <p className="text-sm text-muted-foreground">Total recebido</p>
-              <p className="text-xl font-bold">R$ {totalPago.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
+              <p className="text-xl font-bold text-green-600">R$ {totalPago.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
             </div>
-            <div className="border rounded-md p-3">
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="border rounded-md p-3 bg-muted/20">
               <p className="text-sm text-muted-foreground">Em atraso</p>
               <p className="text-xl font-bold text-destructive">R$ {totalAtrasado.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+            <div className="border rounded-md p-3 bg-muted/20">
+              <p className="text-sm text-muted-foreground">Total Isenções</p>
+              <p className="text-xl font-bold text-muted-foreground">R$ {totalIsentos.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
+            </div>
+            <div className="border rounded-md p-3 bg-orange-50/50">
+              <p className="text-sm text-muted-foreground">Parcelas Geradas ({alunosComGerada} alunos)</p>
+              <p className="text-xl font-bold text-orange-600">R$ {valorGerado.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
+            </div>
+          </div>
+
+          {datasOrdenadas.length > 0 && (
+            <div className="mt-6 pt-6 border-t border-dashed">
+              <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">Subtotais do Total a Receber por Vencimento:</p>
+              <div className="flex flex-wrap gap-4">
+                {datasOrdenadas.map(data => (
+                  <div key={data} className="flex items-center gap-2 border rounded-full px-3 py-1 bg-blue-50/30 border-blue-100">
+                    <span className="text-[10px] text-muted-foreground font-medium">{data}:</span>
+                    <span className="text-xs font-bold text-blue-600">R$ {aReceberPorData[data].toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* 3. Lista de Receitas */}
+      <Card>
+        <CardContent className="pt-6">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <p className="text-sm text-primary font-medium">Lista de Receitas</p>
+              <p className="text-xl font-bold">Mensalidades e planos</p>
+            </div>
+            <div className="flex gap-2 text-sm">
+              {["Mensalidade", "Trimestral", "Semestral", "Anual"].map((f) => (
+                <button key={f} className={`font-medium ${filter === f ? "text-foreground" : "text-muted-foreground"}`} onClick={() => setFilter(filter === f ? null : f)}>{f}</button>
+              ))}
+            </div>
+          </div>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Aluno</TableHead><TableHead>Plano</TableHead><TableHead>Vencimento</TableHead><TableHead>Valor</TableHead><TableHead>Status</TableHead><TableHead>Ações</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filtered.map((r) => (
+                <TableRow key={r.id}>
+                  <TableCell className="font-medium">{r.aluno}</TableCell>
+                  <TableCell>{r.plano}</TableCell>
+                  <TableCell>{r.vencimento}</TableCell>
+                  <TableCell>R$ {r.valor.toFixed(2).replace(".", ",")}</TableCell>
+                  <TableCell>{r.status}</TableCell>
+                  <TableCell>
+                    <div className="flex gap-1">
+                      <Button variant="outline" size="sm" onClick={() => setViewingReceita(r)}>Detalhar</Button>
+                      <Button variant="outline" size="sm" onClick={() => handleBaixar(r)} disabled={r.status === "Pago" || r.status === "Isento"}>Baixar</Button>
+                      <Button variant="outline" size="sm" onClick={() => handleIsentar(r)} disabled={r.status === "Pago" || r.status === "Isento"}>Isentar</Button>
+                      <Button variant="outline" size="sm" onClick={() => handleRecibo(r)}>Recibo</Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
 
       {/* Dialog Detalhar */}
       <Dialog open={!!viewingReceita} onOpenChange={(open) => !open && setViewingReceita(null)}>
