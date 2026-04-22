@@ -488,8 +488,12 @@ const Students = () => {
                           <TableCell className="font-medium">{new Date(l.data).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}</TableCell>
                           <TableCell>{l.slotInfo}</TableCell>
                           <TableCell>
-                            <Badge variant={l.presente === "Presente" ? "default" : l.presente === "Falta" ? "destructive" : "secondary"}>
-                              {l.presente}
+                            <Badge 
+                              variant={l.presente === "Presente" || l.presente === "Miniliga" || l.presente === "Reposição" ? "default" : l.presente === "Falta" ? "destructive" : "secondary"}
+                              className={l.presente === "Presente" ? "bg-green-600" : l.presente === "Miniliga" ? "bg-blue-600" : l.presente === "Reposição" ? "bg-purple-600" : ""}
+                            >
+                              {l.presente === "Falta" ? "Ausente" : l.presente}
+                              {l.dataRealizacao && ` (${new Date(l.dataRealizacao).toLocaleDateString('pt-BR', {timeZone: 'UTC'})})`}
                             </Badge>
                           </TableCell>
                         </TableRow>
