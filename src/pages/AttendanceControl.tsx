@@ -20,11 +20,15 @@ const AttendanceControl = () => {
   const dayOfWeek = new Date(selectedDate + "T12:00:00").getDay();
   const diaLabel = diasReverse[dayOfWeek];
 
-  const turmasDoDia = mockSchedule.filter((s) => s.dia === diaLabel);
+  const turmasDoDia = mockSchedule
+    .filter((s) => s.dia === diaLabel)
+    .sort((a, b) => a.horario.localeCompare(b.horario));
 
   const getEnrolledStudents = (slotId: string) => {
     const enrolledIds = mockEnrollments.filter((e) => e.turmaId === slotId).map((e) => e.alunoId);
-    return mockStudents.filter((s) => enrolledIds.includes(s.id) && s.status === "Ativo");
+    return mockStudents
+      .filter((s) => enrolledIds.includes(s.id) && s.status === "Ativo")
+      .sort((a, b) => a.nome.localeCompare(b.nome));
   };
 
   const isLancado = (slotId: string) => {
