@@ -197,8 +197,12 @@ const Revenue = () => {
   const curMonth = String(now.getMonth() + 1).padStart(2, "0");
   const curYear = String(now.getFullYear());
   const monthTag = `/${curMonth}/${curYear}`;
+  const standardDueDays = ["05", "10", "15", "20", "25", "28", "30", "31"]; // Incluindo 28 para fev e 31 para meses longos por segurança
 
-  const receitasMes = receitas.filter(r => r.vencimento.includes(monthTag));
+  const receitasMes = receitas.filter(r => {
+    const [dia, mes, ano] = r.vencimento.split("/");
+    return mes === curMonth && ano === curYear && ["05", "10", "15", "20", "25", "30"].includes(dia);
+  });
   
   const totalFaturadoMes = receitasMes
     .filter(r => r.status !== "Isento")
