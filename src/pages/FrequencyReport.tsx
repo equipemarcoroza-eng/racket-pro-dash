@@ -27,7 +27,7 @@ const FrequencyReport = () => {
   const [selectedYear, setSelectedYear] = useState(String(now.getFullYear()));
   const [selectedAlunoId, setSelectedAlunoId] = useState("");
 
-  const activeStudents = students.filter((s) => s.status === "Ativo");
+  const activeStudents = students.filter((s) => s.status === "Ativo").sort((a, b) => a.nome.localeCompare(b.nome));
 
   // Get enrolled slots for student
   const enrolledSlotIds = enrollments.filter((e) => e.alunoId === selectedAlunoId).map((e) => e.turmaId);
