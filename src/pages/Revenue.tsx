@@ -20,7 +20,7 @@ const Revenue = () => {
   const [recebimentoForm, setRecebimentoForm] = useState({ aluno: "", valor: "", plano: "Mensalidade" });
   const [avulsoForm, setAvulsoForm] = useState({ aluno: "", valor: "", plano: "Selecione um aluno", vencimento: new Date().toISOString().split("T")[0] });
 
-  const filtered = filter ? receitas.filter((r) => r.plano === filter) : receitas;
+  const filtered = (filter ? receitas.filter((r) => r.plano === filter) : [...receitas]).sort((a, b) => a.aluno.localeCompare(b.aluno));
 
   const parseDate = (dateStr: string) => {
     const [d, m, y] = dateStr.split("/").map(Number);
