@@ -12,9 +12,9 @@ import { useAppContext } from "@/contexts/AppContext";
 import { toast } from "sonner";
 import logo from "@/assets/logo.png";
 
-import { 
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartTooltip, ResponsiveContainer, 
-  PieChart, Pie, Cell, Legend 
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartTooltip, ResponsiveContainer,
+  PieChart, Pie, Cell, Legend
 } from "recharts";
 
 const Revenue = () => {
@@ -41,7 +41,7 @@ const Revenue = () => {
     const targetMonth = now.getMonth() + 1;
     const targetYear = now.getFullYear();
     const targetTotalMonths = targetYear * 12 + targetMonth;
-    
+
     const alunosAtivos = students.filter((s) => s.status === "Ativo");
     let count = 0;
     const novas: RevenueType[] = [];
@@ -53,9 +53,9 @@ const Revenue = () => {
       // 1. Verificação de duplicidade para o mês atual (específica por plano)
       const mesFormatado = String(targetMonth).padStart(2, "0");
       const jaExisteEsteMes = receitas.some(
-        (r) => r.aluno === aluno.nome && 
-               r.plano === plano.nome && 
-               r.vencimento.includes(`/${mesFormatado}/${targetYear}`)
+        (r) => r.aluno === aluno.nome &&
+          r.plano === plano.nome &&
+          r.vencimento.includes(`/${mesFormatado}/${targetYear}`)
       );
       if (jaExisteEsteMes) continue;
 
@@ -90,14 +90,14 @@ const Revenue = () => {
           dia = "28";
         }
         const vencimento = `${dia.padStart(2, "0")}/${mesFormatado}/${targetYear}`;
-        
-        novas.push({ 
-          id: crypto.randomUUID(), 
-          aluno: aluno.nome, 
-          plano: plano.nome, 
-          vencimento, 
-          valor: plano.valor, 
-          status: "Gerada" 
+
+        novas.push({
+          id: crypto.randomUUID(),
+          aluno: aluno.nome,
+          plano: plano.nome,
+          vencimento,
+          valor: plano.valor,
+          status: "Gerada"
         });
         count++;
       }
@@ -125,7 +125,7 @@ const Revenue = () => {
     try {
       const { jsPDF } = await import("jspdf");
       const doc = new jsPDF();
-      
+
       // Logo
       try {
         doc.addImage(logo, "PNG", 85, 10, 40, 40);
@@ -136,14 +136,14 @@ const Revenue = () => {
       doc.setFontSize(22);
       doc.setTextColor(20, 40, 100);
       doc.text("Recibo de Pagamento", 105, 60, { align: "center" });
-      
+
       doc.setFontSize(16);
       doc.setTextColor(0, 0, 0);
       doc.text("Equipe Marco Roza", 105, 70, { align: "center" });
-      
+
       doc.setDrawColor(200, 200, 200);
       doc.line(20, 80, 190, 80);
-      
+
       doc.setFontSize(12);
       let y = 95;
       doc.text(`Aluno: ${r.aluno}`, 25, y); y += 10;
@@ -151,16 +151,16 @@ const Revenue = () => {
       doc.text(`Data de Vencimento: ${r.vencimento}`, 25, y); y += 10;
       doc.text(`Valor: R$ ${r.valor.toFixed(2).replace(".", ",")}`, 25, y); y += 10;
       doc.text(`Status: ${r.status}`, 25, y); y += 15;
-      
+
       doc.setFontSize(11);
       doc.setTextColor(100, 100, 100);
       doc.text(`Este documento é um comprovante oficial de transação financeira.`, 105, y, { align: "center" }); y += 10;
       doc.text(`Emitido em: ${new Date().toLocaleDateString('pt-BR')} ${new Date().toLocaleTimeString('pt-BR')}`, 105, y, { align: "center" });
-      
+
       doc.setDrawColor(0, 0, 0);
       doc.line(65, 160, 145, 160);
       doc.text("Assinatura do Responsável", 105, 165, { align: "center" });
-      
+
       doc.save(`recibo-${r.aluno.replace(/\s/g, "_")}-${Date.now()}.pdf`);
       toast.success("Recibo gerado com sucesso");
     } catch (err) {
@@ -181,11 +181,11 @@ const Revenue = () => {
 
   const handleAvulso = () => {
     if (!avulsoForm.aluno || !avulsoForm.valor || !avulsoForm.vencimento) { toast.error("Preencha todos os campos"); return; }
-    
+
     // Converter YYYY-MM-DD para DD/MM/YYYY
     const [y, m, d] = avulsoForm.vencimento.split("-");
     const venc = `${d}/${m}/${y}`;
-    
+
     setReceitas((prev) => [...prev, { id: crypto.randomUUID(), aluno: avulsoForm.aluno, plano: avulsoForm.plano, vencimento: venc, valor: Number(avulsoForm.valor), status: "Gerada" }]);
     toast.success("Recebível avulso gerado");
     setShowAvulso(false);
@@ -203,15 +203,15 @@ const Revenue = () => {
     const [dia, mes, ano] = r.vencimento.split("/");
     return mes === curMonth && ano === curYear && ["05", "10", "15", "20", "25", "30"].includes(dia);
   });
-  
+
   const totalFaturadoMes = receitasMes
     .filter(r => r.status !== "Isento")
     .reduce((acc, r) => acc + r.valor, 0);
-    
+
   const totalPagoMes = receitasMes
     .filter(r => r.status === "Pago")
     .reduce((acc, r) => acc + r.valor, 0);
-    
+
   const totalAReceberMes = receitasMes
     .filter(r => r.status === "Gerada" || r.status === "Em atraso")
     .reduce((acc, r) => acc + r.valor, 0);
@@ -222,22 +222,22 @@ const Revenue = () => {
     { name: "A Receber", valor: totalAReceberMes, color: "#f59e0b" }
   ];
 
-  const totalPago = receitas.filter((r) => r.status === "Pago").reduce((a, b) => a + b.valor, 0);
-  const totalAtrasado = receitas.filter((r) => r.status === "Em atraso").reduce((a, b) => a + b.valor, 0);
-  const totalAReceber = receitas.filter((r) => r.status === "Gerada" || r.status === "Em atraso").reduce((a, b) => a + b.valor, 0);
+  // Processamento de subtotais detalhados por dia do mês corrente
+  const subtotaisPorDia = receitasMes.reduce((acc, curr) => {
+    const data = curr.vencimento;
+    if (!acc[data]) acc[data] = { faturado: 0, pago: 0, aReceber: 0 };
+    
+    if (curr.status !== "Isento") acc[data].faturado += curr.valor;
+    if (curr.status === "Pago") acc[data].pago += curr.valor;
+    if (curr.status === "Gerada" || curr.status === "Em atraso") acc[data].aReceber += curr.valor;
+    
+    return acc;
+  }, {} as Record<string, { faturado: number, pago: number, aReceber: number }>);
 
-  const aReceberPorData = receitas
-    .filter((r) => r.status === "Gerada" || r.status === "Em atraso")
-    .reduce((acc, curr) => {
-      const data = curr.vencimento;
-      acc[data] = (acc[data] || 0) + curr.valor;
-      return acc;
-    }, {} as Record<string, number>);
-
-  const datasOrdenadas = Object.keys(aReceberPorData).sort((a, b) => {
-    const [da, ma, ya] = a.split("/").map(Number);
-    const [db, mb, yb] = b.split("/").map(Number);
-    return new Date(ya, ma - 1, da).getTime() - new Date(yb, mb - 1, db).getTime();
+  const datasMesOrdenadas = Object.keys(subtotaisPorDia).sort((a, b) => {
+    const [da] = a.split("/").map(Number);
+    const [db] = b.split("/").map(Number);
+    return da - db;
   });
 
   const parcelasGeradas = receitas.filter(r => r.status === "Gerada");
@@ -272,7 +272,7 @@ const Revenue = () => {
             <p className="text-sm text-primary font-medium">Resumo</p>
             <p className="text-xl font-bold">Visão Geral do Mês Corrente</p>
           </div>
-          
+
           {/* Subtotais em Destaque */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div className="bg-primary/5 border-l-4 border-primary p-5 rounded-lg shadow-sm">
@@ -304,7 +304,7 @@ const Revenue = () => {
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
                   <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#888' }} />
                   <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#888' }} tickFormatter={(value) => `R$ ${value}`} />
-                  <RechartTooltip 
+                  <RechartTooltip
                     cursor={{ fill: 'rgba(0,0,0,0.02)' }}
                     formatter={(value: number) => [`R$ ${value.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`, "Valor"]}
                     contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
@@ -339,7 +339,7 @@ const Revenue = () => {
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
-                  <RechartTooltip 
+                  <RechartTooltip
                     formatter={(value: number) => [`R$ ${value.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`, "Valor"]}
                     contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
                   />
@@ -350,21 +350,37 @@ const Revenue = () => {
           </div>
 
           {/* Subtotais por Vencimento (Fim da seção) */}
-          {datasOrdenadas.length > 0 && (
+          {datasMesOrdenadas.length > 0 && (
             <div className="mt-8 pt-8 border-t border-dashed">
               <div className="flex items-center justify-between mb-4">
-                <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Subtotais do Total a Receber por Vencimento</p>
-                <Badge variant="outline" className="text-[10px] font-medium text-blue-600 bg-blue-50 border-blue-100">Visão Geral de Pendências</Badge>
+                <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Subtotais por Vencimento (Mês Corrente)</p>
+                <Badge variant="outline" className="text-[10px] font-medium text-blue-600 bg-blue-50 border-blue-100">Visão Detalhada Diária</Badge>
               </div>
-              <div className="flex flex-wrap gap-3">
-                {datasOrdenadas.map(data => (
-                  <div key={data} className="flex items-center gap-3 border rounded-xl px-4 py-2 bg-blue-50/20 border-blue-100/50 hover:bg-blue-50/40 transition-colors">
-                    <div className="flex flex-col">
-                      <span className="text-[10px] text-muted-foreground font-bold">{data}</span>
-                      <span className="text-sm font-black text-blue-600">R$ {aReceberPorData[data].toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</span>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
+                {datasMesOrdenadas.map(data => {
+                  const sub = subtotaisPorDia[data];
+                  return (
+                    <div key={data} className="flex flex-col gap-2 border rounded-xl px-4 py-3 bg-card shadow-sm hover:border-primary/30 transition-all group">
+                      <div className="flex justify-between items-center border-b pb-1 mb-1">
+                        <span className="text-[11px] font-black text-primary">{data}</span>
+                      </div>
+                      <div className="space-y-1">
+                        <div className="flex justify-between items-center text-[10px]">
+                          <span className="text-muted-foreground">Faturado:</span>
+                          <span className="font-bold text-foreground">R$ {sub.faturado.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</span>
+                        </div>
+                        <div className="flex justify-between items-center text-[10px]">
+                          <span className="text-muted-foreground">Pago:</span>
+                          <span className="font-bold text-green-600">R$ {sub.pago.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</span>
+                        </div>
+                        <div className="flex justify-between items-center text-[10px]">
+                          <span className="text-muted-foreground font-semibold">A Receber:</span>
+                          <span className="font-bold text-blue-600">R$ {sub.aReceber.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</span>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
