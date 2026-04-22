@@ -11,6 +11,11 @@ import { useAppContext } from "@/contexts/AppContext";
 import { toast } from "sonner";
 import logo from "@/assets/logo.png";
 
+import { 
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartTooltip, ResponsiveContainer, 
+  PieChart, Pie, Cell, Legend 
+} from "recharts";
+
 const Revenue = () => {
   const { students, revenues: receitas, setRevenues: setReceitas, plans: mockPlans } = useAppContext();
   const [filter, setFilter] = useState<string | null>(null);
@@ -186,6 +191,32 @@ const Revenue = () => {
     setAvulsoForm({ aluno: "", valor: "", plano: "Selecione um aluno", vencimento: new Date().toISOString().split("T")[0] });
   };
 
+  // Métricas do Mês Corrente
+  const now = new Date();
+  const curMonth = String(now.getMonth() + 1).padStart(2, "0");
+  const curYear = String(now.getFullYear());
+  const monthTag = `/${curMonth}/${curYear}`;
+
+  const receitasMes = receitas.filter(r => r.vencimento.includes(monthTag));
+  
+  const totalFaturadoMes = receitasMes
+    .filter(r => r.status !== "Isento")
+    .reduce((acc, r) => acc + r.valor, 0);
+    
+  const totalPagoMes = receitasMes
+    .filter(r => r.status === "Pago")
+    .reduce((acc, r) => acc + r.valor, 0);
+    
+  const totalAReceberMes = receitasMes
+    .filter(r => r.status === "Gerada" || r.status === "Em atraso")
+    .reduce((acc, r) => acc + r.valor, 0);
+
+  const chartData = [
+    { name: "Faturado", valor: totalFaturadoMes, color: "#3b82f6" },
+    { name: "Pago", valor: totalPagoMes, color: "#22c55e" },
+    { name: "A Receber", valor: totalAReceberMes, color: "#f59e0b" }
+  ];
+
   const totalPago = receitas.filter((r) => r.status === "Pago").reduce((a, b) => a + b.valor, 0);
   const totalAtrasado = receitas.filter((r) => r.status === "Em atraso").reduce((a, b) => a + b.valor, 0);
   const totalAReceber = receitas.filter((r) => r.status === "Gerada" || r.status === "Em atraso").reduce((a, b) => a + b.valor, 0);
@@ -232,53 +263,101 @@ const Revenue = () => {
       {/* 2. Resumo (Visão Geral) */}
       <Card>
         <CardContent className="pt-6">
-          <div className="mb-4">
+          <div className="mb-6">
             <p className="text-sm text-primary font-medium">Resumo</p>
-            <p className="text-xl font-bold">Visão Geral</p>
+            <p className="text-xl font-bold">Visão Geral do Mês Corrente</p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <div className="border rounded-md p-3 bg-card shadow-sm">
-              <p className="text-sm text-muted-foreground">Taxa de Matrícula (Total)</p>
-              <p className="text-xl font-bold text-primary">R$ {totalTaxaMatricula.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
+          {/* Subtotais em Destaque */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div className="bg-primary/5 border-l-4 border-primary p-5 rounded-lg shadow-sm">
+              <p className="text-xs text-primary font-bold uppercase tracking-wider mb-1">Total Faturado</p>
+              <p className="text-3xl font-black">R$ {totalFaturadoMes.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
+              <p className="text-[10px] text-muted-foreground mt-2 font-medium">Total gerado (exceto isenções) no mês.</p>
             </div>
-            <div className="border rounded-md p-3 bg-card shadow-sm">
-              <p className="text-sm text-muted-foreground">Mensalidades e Planos</p>
-              <p className="text-xl font-bold text-primary">R$ {totalPlanos.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
+            <div className="bg-green-50 border-l-4 border-green-500 p-5 rounded-lg shadow-sm">
+              <p className="text-xs text-green-700 font-bold uppercase tracking-wider mb-1">Total Pago</p>
+              <p className="text-3xl font-black text-green-600">R$ {totalPagoMes.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
+              <p className="text-[10px] text-muted-foreground mt-2 font-medium">Total baixado e confirmado no mês.</p>
             </div>
-            <div className="border rounded-md p-3 bg-card shadow-sm">
-              <p className="text-sm text-muted-foreground">Total a receber</p>
-              <p className="text-xl font-bold text-blue-600">R$ {totalAReceber.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
-            </div>
-            <div className="border rounded-md p-3 bg-card shadow-sm">
-              <p className="text-sm text-muted-foreground">Total recebido</p>
-              <p className="text-xl font-bold text-green-600">R$ {totalPago.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="border rounded-md p-3 bg-muted/20">
-              <p className="text-sm text-muted-foreground">Em atraso</p>
-              <p className="text-xl font-bold text-destructive">R$ {totalAtrasado.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
-            </div>
-            <div className="border rounded-md p-3 bg-muted/20">
-              <p className="text-sm text-muted-foreground">Total Isenções</p>
-              <p className="text-xl font-bold text-muted-foreground">R$ {totalIsentos.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
-            </div>
-            <div className="border rounded-md p-3 bg-orange-50/50">
-              <p className="text-sm text-muted-foreground">Parcelas Geradas ({alunosComGerada} alunos)</p>
-              <p className="text-xl font-bold text-orange-600">R$ {valorGerado.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
+            <div className="bg-orange-50 border-l-4 border-orange-500 p-5 rounded-lg shadow-sm">
+              <p className="text-xs text-orange-700 font-bold uppercase tracking-wider mb-1">Total a Receber</p>
+              <p className="text-3xl font-black text-orange-600">R$ {totalAReceberMes.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
+              <p className="text-[10px] text-muted-foreground mt-2 font-medium">Pendentes ou em atraso no mês.</p>
             </div>
           </div>
 
+          {/* Gráficos */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <div className="h-[320px] border rounded-xl p-5 bg-card shadow-sm">
+              <p className="text-sm font-bold text-muted-foreground mb-6 flex items-center gap-2">
+                <span className="w-2 h-2 bg-primary rounded-full"></span>
+                Comparativo Financeiro (Mês)
+              </p>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={chartData}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#888' }} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#888' }} tickFormatter={(value) => `R$ ${value}`} />
+                  <RechartTooltip 
+                    cursor={{ fill: 'rgba(0,0,0,0.02)' }}
+                    formatter={(value: number) => [`R$ ${value.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`, "Valor"]}
+                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
+                  />
+                  <Bar dataKey="valor" radius={[6, 6, 0, 0]} barSize={50}>
+                    {chartData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+
+            <div className="h-[320px] border rounded-xl p-5 bg-card shadow-sm">
+              <p className="text-sm font-bold text-muted-foreground mb-6 flex items-center gap-2">
+                <span className="w-2 h-2 bg-primary rounded-full"></span>
+                Composição de Receita (Mês)
+              </p>
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={chartData}
+                    cx="50%"
+                    cy="45%"
+                    innerRadius={70}
+                    outerRadius={95}
+                    paddingAngle={8}
+                    dataKey="valor"
+                    stroke="none"
+                  >
+                    {chartData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <RechartTooltip 
+                    formatter={(value: number) => [`R$ ${value.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`, "Valor"]}
+                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
+                  />
+                  <Legend iconType="circle" verticalAlign="bottom" wrapperStyle={{ paddingTop: '20px' }} />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* Subtotais por Vencimento (Fim da seção) */}
           {datasOrdenadas.length > 0 && (
-            <div className="mt-6 pt-6 border-t border-dashed">
-              <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">Subtotais do Total a Receber por Vencimento:</p>
-              <div className="flex flex-wrap gap-4">
+            <div className="mt-8 pt-8 border-t border-dashed">
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Subtotais do Total a Receber por Vencimento</p>
+                <Badge variant="outline" className="text-[10px] font-medium text-blue-600 bg-blue-50 border-blue-100">Visão Geral de Pendências</Badge>
+              </div>
+              <div className="flex flex-wrap gap-3">
                 {datasOrdenadas.map(data => (
-                  <div key={data} className="flex items-center gap-2 border rounded-full px-3 py-1 bg-blue-50/30 border-blue-100">
-                    <span className="text-[10px] text-muted-foreground font-medium">{data}:</span>
-                    <span className="text-xs font-bold text-blue-600">R$ {aReceberPorData[data].toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</span>
+                  <div key={data} className="flex items-center gap-3 border rounded-xl px-4 py-2 bg-blue-50/20 border-blue-100/50 hover:bg-blue-50/40 transition-colors">
+                    <div className="flex flex-col">
+                      <span className="text-[10px] text-muted-foreground font-bold">{data}</span>
+                      <span className="text-sm font-black text-blue-600">R$ {aReceberPorData[data].toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</span>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -294,6 +373,7 @@ const Revenue = () => {
             <div>
               <p className="text-sm text-primary font-medium">Lista de Receitas</p>
               <p className="text-xl font-bold">Mensalidades e planos</p>
+              <p className="text-xs text-muted-foreground mt-1">Exibindo apenas registros com status <strong>Gerada</strong> para gestão ativa.</p>
             </div>
             <div className="flex gap-2 text-sm">
               {["Mensalidade", "Trimestral", "Semestral", "Anual"].map((f) => (
