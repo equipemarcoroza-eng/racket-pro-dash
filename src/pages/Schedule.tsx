@@ -103,119 +103,118 @@ const Schedule = () => {
         </CardHeader>
       </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        <div className="lg:col-span-3">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <p className="text-sm text-primary font-medium">Grade Semanal</p>
-                  <p className="text-xl font-bold">Ocupação das Quadras</p>
-                </div>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm border-collapse">
-                  <thead>
-                    <tr>
-                      <th className="text-left p-2 font-medium text-muted-foreground border-b">Horários</th>
-                      {dias.map((d) => (
-                        <th key={d} className="text-center p-2 border-b">
-                          <p className="font-medium">{d}</p>
-                          <p className="text-[10px] text-muted-foreground font-normal">{weekDates[d]}</p>
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {horarios.map((h) => (
-                      <tr key={h} className="group">
-                        <td className="p-2 font-medium border-r border-b group-last:border-b-0 whitespace-nowrap bg-muted/5">{h}</td>
-                        {dias.map((d) => {
-                          const slots = getSlots(d, h);
-                          return (
-                            <td key={d} className="p-1 border-b border-r last:border-r-0 group-last:border-b-0 align-top min-w-[120px]">
-                              <div className="flex flex-col gap-2 min-h-[40px]">
-                                {slots.map((slot) => {
-                                  const count = getSlotCount(slot.id);
-                                  const full = count >= CLASS_LIMIT;
-                                  const enrolled = enrollments.filter((e) => e.turmaId === slot.id);
-                                  
-                                  return (
-                                    <div key={slot.id} className={`border rounded p-2 text-[10px] bg-card shadow-sm ${full ? "border-destructive/30 bg-destructive/5" : "border-primary/20"}`}>
-                                      <div className="flex items-center justify-between mb-1 gap-1">
-                                        <p className="font-bold text-primary truncate">{slot.turmaId}</p>
-                                        <Badge variant={full ? "destructive" : "secondary"} className="text-[9px] px-1 h-3.5">
-                                          {count}/{CLASS_LIMIT}
-                                        </Badge>
-                                      </div>
-                                      <p className="text-[9px] text-muted-foreground mb-1 font-medium">{slot.quadra}</p>
-                                      
-                                      {enrolled.length > 0 ? (
-                                        <div className="space-y-0.5 border-t pt-1 mt-1 pb-1">
-                                          {enrolled
-                                            .map((e) => students.find((s) => s.id === e.alunoId))
-                                            .filter((st): st is NonNullable<typeof st> => !!st)
-                                            .sort((a, b) => a.nome.localeCompare(b.nome))
-                                            .map((st, idx) => (
-                                              <p key={idx} className="truncate text-muted-foreground leading-tight" title={st.nome}>{st.nome}</p>
-                                            ))
-                                          }
-                                        </div>
-                                      ) : (
-                                        <p className="text-[9px] text-muted-foreground italic border-t pt-1 mt-1 text-center">Vazia</p>
-                                      )}
-
-                                      <div className="flex gap-1 mt-1 pt-1 border-t">
-                                        <Button variant="outline" size="sm" className="text-[9px] h-4 px-1" onClick={() => openEditSlot(slot)}>Editar</Button>
-                                      </div>
-                                    </div>
-                                  );
-                                })}
-                                
-                                {slots.length < quadras.length && (
-                                  <div
-                                    className={`border border-dashed rounded p-2 text-[10px] text-center text-muted-foreground cursor-pointer hover:bg-secondary transition-colors ${slots.length > 0 ? 'py-1 opacity-60 hover:opacity-100' : ''}`}
-                                    onClick={() => openNewSlot(d, h)}
-                                  >
-                                    {slots.length === 0 ? "Cadastrar turma" : "+ Nova Quadra"}
+      {/* 2. Indicador de Ocupação (Monitoramento) */}
+      <Card>
+        <CardContent className="pt-6">
+          <div className="mb-4">
+            <p className="text-sm text-primary font-medium">Indicador de Ocupação</p>
+            <p className="text-xl font-bold">Monitoramento</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="border rounded-md p-3 bg-card shadow-sm">
+              <p className="text-sm text-muted-foreground">Turmas ativas</p>
+              <p className="text-2xl font-bold text-primary">{schedule.length}</p>
+            </div>
+            <div className="border rounded-md p-3 bg-card shadow-sm">
+              <p className="text-sm text-muted-foreground">Matrículas totais</p>
+              <p className="text-2xl font-bold text-primary">{totalEnrolled}</p>
+            </div>
+            <div className="border rounded-md p-3 bg-card shadow-sm">
+              <p className="text-sm text-muted-foreground">Slots livres</p>
+              <p className="text-2xl font-bold text-primary">{dias.length * horarios.length * quadras.length - schedule.length}</p>
+              <p className="text-[10px] text-muted-foreground mt-1">horários disponíveis</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+      
+      {/* 3. Grade Semanal */}
+      <Card>
+        <CardContent className="pt-6">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <p className="text-sm text-primary font-medium">Grade Semanal</p>
+              <p className="text-xl font-bold">Ocupação das Quadras</p>
+            </div>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm border-collapse">
+              <thead>
+                <tr>
+                  <th className="text-left p-2 font-medium text-muted-foreground border-b">Horários</th>
+                  {dias.map((d) => (
+                    <th key={d} className="text-center p-2 border-b">
+                      <p className="font-medium">{d}</p>
+                      <p className="text-[10px] text-muted-foreground font-normal">{weekDates[d]}</p>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {horarios.map((h) => (
+                  <tr key={h} className="group">
+                    <td className="p-2 font-medium border-r border-b group-last:border-b-0 whitespace-nowrap bg-muted/5">{h}</td>
+                    {dias.map((d) => {
+                      const slots = getSlots(d, h);
+                      return (
+                        <td key={d} className="p-1 border-b border-r last:border-r-0 group-last:border-b-0 align-top min-w-[120px]">
+                          <div className="flex flex-col gap-2 min-h-[40px]">
+                            {slots.map((slot) => {
+                              const count = getSlotCount(slot.id);
+                              const full = count >= CLASS_LIMIT;
+                              const enrolled = enrollments.filter((e) => e.turmaId === slot.id);
+                              
+                              return (
+                                <div key={slot.id} className={`border rounded p-2 text-[10px] bg-card shadow-sm ${full ? "border-destructive/30 bg-destructive/5" : "border-primary/20"}`}>
+                                  <div className="flex items-center justify-between mb-1 gap-1">
+                                    <p className="font-bold text-primary truncate">{slot.turmaId}</p>
+                                    <Badge variant={full ? "destructive" : "secondary"} className="text-[9px] px-1 h-3.5">
+                                      {count}/{CLASS_LIMIT}
+                                    </Badge>
                                   </div>
-                                )}
-                              </div>
-                            </td>
-                          );
-                        })}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+                                  <p className="text-[9px] text-muted-foreground mb-1 font-medium">{slot.quadra}</p>
+                                  
+                                  {enrolled.length > 0 ? (
+                                    <div className="space-y-0.5 border-t pt-1 mt-1 pb-1">
+                                      {enrolled
+                                        .map((e) => students.find((s) => s.id === e.alunoId))
+                                        .filter((st): st is NonNullable<typeof st> => !!st)
+                                        .sort((a, b) => a.nome.localeCompare(b.nome))
+                                        .map((st, idx) => (
+                                          <p key={idx} className="truncate text-muted-foreground leading-tight" title={st.nome}>{st.nome}</p>
+                                        ))
+                                      }
+                                    </div>
+                                  ) : (
+                                    <p className="text-[9px] text-muted-foreground italic border-t pt-1 mt-1 text-center">Vazia</p>
+                                  )}
 
-        <div>
-          <Card>
-            <CardContent className="pt-6 space-y-4">
-              <div>
-                <p className="text-sm text-primary font-medium">Indicador de Ocupação</p>
-                <p className="text-xl font-bold">Monitoramento</p>
-              </div>
-              <div className="border rounded-md p-3">
-                <p className="text-sm text-muted-foreground">Turmas ativas</p>
-                <p className="font-bold">{schedule.length}</p>
-              </div>
-              <div className="border rounded-md p-3">
-                <p className="text-sm text-muted-foreground">Matrículas totais</p>
-                <p className="font-bold">{totalEnrolled}</p>
-              </div>
-              <div className="border rounded-md p-3">
-                <p className="text-sm text-muted-foreground">Slots livres</p>
-                <p className="font-bold">{dias.length * horarios.length * quadras.length - schedule.length} horários disponíveis</p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+                                  <div className="flex gap-1 mt-1 pt-1 border-t">
+                                    <Button variant="outline" size="sm" className="text-[9px] h-4 px-1" onClick={() => openEditSlot(slot)}>Editar</Button>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                            
+                            {slots.length < quadras.length && (
+                              <div
+                                className={`border border-dashed rounded p-2 text-[10px] text-center text-muted-foreground cursor-pointer hover:bg-secondary transition-colors ${slots.length > 0 ? 'py-1 opacity-60 hover:opacity-100' : ''}`}
+                                onClick={() => openNewSlot(d, h)}
+                              >
+                                {slots.length === 0 ? "Cadastrar turma" : "+ Nova Quadra"}
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Modal Nova/Editar Turma */}
       <Dialog open={showSlotForm} onOpenChange={(open) => { if (!open) { setShowSlotForm(false); setEditingSlotId(null); } }}>
