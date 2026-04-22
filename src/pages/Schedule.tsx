@@ -45,7 +45,7 @@ const Schedule = () => {
     weekDates[dia] = format(date, "dd/MM");
   });
 
-  const getSlot = (dia: string, horario: string) => schedule.find((s) => s.dia === dia && s.horario === horario);
+  const getSlots = (dia: string, horario: string) => schedule.filter((s) => s.dia === dia && s.horario === horario);
   const getSlotCount = (slotId: string) => enrollments.filter((e) => e.turmaId === slotId).length;
 
   const openNewSlot = (dia?: string, horario?: string) => {
@@ -131,27 +131,34 @@ const Schedule = () => {
                       <tr key={h}>
                         <td className="p-2 font-medium">{h}</td>
                         {dias.map((d) => {
-                          const slot = getSlot(d, h);
+                          const slots = getSlots(d, h);
                           return (
-                            <td key={d} className="p-1">
-                              {slot ? (
-                                <div className="border rounded-md p-2 text-xs bg-card">
-                                  <p className="font-bold text-primary">{slot.turmaId}</p>
-                                  <Badge variant={getSlotCount(slot.id) >= CLASS_LIMIT ? "destructive" : "secondary"} className="text-[10px] mt-1 px-1 h-4">
-                                    {getSlotCount(slot.id)}/{CLASS_LIMIT}
-                                  </Badge>
-                                  <div className="flex gap-1 mt-1">
-                                    <Button variant="outline" size="sm" className="text-xs h-6 px-2" onClick={() => openEditSlot(slot)}>Editar</Button>
+                            <td key={d} className="p-1 align-top">
+                              <div className="flex flex-col gap-2">
+                                {slots.map((slot) => (
+                                  <div key={slot.id} className="border rounded-md p-2 text-xs bg-card shadow-sm">
+                                    <div className="flex justify-between items-start mb-1">
+                                      <p className="font-bold text-primary">{slot.turmaId}</p>
+                                      <span className="text-[9px] font-medium bg-primary/10 text-primary px-1 rounded whitespace-nowrap">{slot.quadra}</span>
+                                    </div>
+                                    <Badge variant={getSlotCount(slot.id) >= CLASS_LIMIT ? "destructive" : "secondary"} className="text-[10px] px-1 h-4">
+                                      {getSlotCount(slot.id)}/{CLASS_LIMIT}
+                                    </Badge>
+                                    <div className="flex gap-1 mt-1">
+                                      <Button variant="outline" size="sm" className="text-[10px] h-5 px-1.5" onClick={() => openEditSlot(slot)}>Editar</Button>
+                                    </div>
                                   </div>
-                                </div>
-                              ) : (
-                                <div
-                                  className="border border-dashed rounded-md p-2 text-xs text-center text-muted-foreground cursor-pointer hover:bg-secondary transition-colors"
-                                  onClick={() => openNewSlot(d, h)}
-                                >
-                                  Cadastrar turma
-                                </div>
-                              )}
+                                ))}
+                                
+                                {slots.length < quadras.length && (
+                                  <div
+                                    className={`border border-dashed rounded-md p-2 text-xs text-center text-muted-foreground cursor-pointer hover:bg-secondary transition-colors ${slots.length > 0 ? 'py-1 opacity-60 hover:opacity-100' : ''}`}
+                                    onClick={() => openNewSlot(d, h)}
+                                  >
+                                    {slots.length === 0 ? "Cadastrar turma" : "+ Nova Quadra"}
+                                  </div>
+                                )}
+                              </div>
                             </td>
                           );
                         })}
