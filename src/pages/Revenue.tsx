@@ -324,7 +324,7 @@ const Revenue = () => {
             <div><Label>Aluno</Label>
               <Select value={recebimentoForm.aluno} onValueChange={(v) => setRecebimentoForm({ ...recebimentoForm, aluno: v })}>
                 <SelectTrigger><SelectValue placeholder="Selecione o aluno" /></SelectTrigger>
-                <SelectContent>{students.map((s) => <SelectItem key={s.id} value={s.nome}>{s.nome}</SelectItem>)}</SelectContent>
+                <SelectContent>{[...students].sort((a, b) => a.nome.localeCompare(b.nome)).map((s) => <SelectItem key={s.id} value={s.nome}>{s.nome}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div><Label>Plano</Label>
@@ -360,7 +360,7 @@ const Revenue = () => {
                 setAvulsoForm({ ...avulsoForm, aluno: v, plano: plano?.nome || "Sem plano" });
               }}>
                 <SelectTrigger><SelectValue placeholder="Selecione o aluno" /></SelectTrigger>
-                <SelectContent>{students.map((s) => <SelectItem key={s.id} value={s.nome}>{s.nome}</SelectItem>)}</SelectContent>
+                <SelectContent>{[...students].sort((a, b) => a.nome.localeCompare(b.nome)).map((s) => <SelectItem key={s.id} value={s.nome}>{s.nome}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div><Label>Plano contratado</Label>
