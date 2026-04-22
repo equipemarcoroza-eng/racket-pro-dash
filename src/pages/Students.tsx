@@ -83,7 +83,14 @@ const maskPhone = (value: string) => {
 };
 
 const Students = () => {
-  const { students, setStudents, enrollments, setEnrollments, setRevenues, plans } = useAppContext();
+  const { 
+    students, setStudents, 
+    enrollments, setEnrollments, 
+    setRevenues, revenues, 
+    plans, attendanceLogs, 
+    schedule: mockSchedule 
+  } = useAppContext();
+  
   const getPlanoNome = (planoId: string) => plans.find((p) => p.id === planoId)?.nome ?? "—";
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -92,9 +99,61 @@ const Students = () => {
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(emptyForm);
 
+  // Estados para os novos relatórios financeiros e de frequência
+  const [reportStudent, setReportStudent] = useState<Student | null>(null);
+  const [reportType, setReportType] = useState<"finance" | "frequency" | null>(null);
+  const [dateRange, setDateRange] = useState({ 
+    start: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split("T")[0],
+    end: new Date().toISOString().split("T")[0] 
+  });
+
   const filtered = students.filter(
     (s) => (!catFilter || s.categoria === catFilter) && (!statusFilter || s.status === statusFilter)
   ).sort((a, b) => a.nome.localeCompare(b.nome));
+
+  const parseDateStr = (dateStr: string) => {
+    const [d, m, y] = dateStr.split("/").map(Number);
+    return new Date(y, m - 1, d);
+  };
+
+  const getStudentFinance = () => {
+    if (!reportStudent) return { list: [], totals: { faturado: 0, pago: 0, aReceber: 0 } };
+    const start = new Date(dateRange.start);
+    const end = new Date(dateRange.end);
+    
+    const list = revenues.filter((r) => {
+      if (r.aluno !== reportStudent.nome) return false;
+      const d = parseDateStr(r.vencimento);
+      return d >= start && d <= end;
+    }).sort((a, b) => parseDateStr(a.vencimento).getTime() - parseDateStr(b.vencimento).getTime());
+
+    const totals = list.reduce((acc, r) => {
+      if (r.status !== "Isento") acc.faturado += r.valor;
+      if (r.status === "Pago") acc.pago += r.valor;
+      if (r.status === "Gerada" || r.status === "Em atraso") acc.aReceber += r.valor;
+      return acc;
+    }, { faturado: 0, pago: 0, aReceber: 0 });
+
+    return { list, totals };
+  };
+
+  const getStudentFrequency = () => {
+    if (!reportStudent) return [];
+    const start = new Date(dateRange.start);
+    const end = new Date(dateRange.end);
+    
+    return attendanceLogs
+      .filter((l) => {
+        if (l.alunoId !== reportStudent.id) return false;
+        const d = new Date(l.data);
+        return d >= start && d <= end;
+      })
+      .map(l => {
+        const slot = mockSchedule.find(s => s.id === l.turmaId);
+        return { ...l, slotInfo: slot ? `${slot.horario} - ${slot.quadra}` : "Turma removida" };
+      })
+      .sort((a, b) => new Date(a.data).getTime() - new Date(b.data).getTime());
+  };
 
   const openNew = () => {
     setEditingId(null);
@@ -334,6 +393,8 @@ const Students = () => {
                     <div className="flex gap-1">
                       <Button variant="outline" size="sm" onClick={() => setViewingStudent(s)}>Visualizar</Button>
                       <Button variant="outline" size="sm" onClick={() => openEdit(s)}>Editar</Button>
+                      <Button variant="outline" size="sm" className="text-blue-600 border-blue-200 hover:bg-blue-50" onClick={() => { setReportStudent(s); setReportType("finance"); }}>Financeiro</Button>
+                      <Button variant="outline" size="sm" className="text-green-600 border-green-200 hover:bg-green-50" onClick={() => { setReportStudent(s); setReportType("frequency"); }}>Frequência</Button>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -342,6 +403,105 @@ const Students = () => {
           </Table>
         </CardContent>
       </Card>
+      <Dialog open={!!reportType} onOpenChange={(open) => !open && setReportType(null)}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>
+              {reportType === "finance" ? "Histórico Financeiro" : "Histórico de Frequência"} - {reportStudent?.nome}
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div className="flex items-end gap-4 p-4 bg-muted/30 rounded-lg">
+              <div className="flex-1 space-y-1.5">
+                <Label>Data Inicial</Label>
+                <Input type="date" value={dateRange.start} onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })} />
+              </div>
+              <div className="flex-1 space-y-1.5">
+                <Label>Data Final</Label>
+                <Input type="date" value={dateRange.end} onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })} />
+              </div>
+            </div>
+
+            {reportType === "finance" && (
+              <div className="space-y-6">
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="p-3 border rounded-lg bg-blue-50/50">
+                    <p className="text-[10px] font-bold text-blue-700 uppercase">Total Faturado</p>
+                    <p className="text-xl font-black">R$ {getStudentFinance().totals.faturado.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
+                  </div>
+                  <div className="p-3 border rounded-lg bg-green-50/50">
+                    <p className="text-[10px] font-bold text-green-700 uppercase">Total Pago</p>
+                    <p className="text-xl font-black">R$ {getStudentFinance().totals.pago.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
+                  </div>
+                  <div className="p-3 border rounded-lg bg-orange-50/50">
+                    <p className="text-[10px] font-bold text-orange-700 uppercase">A Receber</p>
+                    <p className="text-xl font-black">R$ {getStudentFinance().totals.aReceber.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
+                  </div>
+                </div>
+                
+                <div className="border rounded-lg overflow-hidden">
+                  <Table>
+                    <TableHeader className="bg-muted/50">
+                      <TableRow>
+                        <TableHead>Vencimento</TableHead>
+                        <TableHead>Plano</TableHead>
+                        <TableHead>Valor</TableHead>
+                        <TableHead>Status</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {getStudentFinance().list.length === 0 ? (
+                        <TableRow><TableCell colSpan={4} className="text-center py-8 text-muted-foreground italic">Nenhum registro no período</TableCell></TableRow>
+                      ) : (
+                        getStudentFinance().list.map((r) => (
+                          <TableRow key={r.id}>
+                            <TableCell className="font-medium">{r.vencimento}</TableCell>
+                            <TableCell>{r.plano}</TableCell>
+                            <TableCell>R$ {r.valor.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</TableCell>
+                            <TableCell><Badge variant={r.status === "Pago" ? "default" : r.status === "Isento" ? "secondary" : "outline"}>{r.status}</Badge></TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
+            )}
+
+            {reportType === "frequency" && (
+              <div className="border rounded-lg overflow-hidden">
+                <Table>
+                  <TableHeader className="bg-muted/50">
+                    <TableRow>
+                      <TableHead>Data</TableHead>
+                      <TableHead>Turma / Horário</TableHead>
+                      <TableHead>Status</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {getStudentFrequency().length === 0 ? (
+                      <TableRow><TableCell colSpan={3} className="text-center py-8 text-muted-foreground italic">Nenhuma aula registrada no período</TableCell></TableRow>
+                    ) : (
+                      getStudentFrequency().map((l) => (
+                        <TableRow key={l.id}>
+                          <TableCell className="font-medium">{new Date(l.data).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}</TableCell>
+                          <TableCell>{l.slotInfo}</TableCell>
+                          <TableCell>
+                            <Badge variant={l.presente === "Presente" ? "default" : l.presente === "Falta" ? "destructive" : "secondary"}>
+                              {l.presente}
+                            </Badge>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Dialog Visualizar */}
       <Dialog open={!!viewingStudent} onOpenChange={(open) => !open && setViewingStudent(null)}>
