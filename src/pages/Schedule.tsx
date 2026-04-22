@@ -152,10 +152,14 @@ const Schedule = () => {
                                       
                                       {enrolled.length > 0 ? (
                                         <div className="space-y-0.5 border-t pt-1 mt-1 pb-1">
-                                          {enrolled.map((e) => {
-                                            const st = students.find((s) => s.id === e.alunoId);
-                                            return <p key={e.id} className="truncate text-muted-foreground leading-tight" title={st?.nome}>{st?.nome || "?"}</p>;
-                                          })}
+                                          {enrolled
+                                            .map((e) => students.find((s) => s.id === e.alunoId))
+                                            .filter((st): st is NonNullable<typeof st> => !!st)
+                                            .sort((a, b) => a.nome.localeCompare(b.nome))
+                                            .map((st, idx) => (
+                                              <p key={idx} className="truncate text-muted-foreground leading-tight" title={st.nome}>{st.nome}</p>
+                                            ))
+                                          }
                                         </div>
                                       ) : (
                                         <p className="text-[9px] text-muted-foreground italic border-t pt-1 mt-1 text-center">Vazia</p>
