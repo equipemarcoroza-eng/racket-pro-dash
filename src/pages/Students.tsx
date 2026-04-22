@@ -94,7 +94,7 @@ const Students = () => {
 
   const filtered = students.filter(
     (s) => (!catFilter || s.categoria === catFilter) && (!statusFilter || s.status === statusFilter)
-  );
+  ).sort((a, b) => a.nome.localeCompare(b.nome));
 
   const openNew = () => {
     setEditingId(null);
