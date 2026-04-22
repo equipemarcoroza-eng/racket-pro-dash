@@ -21,7 +21,7 @@ const Revenue = () => {
   const [avulsoForm, setAvulsoForm] = useState({ aluno: "", valor: "", plano: "Selecione um aluno", vencimento: new Date().toISOString().split("T")[0] });
 
   const filtered = receitas
-    .filter((r) => r.status !== "Gerada")
+    .filter((r) => r.status === "Gerada")
     .filter((r) => !filter || r.plano === filter)
     .sort((a, b) => a.aluno.localeCompare(b.aluno));
 
