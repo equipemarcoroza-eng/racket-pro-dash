@@ -9,6 +9,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { getFrequenciaCount, CLASS_LIMIT, type ClassSlot } from "@/data/mockData";
 import { useAppContext } from "@/contexts/AppContext";
 import { toast } from "sonner";
+import { startOfWeek, addDays, format } from "date-fns";
+
+const dias = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
+const horarios = [
+  "07:00", "08:00", "09:00", "10:00", "11:00", "12:00", "13:00", 
+  "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00"
+];
 
 const ClassManagement = () => {
   const { students, enrollments, setEnrollments, schedule, plans } = useAppContext();
@@ -18,6 +25,17 @@ const ClassManagement = () => {
   const [editingAlunoId, setEditingAlunoId] = useState<string | null>(null);
 
   const activeStudents = students.filter((s) => s.status === "Ativo");
+
+  // Calculate current week dates
+  const today = new Date();
+  const weekStart = startOfWeek(today, { weekStartsOn: 1 }); // Monday
+  const weekDates: Record<string, string> = {};
+  dias.forEach((dia, i) => {
+    const date = addDays(weekStart, i);
+    weekDates[dia] = format(date, "dd/MM");
+  });
+
+  const getSlots = (dia: string, horario: string) => schedule.filter((s) => s.dia === dia && s.horario === horario);
 
   const getSlotCount = (slotId: string) => enrollments.filter((e) => e.turmaId === slotId).length;
 
@@ -197,36 +215,74 @@ const ClassManagement = () => {
         </Card>
       )}
 
-      {/* Visão por turma */}
+      {/* Visão por turma - Grade Semanal */}
       <Card>
         <CardContent className="pt-6">
-          <p className="text-sm text-primary font-medium">Ocupação</p>
-          <p className="font-semibold text-lg mb-4">Turmas e Vagas</p>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {schedule.map((slot) => {
-              const count = getSlotCount(slot.id);
-              const full = count >= CLASS_LIMIT;
-              const enrolled = enrollments.filter((e) => e.turmaId === slot.id);
-              return (
-                <div key={slot.id} className={`border rounded-md p-3 ${full ? "border-destructive/50 bg-destructive/5" : ""}`}>
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="font-semibold text-sm">{slot.dia} · {slot.horario}</p>
-                    <Badge variant={full ? "destructive" : "secondary"}>{count}/{CLASS_LIMIT}</Badge>
-                  </div>
-                  <p className="text-xs text-muted-foreground mb-2">{slot.quadra} · {slot.turmaId}</p>
-                  {enrolled.length > 0 ? (
-                    <div className="space-y-1">
-                      {enrolled.map((e) => {
-                        const st = students.find((s) => s.id === e.alunoId);
-                        return <p key={e.id} className="text-xs">{st?.nome || "?"}</p>;
-                      })}
-                    </div>
-                  ) : (
-                    <p className="text-xs text-muted-foreground italic">Sem alunos</p>
-                  )}
-                </div>
-              );
-            })}
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <p className="text-sm text-primary font-medium">Ocupação</p>
+              <p className="font-semibold text-lg">Turmas e Vagas (Grade Semanal)</p>
+            </div>
+          </div>
+          
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm border-collapse">
+              <thead>
+                <tr>
+                  <th className="text-left p-2 font-medium text-muted-foreground border-b">Horários</th>
+                  {dias.map((d) => (
+                    <th key={d} className="text-center p-2 border-b">
+                      <p className="font-medium">{d}</p>
+                      <p className="text-[10px] text-muted-foreground font-normal">{weekDates[d]}</p>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {horarios.map((h) => (
+                  <tr key={h} className="group">
+                    <td className="p-2 font-medium border-r border-b group-last:border-b-0 whitespace-nowrap bg-muted/5">{h}</td>
+                    {dias.map((d) => {
+                      const slots = getSlots(d, h);
+                      return (
+                        <td key={d} className="p-1 border-b border-r last:border-r-0 group-last:border-b-0 align-top min-w-[120px]">
+                          <div className="flex flex-col gap-2 min-h-[40px]">
+                            {slots.map((slot) => {
+                              const count = getSlotCount(slot.id);
+                              const full = count >= CLASS_LIMIT;
+                              const enrolled = enrollments.filter((e) => e.turmaId === slot.id);
+                              
+                              return (
+                                <div key={slot.id} className={`border rounded p-2 text-[10px] bg-card shadow-sm ${full ? "border-destructive/30 bg-destructive/5" : "border-primary/20"}`}>
+                                  <div className="flex items-center justify-between mb-1 gap-1">
+                                    <p className="font-bold text-primary truncate">{slot.turmaId}</p>
+                                    <Badge variant={full ? "destructive" : "secondary"} className="text-[9px] px-1 h-3.5">
+                                      {count}/{CLASS_LIMIT}
+                                    </Badge>
+                                  </div>
+                                  <p className="text-[9px] text-muted-foreground mb-1 font-medium">{slot.quadra}</p>
+                                  
+                                  {enrolled.length > 0 ? (
+                                    <div className="space-y-0.5 border-t pt-1 mt-1">
+                                      {enrolled.map((e) => {
+                                        const st = students.find((s) => s.id === e.alunoId);
+                                        return <p key={e.id} className="truncate text-muted-foreground leading-tight" title={st?.nome}>{st?.nome || "?"}</p>;
+                                      })}
+                                    </div>
+                                  ) : (
+                                    <p className="text-[9px] text-muted-foreground italic border-t pt-1 mt-1 text-center">Vazia</p>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </CardContent>
       </Card>
