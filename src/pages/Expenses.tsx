@@ -15,6 +15,8 @@ import type { Expense, ScheduledPayment } from "@/data/mockData";
 import { useAppContext } from "@/contexts/AppContext";
 import { toast } from "sonner";
 import { useEffect } from "react";
+import { Printer } from "lucide-react";
+import logo from "@/assets/logo.png";
 
 const Expenses = () => {
   const {
@@ -165,18 +167,70 @@ const Expenses = () => {
     toast.success("Categoria removida");
   };
 
-  const handleReport = () => {
-    const headers = ["Categoria", "Valor"];
-    const rows = categories.map((c) => [c.categoria, String(c.valor)]);
-    const csv = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "relatorio-despesas.csv";
-    a.click();
-    URL.revokeObjectURL(url);
-    toast.success("Relatório exportado");
+  const handlePrintPDF = async () => {
+    try {
+      const { jsPDF } = await import("jspdf");
+      const autoTable = (await import("jspdf-autotable")).default;
+      const doc = new jsPDF();
+
+      // Logo
+      try {
+        doc.addImage(logo, "PNG", 85, 10, 40, 40);
+      } catch (e) {
+        console.error("Erro ao carregar o logotipo", e);
+      }
+
+      doc.setFontSize(22);
+      doc.setTextColor(20, 40, 100);
+      doc.text("Relatório de Contas a Pagar", 105, 60, { align: "center" });
+      
+      doc.setFontSize(14);
+      doc.setTextColor(0, 0, 0);
+      doc.text("Resumo do Mês Corrente", 105, 70, { align: "center" });
+
+      doc.setDrawColor(200, 200, 200);
+      doc.line(20, 75, 190, 75);
+
+      // Totais
+      doc.setFontSize(11);
+      doc.text(`Total Lançado: R$ ${currentMonthMetrics.totalLancado.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`, 25, 85);
+      doc.text(`Total Pago: R$ ${currentMonthMetrics.totalPago.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`, 25, 92);
+      doc.text(`Total Pendente: R$ ${currentMonthMetrics.totalPendente.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`, 25, 99);
+
+      // Tabela de Contas
+      const tableData = payments
+        .filter(p => {
+          if (!p.vencimento) return false;
+          const [y, m, d] = p.vencimento.split("-").map(Number);
+          const now = new Date();
+          return (m - 1) === now.getMonth() && y === now.getFullYear();
+        })
+        .map(p => [
+          p.fornecedor,
+          p.categoria,
+          p.vencimento.split("-").reverse().join("/"),
+          `R$ ${p.valor.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`,
+          p.status
+        ]);
+
+      autoTable(doc, {
+        startY: 110,
+        head: [["Fornecedor", "Categoria", "Vencimento", "Valor", "Status"]],
+        body: tableData,
+        theme: 'striped',
+        headStyles: { fillColor: [20, 40, 100] }
+      });
+
+      doc.setFontSize(10);
+      doc.setTextColor(150, 150, 150);
+      doc.text(`Gerado em: ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}`, 105, 285, { align: "center" });
+
+      doc.save(`relatorio-contas-a-pagar-${Date.now()}.pdf`);
+      toast.success("Relatório PDF gerado com sucesso");
+    } catch (err) {
+      console.error("Falha ao gerar PDF", err);
+      toast.error("Erro ao gerar o relatório em PDF");
+    }
   };
 
   return (
@@ -377,7 +431,9 @@ const Expenses = () => {
               <span className="text-sm font-medium text-green-700">Contas Pagas</span>
               <span className="font-bold text-green-700">R$ {totalPagas.toLocaleString("pt-BR")}</span>
             </div>
-            <Button variant="outline" className="w-full" onClick={handleReport}>Gerar Relatório</Button>
+            <Button variant="outline" className="w-full gap-2" onClick={handlePrintPDF}>
+              <Printer className="h-4 w-4" /> Imprimir (PDF)
+            </Button>
           </CardContent>
         </Card>
       </div>
