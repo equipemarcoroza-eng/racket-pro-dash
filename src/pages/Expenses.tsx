@@ -4,8 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { 
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartTooltip, ResponsiveContainer,
+  PieChart, Pie, Cell, Legend
+} from "recharts";
 import type { Expense, ScheduledPayment } from "@/data/mockData";
 import { useAppContext } from "@/contexts/AppContext";
 import { toast } from "sonner";
@@ -27,6 +32,36 @@ const Expenses = () => {
   const [viewingPayment, setViewingPayment] = useState<ScheduledPayment | null>(null);
   const [expenseForm, setExpenseForm] = useState<{ id: string; fornecedor: string; valor: string; categoria: string; vencimento: string; status: "Em Aberto" | "Pago" }>({ id: "", fornecedor: "", valor: "", categoria: "", vencimento: "", status: "Em Aberto" });
   const [categoryForm, setCategoryForm] = useState({ categoria: "", valor: "" });
+
+  // Métricas do Mês Corrente
+  const currentMonthMetrics = useMemo(() => {
+    const now = new Date();
+    const curMonth = now.getMonth();
+    const curYear = now.getFullYear();
+
+    const monthlyPayments = payments.filter(p => {
+      if (!p.vencimento) return false;
+      const [y, m, d] = p.vencimento.split("-").map(Number);
+      return (m - 1) === curMonth && y === curYear;
+    });
+
+    const totalLancado = monthlyPayments.reduce((acc, curr) => acc + curr.valor, 0);
+    const totalPago = monthlyPayments.filter(p => p.status === "Pago").reduce((acc, curr) => acc + curr.valor, 0);
+    const totalPendente = monthlyPayments.filter(p => p.status === "Em Aberto").reduce((acc, curr) => acc + curr.valor, 0);
+
+    const chartData = [
+      { name: "Total Lançado", valor: totalLancado, color: "#3b82f6" },
+      { name: "Total Pago", valor: totalPago, color: "#22c55e" },
+      { name: "Total Pendente", valor: totalPendente, color: "#ef4444" }
+    ];
+
+    const pieData = [
+      { name: "Pago", value: totalPago, color: "#22c55e" },
+      { name: "Pendente", value: totalPendente, color: "#ef4444" }
+    ];
+
+    return { totalLancado, totalPago, totalPendente, chartData, pieData };
+  }, [payments]);
 
   const totalCategorias = categories.reduce((a, b) => a + b.valor, 0);
   const totalPagamentos = payments.reduce((a, b) => a + b.valor, 0);
@@ -159,6 +194,92 @@ const Expenses = () => {
             {categories.map((c) => (
               <Button key={c.id} variant={catFilter === c.categoria ? "default" : "outline"} size="sm" onClick={() => setCatFilter(catFilter === c.categoria ? null : c.categoria)}>{c.categoria}</Button>
             ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* 2. Resumo (Visão Geral) */}
+      <Card>
+        <CardContent className="pt-6">
+          <div className="mb-6">
+            <p className="text-sm text-primary font-medium">Resumo</p>
+            <p className="text-xl font-bold">Visão Geral do Mês Corrente</p>
+          </div>
+
+          {/* Subtotais em Destaque */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div className="bg-primary/5 border-l-4 border-primary p-5 rounded-lg shadow-sm">
+              <p className="text-xs text-primary font-bold uppercase tracking-wider mb-1">Total Lançado</p>
+              <p className="text-3xl font-black">R$ {currentMonthMetrics.totalLancado.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
+              <p className="text-[10px] text-muted-foreground mt-2 font-medium">Todas as contas com vencimento este mês.</p>
+            </div>
+            <div className="bg-green-50 border-l-4 border-green-500 p-5 rounded-lg shadow-sm">
+              <p className="text-xs text-green-700 font-bold uppercase tracking-wider mb-1">Total Pago</p>
+              <p className="text-3xl font-black text-green-600">R$ {currentMonthMetrics.totalPago.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
+              <p className="text-[10px] text-muted-foreground mt-2 font-medium">Contas liquidadas no mês.</p>
+            </div>
+            <div className="bg-red-50 border-l-4 border-red-500 p-5 rounded-lg shadow-sm">
+              <p className="text-xs text-red-700 font-bold uppercase tracking-wider mb-1">Total Pendente</p>
+              <p className="text-3xl font-black text-red-600">R$ {currentMonthMetrics.totalPendente.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
+              <p className="text-[10px] text-muted-foreground mt-2 font-medium">Contas em aberto com vencimento este mês.</p>
+            </div>
+          </div>
+
+          {/* Gráficos */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-4">
+            <div className="h-[320px] border rounded-xl p-5 bg-card shadow-sm">
+              <p className="text-sm font-bold text-muted-foreground mb-6 flex items-center gap-2">
+                <span className="w-2 h-2 bg-primary rounded-full"></span>
+                Comparativo de Despesas (Mês)
+              </p>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={currentMonthMetrics.chartData}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#888' }} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#888' }} tickFormatter={(value) => `R$ ${value}`} />
+                  <RechartTooltip
+                    cursor={{ fill: 'rgba(0,0,0,0.02)' }}
+                    formatter={(value: number) => [`R$ ${value.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`, "Valor"]}
+                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
+                  />
+                  <Bar dataKey="valor" radius={[6, 6, 0, 0]} barSize={50}>
+                    {currentMonthMetrics.chartData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+
+            <div className="h-[320px] border rounded-xl p-5 bg-card shadow-sm">
+              <p className="text-sm font-bold text-muted-foreground mb-6 flex items-center gap-2">
+                <span className="w-2 h-2 bg-primary rounded-full"></span>
+                Composição do Contas a Pagar (Mês)
+              </p>
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={currentMonthMetrics.pieData}
+                    cx="50%"
+                    cy="45%"
+                    innerRadius={70}
+                    outerRadius={95}
+                    paddingAngle={8}
+                    dataKey="value"
+                    stroke="none"
+                  >
+                    {currentMonthMetrics.pieData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <RechartTooltip
+                    formatter={(value: number) => [`R$ ${value.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`, "Valor"]}
+                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
+                  />
+                  <Legend iconType="circle" verticalAlign="bottom" wrapperStyle={{ paddingTop: '20px' }} />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
           </div>
         </CardContent>
       </Card>
