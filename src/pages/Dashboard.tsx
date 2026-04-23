@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
@@ -11,6 +12,7 @@ const periodos = ["Mês Atual", "Mês Anterior", "Últimos 3 meses", "Últimos 6
 const Dashboard = () => {
   const { students, enrollments, revenues, schedule: mockSchedule } = useAppContext();
   const [periodo, setPeriodo] = useState("Mês Atual");
+  const [rankingModal, setRankingModal] = useState<{ open: boolean; type: "top" | "bottom" }>({ open: false, type: "top" });
 
   const parseDate = (dateStr: string) => {
     const [d, m, y] = dateStr.split("/").map(Number);
@@ -103,9 +105,10 @@ const Dashboard = () => {
       faturamentoPeriodo,
       top3,
       bottom3,
+      sortedOccupancy,
       dynamicRevenueData
     };
-  }, [periodo, students, enrollments, revenues]);
+  }, [periodo, students, enrollments, revenues, mockSchedule]);
 
   return (
     <div className="space-y-6">
@@ -168,7 +171,7 @@ const Dashboard = () => {
                 <p className="text-sm text-primary font-medium">Ocupação</p>
                 <p className="text-xl font-bold">Top 3 Turmas</p>
               </div>
-              <Button variant="outline" size="sm">Ranking</Button>
+              <Button variant="outline" size="sm" onClick={() => setRankingModal({ open: true, type: "top" })}>Ranking</Button>
             </div>
             <div className="space-y-3">
               {metrics.top3.map((t) => (
@@ -188,7 +191,7 @@ const Dashboard = () => {
                 <p className="text-sm text-primary font-medium">Ocupação</p>
                 <p className="text-xl font-bold">Menor ocupação</p>
               </div>
-              <Button variant="outline" size="sm">Ranking</Button>
+              <Button variant="outline" size="sm" onClick={() => setRankingModal({ open: true, type: "bottom" })}>Ranking</Button>
             </div>
             <div className="space-y-3">
               {metrics.bottom3.map((t) => (
@@ -240,6 +243,32 @@ const Dashboard = () => {
           </div>
         </CardContent>
       </Card>
+      {/* Ranking Completo Modal */}
+      <Dialog open={rankingModal.open} onOpenChange={(open) => !open && setRankingModal({ ...rankingModal, open: false })}>
+        <DialogContent className="max-w-md max-h-[80vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold text-primary">
+              {rankingModal.type === "top" ? "Ranking: Melhor para Pior Ocupação" : "Ranking: Pior para Melhor Ocupação"}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 overflow-y-auto pr-2 space-y-4 pt-4">
+            {(rankingModal.type === "top" ? metrics.sortedOccupancy : [...metrics.sortedOccupancy].reverse()).map((t, index) => (
+              <div key={t.nome} className="flex flex-col gap-1 pb-3 border-b last:border-0 border-dashed">
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-sm font-bold flex items-center gap-2">
+                    <span className="w-5 h-5 flex items-center justify-center bg-secondary text-[10px] rounded-full">
+                      {index + 1}
+                    </span>
+                    {t.nome}
+                  </span>
+                  <span className="text-xs font-black text-primary">{t.pct}%</span>
+                </div>
+                <Progress value={t.pct} className="h-2" />
+              </div>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
