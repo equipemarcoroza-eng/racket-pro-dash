@@ -10,7 +10,7 @@ import { CLASS_LIMIT } from "@/data/mockData";
 const periodos = ["Mês Atual", "Mês Anterior", "Últimos 3 meses", "Últimos 6 meses", "Últimos 12 meses"];
 
 const Dashboard = () => {
-  const { students, enrollments, revenues, schedule: mockSchedule } = useAppContext();
+  const { students, enrollments, revenues, schedule: mockSchedule, scheduledPayments } = useAppContext();
   const [periodo, setPeriodo] = useState("Mês Atual");
   const [rankingModal, setRankingModal] = useState<{ open: boolean; type: "top" | "bottom" }>({ open: false, type: "top" });
 
@@ -91,11 +91,17 @@ const Dashboard = () => {
       const ganhos = revenues
         .filter(r => {
           const vDate = parseDate(r.vencimento);
-          return vDate.getMonth() === mIdx && vDate.getFullYear() === yIdx && (r.status === "Pago" || r.plano === "Taxa de Matrícula");
+          return vDate.getMonth() === mIdx && vDate.getFullYear() === yIdx && r.status !== "Isento";
         })
         .reduce((acc, curr) => acc + curr.valor, 0);
 
-      const gastos = 25000 + Math.random() * 5000; // Simulado para o exemplo, já que não temos histórico de gastos real no AppContext ainda
+      const gastos = (scheduledPayments || [])
+        .filter(p => {
+          if (!p.vencimento) return false;
+          const [y, m, day] = p.vencimento.split("-").map(Number);
+          return (m - 1) === mIdx && y === yIdx;
+        })
+        .reduce((acc, curr) => acc + curr.valor, 0);
 
       dynamicRevenueData.push({ mes: mLabel, ganhos, gastos });
     }
