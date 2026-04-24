@@ -251,7 +251,7 @@ const Revenue = () => {
     setSelectedYear(year);
     toast.success("Recebível avulso gerado");
     setShowAvulso(false);
-    setAvulsoForm({ aluno: "", valor: "", plano: "Selecione um aluno", vencimento: new Date().toISOString().split("T")[0] });
+    setAvulsoForm({ aluno: "", alunoId: "", valor: "", plano: "Selecione um aluno", vencimento: new Date().toISOString().split("T")[0] });
   };
 
   // Métricas do Período Selecionado
