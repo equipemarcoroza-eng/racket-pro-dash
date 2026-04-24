@@ -21,6 +21,7 @@ const Revenue = () => {
   const { students, revenues: receitas, setRevenues: setReceitas, plans: mockPlans } = useAppContext();
   const [filter, setFilter] = useState<string | null>(null);
   const [viewingReceita, setViewingReceita] = useState<RevenueType | null>(null);
+  const [editingReceita, setEditingReceita] = useState<RevenueType | null>(null);
   const [showRecebimento, setShowRecebimento] = useState(false);
   const [showAvulso, setShowAvulso] = useState(false);
   const [recebimentoForm, setRecebimentoForm] = useState({ aluno: "", valor: "", plano: "Mensalidade" });
@@ -147,6 +148,17 @@ const Revenue = () => {
   const handleIsentar = (r: RevenueType) => {
     setReceitas((prev) => prev.map((rec) => rec.id === r.id ? { ...rec, status: "Isento" } : rec));
     toast.success(`Isenção de ${r.aluno} registrada`);
+  };
+
+  const handleEdit = (r: RevenueType) => {
+    setEditingReceita({ ...r });
+  };
+
+  const handleSaveEdit = () => {
+    if (!editingReceita) return;
+    setReceitas((prev) => prev.map((rec) => rec.id === editingReceita.id ? editingReceita : rec));
+    toast.success("Receita atualizada com sucesso");
+    setEditingReceita(null);
   };
 
   const handleRecibo = async (r: RevenueType) => {
@@ -472,6 +484,7 @@ const Revenue = () => {
                   <TableCell>
                     <div className="flex gap-1">
                       <Button variant="outline" size="sm" onClick={() => setViewingReceita(r)}>Detalhar</Button>
+                      <Button variant="outline" size="sm" className="bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100" onClick={() => handleEdit(r)}>Editar</Button>
                       <Button variant="outline" size="sm" onClick={() => handleBaixar(r)} disabled={r.status === "Pago" || r.status === "Isento"}>Baixar</Button>
                       <Button variant="outline" size="sm" onClick={() => handleIsentar(r)} disabled={r.status === "Pago" || r.status === "Isento"}>Isentar</Button>
                       <Button variant="outline" size="sm" onClick={() => handleRecibo(r)}>Recibo</Button>
@@ -496,6 +509,59 @@ const Revenue = () => {
                 <div><p className="text-sm text-muted-foreground">Vencimento</p><p className="font-medium">{viewingReceita.vencimento}</p></div>
                 <div><p className="text-sm text-muted-foreground">Valor</p><p className="font-medium">R$ {viewingReceita.valor.toFixed(2).replace(".", ",")}</p></div>
                 <div><p className="text-sm text-muted-foreground">Status</p><p className="font-medium">{viewingReceita.status}</p></div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog Editar */}
+      <Dialog open={!!editingReceita} onOpenChange={(open) => !open && setEditingReceita(null)}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Editar Receita</DialogTitle></DialogHeader>
+          {editingReceita && (
+            <div className="space-y-4">
+              <div>
+                <Label>Aluno</Label>
+                <Input value={editingReceita.aluno} disabled className="bg-muted" />
+              </div>
+              <div>
+                <Label>Plano</Label>
+                <Input value={editingReceita.plano} disabled className="bg-muted" />
+              </div>
+              <div>
+                <Label>Vencimento (DD/MM/YYYY)</Label>
+                <Input 
+                  value={editingReceita.vencimento} 
+                  onChange={(e) => setEditingReceita({ ...editingReceita, vencimento: e.target.value })} 
+                />
+              </div>
+              <div>
+                <Label>Valor (R$)</Label>
+                <Input 
+                  type="number" 
+                  value={editingReceita.valor} 
+                  onChange={(e) => setEditingReceita({ ...editingReceita, valor: Number(e.target.value) })} 
+                />
+              </div>
+              <div>
+                <Label>Status</Label>
+                <Select 
+                  value={editingReceita.status} 
+                  onValueChange={(v) => setEditingReceita({ ...editingReceita, status: v as any })}
+                >
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Gerada">Gerada</SelectItem>
+                    <SelectItem value="Pago">Pago</SelectItem>
+                    <SelectItem value="Isento">Isento</SelectItem>
+                    <SelectItem value="Em atraso">Em atraso</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex justify-end gap-2 pt-2">
+                <Button variant="outline" onClick={() => setEditingReceita(null)}>Cancelar</Button>
+                <Button onClick={handleSaveEdit}>Salvar Alterações</Button>
               </div>
             </div>
           )}
