@@ -27,7 +27,7 @@ const Revenue = () => {
   const [showAvulso, setShowAvulso] = useState(false);
   const [recebimentoForm, setRecebimentoForm] = useState({ aluno: "", valor: "", plano: "Mensalidade" });
   const [avulsoForm, setAvulsoForm] = useState({ aluno: "", alunoId: "", valor: "", plano: "Selecione um aluno", vencimento: new Date().toISOString().split("T")[0] });
-  
+
   const now = new Date();
   const [selectedMonth, setSelectedMonth] = useState(() => {
     const saved = sessionStorage.getItem("revenue_month");
@@ -54,10 +54,10 @@ const Revenue = () => {
         periods.add(`${parts[1]}/${parts[2]}`);
       }
     });
-    
+
     // Adicionar mês atual se não existir
     periods.add(`${String(now.getMonth() + 1).padStart(2, "0")}/${now.getFullYear()}`);
-    
+
     return Array.from(periods).sort((a, b) => {
       const [ma, ya] = a.split("/").map(Number);
       const [mb, yb] = b.split("/").map(Number);
@@ -234,7 +234,7 @@ const Revenue = () => {
     const venc = `${day}/${month}/${year}`;
     const aluno = students.find(s => s.nome === recebimentoForm.aluno);
     setReceitas((prev) => [...prev, { id: crypto.randomUUID(), alunoId: aluno?.id, aluno: recebimentoForm.aluno, plano: recebimentoForm.plano, vencimento: venc, valor: Number(recebimentoForm.valor), status: "Pago" }]);
-    
+
     // Atualizar filtro para o mês do lançamento
     setSelectedMonth(month);
     setSelectedYear(year);
@@ -274,19 +274,19 @@ const Revenue = () => {
 
     // VERIFICAÇÃO: ler o registro de volta para confirmar que foi salvo
     const { data: verify } = await supabase.from("revenues").select("*").eq("id", dbRecord.id);
-    
+
     if (!verify || verify.length === 0) {
       toast.error("⚠️ O banco de dados REJEITOU SILENCIOSAMENTE o registro (RLS). O insert retornou sucesso mas o dado NÃO foi salvo. Verifique as políticas de segurança (RLS) no Supabase.", { duration: 15000 });
       console.error("RLS Silent Rejection! Insert returned:", insertData, "but verify returned:", verify);
       return;
     }
-    
+
     toast.success(`✅ CONFIRMADO no banco! Registro ${dbRecord.id.substring(0, 8)} verificado.`, { duration: 5000 });
 
     // Salvar período selecionado para restaurar após reload
     sessionStorage.setItem("revenue_month", month);
     sessionStorage.setItem("revenue_year", year);
-    
+
     // Recarregar a página para garantir exibição correta
     setTimeout(() => window.location.reload(), 1000);
   };
@@ -321,11 +321,11 @@ const Revenue = () => {
   const subtotaisPorDia = receitasMes.reduce((acc, curr) => {
     const data = curr.vencimento;
     if (!acc[data]) acc[data] = { faturado: 0, pago: 0, aReceber: 0 };
-    
+
     if (curr.status !== "Isento") acc[data].faturado += curr.valor;
     if (curr.status === "Pago") acc[data].pago += curr.valor;
     if (curr.status === "Gerada" || curr.status === "Em atraso") acc[data].aReceber += curr.valor;
-    
+
     return acc;
   }, {} as Record<string, { faturado: number, pago: number, aReceber: number }>);
 
@@ -382,11 +382,11 @@ const Revenue = () => {
               <p className="text-sm text-primary font-medium">Resumo</p>
               <p className="text-xl font-bold">Visão Geral do Período</p>
             </div>
-            
+
             <div className="flex items-center gap-2">
               <Label className="text-xs font-bold uppercase text-muted-foreground whitespace-nowrap">Filtrar Período:</Label>
-              <Select 
-                value={`${selectedMonth}/${selectedYear}`} 
+              <Select
+                value={`${selectedMonth}/${selectedYear}`}
                 onValueChange={(v) => {
                   const [m, y] = v.split("/");
                   setSelectedMonth(m);
@@ -608,23 +608,23 @@ const Revenue = () => {
               </div>
               <div>
                 <Label>Vencimento (DD/MM/YYYY)</Label>
-                <Input 
-                  value={editingReceita.vencimento} 
-                  onChange={(e) => setEditingReceita({ ...editingReceita, vencimento: e.target.value })} 
+                <Input
+                  value={editingReceita.vencimento}
+                  onChange={(e) => setEditingReceita({ ...editingReceita, vencimento: e.target.value })}
                 />
               </div>
               <div>
                 <Label>Valor (R$)</Label>
-                <Input 
-                  type="number" 
-                  value={editingReceita.valor} 
-                  onChange={(e) => setEditingReceita({ ...editingReceita, valor: Number(e.target.value) })} 
+                <Input
+                  type="number"
+                  value={editingReceita.valor}
+                  onChange={(e) => setEditingReceita({ ...editingReceita, valor: Number(e.target.value) })}
                 />
               </div>
               <div>
                 <Label>Status</Label>
-                <Select 
-                  value={editingReceita.status} 
+                <Select
+                  value={editingReceita.status}
                   onValueChange={(v) => setEditingReceita({ ...editingReceita, status: v as any })}
                 >
                   <SelectTrigger><SelectValue /></SelectTrigger>
