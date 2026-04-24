@@ -135,8 +135,10 @@ const isoToBr = (iso?: string | null) => {
 };
 const brToIso = (br?: string | null) => {
   if (!br) return null;
-  if (br.includes("-")) return br; // já ISO
-  const [d, m, y] = br.split("/");
+  if (br.includes("-") && br.split("-")[0].length === 4) return br; // já ISO YYYY-MM-DD
+  const parts = br.split("/");
+  if (parts.length !== 3) return br;
+  const [d, m, y] = parts;
   return `${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}`;
 };
 const dbToRevenue = (r: any): Revenue => ({
@@ -237,9 +239,10 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       try {
         await syncTable("revenues", lastSyncedRevenues, revenues, revenueToDb);
         setLastSyncedRevenues([...revenues]);
-      } catch (err) {
+      } catch (err: any) {
         console.error("Erro no Sync Engine (revenues):", err);
-        // Não atualizamos o lastSynced para que ele tente novamente na próxima mudança ou refresh
+        const errorMsg = err.message || JSON.stringify(err);
+        toast.error(`Falha ao sincronizar: ${errorMsg}`, { duration: 5000 });
       }
     };
 
