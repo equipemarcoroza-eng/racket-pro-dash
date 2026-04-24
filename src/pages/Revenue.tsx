@@ -256,13 +256,24 @@ const Revenue = () => {
     };
 
     // INSERT direto no Supabase
-    const { error } = await supabase.from("revenues").insert(dbRecord);
+    const { data: insertData, error } = await supabase.from("revenues").insert(dbRecord).select();
 
     if (error) {
       toast.error(`ERRO DO BANCO: ${error.message} (código: ${error.code})`, { duration: 10000 });
       console.error("Supabase insert error completo:", JSON.stringify(error));
       return;
     }
+
+    // VERIFICAÇÃO: ler o registro de volta para confirmar que foi salvo
+    const { data: verify } = await supabase.from("revenues").select("*").eq("id", dbRecord.id);
+    
+    if (!verify || verify.length === 0) {
+      toast.error("⚠️ O banco de dados REJEITOU SILENCIOSAMENTE o registro (RLS). O insert retornou sucesso mas o dado NÃO foi salvo. Verifique as políticas de segurança (RLS) no Supabase.", { duration: 15000 });
+      console.error("RLS Silent Rejection! Insert returned:", insertData, "but verify returned:", verify);
+      return;
+    }
+    
+    toast.success(`✅ CONFIRMADO no banco! Registro ${dbRecord.id.substring(0, 8)} verificado.`, { duration: 5000 });
 
     // Recarregar TODOS os registros direto do banco (fonte da verdade)
     const { data: allRevenues, error: fetchError } = await supabase.from("revenues").select("*");
