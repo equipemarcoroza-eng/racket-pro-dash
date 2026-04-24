@@ -281,6 +281,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         supabase.from("plans").select("*").limit(10000),
         supabase.from("schedule_slots").select("*").limit(10000),
         supabase.from("enrollments").select("*").limit(10000),
+        // FIX: limite de 10000 registros para evitar corte silencioso do Supabase (padrão = 1000)
         supabase.from("revenues").select("*").limit(10000),
         supabase.from("attendance_logs").select("*").limit(10000),
         supabase.from("scheduled_payments").select("*").limit(10000),
