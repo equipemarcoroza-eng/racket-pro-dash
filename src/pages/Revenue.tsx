@@ -29,8 +29,16 @@ const Revenue = () => {
   const [avulsoForm, setAvulsoForm] = useState({ aluno: "", alunoId: "", valor: "", plano: "Selecione um aluno", vencimento: new Date().toISOString().split("T")[0] });
   
   const now = new Date();
-  const [selectedMonth, setSelectedMonth] = useState(String(now.getMonth() + 1).padStart(2, "0"));
-  const [selectedYear, setSelectedYear] = useState(String(now.getFullYear()));
+  const [selectedMonth, setSelectedMonth] = useState(() => {
+    const saved = sessionStorage.getItem("revenue_month");
+    if (saved) { sessionStorage.removeItem("revenue_month"); return saved; }
+    return String(now.getMonth() + 1).padStart(2, "0");
+  });
+  const [selectedYear, setSelectedYear] = useState(() => {
+    const saved = sessionStorage.getItem("revenue_year");
+    if (saved) { sessionStorage.removeItem("revenue_year"); return saved; }
+    return String(now.getFullYear());
+  });
 
   const parseDate = (dateStr: string) => {
     const [d, m, y] = dateStr.split("/").map(Number);
@@ -275,32 +283,12 @@ const Revenue = () => {
     
     toast.success(`✅ CONFIRMADO no banco! Registro ${dbRecord.id.substring(0, 8)} verificado.`, { duration: 5000 });
 
-    // Recarregar TODOS os registros direto do banco (fonte da verdade)
-    const { data: allRevenues, error: fetchError } = await supabase.from("revenues").select("*");
-    if (!fetchError && allRevenues) {
-      const isoToBr = (iso: string) => {
-        if (!iso) return "";
-        const [yy, mm, dd] = iso.split("-");
-        return `${dd}/${mm}/${yy}`;
-      };
-      const mapped = allRevenues.map((r: any) => ({
-        id: r.id,
-        alunoId: r.aluno_id,
-        aluno: r.aluno_nome,
-        plano: r.plano_nome,
-        vencimento: isoToBr(r.vencimento),
-        valor: Number(r.valor),
-        status: r.status,
-      }));
-      setReceitas(mapped);
-    }
+    // Salvar período selecionado para restaurar após reload
+    sessionStorage.setItem("revenue_month", month);
+    sessionStorage.setItem("revenue_year", year);
     
-    // Atualizar filtro para o mês do lançamento
-    setSelectedMonth(month);
-    setSelectedYear(year);
-    toast.success("Recebível avulso gravado com sucesso!");
-    setShowAvulso(false);
-    setAvulsoForm({ aluno: "", alunoId: "", valor: "", plano: "Selecione um aluno", vencimento: new Date().toISOString().split("T")[0] });
+    // Recarregar a página para garantir exibição correta
+    setTimeout(() => window.location.reload(), 1000);
   };
 
   // Métricas do Período Selecionado
