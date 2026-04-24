@@ -219,10 +219,16 @@ const Revenue = () => {
 
   const handleRecebimento = () => {
     if (!recebimentoForm.aluno || !recebimentoForm.valor) { toast.error("Preencha todos os campos"); return; }
-    const now = new Date();
-    const venc = `${String(now.getDate()).padStart(2, "0")}/${String(now.getMonth() + 1).padStart(2, "0")}/${now.getFullYear()}`;
+    const day = String(now.getDate()).padStart(2, "0");
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const year = String(now.getFullYear());
+    const venc = `${day}/${month}/${year}`;
     const aluno = students.find(s => s.nome === recebimentoForm.aluno);
     setReceitas((prev) => [...prev, { id: crypto.randomUUID(), alunoId: aluno?.id, aluno: recebimentoForm.aluno, plano: recebimentoForm.plano, vencimento: venc, valor: Number(recebimentoForm.valor), status: "Pago" }]);
+    
+    // Atualizar filtro para o mês do lançamento
+    setSelectedMonth(month);
+    setSelectedYear(year);
     toast.success("Recebimento registrado");
     setShowRecebimento(false);
     setRecebimentoForm({ aluno: "", valor: "", plano: "Mensalidade" });
@@ -231,11 +237,18 @@ const Revenue = () => {
   const handleAvulso = () => {
     if (!avulsoForm.aluno || !avulsoForm.valor || !avulsoForm.vencimento) { toast.error("Preencha todos os campos"); return; }
 
-    // Converter YYYY-MM-DD para DD/MM/YYYY
+    // Converter YYYY-MM-DD para DD/MM/YYYY com padding garantido
     const [y, m, d] = avulsoForm.vencimento.split("-");
-    const venc = `${d}/${m}/${y}`;
+    const day = d.padStart(2, "0");
+    const month = m.padStart(2, "0");
+    const year = y;
+    const venc = `${day}/${month}/${year}`;
 
     setReceitas((prev) => [...prev, { id: crypto.randomUUID(), alunoId: avulsoForm.alunoId, aluno: avulsoForm.aluno, plano: avulsoForm.plano, vencimento: venc, valor: Number(avulsoForm.valor), status: "Gerada" }]);
+    
+    // Atualizar filtro para o mês do lançamento para que apareça imediatamente
+    setSelectedMonth(month);
+    setSelectedYear(year);
     toast.success("Recebível avulso gerado");
     setShowAvulso(false);
     setAvulsoForm({ aluno: "", valor: "", plano: "Selecione um aluno", vencimento: new Date().toISOString().split("T")[0] });
