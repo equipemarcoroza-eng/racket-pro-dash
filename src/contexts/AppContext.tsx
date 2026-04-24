@@ -235,6 +235,7 @@ async function syncTable<T extends { id: string }>(
 }
 
 export const AppProvider = ({ children }: { children: ReactNode }) => {
+  const { user } = useAuth();
   const [students, setStudentsState] = useState<Student[]>([]);
   const [enrollments, setEnrollmentsState] = useState<Enrollment[]>([]);
   const [revenues, setRevenuesState] = useState<Revenue[]>([]);
