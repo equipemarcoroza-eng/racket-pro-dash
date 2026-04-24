@@ -152,7 +152,7 @@ const dbToRevenue = (r: any): Revenue => ({
 });
 const revenueToDb = (r: Partial<Revenue> & { alunoId?: string | null }) => ({
   ...(r.id ? { id: r.id } : {}),
-  aluno_id: r.alunoId ?? null,
+  aluno_id: r.alunoId || null,
   aluno_nome: r.aluno,
   plano_nome: r.plano,
   vencimento: brToIso(r.vencimento),
@@ -302,28 +302,29 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
   // Wrapper genérico que aplica setState e sincroniza com o banco
   const makeSetter = <T extends { id: string }>(
-    current: T[],
     setter: React.Dispatch<React.SetStateAction<T[]>>,
     table: string,
     toDb: (x: any) => any
   ) => {
     return (u: Updater<T>) => {
-      const next = typeof u === "function" ? (u as (p: T[]) => T[])(current) : u;
-      setter(next);
-      syncTable(table, current, next, toDb).catch((err) => {
-        console.error(`Erro ao sincronizar ${table}:`, err);
+      setter((prev) => {
+        const next = typeof u === "function" ? (u as (p: T[]) => T[])(prev) : u;
+        syncTable(table, prev, next, toDb).catch((err) => {
+          console.error(`Erro ao sincronizar ${table}:`, err);
+        });
+        return next;
       });
     };
   };
 
-  const setStudents = makeSetter(students, setStudentsState, "students", studentToDb);
-  const setEnrollments = makeSetter(enrollments, setEnrollmentsState, "enrollments", enrollmentToDb);
-  const setAttendanceLogs = makeSetter(attendanceLogs, setAttendanceLogsState, "attendance_logs", attendanceToDb);
-  const setSchedule = makeSetter(schedule, setScheduleState, "schedule_slots", slotToDb);
-  const setPlans = makeSetter(plans, setPlansState, "plans", planToDb);
-  const setExpenseCategories = makeSetter(expenseCategories, setExpenseCategoriesState, "expense_categories", expenseCategoryToDb);
+  const setStudents = makeSetter(setStudentsState, "students", studentToDb);
+  const setEnrollments = makeSetter(setEnrollmentsState, "enrollments", enrollmentToDb);
+  const setAttendanceLogs = makeSetter(setAttendanceLogsState, "attendance_logs", attendanceToDb);
+  const setSchedule = makeSetter(setScheduleState, "schedule_slots", slotToDb);
+  const setPlans = makeSetter(setPlansState, "plans", planToDb);
+  const setExpenseCategories = makeSetter(setExpenseCategoriesState, "expense_categories", expenseCategoryToDb);
 
-  const setRevenues = makeSetter(revenues, setRevenuesState, "revenues", revenueToDb);
+  const setRevenues = makeSetter(setRevenuesState, "revenues", revenueToDb);
 
   const setScheduledPayments = (u: Updater<ScheduledPayment>) => {
     const next = typeof u === "function" ? (u as (p: ScheduledPayment[]) => ScheduledPayment[])(scheduledPayments) : u;
