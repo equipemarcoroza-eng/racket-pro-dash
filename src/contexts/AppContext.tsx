@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, useRef, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import type {
@@ -235,7 +235,6 @@ async function syncTable<T extends { id: string }>(
 }
 
 export const AppProvider = ({ children }: { children: ReactNode }) => {
-  const { user } = useAuth();
   const [students, setStudentsState] = useState<Student[]>([]);
   const [enrollments, setEnrollmentsState] = useState<Enrollment[]>([]);
   const [revenues, setRevenuesState] = useState<Revenue[]>([]);
@@ -246,6 +245,16 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [scheduledPayments, setScheduledPaymentsState] = useState<ScheduledPayment[]>([]);
   const [expenseCategories, setExpenseCategoriesState] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Refs para garantir sincronização com o estado mais atualizado absoluto
+  const revenuesRef = useRef<Revenue[]>([]);
+  useEffect(() => { revenuesRef.current = revenues; }, [revenues]);
+
+  const studentsRef = useRef<Student[]>([]);
+  useEffect(() => { studentsRef.current = students; }, [students]);
+
+  const scheduledPaymentsRef = useRef<ScheduledPayment[]>([]);
+  useEffect(() => { scheduledPaymentsRef.current = scheduledPayments; }, [scheduledPayments]);
 
   // Carrega tudo do banco quando o usuário autentica
   useEffect(() => {
@@ -300,34 +309,64 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     };
   }, [user]);
 
-  // Wrapper genérico que aplica setState e sincroniza com o banco
-  const makeSetter = <T extends { id: string }>(
-    setter: React.Dispatch<React.SetStateAction<T[]>>,
-    table: string,
-    toDb: (x: any) => any
-  ) => {
-    return (u: Updater<T>) => {
-      setter((prev) => {
-        const next = typeof u === "function" ? (u as (p: T[]) => T[])(prev) : u;
-        syncTable(table, prev, next, toDb)
-          .then(() => toast.success("Sincronizado com o banco!"))
-          .catch((err) => {
-            console.error(`Erro ao sincronizar ${table}:`, err);
-            toast.error(`Erro ao salvar ${table} no banco de dados. Verifique sua conexão ou permissões.`);
-          });
-        return next;
+  const setRevenues = (u: Updater<Revenue>) => {
+    const prev = revenuesRef.current;
+    const next = typeof u === "function" ? (u as (p: Revenue[]) => Revenue[])(prev) : u;
+    setRevenuesState(next);
+    syncTable("revenues", prev, next, revenueToDb)
+      .then(() => toast.success("Registrado no banco de dados!"))
+      .catch((err) => {
+        console.error("Erro ao sincronizar revenues:", err);
+        toast.error("Falha ao salvar no servidor. Verifique sua conexão.");
       });
-    };
   };
 
-  const setStudents = makeSetter(setStudentsState, "students", studentToDb);
-  const setEnrollments = makeSetter(setEnrollmentsState, "enrollments", enrollmentToDb);
-  const setAttendanceLogs = makeSetter(setAttendanceLogsState, "attendance_logs", attendanceToDb);
-  const setSchedule = makeSetter(setScheduleState, "schedule_slots", slotToDb);
-  const setPlans = makeSetter(setPlansState, "plans", planToDb);
-  const setExpenseCategories = makeSetter(setExpenseCategoriesState, "expense_categories", expenseCategoryToDb);
+  const setStudents = (u: Updater<Student>) => {
+    const prev = studentsRef.current;
+    const next = typeof u === "function" ? (u as (p: Student[]) => Student[])(prev) : u;
+    setStudentsState(next);
+    syncTable("students", prev, next, studentToDb).catch(e => console.error(e));
+  };
 
-  const setRevenues = makeSetter(setRevenuesState, "revenues", revenueToDb);
+  const setEnrollments = (u: Updater<Enrollment>) => {
+    setEnrollmentsState((prev) => {
+      const next = typeof u === "function" ? (u as (p: Enrollment[]) => Enrollment[])(prev) : u;
+      syncTable("enrollments", prev, next, enrollmentToDb).catch(e => console.error(e));
+      return next;
+    });
+  };
+
+  const setAttendanceLogs = (u: Updater<AttendanceLog>) => {
+    setAttendanceLogsState((prev) => {
+      const next = typeof u === "function" ? (u as (p: AttendanceLog[]) => AttendanceLog[])(prev) : u;
+      syncTable("attendance_logs", prev, next, attendanceToDb).catch(e => console.error(e));
+      return next;
+    });
+  };
+
+  const setSchedule = (u: Updater<ClassSlot>) => {
+    setScheduleState((prev) => {
+      const next = typeof u === "function" ? (u as (p: ClassSlot[]) => ClassSlot[])(prev) : u;
+      syncTable("schedule_slots", prev, next, slotToDb).catch(e => console.error(e));
+      return next;
+    });
+  };
+
+  const setPlans = (u: Updater<Plan>) => {
+    setPlansState((prev) => {
+      const next = typeof u === "function" ? (u as (p: Plan[]) => Plan[])(prev) : u;
+      syncTable("plans", prev, next, planToDb).catch(e => console.error(e));
+      return next;
+    });
+  };
+
+  const setExpenseCategories = (u: Updater<Expense>) => {
+    setExpenseCategoriesState((prev) => {
+      const next = typeof u === "function" ? (u as (p: Expense[]) => Expense[])(prev) : u;
+      syncTable("expense_categories", prev, next, expenseCategoryToDb).catch(e => console.error(e));
+      return next;
+    });
+  };
 
   const setScheduledPayments = (u: Updater<ScheduledPayment>) => {
     const next = typeof u === "function" ? (u as (p: ScheduledPayment[]) => ScheduledPayment[])(scheduledPayments) : u;
