@@ -161,6 +161,13 @@ const Revenue = () => {
     setEditingReceita(null);
   };
 
+  const handleDelete = (r: RevenueType) => {
+    if (window.confirm(`Deseja realmente excluir o registro de ${r.aluno}?`)) {
+      setReceitas((prev) => prev.filter((rec) => rec.id !== r.id));
+      toast.success("Registro excluído");
+    }
+  };
+
   const handleRecibo = async (r: RevenueType) => {
     try {
       const { jsPDF } = await import("jspdf");
@@ -488,6 +495,7 @@ const Revenue = () => {
                       <Button variant="outline" size="sm" onClick={() => handleBaixar(r)} disabled={r.status === "Pago" || r.status === "Isento"}>Baixar</Button>
                       <Button variant="outline" size="sm" onClick={() => handleIsentar(r)} disabled={r.status === "Pago" || r.status === "Isento"}>Isentar</Button>
                       <Button variant="outline" size="sm" onClick={() => handleRecibo(r)}>Recibo</Button>
+                      <Button variant="outline" size="sm" className="text-destructive hover:bg-destructive/10" onClick={() => handleDelete(r)}>Excluir</Button>
                     </div>
                   </TableCell>
                 </TableRow>
