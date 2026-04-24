@@ -267,12 +267,27 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     let cancelled = false;
     (async () => {
       setLoading(true);
+      // Helper: busca paginada para tabelas com mais de 1000 registros
+      const fetchAll = async (table: string) => {
+        let allData: any[] = [];
+        let from = 0;
+        const batchSize = 1000;
+        while (true) {
+          const { data, error } = await supabase.from(table as any).select("*").range(from, from + batchSize - 1);
+          if (error || !data || data.length === 0) break;
+          allData = allData.concat(data);
+          if (data.length < batchSize) break;
+          from += batchSize;
+        }
+        return allData;
+      };
+
       const [
         sRes,
         pRes,
         slRes,
         eRes,
-        rRes,
+        revenueData,
         aRes,
         spRes,
         ecRes,
@@ -281,15 +296,14 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         supabase.from("plans").select("*").limit(10000),
         supabase.from("schedule_slots").select("*").limit(10000),
         supabase.from("enrollments").select("*").limit(10000),
-        // FIX: limite de 10000 registros para evitar corte silencioso do Supabase (padrão = 1000)
-        supabase.from("revenues").select("*").limit(10000),
+        fetchAll("revenues"),
         supabase.from("attendance_logs").select("*").limit(10000),
         supabase.from("scheduled_payments").select("*").limit(10000),
         supabase.from("expense_categories").select("*").limit(10000),
       ]);
       if (cancelled) return;
       
-      const loadedRevenues = (rRes.data ?? []).map(dbToRevenue);
+      const loadedRevenues = revenueData.map(dbToRevenue);
       setStudentsState((sRes.data ?? []).map(dbToStudent));
       setEnrollmentsState((eRes.data ?? []).map(dbToEnrollment));
       setRevenuesState(loadedRevenues);
