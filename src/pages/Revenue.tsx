@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import type { Revenue as RevenueType } from "@/data/mockData";
 import { useAppContext } from "@/contexts/AppContext";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import logo from "@/assets/logo.png";
 
@@ -234,7 +235,7 @@ const Revenue = () => {
     setRecebimentoForm({ aluno: "", valor: "", plano: "Mensalidade" });
   };
 
-  const handleAvulso = () => {
+  const handleAvulso = async () => {
     if (!avulsoForm.aluno || !avulsoForm.valor || !avulsoForm.vencimento) { toast.error("Preencha todos os campos"); return; }
 
     // Converter YYYY-MM-DD para DD/MM/YYYY com padding garantido
@@ -242,14 +243,38 @@ const Revenue = () => {
     const day = d.padStart(2, "0");
     const month = m.padStart(2, "0");
     const year = y;
-    const venc = `${day}/${month}/${year}`;
+    const vencIso = `${year}-${month}-${day}`;
+    const vencBr = `${day}/${month}/${year}`;
 
-    setReceitas((prev) => [...prev, { id: crypto.randomUUID(), alunoId: avulsoForm.alunoId, aluno: avulsoForm.aluno, plano: avulsoForm.plano, vencimento: venc, valor: Number(avulsoForm.valor), status: "Gerada" }]);
+    const newId = crypto.randomUUID();
+    const dbRecord = {
+      id: newId,
+      aluno_id: avulsoForm.alunoId || null,
+      aluno_nome: avulsoForm.aluno,
+      plano_nome: avulsoForm.plano,
+      vencimento: vencIso,
+      valor: Number(avulsoForm.valor),
+      status: "Gerada",
+    };
+
+    // INSERT direto no Supabase — sem intermediários
+    const { data, error } = await supabase.from("revenues").insert(dbRecord).select();
+
+    if (error) {
+      toast.error(`ERRO DO BANCO: ${error.message} (código: ${error.code})`, { duration: 10000 });
+      console.error("Supabase insert error:", error);
+      return;
+    }
+
+    toast.success(`Gravado no banco com sucesso! ID: ${newId.substring(0, 8)}`, { duration: 5000 });
+    console.log("Supabase insert OK:", data);
+
+    // Atualizar estado local para refletir na tela imediatamente
+    setReceitas((prev) => [...prev, { id: newId, alunoId: avulsoForm.alunoId, aluno: avulsoForm.aluno, plano: avulsoForm.plano, vencimento: vencBr, valor: Number(avulsoForm.valor), status: "Gerada" }]);
     
     // Atualizar filtro para o mês do lançamento para que apareça imediatamente
     setSelectedMonth(month);
     setSelectedYear(year);
-    toast.success("Recebível avulso gerado");
     setShowAvulso(false);
     setAvulsoForm({ aluno: "", alunoId: "", valor: "", plano: "Selecione um aluno", vencimento: new Date().toISOString().split("T")[0] });
   };
