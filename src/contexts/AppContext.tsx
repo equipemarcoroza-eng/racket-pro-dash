@@ -203,10 +203,12 @@ async function syncTable<T extends { id: string }>(
   });
 
   if (toDelete.length > 0) {
-    await supabase.from(table).delete().in("id", toDelete);
+    const { error } = await supabase.from(table).delete().in("id", toDelete);
+    if (error) throw error;
   }
   if (toUpsert.length > 0) {
-    await supabase.from(table).upsert(toUpsert.map(toDb));
+    const { error } = await supabase.from(table).upsert(toUpsert.map(toDb));
+    if (error) throw error;
   }
 }
 
@@ -298,11 +300,14 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const setExpenseCategories = makeSetter(expenseCategories, setExpenseCategoriesState, "expense_categories", expenseCategoryToDb);
 
   const setRevenues = (u: Updater<Revenue>) => {
-    const next = typeof u === "function" ? (u as (p: Revenue[]) => Revenue[])(revenues) : u;
-    setRevenuesState(next);
-    syncTable("revenues", revenues, next, revenueToDb).catch((err) =>
-      console.error("Erro ao sincronizar revenues:", err)
-    );
+    setRevenuesState((prev) => {
+      const next = typeof u === "function" ? (u as (p: Revenue[]) => Revenue[])(prev) : u;
+      syncTable("revenues", prev, next, revenueToDb).catch((err) => {
+        console.error("Erro ao sincronizar revenues:", err);
+        toast.error("Erro ao salvar no banco de dados. Verifique sua conexão.");
+      });
+      return next;
+    });
   };
 
   const setScheduledPayments = (u: Updater<ScheduledPayment>) => {
