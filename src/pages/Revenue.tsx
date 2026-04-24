@@ -356,20 +356,6 @@ const Revenue = () => {
             <Button variant="secondary" onClick={gerarParcelas}>Gerar Parcelas do Mês</Button>
             <Button variant="outline" onClick={() => setShowAvulso(true)}>Gerar Recebível Avulso</Button>
             <Button onClick={() => setShowRecebimento(true)}>Registrar Recebimento Mitigado</Button>
-            <Button variant="destructive" onClick={async () => {
-              const { data, error, count } = await supabase.from("revenues").select("*", { count: "exact" });
-              if (error) {
-                toast.error(`ERRO ao ler banco: ${error.message}`, { duration: 10000 });
-              } else {
-                const total = data?.length ?? 0;
-                const jun25 = data?.filter((r: any) => r.vencimento?.startsWith("2025-06")) ?? [];
-                toast.info(`DIAGNÓSTICO: ${total} registros no banco. ${jun25.length} em Jun/2025. Estado local: ${receitas.length} registros.`, { duration: 15000 });
-                if (jun25.length > 0) {
-                  console.log("Registros Jun/2025 no banco:", jun25);
-                  toast.info(`Jun/2025 IDs: ${jun25.map((r: any) => r.aluno_nome).join(", ")}`, { duration: 15000 });
-                }
-              }
-            }}>🔍 Diagnóstico DB</Button>
           </div>
         </CardHeader>
       </Card>
@@ -533,9 +519,6 @@ const Revenue = () => {
               <p className="text-sm text-primary font-medium">Lista de Receitas</p>
               <p className="text-xl font-bold">Mensalidades e planos ({selectedMonth}/{selectedYear})</p>
               <p className="text-xs text-muted-foreground mt-1">Exibindo todos os registros para o período selecionado, ordenados por vencimento.</p>
-              <p className="text-xs text-red-600 font-mono mt-1 bg-red-50 p-1 rounded">
-                DEBUG: Total receitas={receitas.length} | Filtrado mês={receitas.filter(r => { const p = r.vencimento.split("/"); return p[1] === selectedMonth && p[2] === selectedYear; }).length} | Exibindo={filtered.length} | Filtro plano={filter || "nenhum"} | Período={selectedMonth}/{selectedYear} | Amostra venc={receitas[0]?.vencimento || "vazio"} | Status "Gerada"={receitas.filter(r => r.status === "Gerada").length}
-              </p>
             </div>
             <div className="flex gap-2 text-sm">
               {["Mensalidade", "Trimestral", "Semestral", "Anual"].map((f) => (
