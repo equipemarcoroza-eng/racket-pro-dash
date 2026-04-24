@@ -277,14 +277,14 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         spRes,
         ecRes,
       ] = await Promise.all([
-        supabase.from("students").select("*"),
-        supabase.from("plans").select("*"),
-        supabase.from("schedule_slots").select("*"),
-        supabase.from("enrollments").select("*"),
-        supabase.from("revenues").select("*"),
-        supabase.from("attendance_logs").select("*"),
-        supabase.from("scheduled_payments").select("*"),
-        supabase.from("expense_categories").select("*"),
+        supabase.from("students").select("*").limit(10000),
+        supabase.from("plans").select("*").limit(10000),
+        supabase.from("schedule_slots").select("*").limit(10000),
+        supabase.from("enrollments").select("*").limit(10000),
+        supabase.from("revenues").select("*").limit(10000),
+        supabase.from("attendance_logs").select("*").limit(10000),
+        supabase.from("scheduled_payments").select("*").limit(10000),
+        supabase.from("expense_categories").select("*").limit(10000),
       ]);
       if (cancelled) return;
       
