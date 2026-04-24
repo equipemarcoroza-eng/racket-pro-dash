@@ -218,12 +218,23 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [enrollments, setEnrollmentsState] = useState<Enrollment[]>([]);
   const [revenues, setRevenuesState] = useState<Revenue[]>([]);
   const [attendanceLogs, setAttendanceLogsState] = useState<AttendanceLog[]>([]);
-  const [expenseLogs, setExpenseLogsState] = useState<ExpenseLog[]>([]); // derivado de scheduled_payments pagos
+  const [expenseLogs, setExpenseLogsState] = useState<ExpenseLog[]>([]);
   const [schedule, setScheduleState] = useState<ClassSlot[]>([]);
   const [plans, setPlansState] = useState<Plan[]>([]);
   const [scheduledPayments, setScheduledPaymentsState] = useState<ScheduledPayment[]>([]);
   const [expenseCategories, setExpenseCategoriesState] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Refs para evitar stale closures em sincronizações assíncronas
+  const revenuesRef = useStateRef(revenues);
+  const studentsRef = useStateRef(students);
+  const scheduledPaymentsRef = useStateRef(scheduledPayments);
+
+  function useStateRef<T>(val: T) {
+    const ref = { current: val };
+    useEffect(() => { ref.current = val; }, [val]);
+    return ref;
+  }
 
   // Carrega tudo do banco quando o usuário autentica
   useEffect(() => {
@@ -300,13 +311,13 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const setExpenseCategories = makeSetter(expenseCategories, setExpenseCategoriesState, "expense_categories", expenseCategoryToDb);
 
   const setRevenues = (u: Updater<Revenue>) => {
-    setRevenuesState((prev) => {
-      const next = typeof u === "function" ? (u as (p: Revenue[]) => Revenue[])(prev) : u;
-      syncTable("revenues", prev, next, revenueToDb).catch((err) => {
-        console.error("Erro ao sincronizar revenues:", err);
-        toast.error("Erro ao salvar no banco de dados. Verifique sua conexão.");
-      });
-      return next;
+    const next = typeof u === "function" ? (u as (p: Revenue[]) => Revenue[])(revenuesRef.current) : u;
+    const prev = revenuesRef.current;
+    setRevenuesState(next);
+    
+    syncTable("revenues", prev, next, revenueToDb).catch((err) => {
+      console.error("Erro ao sincronizar revenues:", err);
+      toast.error("Erro de conexão com o banco de dados. Tente novamente.");
     });
   };
 
