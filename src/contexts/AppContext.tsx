@@ -217,6 +217,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [students, setStudentsState] = useState<Student[]>([]);
   const [enrollments, setEnrollmentsState] = useState<Enrollment[]>([]);
   const [revenues, setRevenuesState] = useState<Revenue[]>([]);
+  const [lastSyncedRevenues, setLastSyncedRevenues] = useState<Revenue[]>([]);
   const [attendanceLogs, setAttendanceLogsState] = useState<AttendanceLog[]>([]);
   const [expenseLogs, setExpenseLogsState] = useState<ExpenseLog[]>([]);
   const [schedule, setScheduleState] = useState<ClassSlot[]>([]);
@@ -225,16 +226,26 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [expenseCategories, setExpenseCategoriesState] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Refs para evitar stale closures em sincronizações assíncronas
-  const revenuesRef = useStateRef(revenues);
-  const studentsRef = useStateRef(students);
-  const scheduledPaymentsRef = useStateRef(scheduledPayments);
+  // Sync Engine: Monitora mudanças no estado e envia para o Supabase de forma segura
+  useEffect(() => {
+    if (loading || !user) return;
+    
+    // Evitar sync se for idêntico ao último sincronizado
+    if (JSON.stringify(lastSyncedRevenues) === JSON.stringify(revenues)) return;
 
-  function useStateRef<T>(val: T) {
-    const ref = { current: val };
-    useEffect(() => { ref.current = val; }, [val]);
-    return ref;
-  }
+    const performSync = async () => {
+      try {
+        await syncTable("revenues", lastSyncedRevenues, revenues, revenueToDb);
+        setLastSyncedRevenues([...revenues]);
+      } catch (err) {
+        console.error("Erro no Sync Engine (revenues):", err);
+        // Não atualizamos o lastSynced para que ele tente novamente na próxima mudança ou refresh
+      }
+    };
+
+    const timer = setTimeout(performSync, 500); // Pequeno debounce para agrupar múltiplas ações rápidas
+    return () => clearTimeout(timer);
+  }, [revenues, loading, user]);
 
   // Carrega tudo do banco quando o usuário autentica
   useEffect(() => {
@@ -265,12 +276,15 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         supabase.from("expense_categories").select("*"),
       ]);
       if (cancelled) return;
+      
+      const loadedRevenues = (rRes.data ?? []).map(dbToRevenue);
       setStudentsState((sRes.data ?? []).map(dbToStudent));
+      setEnrollmentsState((eRes.data ?? []).map(dbToEnrollment));
+      setRevenuesState(loadedRevenues);
+      setLastSyncedRevenues(loadedRevenues); // Sincroniza estado inicial
+      setAttendanceLogsState((aRes.data ?? []).map(dbToAttendance));
       setPlansState((pRes.data ?? []).map(dbToPlan));
       setScheduleState((slRes.data ?? []).map(dbToSlot));
-      setEnrollmentsState((eRes.data ?? []).map(dbToEnrollment));
-      setRevenuesState((rRes.data ?? []).map(dbToRevenue));
-      setAttendanceLogsState((aRes.data ?? []).map(dbToAttendance));
       const sp = (spRes.data ?? []).map(dbToScheduled);
       setScheduledPaymentsState(sp);
       // expenseLogs derivados de pagamentos pagos
@@ -311,14 +325,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const setExpenseCategories = makeSetter(expenseCategories, setExpenseCategoriesState, "expense_categories", expenseCategoryToDb);
 
   const setRevenues = (u: Updater<Revenue>) => {
-    const next = typeof u === "function" ? (u as (p: Revenue[]) => Revenue[])(revenuesRef.current) : u;
-    const prev = revenuesRef.current;
-    setRevenuesState(next);
-    
-    syncTable("revenues", prev, next, revenueToDb).catch((err) => {
-      console.error("Erro ao sincronizar revenues:", err);
-      toast.error("Erro de conexão com o banco de dados. Tente novamente.");
-    });
+    setRevenuesState((prev) => typeof u === "function" ? (u as (p: Revenue[]) => Revenue[])(prev) : u);
   };
 
   const setScheduledPayments = (u: Updater<ScheduledPayment>) => {
