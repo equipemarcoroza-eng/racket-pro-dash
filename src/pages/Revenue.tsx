@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,14 +25,43 @@ const Revenue = () => {
   const [showAvulso, setShowAvulso] = useState(false);
   const [recebimentoForm, setRecebimentoForm] = useState({ aluno: "", valor: "", plano: "Mensalidade" });
   const [avulsoForm, setAvulsoForm] = useState({ aluno: "", valor: "", plano: "Selecione um aluno", vencimento: new Date().toISOString().split("T")[0] });
+  
+  const now = new Date();
+  const [selectedMonth, setSelectedMonth] = useState(String(now.getMonth() + 1).padStart(2, "0"));
+  const [selectedYear, setSelectedYear] = useState(String(now.getFullYear()));
 
   const parseDate = (dateStr: string) => {
     const [d, m, y] = dateStr.split("/").map(Number);
     return new Date(y, m - 1, d);
   };
 
+  // Extrair todos os meses/anos disponíveis que possuem registros
+  const availablePeriods = useMemo(() => {
+    const periods = new Set<string>();
+    receitas.forEach(r => {
+      const parts = r.vencimento.split("/");
+      if (parts.length === 3) {
+        periods.add(`${parts[1]}/${parts[2]}`);
+      }
+    });
+    
+    // Adicionar mês atual se não existir
+    periods.add(`${String(now.getMonth() + 1).padStart(2, "0")}/${now.getFullYear()}`);
+    
+    return Array.from(periods).sort((a, b) => {
+      const [ma, ya] = a.split("/").map(Number);
+      const [mb, yb] = b.split("/").map(Number);
+      return ya !== yb ? yb - ya : mb - ma; // Decrescente
+    });
+  }, [receitas]);
+
   const filtered = receitas
-    .filter((r) => !filter || r.plano === filter)
+    .filter((r) => {
+      const [dia, mes, ano] = r.vencimento.split("/");
+      const matchesPeriod = mes === selectedMonth && ano === selectedYear;
+      const matchesPlan = !filter || r.plano === filter;
+      return matchesPeriod && matchesPlan;
+    })
     .sort((a, b) => parseDate(a.vencimento).getTime() - parseDate(b.vencimento).getTime());
 
   const gerarParcelas = () => {
@@ -191,16 +220,12 @@ const Revenue = () => {
     setAvulsoForm({ aluno: "", valor: "", plano: "Selecione um aluno", vencimento: new Date().toISOString().split("T")[0] });
   };
 
-  // Métricas do Mês Corrente
-  const now = new Date();
-  const curMonth = String(now.getMonth() + 1).padStart(2, "0");
-  const curYear = String(now.getFullYear());
-  const monthTag = `/${curMonth}/${curYear}`;
-  const standardDueDays = ["05", "10", "15", "20", "25", "28", "30", "31"]; // Incluindo 28 para fev e 31 para meses longos por segurança
+  // Métricas do Período Selecionado
+  const monthTag = `/${selectedMonth}/${selectedYear}`;
 
   const receitasMes = receitas.filter(r => {
     const [dia, mes, ano] = r.vencimento.split("/");
-    return mes === curMonth && ano === curYear && ["05", "10", "15", "20", "25", "30"].includes(dia);
+    return mes === selectedMonth && ano === selectedYear && ["05", "10", "15", "20", "25", "30"].includes(dia);
   });
 
   const totalFaturadoMes = receitasMes
@@ -267,9 +292,39 @@ const Revenue = () => {
       {/* 2. Resumo (Visão Geral) */}
       <Card>
         <CardContent className="pt-6">
-          <div className="mb-6">
-            <p className="text-sm text-primary font-medium">Resumo</p>
-            <p className="text-xl font-bold">Visão Geral do Mês Corrente</p>
+          <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <p className="text-sm text-primary font-medium">Resumo</p>
+              <p className="text-xl font-bold">Visão Geral do Período</p>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <Label className="text-xs font-bold uppercase text-muted-foreground whitespace-nowrap">Filtrar Período:</Label>
+              <Select 
+                value={`${selectedMonth}/${selectedYear}`} 
+                onValueChange={(v) => {
+                  const [m, y] = v.split("/");
+                  setSelectedMonth(m);
+                  setSelectedYear(y);
+                }}
+              >
+                <SelectTrigger className="w-[180px] h-9">
+                  <SelectValue placeholder="Selecione o mês" />
+                </SelectTrigger>
+                <SelectContent>
+                  {availablePeriods.map(p => {
+                    const [m, y] = p.split("/");
+                    const date = new Date(Number(y), Number(m) - 1, 1);
+                    const label = date.toLocaleString("pt-BR", { month: "long", year: "numeric" });
+                    return (
+                      <SelectItem key={p} value={p}>
+                        {label.charAt(0).toUpperCase() + label.slice(1)}
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           {/* Subtotais em Destaque */}
@@ -296,7 +351,7 @@ const Revenue = () => {
             <div className="h-[320px] border rounded-xl p-5 bg-card shadow-sm">
               <p className="text-sm font-bold text-muted-foreground mb-6 flex items-center gap-2">
                 <span className="w-2 h-2 bg-primary rounded-full"></span>
-                Comparativo Financeiro (Mês)
+                Comparativo Financeiro ({selectedMonth}/{selectedYear})
               </p>
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={chartData}>
@@ -320,7 +375,7 @@ const Revenue = () => {
             <div className="h-[320px] border rounded-xl p-5 bg-card shadow-sm">
               <p className="text-sm font-bold text-muted-foreground mb-6 flex items-center gap-2">
                 <span className="w-2 h-2 bg-primary rounded-full"></span>
-                Composição de Receita (Mês)
+                Composição de Receita ({selectedMonth}/{selectedYear})
               </p>
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -348,11 +403,10 @@ const Revenue = () => {
             </div>
           </div>
 
-          {/* Subtotais por Vencimento (Fim da seção) */}
           {datasMesOrdenadas.length > 0 && (
             <div className="mt-8 pt-8 border-t border-dashed">
               <div className="flex items-center justify-between mb-4">
-                <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Subtotais por Vencimento (Mês Corrente)</p>
+                <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Subtotais por Vencimento ({selectedMonth}/{selectedYear})</p>
                 <Badge variant="outline" className="text-[10px] font-medium text-blue-600 bg-blue-50 border-blue-100">Visão Detalhada Diária</Badge>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
@@ -392,8 +446,8 @@ const Revenue = () => {
           <div className="flex items-center justify-between mb-4">
             <div>
               <p className="text-sm text-primary font-medium">Lista de Receitas</p>
-              <p className="text-xl font-bold">Mensalidades e planos</p>
-              <p className="text-xs text-muted-foreground mt-1">Exibindo todos os registros lançados, ordenados por data de vencimento.</p>
+              <p className="text-xl font-bold">Mensalidades e planos ({selectedMonth}/{selectedYear})</p>
+              <p className="text-xs text-muted-foreground mt-1">Exibindo todos os registros para o período selecionado, ordenados por vencimento.</p>
             </div>
             <div className="flex gap-2 text-sm">
               {["Mensalidade", "Trimestral", "Semestral", "Anual"].map((f) => (
