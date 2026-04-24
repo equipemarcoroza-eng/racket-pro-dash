@@ -244,11 +244,9 @@ const Revenue = () => {
     const month = m.padStart(2, "0");
     const year = y;
     const vencIso = `${year}-${month}-${day}`;
-    const vencBr = `${day}/${month}/${year}`;
 
-    const newId = crypto.randomUUID();
     const dbRecord = {
-      id: newId,
+      id: crypto.randomUUID(),
       aluno_id: avulsoForm.alunoId || null,
       aluno_nome: avulsoForm.aluno,
       plano_nome: avulsoForm.plano,
@@ -257,24 +255,39 @@ const Revenue = () => {
       status: "Gerada",
     };
 
-    // INSERT direto no Supabase — sem intermediários
-    const { data, error } = await supabase.from("revenues").insert(dbRecord).select();
+    // INSERT direto no Supabase
+    const { error } = await supabase.from("revenues").insert(dbRecord);
 
     if (error) {
       toast.error(`ERRO DO BANCO: ${error.message} (código: ${error.code})`, { duration: 10000 });
-      console.error("Supabase insert error:", error);
+      console.error("Supabase insert error completo:", JSON.stringify(error));
       return;
     }
 
-    toast.success(`Gravado no banco com sucesso! ID: ${newId.substring(0, 8)}`, { duration: 5000 });
-    console.log("Supabase insert OK:", data);
-
-    // Atualizar estado local para refletir na tela imediatamente
-    setReceitas((prev) => [...prev, { id: newId, alunoId: avulsoForm.alunoId, aluno: avulsoForm.aluno, plano: avulsoForm.plano, vencimento: vencBr, valor: Number(avulsoForm.valor), status: "Gerada" }]);
+    // Recarregar TODOS os registros direto do banco (fonte da verdade)
+    const { data: allRevenues, error: fetchError } = await supabase.from("revenues").select("*");
+    if (!fetchError && allRevenues) {
+      const isoToBr = (iso: string) => {
+        if (!iso) return "";
+        const [yy, mm, dd] = iso.split("-");
+        return `${dd}/${mm}/${yy}`;
+      };
+      const mapped = allRevenues.map((r: any) => ({
+        id: r.id,
+        alunoId: r.aluno_id,
+        aluno: r.aluno_nome,
+        plano: r.plano_nome,
+        vencimento: isoToBr(r.vencimento),
+        valor: Number(r.valor),
+        status: r.status,
+      }));
+      setReceitas(mapped);
+    }
     
-    // Atualizar filtro para o mês do lançamento para que apareça imediatamente
+    // Atualizar filtro para o mês do lançamento
     setSelectedMonth(month);
     setSelectedYear(year);
+    toast.success("Recebível avulso gravado com sucesso!");
     setShowAvulso(false);
     setAvulsoForm({ aluno: "", alunoId: "", valor: "", plano: "Selecione um aluno", vencimento: new Date().toISOString().split("T")[0] });
   };
