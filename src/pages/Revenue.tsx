@@ -357,6 +357,20 @@ const Revenue = () => {
             <Button variant="secondary" onClick={gerarParcelas}>Gerar Parcelas do Mês</Button>
             <Button variant="outline" onClick={() => setShowAvulso(true)}>Gerar Recebível Avulso</Button>
             <Button onClick={() => setShowRecebimento(true)}>Registrar Recebimento Mitigado</Button>
+            <Button variant="destructive" onClick={async () => {
+              const { data, error, count } = await supabase.from("revenues").select("*", { count: "exact" });
+              if (error) {
+                toast.error(`ERRO ao ler banco: ${error.message}`, { duration: 10000 });
+              } else {
+                const total = data?.length ?? 0;
+                const jun25 = data?.filter((r: any) => r.vencimento?.startsWith("2025-06")) ?? [];
+                toast.info(`DIAGNÓSTICO: ${total} registros no banco. ${jun25.length} em Jun/2025. Estado local: ${receitas.length} registros.`, { duration: 15000 });
+                if (jun25.length > 0) {
+                  console.log("Registros Jun/2025 no banco:", jun25);
+                  toast.info(`Jun/2025 IDs: ${jun25.map((r: any) => r.aluno_nome).join(", ")}`, { duration: 15000 });
+                }
+              }
+            }}>🔍 Diagnóstico DB</Button>
           </div>
         </CardHeader>
       </Card>
