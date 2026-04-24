@@ -190,7 +190,7 @@ const expenseCategoryToDb = (e: Partial<Expense>) => ({
 
 // Diff helper: aplica novo array contra antigo, fazendo upsert/delete
 async function syncTable<T extends { id: string }>(
-  table: any,
+  table: string,
   oldArr: T[],
   newArr: T[],
   toDb: (item: any) => any
@@ -198,19 +198,39 @@ async function syncTable<T extends { id: string }>(
   const oldIds = new Set(oldArr.map((x) => x.id));
   const newIds = new Set(newArr.map((x) => x.id));
 
+  // 1. Identificar Deções
   const toDelete = [...oldIds].filter((id) => !newIds.has(id));
-  const toUpsert = newArr.filter((n) => {
-    const old = oldArr.find((o) => o.id === n.id);
-    return !old || JSON.stringify(old) !== JSON.stringify(n);
-  });
-
   if (toDelete.length > 0) {
-    const { error } = await supabase.from(table).delete().in("id", toDelete);
-    if (error) throw error;
+    const { error } = await supabase.from(table as any).delete().in("id", toDelete);
+    if (error) {
+      console.error(`Erro ao deletar em ${table}:`, error);
+      throw error;
+    }
   }
-  if (toUpsert.length > 0) {
-    const { error } = await supabase.from(table).upsert(toUpsert.map(toDb));
-    if (error) throw error;
+
+  // 2. Identificar Inserções (novos itens)
+  const toInsert = newArr.filter((n) => !oldIds.has(n.id));
+  if (toInsert.length > 0) {
+    const { error } = await supabase.from(table as any).insert(toInsert.map(toDb));
+    if (error) {
+      console.error(`Erro ao inserir em ${table}:`, error);
+      throw error;
+    }
+  }
+
+  // 3. Identificar Updates (itens existentes que mudaram)
+  const toUpdate = newArr.filter((n) => {
+    const old = oldArr.find((o) => o.id === n.id);
+    return old && JSON.stringify(old) !== JSON.stringify(n);
+  });
+  
+  if (toUpdate.length > 0) {
+    // Para updates, o Supabase upsert com IDs existentes funciona como update
+    const { error } = await supabase.from(table as any).upsert(toUpdate.map(toDb));
+    if (error) {
+      console.error(`Erro ao atualizar em ${table}:`, error);
+      throw error;
+    }
   }
 }
 
