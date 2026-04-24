@@ -323,9 +323,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const setPlans = makeSetter(plans, setPlansState, "plans", planToDb);
   const setExpenseCategories = makeSetter(expenseCategories, setExpenseCategoriesState, "expense_categories", expenseCategoryToDb);
 
-  const setRevenues = (u: Updater<Revenue>) => {
-    setRevenuesState((prev) => typeof u === "function" ? (u as (p: Revenue[]) => Revenue[])(prev) : u);
-  };
+  const setRevenues = makeSetter(revenues, setRevenuesState, "revenues", revenueToDb);
 
   const setScheduledPayments = (u: Updater<ScheduledPayment>) => {
     const next = typeof u === "function" ? (u as (p: ScheduledPayment[]) => ScheduledPayment[])(scheduledPayments) : u;
