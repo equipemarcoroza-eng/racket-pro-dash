@@ -281,7 +281,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       setStudentsState((sRes.data ?? []).map(dbToStudent));
       setEnrollmentsState((eRes.data ?? []).map(dbToEnrollment));
       setRevenuesState(loadedRevenues);
-      setLastSyncedRevenues(loadedRevenues); // Sincroniza estado inicial
       setAttendanceLogsState((aRes.data ?? []).map(dbToAttendance));
       setPlansState((pRes.data ?? []).map(dbToPlan));
       setScheduleState((slRes.data ?? []).map(dbToSlot));
