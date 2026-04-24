@@ -80,6 +80,7 @@ export const mockAttendance: AttendanceRecord[] = [];
 
 export interface Revenue {
   id: string;
+  alunoId?: string;
   aluno: string;
   plano: string;
   vencimento: string; // DD/MM/YYYY

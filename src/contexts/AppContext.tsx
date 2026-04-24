@@ -141,6 +141,7 @@ const brToIso = (br?: string | null) => {
 };
 const dbToRevenue = (r: any): Revenue => ({
   id: r.id,
+  alunoId: r.aluno_id,
   aluno: r.aluno_nome,
   plano: r.plano_nome,
   vencimento: isoToBr(r.vencimento),

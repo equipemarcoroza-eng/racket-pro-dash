@@ -25,7 +25,7 @@ const Revenue = () => {
   const [showRecebimento, setShowRecebimento] = useState(false);
   const [showAvulso, setShowAvulso] = useState(false);
   const [recebimentoForm, setRecebimentoForm] = useState({ aluno: "", valor: "", plano: "Mensalidade" });
-  const [avulsoForm, setAvulsoForm] = useState({ aluno: "", valor: "", plano: "Selecione um aluno", vencimento: new Date().toISOString().split("T")[0] });
+  const [avulsoForm, setAvulsoForm] = useState({ aluno: "", alunoId: "", valor: "", plano: "Selecione um aluno", vencimento: new Date().toISOString().split("T")[0] });
   
   const now = new Date();
   const [selectedMonth, setSelectedMonth] = useState(String(now.getMonth() + 1).padStart(2, "0"));
@@ -122,6 +122,7 @@ const Revenue = () => {
 
         novas.push({
           id: crypto.randomUUID(),
+          alunoId: aluno.id,
           aluno: aluno.nome,
           plano: plano.nome,
           vencimento,
@@ -220,7 +221,8 @@ const Revenue = () => {
     if (!recebimentoForm.aluno || !recebimentoForm.valor) { toast.error("Preencha todos os campos"); return; }
     const now = new Date();
     const venc = `${String(now.getDate()).padStart(2, "0")}/${String(now.getMonth() + 1).padStart(2, "0")}/${now.getFullYear()}`;
-    setReceitas((prev) => [...prev, { id: crypto.randomUUID(), aluno: recebimentoForm.aluno, plano: recebimentoForm.plano, vencimento: venc, valor: Number(recebimentoForm.valor), status: "Pago" }]);
+    const aluno = students.find(s => s.nome === recebimentoForm.aluno);
+    setReceitas((prev) => [...prev, { id: crypto.randomUUID(), alunoId: aluno?.id, aluno: recebimentoForm.aluno, plano: recebimentoForm.plano, vencimento: venc, valor: Number(recebimentoForm.valor), status: "Pago" }]);
     toast.success("Recebimento registrado");
     setShowRecebimento(false);
     setRecebimentoForm({ aluno: "", valor: "", plano: "Mensalidade" });
@@ -233,7 +235,7 @@ const Revenue = () => {
     const [y, m, d] = avulsoForm.vencimento.split("-");
     const venc = `${d}/${m}/${y}`;
 
-    setReceitas((prev) => [...prev, { id: crypto.randomUUID(), aluno: avulsoForm.aluno, plano: avulsoForm.plano, vencimento: venc, valor: Number(avulsoForm.valor), status: "Gerada" }]);
+    setReceitas((prev) => [...prev, { id: crypto.randomUUID(), alunoId: avulsoForm.alunoId, aluno: avulsoForm.aluno, plano: avulsoForm.plano, vencimento: venc, valor: Number(avulsoForm.valor), status: "Gerada" }]);
     toast.success("Recebível avulso gerado");
     setShowAvulso(false);
     setAvulsoForm({ aluno: "", valor: "", plano: "Selecione um aluno", vencimento: new Date().toISOString().split("T")[0] });
@@ -617,7 +619,7 @@ const Revenue = () => {
               <Select value={avulsoForm.aluno} onValueChange={(v) => {
                 const aluno = students.find(s => s.nome === v);
                 const plano = mockPlans.find(p => p.id === aluno?.planoId);
-                setAvulsoForm({ ...avulsoForm, aluno: v, plano: plano?.nome || "Sem plano" });
+                setAvulsoForm({ ...avulsoForm, aluno: v, alunoId: aluno?.id || "", plano: plano?.nome || "Sem plano" });
               }}>
                 <SelectTrigger><SelectValue placeholder="Selecione o aluno" /></SelectTrigger>
                 <SelectContent>{[...students].sort((a, b) => a.nome.localeCompare(b.nome)).map((s) => <SelectItem key={s.id} value={s.nome}>{s.nome}</SelectItem>)}</SelectContent>
