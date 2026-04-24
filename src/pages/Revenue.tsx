@@ -244,7 +244,7 @@ const Revenue = () => {
 
   const receitasMes = receitas.filter(r => {
     const [dia, mes, ano] = r.vencimento.split("/");
-    return mes === selectedMonth && ano === selectedYear && ["05", "10", "15", "20", "25", "30"].includes(dia);
+    return mes === selectedMonth && ano === selectedYear;
   });
 
   const totalFaturadoMes = receitasMes
