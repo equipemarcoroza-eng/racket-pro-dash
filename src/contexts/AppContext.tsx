@@ -311,6 +311,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         const next = typeof u === "function" ? (u as (p: T[]) => T[])(prev) : u;
         syncTable(table, prev, next, toDb).catch((err) => {
           console.error(`Erro ao sincronizar ${table}:`, err);
+          toast.error(`Erro ao salvar ${table} no banco de dados. Verifique sua conexão ou permissões.`);
         });
         return next;
       });
