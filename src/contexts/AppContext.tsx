@@ -239,7 +239,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [students, setStudentsState] = useState<Student[]>([]);
   const [enrollments, setEnrollmentsState] = useState<Enrollment[]>([]);
   const [revenues, setRevenuesState] = useState<Revenue[]>([]);
-  const [lastSyncedRevenues, setLastSyncedRevenues] = useState<Revenue[]>([]);
   const [attendanceLogs, setAttendanceLogsState] = useState<AttendanceLog[]>([]);
   const [expenseLogs, setExpenseLogsState] = useState<ExpenseLog[]>([]);
   const [schedule, setScheduleState] = useState<ClassSlot[]>([]);
@@ -247,28 +246,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [scheduledPayments, setScheduledPaymentsState] = useState<ScheduledPayment[]>([]);
   const [expenseCategories, setExpenseCategoriesState] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
-
-  // Sync Engine: Monitora mudanças no estado e envia para o Supabase de forma segura
-  useEffect(() => {
-    if (loading || !user) return;
-    
-    // Evitar sync se for idêntico ao último sincronizado
-    if (JSON.stringify(lastSyncedRevenues) === JSON.stringify(revenues)) return;
-
-    const performSync = async () => {
-      try {
-        await syncTable("revenues", lastSyncedRevenues, revenues, revenueToDb);
-        setLastSyncedRevenues([...revenues]);
-      } catch (err: any) {
-        console.error("Erro no Sync Engine (revenues):", err);
-        const errorMsg = err.message || JSON.stringify(err);
-        toast.error(`Falha ao sincronizar: ${errorMsg}`, { duration: 5000 });
-      }
-    };
-
-    const timer = setTimeout(performSync, 500); // Pequeno debounce para agrupar múltiplas ações rápidas
-    return () => clearTimeout(timer);
-  }, [revenues, loading, user]);
 
   // Carrega tudo do banco quando o usuário autentica
   useEffect(() => {
