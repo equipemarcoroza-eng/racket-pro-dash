@@ -62,7 +62,7 @@ const Revenue = () => {
       const matchesPlan = !filter || r.plano === filter;
       return matchesPeriod && matchesPlan;
     })
-    .sort((a, b) => parseDate(a.vencimento).getTime() - parseDate(b.vencimento).getTime());
+    .sort((a, b) => a.aluno.localeCompare(b.aluno));
 
   const gerarParcelas = () => {
     const now = new Date();
