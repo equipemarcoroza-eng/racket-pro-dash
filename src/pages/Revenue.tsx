@@ -27,7 +27,7 @@ const Revenue = () => {
   const [avulsoForm, setAvulsoForm] = useState({ aluno: "", valor: "", plano: "Selecione um aluno", vencimento: new Date().toISOString().split("T")[0] });
 
   const filtered = receitas
-    .filter((r) => r.status === "Gerada")
+    .filter((r) => r.status === "Gerada" || r.status === "Em atraso")
     .filter((r) => !filter || r.plano === filter)
     .sort((a, b) => a.aluno.localeCompare(b.aluno));
 
@@ -394,7 +394,7 @@ const Revenue = () => {
             <div>
               <p className="text-sm text-primary font-medium">Lista de Receitas</p>
               <p className="text-xl font-bold">Mensalidades e planos</p>
-              <p className="text-xs text-muted-foreground mt-1">Exibindo apenas registros com status <strong>Gerada</strong> para gestão ativa.</p>
+              <p className="text-xs text-muted-foreground mt-1">Exibindo todos os registros com status <strong>Gerada</strong> ou <strong>Em atraso</strong> para gestão ativa.</p>
             </div>
             <div className="flex gap-2 text-sm">
               {["Mensalidade", "Trimestral", "Semestral", "Anual"].map((f) => (
