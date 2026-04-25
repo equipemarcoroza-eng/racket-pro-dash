@@ -78,6 +78,16 @@ const Dashboard = () => {
       .filter(r => r.status === "Gerada" || r.status === "Em atraso")
       .reduce((acc, curr) => acc + curr.valor, 0);
 
+    // Total de Gastos no Período
+    const totalGastos = (scheduledPayments || [])
+      .filter(p => {
+        if (!p.vencimento) return false;
+        const [y, m, day] = p.vencimento.split("-").map(Number);
+        const vDate = new Date(y, m - 1, day);
+        return vDate >= startDate && vDate <= endDate;
+      })
+      .reduce((acc, curr) => acc + curr.valor, 0);
+
     // Faturamento no Período = (Total de Parcelas e Taxas Geradas) - (Isenções)
     const chartMonths = periodo === "Mês Atual" || periodo === "Mês Anterior" ? 6 : 
                        periodo === "Últimos 3 meses" ? 3 :
@@ -126,6 +136,7 @@ const Dashboard = () => {
       faturamentoPeriodo,
       totalPago,
       totalPendente,
+      totalGastos,
       dynamicRevenueData
     };
   }, [periodo, students, enrollments, revenues, mockSchedule]);
@@ -161,7 +172,7 @@ const Dashboard = () => {
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         <Card>
           <CardContent className="pt-6">
             <p className="text-sm text-primary font-medium">Métrica</p>
@@ -198,6 +209,16 @@ const Dashboard = () => {
               R$ {metrics.totalPendente.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
             </div>
             <p className="text-xs text-muted-foreground mt-2">A receber no período</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <p className="text-sm text-gray-600 font-medium">Financeiro</p>
+            <p className="text-xl font-bold mt-1">Contas Pagas</p>
+            <div className="mt-4 p-3 bg-gray-50 rounded-md text-center font-semibold text-gray-700">
+              R$ {metrics.totalGastos.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">Total de despesas no período</p>
           </CardContent>
         </Card>
       </div>
