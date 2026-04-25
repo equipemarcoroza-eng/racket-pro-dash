@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import type { Student } from "@/data/mockData";
 import { useAppContext } from "@/contexts/AppContext";
 import { toast } from "sonner";
-import { Printer } from "lucide-react";
+import { Printer, Trash2 } from "lucide-react";
 import logo from "@/assets/logo.png";
 
 const categorias = ["Infantil", "Juvenil", "Adulto"] as const;
@@ -139,6 +139,13 @@ const Students = () => {
     const iso = toIsoDate(dateStr);
     const [y, m, d] = iso.split("-").map(Number);
     return new Date(y, m - 1, d);
+  };
+
+  const handleDelete = (id: string) => {
+    if (window.confirm("Tem certeza que deseja excluir este aluno? Esta ação não pode ser desfeita e removerá todos os dados vinculados.")) {
+      setStudents((prev) => prev.filter((s) => s.id !== id));
+      toast.success("Aluno removido com sucesso");
+    }
   };
 
   const getStudentFinance = () => {
@@ -510,6 +517,10 @@ const Students = () => {
                       <Button variant="outline" size="sm" onClick={() => openEdit(s)}>Editar</Button>
                       <Button variant="outline" size="sm" className="text-blue-600 border-blue-200 hover:bg-blue-50" onClick={() => { setReportStudent(s); setReportType("finance"); }}>Financeiro</Button>
                       <Button variant="outline" size="sm" className="text-green-600 border-green-200 hover:bg-green-50" onClick={() => { setReportStudent(s); setReportType("frequency"); }}>Frequência</Button>
+                      <Button variant="outline" size="sm" className="text-destructive border-red-200 hover:bg-red-50" onClick={() => handleDelete(s.id)}>
+                        <Trash2 className="h-4 w-4 mr-1" />
+                        Excluir
+                      </Button>
                     </div>
                   </TableCell>
                 </TableRow>
