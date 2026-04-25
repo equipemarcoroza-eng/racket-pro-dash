@@ -68,6 +68,16 @@ const Dashboard = () => {
     // O total líquido efetivamente faturado na competência matemática exigida
     const faturamentoPeriodo = faturamentoBruto - isencoes;
 
+    // Total Pago no Período
+    const totalPago = receitasValidas
+      .filter(r => r.status === "Pago")
+      .reduce((acc, curr) => acc + curr.valor, 0);
+
+    // Total Pendente no Período (Gerada + Em atraso)
+    const totalPendente = receitasValidas
+      .filter(r => r.status === "Gerada" || r.status === "Em atraso")
+      .reduce((acc, curr) => acc + curr.valor, 0);
+
     // Faturamento no Período = (Total de Parcelas e Taxas Geradas) - (Isenções)
     const chartMonths = periodo === "Mês Atual" || periodo === "Mês Anterior" ? 6 : 
                        periodo === "Últimos 3 meses" ? 3 :
@@ -104,6 +114,8 @@ const Dashboard = () => {
     return {
       alunosAtivos,
       faturamentoPeriodo,
+      totalPago,
+      totalPendente,
       dynamicRevenueData
     };
   }, [periodo, students, enrollments, revenues, mockSchedule]);
@@ -139,7 +151,7 @@ const Dashboard = () => {
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card>
           <CardContent className="pt-6">
             <p className="text-sm text-primary font-medium">Métrica</p>
@@ -151,12 +163,31 @@ const Dashboard = () => {
         <Card>
           <CardContent className="pt-6">
             <p className="text-sm text-primary font-medium">Métrica</p>
-            <p className="text-xl font-bold mt-1">Faturamento {periodo}</p>
-            <p className="text-xs text-muted-foreground">(não computadas as isenções)</p>
-            <div className="mt-4 p-3 bg-secondary rounded-md text-center font-semibold">
+            <p className="text-xl font-bold mt-1">Faturamento Total</p>
+            <div className="mt-4 p-3 bg-secondary rounded-md text-center font-semibold text-blue-700">
               R$ {metrics.faturamentoPeriodo.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
             </div>
-            <p className="text-xs text-muted-foreground mt-2">Baseado no período selecionado</p>
+            <p className="text-xs text-muted-foreground mt-2">Bruto - Isenções ({periodo})</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <p className="text-sm text-green-600 font-medium">Financeiro</p>
+            <p className="text-xl font-bold mt-1">Total Pago</p>
+            <div className="mt-4 p-3 bg-green-50 rounded-md text-center font-semibold text-green-700">
+              R$ {metrics.totalPago.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">Recebido no período</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <p className="text-sm text-destructive font-medium">Financeiro</p>
+            <p className="text-xl font-bold mt-1">Total Pendente</p>
+            <div className="mt-4 p-3 bg-red-50 rounded-md text-center font-semibold text-destructive">
+              R$ {metrics.totalPendente.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">A receber no período</p>
           </CardContent>
         </Card>
       </div>
