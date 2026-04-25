@@ -100,6 +100,7 @@ const Students = () => {
   const [viewingStudent, setViewingStudent] = useState<Student | null>(null);
   const [catFilter, setCatFilter] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
+  const [sexoFilter, setSexoFilter] = useState<Student["sexo"] | null>(null);
   const [form, setForm] = useState<FormState>(emptyForm);
 
   // Estados para os novos relatórios financeiros e de frequência
@@ -123,7 +124,10 @@ const Students = () => {
   });
 
   const filtered = students.filter(
-    (s) => (!catFilter || s.categoria === catFilter) && (!statusFilter || s.status === statusFilter)
+    (s) => 
+      (!catFilter || s.categoria === catFilter) && 
+      (!statusFilter || s.status === statusFilter) &&
+      (!sexoFilter || s.sexo === sexoFilter)
   ).sort((a, b) => a.nome.localeCompare(b.nome));
 
   const toIsoDate = (dateStr: string) => {
@@ -387,7 +391,7 @@ const Students = () => {
               <p className="text-sm text-primary font-medium">Filtros de Lista</p>
               <p className="font-semibold">Refinar resultados</p>
             </div>
-            <Button variant="outline" size="sm" onClick={() => { setCatFilter(null); setStatusFilter(null); }}>Limpar filtros</Button>
+            <Button variant="outline" size="sm" onClick={() => { setCatFilter(null); setStatusFilter(null); setSexoFilter(null); }}>Limpar filtros</Button>
           </div>
           <div className="flex flex-wrap gap-6">
             <div>
@@ -403,6 +407,14 @@ const Students = () => {
               <div className="flex gap-2">
                 {statuses.map((s) => (
                   <Button key={s} variant={statusFilter === s ? "default" : "outline"} size="sm" onClick={() => setStatusFilter(statusFilter === s ? null : s)}>{s}</Button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <p className="text-sm font-medium mb-2">Sexo</p>
+              <div className="flex gap-2">
+                {(["M", "F"] as const).map((s) => (
+                  <Button key={s} variant={sexoFilter === s ? "default" : "outline"} size="sm" onClick={() => setSexoFilter(sexoFilter === s ? null : s)}>{s === "M" ? "M" : "F"}</Button>
                 ))}
               </div>
             </div>
