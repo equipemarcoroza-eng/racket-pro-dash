@@ -297,7 +297,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         supabase.from("schedule_slots").select("*").limit(10000),
         supabase.from("enrollments").select("*").limit(10000),
         fetchAll("revenues"),
-        supabase.from("attendance_logs").select("*").limit(10000),
+        fetchAll("attendance_logs"),
         supabase.from("scheduled_payments").select("*").limit(10000),
         supabase.from("expense_categories").select("*").limit(10000),
       ]);

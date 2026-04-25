@@ -104,9 +104,21 @@ const Students = () => {
   // Estados para os novos relatórios financeiros e de frequência
   const [reportStudent, setReportStudent] = useState<Student | null>(null);
   const [reportType, setReportType] = useState<"finance" | "frequency" | null>(null);
-  const [dateRange, setDateRange] = useState({ 
-    start: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split("T")[0],
-    end: new Date().toISOString().split("T")[0] 
+  const [dateRange, setDateRange] = useState(() => {
+    const now = new Date();
+    const start = new Date(now.getFullYear(), now.getMonth(), 1);
+    
+    const formatDate = (d: Date) => {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    };
+    
+    return {
+      start: formatDate(start),
+      end: formatDate(now)
+    };
   });
 
   const filtered = students.filter(
@@ -120,14 +132,23 @@ const Students = () => {
 
   const getStudentFinance = () => {
     if (!reportStudent) return { list: [], totals: { faturado: 0, pago: 0, aReceber: 0 } };
-    const start = new Date(dateRange.start);
-    const end = new Date(dateRange.end);
     
     const list = revenues.filter((r) => {
-      if (r.aluno !== reportStudent.nome) return false;
-      const d = parseDateStr(r.vencimento);
-      return d >= start && d <= end;
-    }).sort((a, b) => parseDateStr(a.vencimento).getTime() - parseDateStr(b.vencimento).getTime());
+      // Filtrar por ID se disponível, senão por nome (legado/avulso)
+      const matchesId = r.alunoId === reportStudent.id;
+      const matchesName = r.aluno === reportStudent.nome;
+      if (!matchesId && !matchesName) return false;
+
+      // Comparação de datas robusta (YYYY-MM-DD strings)
+      const [d, m, y] = r.vencimento.split("/");
+      const vencimentoIso = `${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}`;
+      
+      return vencimentoIso >= dateRange.start && vencimentoIso <= dateRange.end;
+    }).sort((a, b) => {
+      const [da, ma, ya] = a.vencimento.split("/");
+      const [db, mb, yb] = b.vencimento.split("/");
+      return `${ya}-${ma}-${da}`.localeCompare(`${yb}-${mb}-${db}`);
+    });
 
     const totals = list.reduce((acc, r) => {
       if (r.status !== "Isento") acc.faturado += r.valor;
@@ -141,20 +162,18 @@ const Students = () => {
 
   const getStudentFrequency = () => {
     if (!reportStudent) return [];
-    const start = new Date(dateRange.start);
-    const end = new Date(dateRange.end);
     
     return attendanceLogs
       .filter((l) => {
         if (l.alunoId !== reportStudent.id) return false;
-        const d = new Date(l.data);
-        return d >= start && d <= end;
+        // l.data já está em YYYY-MM-DD vindo do DB
+        return l.data >= dateRange.start && l.data <= dateRange.end;
       })
       .map(l => {
         const slot = mockSchedule.find(s => s.id === l.turmaId);
         return { ...l, slotInfo: slot ? `${slot.horario} - ${slot.quadra}` : "Turma removida" };
       })
-      .sort((a, b) => new Date(a.data).getTime() - new Date(b.data).getTime());
+      .sort((a, b) => a.data.localeCompare(b.data));
   };
 
   const handlePrintFinancePDF = async () => {
