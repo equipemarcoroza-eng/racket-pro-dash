@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { useAppContext } from "@/contexts/AppContext";
 import { CLASS_LIMIT } from "@/data/mockData";
 
@@ -93,11 +93,21 @@ const Dashboard = () => {
       const mIdx = d.getMonth();
       const yIdx = d.getFullYear();
 
-      const ganhos = revenues
-        .filter(r => {
-          const vDate = parseDate(r.vencimento);
-          return vDate.getMonth() === mIdx && vDate.getFullYear() === yIdx && r.status !== "Isento";
-        })
+      const mesReceitas = revenues.filter(r => {
+        const vDate = parseDate(r.vencimento);
+        return vDate.getMonth() === mIdx && vDate.getFullYear() === yIdx;
+      });
+
+      const ganhos = mesReceitas
+        .filter(r => r.status !== "Isento")
+        .reduce((acc, curr) => acc + curr.valor, 0);
+
+      const pago = mesReceitas
+        .filter(r => r.status === "Pago")
+        .reduce((acc, curr) => acc + curr.valor, 0);
+
+      const pendente = mesReceitas
+        .filter(r => r.status === "Gerada" || r.status === "Em atraso")
         .reduce((acc, curr) => acc + curr.valor, 0);
 
       const gastos = (scheduledPayments || [])
@@ -108,7 +118,7 @@ const Dashboard = () => {
         })
         .reduce((acc, curr) => acc + curr.valor, 0);
 
-      dynamicRevenueData.push({ mes: mLabel, ganhos, gastos });
+      dynamicRevenueData.push({ mes: mLabel, ganhos, pago, pendente, gastos });
     }
 
     return {
@@ -195,38 +205,35 @@ const Dashboard = () => {
 
       <Card>
         <CardContent className="pt-6">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-6">
             <div>
               <p className="text-sm text-primary font-medium">Financeiro</p>
-              <p className="text-xl font-bold">Evolução de Ganhos vs Gastos</p>
+              <p className="text-xl font-bold">Evolução de Ganhos, Pagos e Pendentes</p>
             </div>
-            <Button variant="outline" size="sm">Mensal</Button>
+            <div className="flex gap-2">
+              <div className="flex items-center gap-1.5 px-2 py-1 bg-blue-50 text-blue-700 text-[10px] font-bold rounded border border-blue-100">Faturamento</div>
+              <div className="flex items-center gap-1.5 px-2 py-1 bg-green-50 text-green-700 text-[10px] font-bold rounded border border-green-100">Pago</div>
+              <div className="flex items-center gap-1.5 px-2 py-1 bg-red-50 text-red-700 text-[10px] font-bold rounded border border-red-100">Pendente</div>
+              <div className="flex items-center gap-1.5 px-2 py-1 bg-gray-50 text-gray-600 text-[10px] font-bold rounded border border-gray-100">Gastos</div>
+            </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <p className="text-sm font-medium mb-2">Ganhos (R$)</p>
-              <ResponsiveContainer width="100%" height={200}>
-                <BarChart data={metrics.dynamicRevenueData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="mes" />
-                  <YAxis />
-                  <Tooltip formatter={(value: number) => `R$ ${value.toLocaleString("pt-BR")}`} />
-                  <Bar dataKey="ganhos" fill="hsl(240, 49%, 34%)" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-            <div>
-              <p className="text-sm font-medium mb-2">Gastos (R$)</p>
-              <ResponsiveContainer width="100%" height={200}>
-                <BarChart data={metrics.dynamicRevenueData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="mes" />
-                  <YAxis />
-                  <Tooltip formatter={(value: number) => `R$ ${value.toLocaleString("pt-BR")}`} />
-                  <Bar dataKey="gastos" fill="hsl(0, 0%, 73%)" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+          <div className="h-[350px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={metrics.dynamicRevenueData}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                <XAxis dataKey="mes" axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#666'}} />
+                <YAxis axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#666'}} tickFormatter={(value) => `R$ ${value}`} />
+                <Tooltip 
+                  formatter={(value: number) => `R$ ${value.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`}
+                  contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                />
+                <Legend iconType="circle" wrapperStyle={{ paddingTop: '20px' }} />
+                <Line type="monotone" dataKey="ganhos" name="Faturamento" stroke="#1d4ed8" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
+                <Line type="monotone" dataKey="pago" name="Total Pago" stroke="#15803d" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
+                <Line type="monotone" dataKey="pendente" name="Total Pendente" stroke="#b91c1c" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
+                <Line type="monotone" dataKey="gastos" name="Gastos" stroke="#4b5563" strokeWidth={2} strokeDasharray="5 5" dot={{ r: 3 }} />
+              </LineChart>
+            </ResponsiveContainer>
           </div>
         </CardContent>
       </Card>
