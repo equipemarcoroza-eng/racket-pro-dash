@@ -12,7 +12,6 @@ const periodos = ["Mês Atual", "Mês Anterior", "Últimos 3 meses", "Últimos 6
 const Dashboard = () => {
   const { students, enrollments, revenues, schedule: mockSchedule, scheduledPayments } = useAppContext();
   const [periodo, setPeriodo] = useState("Mês Atual");
-  const [rankingModal, setRankingModal] = useState<{ open: boolean; type: "top" | "bottom" }>({ open: false, type: "top" });
 
   const parseDate = (dateStr: string) => {
     const [d, m, y] = dateStr.split("/").map(Number);
@@ -69,20 +68,7 @@ const Dashboard = () => {
     // O total líquido efetivamente faturado na competência matemática exigida
     const faturamentoPeriodo = faturamentoBruto - isencoes;
 
-    // Ocupação por Turma
-    const occupancyData = mockSchedule.map(slot => {
-      const count = enrollments.filter(e => e.turmaId === slot.id).length;
-      return {
-        nome: slot.turmaId,
-        pct: Math.round((count / CLASS_LIMIT) * 100),
-      };
-    });
-
-    const sortedOccupancy = [...occupancyData].sort((a, b) => b.pct - a.pct);
-    const top3 = sortedOccupancy.slice(0, 3);
-    const bottom3 = sortedOccupancy.slice(-3).reverse();
-
-    // Dados do Gráfico (Evolução mensal)
+    // Faturamento no Período = (Total de Parcelas e Taxas Geradas) - (Isenções)
     const chartMonths = periodo === "Mês Atual" || periodo === "Mês Anterior" ? 6 : 
                        periodo === "Últimos 3 meses" ? 3 :
                        periodo === "Últimos 6 meses" ? 6 : 
@@ -118,9 +104,6 @@ const Dashboard = () => {
     return {
       alunosAtivos,
       faturamentoPeriodo,
-      top3,
-      bottom3,
-      sortedOccupancy,
       dynamicRevenueData
     };
   }, [periodo, students, enrollments, revenues, mockSchedule]);
@@ -178,48 +161,6 @@ const Dashboard = () => {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <p className="text-sm text-primary font-medium">Ocupação</p>
-                <p className="text-xl font-bold">Top 3 Turmas</p>
-              </div>
-              <Button variant="outline" size="sm" onClick={() => setRankingModal({ open: true, type: "top" })}>Ranking</Button>
-            </div>
-            <div className="space-y-3">
-              {metrics.top3.map((t) => (
-                <div key={t.nome} className="flex items-center gap-3">
-                  <span className="w-24 text-sm font-medium truncate">{t.nome}</span>
-                  <Progress value={t.pct} className="flex-1" />
-                  <span className="text-sm font-medium w-10 text-right">{t.pct}%</span>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <p className="text-sm text-primary font-medium">Ocupação</p>
-                <p className="text-xl font-bold">Menor ocupação</p>
-              </div>
-              <Button variant="outline" size="sm" onClick={() => setRankingModal({ open: true, type: "bottom" })}>Ranking</Button>
-            </div>
-            <div className="space-y-3">
-              {metrics.bottom3.map((t) => (
-                <div key={t.nome} className="flex items-center gap-3">
-                  <span className="w-24 text-sm font-medium truncate">{t.nome}</span>
-                  <Progress value={t.pct} className="flex-1" />
-                  <span className="text-sm font-medium w-10 text-right">{t.pct}%</span>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
 
       <Card>
         <CardContent className="pt-6">
@@ -258,32 +199,6 @@ const Dashboard = () => {
           </div>
         </CardContent>
       </Card>
-      {/* Ranking Completo Modal */}
-      <Dialog open={rankingModal.open} onOpenChange={(open) => !open && setRankingModal({ ...rankingModal, open: false })}>
-        <DialogContent className="max-w-md max-h-[80vh] flex flex-col">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-bold text-primary">
-              {rankingModal.type === "top" ? "Ranking: Melhor para Pior Ocupação" : "Ranking: Pior para Melhor Ocupação"}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="flex-1 overflow-y-auto pr-2 space-y-4 pt-4">
-            {(rankingModal.type === "top" ? metrics.sortedOccupancy : [...metrics.sortedOccupancy].reverse()).map((t, index) => (
-              <div key={t.nome} className="flex flex-col gap-1 pb-3 border-b last:border-0 border-dashed">
-                <div className="flex justify-between items-center mb-1">
-                  <span className="text-sm font-bold flex items-center gap-2">
-                    <span className="w-5 h-5 flex items-center justify-center bg-secondary text-[10px] rounded-full">
-                      {index + 1}
-                    </span>
-                    {t.nome}
-                  </span>
-                  <span className="text-xs font-black text-primary">{t.pct}%</span>
-                </div>
-                <Progress value={t.pct} className="h-2" />
-              </div>
-            ))}
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
