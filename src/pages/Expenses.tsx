@@ -18,6 +18,8 @@ import { useEffect } from "react";
 import { Printer } from "lucide-react";
 import logo from "@/assets/logo.png";
 
+const periodos = ["Mês Atual", "Mês Anterior", "Últimos 3 meses", "Últimos 6 meses", "Últimos 12 meses", "Últimos 24 meses", "Últimos 36 meses", "Últimos 48 meses"];
+
 const Expenses = () => {
   const {
     schedule,
@@ -29,27 +31,49 @@ const Expenses = () => {
     setExpenseCategories: setCategories,
   } = useAppContext();
   const [catFilter, setCatFilter] = useState<string | null>(null);
+  const [periodo, setPeriodo] = useState("Mês Atual");
   const [showExpenseForm, setShowExpenseForm] = useState(false);
   const [showCategoryForm, setShowCategoryForm] = useState(false);
   const [viewingPayment, setViewingPayment] = useState<ScheduledPayment | null>(null);
   const [expenseForm, setExpenseForm] = useState<{ id: string; fornecedor: string; valor: string; categoria: string; vencimento: string; status: "Em Aberto" | "Pago" }>({ id: "", fornecedor: "", valor: "", categoria: "", vencimento: "", status: "Em Aberto" });
   const [categoryForm, setCategoryForm] = useState({ categoria: "", valor: "" });
 
-  // Métricas do Mês Corrente
-  const currentMonthMetrics = useMemo(() => {
+  // Métricas do Período Selecionado
+  const periodMetrics = useMemo(() => {
     const now = new Date();
     const curMonth = now.getMonth();
     const curYear = now.getFullYear();
 
-    const monthlyPayments = payments.filter(p => {
+    let startDate = new Date(curYear, curMonth, 1);
+    let endDate = new Date(curYear, curMonth + 1, 0);
+
+    if (periodo === "Mês Anterior") {
+      startDate = new Date(curYear, curMonth - 1, 1);
+      endDate = new Date(curYear, curMonth, 0);
+    } else if (periodo === "Últimos 3 meses") {
+      startDate = new Date(curYear, curMonth - 2, 1);
+    } else if (periodo === "Últimos 6 meses") {
+      startDate = new Date(curYear, curMonth - 5, 1);
+    } else if (periodo === "Últimos 12 meses") {
+      startDate = new Date(curYear, curMonth - 11, 1);
+    } else if (periodo === "Últimos 24 meses") {
+      startDate = new Date(curYear, curMonth - 23, 1);
+    } else if (periodo === "Últimos 36 meses") {
+      startDate = new Date(curYear, curMonth - 35, 1);
+    } else if (periodo === "Últimos 48 meses") {
+      startDate = new Date(curYear, curMonth - 47, 1);
+    }
+
+    const filteredPayments = payments.filter(p => {
       if (!p.vencimento) return false;
       const [y, m, d] = p.vencimento.split("-").map(Number);
-      return (m - 1) === curMonth && y === curYear;
+      const vDate = new Date(y, m - 1, d);
+      return vDate >= startDate && vDate <= endDate;
     });
 
-    const totalLancado = monthlyPayments.reduce((acc, curr) => acc + curr.valor, 0);
-    const totalPago = monthlyPayments.filter(p => p.status === "Pago").reduce((acc, curr) => acc + curr.valor, 0);
-    const totalPendente = monthlyPayments.filter(p => p.status === "Em Aberto").reduce((acc, curr) => acc + curr.valor, 0);
+    const totalLancado = filteredPayments.reduce((acc, curr) => acc + curr.valor, 0);
+    const totalPago = filteredPayments.filter(p => p.status === "Pago").reduce((acc, curr) => acc + curr.valor, 0);
+    const totalPendente = filteredPayments.filter(p => p.status === "Em Aberto").reduce((acc, curr) => acc + curr.valor, 0);
 
     const chartData = [
       { name: "Total Lançado", valor: totalLancado, color: "#3b82f6" },
@@ -62,8 +86,8 @@ const Expenses = () => {
       { name: "Pendente", value: totalPendente, color: "#ef4444" }
     ];
 
-    return { totalLancado, totalPago, totalPendente, chartData, pieData };
-  }, [payments]);
+    return { totalLancado, totalPago, totalPendente, chartData, pieData, startDate, endDate };
+  }, [payments, periodo]);
 
   const totalCategorias = categories.reduce((a, b) => a + b.valor, 0);
   const totalPagamentos = payments.reduce((a, b) => a + b.valor, 0);
@@ -186,24 +210,24 @@ const Expenses = () => {
       
       doc.setFontSize(14);
       doc.setTextColor(0, 0, 0);
-      doc.text("Resumo do Mês Corrente", 105, 70, { align: "center" });
+      doc.text(`Resumo do Período: ${periodo}`, 105, 70, { align: "center" });
 
       doc.setDrawColor(200, 200, 200);
       doc.line(20, 75, 190, 75);
 
       // Totais
       doc.setFontSize(11);
-      doc.text(`Total Lançado: R$ ${currentMonthMetrics.totalLancado.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`, 25, 85);
-      doc.text(`Total Pago: R$ ${currentMonthMetrics.totalPago.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`, 25, 92);
-      doc.text(`Total Pendente: R$ ${currentMonthMetrics.totalPendente.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`, 25, 99);
+      doc.text(`Total Lançado: R$ ${periodMetrics.totalLancado.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`, 25, 85);
+      doc.text(`Total Pago: R$ ${periodMetrics.totalPago.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`, 25, 92);
+      doc.text(`Total Pendente: R$ ${periodMetrics.totalPendente.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`, 25, 99);
 
       // Tabela de Contas
       const tableData = payments
         .filter(p => {
           if (!p.vencimento) return false;
           const [y, m, d] = p.vencimento.split("-").map(Number);
-          const now = new Date();
-          return (m - 1) === now.getMonth() && y === now.getFullYear();
+          const vDate = new Date(y, m - 1, d);
+          return vDate >= periodMetrics.startDate && vDate <= periodMetrics.endDate;
         })
         .map(p => [
           p.fornecedor,
@@ -255,27 +279,36 @@ const Expenses = () => {
       {/* 2. Resumo (Visão Geral) */}
       <Card>
         <CardContent className="pt-6">
-          <div className="mb-6">
-            <p className="text-sm text-primary font-medium">Resumo</p>
-            <p className="text-xl font-bold">Visão Geral do Mês Corrente</p>
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <p className="text-sm text-primary font-medium">Resumo</p>
+              <p className="text-xl font-bold">Visão Geral do Período</p>
+            </div>
+            <div className="flex gap-2 flex-wrap">
+              {periodos.map((p) => (
+                <Button key={p} variant={periodo === p ? "default" : "outline"} size="sm" onClick={() => setPeriodo(p)}>
+                  {p}
+                </Button>
+              ))}
+            </div>
           </div>
 
           {/* Subtotais em Destaque */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div className="bg-primary/5 border-l-4 border-primary p-5 rounded-lg shadow-sm">
               <p className="text-xs text-primary font-bold uppercase tracking-wider mb-1">Total Lançado</p>
-              <p className="text-3xl font-black">R$ {currentMonthMetrics.totalLancado.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
-              <p className="text-[10px] text-muted-foreground mt-2 font-medium">Todas as contas com vencimento este mês.</p>
+              <p className="text-3xl font-black">R$ {periodMetrics.totalLancado.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
+              <p className="text-[10px] text-muted-foreground mt-2 font-medium">Todas as contas com vencimento no período.</p>
             </div>
             <div className="bg-green-50 border-l-4 border-green-500 p-5 rounded-lg shadow-sm">
               <p className="text-xs text-green-700 font-bold uppercase tracking-wider mb-1">Total Pago</p>
-              <p className="text-3xl font-black text-green-600">R$ {currentMonthMetrics.totalPago.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
-              <p className="text-[10px] text-muted-foreground mt-2 font-medium">Contas liquidadas no mês.</p>
+              <p className="text-3xl font-black text-green-600">R$ {periodMetrics.totalPago.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
+              <p className="text-[10px] text-muted-foreground mt-2 font-medium">Contas liquidadas no período.</p>
             </div>
             <div className="bg-red-50 border-l-4 border-red-500 p-5 rounded-lg shadow-sm">
               <p className="text-xs text-red-700 font-bold uppercase tracking-wider mb-1">Total Pendente</p>
-              <p className="text-3xl font-black text-red-600">R$ {currentMonthMetrics.totalPendente.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
-              <p className="text-[10px] text-muted-foreground mt-2 font-medium">Contas em aberto com vencimento este mês.</p>
+              <p className="text-3xl font-black text-red-600">R$ {periodMetrics.totalPendente.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
+              <p className="text-[10px] text-muted-foreground mt-2 font-medium">Contas em aberto com vencimento no período.</p>
             </div>
           </div>
 
@@ -284,10 +317,10 @@ const Expenses = () => {
             <div className="h-[320px] border rounded-xl p-5 bg-card shadow-sm">
               <p className="text-sm font-bold text-muted-foreground mb-6 flex items-center gap-2">
                 <span className="w-2 h-2 bg-primary rounded-full"></span>
-                Comparativo de Despesas (Mês)
+                Comparativo de Despesas (Período)
               </p>
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={currentMonthMetrics.chartData}>
+                <BarChart data={periodMetrics.chartData}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
                   <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#888' }} />
                   <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#888' }} tickFormatter={(value) => `R$ ${value}`} />
@@ -297,7 +330,7 @@ const Expenses = () => {
                     contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
                   />
                   <Bar dataKey="valor" radius={[6, 6, 0, 0]} barSize={50}>
-                    {currentMonthMetrics.chartData.map((entry, index) => (
+                    {periodMetrics.chartData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Bar>
@@ -308,12 +341,12 @@ const Expenses = () => {
             <div className="h-[320px] border rounded-xl p-5 bg-card shadow-sm">
               <p className="text-sm font-bold text-muted-foreground mb-6 flex items-center gap-2">
                 <span className="w-2 h-2 bg-primary rounded-full"></span>
-                Composição do Contas a Pagar (Mês)
+                Composição do Contas a Pagar (Período)
               </p>
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
-                    data={currentMonthMetrics.pieData}
+                    data={periodMetrics.pieData}
                     cx="50%"
                     cy="45%"
                     innerRadius={70}
@@ -322,7 +355,7 @@ const Expenses = () => {
                     dataKey="value"
                     stroke="none"
                   >
-                    {currentMonthMetrics.pieData.map((entry, index) => (
+                    {periodMetrics.pieData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
