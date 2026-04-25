@@ -172,7 +172,7 @@ const Dashboard = () => {
         </Card>
         <Card>
           <CardContent className="pt-6">
-            <p className="text-sm text-primary font-medium">Métrica</p>
+            <p className="text-sm text-primary font-medium">Faturamento</p>
             <p className="text-xl font-bold mt-1">Faturamento Total</p>
             <div className="mt-4 p-3 bg-secondary rounded-md text-center font-semibold text-blue-700">
               R$ {metrics.faturamentoPeriodo.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
