@@ -126,8 +126,18 @@ const Students = () => {
     (s) => (!catFilter || s.categoria === catFilter) && (!statusFilter || s.status === statusFilter)
   ).sort((a, b) => a.nome.localeCompare(b.nome));
 
+  const toIsoDate = (dateStr: string) => {
+    if (!dateStr) return "";
+    if (dateStr.includes("/")) {
+      const [d, m, y] = dateStr.split("/");
+      return `${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}`;
+    }
+    return dateStr.split("T")[0];
+  };
+
   const parseDateStr = (dateStr: string) => {
-    const [d, m, y] = dateStr.split("/").map(Number);
+    const iso = toIsoDate(dateStr);
+    const [y, m, d] = iso.split("-").map(Number);
     return new Date(y, m - 1, d);
   };
 
@@ -141,14 +151,12 @@ const Students = () => {
       if (!matchesId && !matchesName) return false;
 
       // Comparação de datas robusta (YYYY-MM-DD strings)
-      const [d, m, y] = r.vencimento.split("/");
-      const vencimentoIso = `${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}`;
-      
+      const vencimentoIso = toIsoDate(r.vencimento);
       return vencimentoIso >= dateRange.start && vencimentoIso <= dateRange.end;
     }).sort((a, b) => {
-      const [da, ma, ya] = a.vencimento.split("/");
-      const [db, mb, yb] = b.vencimento.split("/");
-      return `${ya}-${ma}-${da}`.localeCompare(`${yb}-${mb}-${db}`);
+      const da = toIsoDate(a.vencimento);
+      const db = toIsoDate(b.vencimento);
+      return da.localeCompare(db);
     });
 
     const totals = list.reduce((acc, r) => {
@@ -167,14 +175,14 @@ const Students = () => {
     return attendanceLogs
       .filter((l) => {
         if (l.alunoId !== reportStudent.id) return false;
-        // l.data já está em YYYY-MM-DD vindo do DB
-        return l.data >= dateRange.start && l.data <= dateRange.end;
+        const logDate = toIsoDate(l.data);
+        return logDate >= dateRange.start && logDate <= dateRange.end;
       })
       .map(l => {
         const slot = mockSchedule.find(s => s.id === l.turmaId);
         return { ...l, slotInfo: slot ? `${slot.horario} - ${slot.quadra}` : "Turma removida" };
       })
-      .sort((a, b) => a.data.localeCompare(b.data));
+      .sort((a, b) => toIsoDate(a.data).localeCompare(toIsoDate(b.data)));
   };
 
   const handlePrintFinancePDF = async () => {
