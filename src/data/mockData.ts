@@ -34,7 +34,7 @@ export interface Student {
   categoria: "Infantil" | "Juvenil" | "Adulto";
   planoId: string;
   vencimento: string;
-  status: "Ativo" | "Inativo" | "Em análise";
+  status: "Ativo" | "Inativo" | "Em análise" | "Passado" | "Extras";
 }
 
 export const mockStudents: Student[] = [];

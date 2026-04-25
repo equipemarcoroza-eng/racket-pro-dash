@@ -15,7 +15,7 @@ import { Printer, Trash2 } from "lucide-react";
 import logo from "@/assets/logo.png";
 
 const categorias = ["Infantil", "Juvenil", "Adulto"] as const;
-const statuses = ["Ativo", "Inativo", "Em análise"] as const;
+const statuses = ["Ativo", "Inativo", "Em análise", "Passado", "Extras"] as const;
 
 type FormState = {
   nome: string;
@@ -51,6 +51,8 @@ const statusVariant: Record<Student["status"], "default" | "secondary" | "destru
   Ativo: "default",
   "Em análise": "secondary",
   Inativo: "destructive",
+  Passado: "secondary",
+  Extras: "secondary",
 };
 
 const getCategoryFromBirthDate = (birthDateStr: string): Student["categoria"] => {
