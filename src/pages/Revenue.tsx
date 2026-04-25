@@ -518,7 +518,7 @@ const Revenue = () => {
             <div>
               <p className="text-sm text-primary font-medium">Lista de Receitas</p>
               <p className="text-xl font-bold">Mensalidades e planos ({selectedMonth}/{selectedYear})</p>
-              <p className="text-xs text-muted-foreground mt-1">Exibindo todos os registros para o período selecionado, ordenados por vencimento.</p>
+              <p className="text-xs text-muted-foreground mt-1">Registros em ordem alfabética de Alunos.</p>
             </div>
             <div className="flex gap-2 text-sm">
               {["Mensalidade", "Trimestral", "Semestral", "Anual"].map((f) => (
