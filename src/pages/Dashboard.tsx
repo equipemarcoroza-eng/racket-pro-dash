@@ -7,7 +7,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { useAppContext } from "@/contexts/AppContext";
 import { CLASS_LIMIT } from "@/data/mockData";
 
-const periodos = ["Mês Atual", "Mês Anterior", "Últimos 3 meses", "Últimos 6 meses", "Últimos 12 meses"];
+const periodos = ["Mês Atual", "Mês Anterior", "Últimos 3 meses", "Últimos 6 meses", "Últimos 12 meses", "Últimos 24 meses", "Últimos 36 meses", "Últimos 48 meses"];
 
 const Dashboard = () => {
   const { students, enrollments, revenues, schedule: mockSchedule, scheduledPayments } = useAppContext();
@@ -36,6 +36,12 @@ const Dashboard = () => {
       startDate = new Date(currentYear, currentMonth - 5, 1);
     } else if (periodo === "Últimos 12 meses") {
       startDate = new Date(currentYear, currentMonth - 11, 1);
+    } else if (periodo === "Últimos 24 meses") {
+      startDate = new Date(currentYear, currentMonth - 23, 1);
+    } else if (periodo === "Últimos 36 meses") {
+      startDate = new Date(currentYear, currentMonth - 35, 1);
+    } else if (periodo === "Últimos 48 meses") {
+      startDate = new Date(currentYear, currentMonth - 47, 1);
     }
 
     // Alunos Ativos (Contamos todos os alunos ativos que já haviam entrado até o fim do período selecionado)
@@ -79,7 +85,10 @@ const Dashboard = () => {
     // Dados do Gráfico (Evolução mensal)
     const chartMonths = periodo === "Mês Atual" || periodo === "Mês Anterior" ? 6 : 
                        periodo === "Últimos 3 meses" ? 3 :
-                       periodo === "Últimos 6 meses" ? 6 : 12;
+                       periodo === "Últimos 6 meses" ? 6 : 
+                       periodo === "Últimos 12 meses" ? 12 :
+                       periodo === "Últimos 24 meses" ? 24 :
+                       periodo === "Últimos 36 meses" ? 36 : 48;
 
     const dynamicRevenueData = [];
     for (let i = chartMonths - 1; i >= 0; i--) {
