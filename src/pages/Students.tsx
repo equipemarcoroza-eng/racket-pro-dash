@@ -334,23 +334,26 @@ const Students = () => {
         { ...form, id: crypto.randomUUID() },
       ]);
 
-      // Gerar Taxa de Matrícula automaticamente
-      const now = new Date();
-      const vencimento = `${String(now.getDate()).padStart(2, "0")}/${String(now.getMonth() + 1).padStart(2, "0")}/${now.getFullYear()}`;
-      
-      setRevenues((prev) => [
-        ...prev,
-        {
-          id: crypto.randomUUID(),
-          aluno: form.nome,
-          plano: "Taxa de Matrícula",
-          vencimento,
-          valor: 32.90,
-          status: "Gerada"
-        }
-      ]);
-
-      toast.success("Aluno cadastrado com sucesso e Taxa de Matrícula gerada");
+      // Gerar Taxa de Matrícula automaticamente (apenas se status for Ativo)
+      if (form.status === "Ativo") {
+        const now = new Date();
+        const vencimento = `${String(now.getDate()).padStart(2, "0")}/${String(now.getMonth() + 1).padStart(2, "0")}/${now.getFullYear()}`;
+        
+        setRevenues((prev) => [
+          ...prev,
+          {
+            id: crypto.randomUUID(),
+            aluno: form.nome,
+            plano: "Taxa de Matrícula",
+            vencimento,
+            valor: 32.90,
+            status: "Gerada"
+          }
+        ]);
+        toast.success("Aluno cadastrado com sucesso e Taxa de Matrícula gerada");
+      } else {
+        toast.success("Aluno cadastrado com sucesso");
+      }
     }
 
     setShowForm(false);
