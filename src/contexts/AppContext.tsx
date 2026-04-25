@@ -307,7 +307,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       setStudentsState((sRes.data ?? []).map(dbToStudent));
       setEnrollmentsState((eRes.data ?? []).map(dbToEnrollment));
       setRevenuesState(loadedRevenues);
-      setAttendanceLogsState((aRes.data ?? []).map(dbToAttendance));
+      setAttendanceLogsState((aRes ?? []).map(dbToAttendance));
       setPlansState((pRes.data ?? []).map(dbToPlan));
       setScheduleState((slRes.data ?? []).map(dbToSlot));
       const sp = (spRes.data ?? []).map(dbToScheduled);
