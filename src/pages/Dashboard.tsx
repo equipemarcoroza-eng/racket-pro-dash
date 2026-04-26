@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { useAppContext } from "@/contexts/AppContext";
 import { CLASS_LIMIT } from "@/data/mockData";
 
@@ -244,20 +244,67 @@ const Dashboard = () => {
           </div>
           <div className="h-[350px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={metrics.dynamicRevenueData}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-                <XAxis dataKey="mes" axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#666'}} />
-                <YAxis axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#666'}} tickFormatter={(value) => `R$ ${value}`} />
+              <AreaChart data={metrics.dynamicRevenueData}>
+                <defs>
+                  <linearGradient id="colorGanhos" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#1d4ed8" stopOpacity={0.15} />
+                    <stop offset="95%" stopColor="#1d4ed8" stopOpacity={0} />
+                  </linearGradient>
+                  <linearGradient id="colorPago" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#15803d" stopOpacity={0.15} />
+                    <stop offset="95%" stopColor="#15803d" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" vertical={true} stroke="#f0f0f0" />
+                <XAxis dataKey="mes" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#666' }} />
+                <YAxis 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{ fontSize: 12, fill: '#666' }} 
+                  tickFormatter={(value) => `R$ ${value >= 1000 ? (value/1000).toFixed(0) + 'k' : value}`} 
+                />
                 <Tooltip 
                   formatter={(value: number) => `R$ ${value.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`}
-                  contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
                 />
                 <Legend iconType="circle" wrapperStyle={{ paddingTop: '20px' }} />
-                <Line type="monotone" dataKey="ganhos" name="Faturamento" stroke="#1d4ed8" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
-                <Line type="monotone" dataKey="pago" name="Total Pago" stroke="#15803d" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
-                <Line type="monotone" dataKey="pendente" name="Total Pendente" stroke="#b91c1c" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
-                <Line type="monotone" dataKey="gastos" name="Gastos" stroke="#4b5563" strokeWidth={2} strokeDasharray="5 5" dot={{ r: 3 }} />
-              </LineChart>
+                <Area 
+                  type="monotone" 
+                  dataKey="ganhos" 
+                  name="Faturamento" 
+                  stroke="#1d4ed8" 
+                  strokeWidth={3} 
+                  fillOpacity={1} 
+                  fill="url(#colorGanhos)" 
+                />
+                <Area 
+                  type="monotone" 
+                  dataKey="pago" 
+                  name="Total Pago" 
+                  stroke="#15803d" 
+                  strokeWidth={3} 
+                  fillOpacity={1} 
+                  fill="url(#colorPago)" 
+                />
+                <Area 
+                  type="monotone" 
+                  dataKey="pendente" 
+                  name="Total Pendente" 
+                  stroke="#b91c1c" 
+                  strokeWidth={2} 
+                  fill="none" 
+                  strokeDasharray="5 5" 
+                />
+                <Area 
+                  type="monotone" 
+                  dataKey="gastos" 
+                  name="Gastos" 
+                  stroke="#4b5563" 
+                  strokeWidth={2} 
+                  fill="none" 
+                  strokeDasharray="5 5" 
+                />
+              </AreaChart>
             </ResponsiveContainer>
           </div>
         </CardContent>
