@@ -4,7 +4,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useAppContext } from "@/contexts/AppContext";
 import { TrendingUp, Users, DollarSign, Wallet, AlertCircle, BarChart as BarChartIcon } from "lucide-react";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 
 const periods = [
   { label: "Próximos 3 meses", value: "3" },
@@ -217,10 +217,16 @@ const FinancialProjection = () => {
               Crescimento de Alunos Ativos
             </CardTitle>
           </CardHeader>
-          <div className="h-[300px] w-100">
+          <div className="h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={projectionData}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+              <AreaChart data={projectionData}>
+                <defs>
+                  <linearGradient id="colorAlunos" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#1d4ed8" stopOpacity={0.2} />
+                    <stop offset="95%" stopColor="#1d4ed8" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" vertical={true} stroke="#f0f0f0" />
                 <XAxis 
                   dataKey="label" 
                   axisLine={false} 
@@ -233,16 +239,18 @@ const FinancialProjection = () => {
                   contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
                   labelStyle={{ fontWeight: 'bold', marginBottom: '4px' }}
                 />
-                <Line 
+                <Area 
                   type="monotone" 
                   dataKey="alunos" 
                   name="Alunos" 
                   stroke="#1d4ed8" 
                   strokeWidth={3} 
-                  dot={{ r: 4, fill: '#1d4ed8' }}
+                  fillOpacity={1}
+                  fill="url(#colorAlunos)"
+                  dot={{ r: 4, fill: '#1d4ed8', strokeWidth: 2, stroke: '#fff' }}
                   activeDot={{ r: 6, strokeWidth: 0 }}
                 />
-              </LineChart>
+              </AreaChart>
             </ResponsiveContainer>
           </div>
         </Card>
@@ -254,10 +262,20 @@ const FinancialProjection = () => {
               Evolução Financeira Projetada
             </CardTitle>
           </CardHeader>
-          <div className="h-[300px] w-100">
+          <div className="h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={projectionData}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+              <AreaChart data={projectionData}>
+                <defs>
+                  <linearGradient id="colorFaturamento" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#1d4ed8" stopOpacity={0.15} />
+                    <stop offset="95%" stopColor="#1d4ed8" stopOpacity={0} />
+                  </linearGradient>
+                  <linearGradient id="colorPago" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#15803d" stopOpacity={0.15} />
+                    <stop offset="95%" stopColor="#15803d" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" vertical={true} stroke="#f0f0f0" />
                 <XAxis 
                   dataKey="label" 
                   axisLine={false} 
@@ -277,11 +295,11 @@ const FinancialProjection = () => {
                   formatter={(value: number) => [`R$ ${value.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`]}
                 />
                 <Legend iconType="circle" wrapperStyle={{ fontSize: '10px', paddingTop: '10px' }} />
-                <Line type="monotone" dataKey="faturamento" name="Faturamento" stroke="#1d4ed8" strokeWidth={2} dot={false} />
-                <Line type="monotone" dataKey="pago" name="Pago" stroke="#15803d" strokeWidth={2} dot={false} />
-                <Line type="monotone" dataKey="pendente" name="Pendente" stroke="#ea580c" strokeWidth={2} dot={false} />
-                <Line type="monotone" dataKey="gastos" name="Contas Pagas" stroke="#dc2626" strokeWidth={2} dot={false} />
-              </LineChart>
+                <Area type="monotone" dataKey="faturamento" name="Faturamento" stroke="#1d4ed8" strokeWidth={3} fillOpacity={1} fill="url(#colorFaturamento)" />
+                <Area type="monotone" dataKey="pago" name="Pago" stroke="#15803d" strokeWidth={3} fillOpacity={1} fill="url(#colorPago)" />
+                <Area type="monotone" dataKey="pendente" name="Pendente" stroke="#ea580c" strokeWidth={2} fill="none" strokeDasharray="5 5" />
+                <Area type="monotone" dataKey="gastos" name="Contas Pagas" stroke="#dc2626" strokeWidth={2} fill="none" strokeDasharray="5 5" />
+              </AreaChart>
             </ResponsiveContainer>
           </div>
         </Card>
