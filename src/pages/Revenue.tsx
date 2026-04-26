@@ -72,7 +72,7 @@ const Revenue = () => {
       const matchesPlan = !filter || r.plano === filter;
       
       const student = students.find(s => s.id === r.alunoId || s.nome === r.aluno);
-      const isEligible = student && ["Ativo", "Passado", "Extras"].includes(student.status);
+      const isEligible = student && ["Ativo", "Passado", "Extras", "Inativo"].includes(student.status);
       
       return matchesPeriod && matchesPlan && isEligible;
     })
@@ -304,7 +304,7 @@ const Revenue = () => {
     if (!matchesPeriod) return false;
 
     const student = students.find(s => s.id === r.alunoId || s.nome === r.aluno);
-    return student && ["Ativo", "Passado", "Extras"].includes(student.status);
+    return student && ["Ativo", "Passado", "Extras", "Inativo"].includes(student.status);
   });
 
   const totalFaturadoMes = receitasMes

@@ -48,7 +48,7 @@ const Dashboard = () => {
       // dataEntrada is usually YYYY-MM-DD
       const [y, m, d] = s.dataEntrada.split("-").map(Number);
       const entryDate = new Date(y, m - 1, d);
-      const isEligible = ["Ativo", "Passado", "Extras"].includes(s.status);
+      const isEligible = ["Ativo", "Passado", "Extras", "Inativo"].includes(s.status);
       return isEligible && entryDate <= endDate;
     }).length;
 
@@ -56,7 +56,7 @@ const Dashboard = () => {
     const receitasValidas = revenues.filter(r => {
       const vDate = parseDate(r.vencimento);
       const student = students.find(s => s.id === r.alunoId || s.nome === r.aluno);
-      const isEligible = student && ["Ativo", "Passado", "Extras"].includes(student.status);
+      const isEligible = student && ["Ativo", "Passado", "Extras", "Inativo"].includes(student.status);
       return vDate >= startDate && vDate <= endDate && isEligible;
     });
     
@@ -109,7 +109,7 @@ const Dashboard = () => {
       const mesReceitas = revenues.filter(r => {
         const vDate = parseDate(r.vencimento);
         const student = students.find(s => s.id === r.alunoId || s.nome === r.aluno);
-        const isEligible = student && ["Ativo", "Passado", "Extras"].includes(student.status);
+        const isEligible = student && ["Ativo", "Passado", "Extras", "Inativo"].includes(student.status);
         return vDate.getMonth() === mIdx && vDate.getFullYear() === yIdx && isEligible;
       });
 
