@@ -29,6 +29,8 @@ type FormState = {
   planoId: string;
   vencimento: string;
   status: Student["status"];
+  camiseta: Student["camiseta"];
+  kit: Student["kit"];
 };
 
 const emptyForm: FormState = {
@@ -43,6 +45,8 @@ const emptyForm: FormState = {
   planoId: "",
   vencimento: "",
   status: "Ativo",
+  camiseta: "M",
+  kit: "Não",
 };
 
 // getPlanoNome agora usa o array `plans` do contexto (definido dentro do componente)
@@ -303,6 +307,8 @@ const Students = () => {
       planoId: s.planoId,
       vencimento: s.vencimento,
       status: s.status,
+      camiseta: s.camiseta || "M",
+      kit: s.kit || "Não",
     });
     setShowForm(true);
   };
@@ -476,6 +482,23 @@ const Students = () => {
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {statuses.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div><Label>Camiseta</Label>
+                <Select value={form.camiseta} onValueChange={(v) => setForm({ ...form, camiseta: v as any })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {["12", "14", "16", "PP", "P", "M", "G", "GG"].map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div><Label>Kit</Label>
+                <Select value={form.kit} onValueChange={(v) => setForm({ ...form, kit: v as any })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Sim">Sim</SelectItem>
+                    <SelectItem value="Não">Não</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -676,6 +699,8 @@ const Students = () => {
                   <p className="text-sm text-muted-foreground">Status</p>
                   <Badge variant={statusVariant[viewingStudent.status]}>{viewingStudent.status}</Badge>
                 </div>
+                <div><p className="text-sm text-muted-foreground">Camiseta</p><p className="font-medium">{viewingStudent.camiseta || "—"}</p></div>
+                <div><p className="text-sm text-muted-foreground">Kit</p><p className="font-medium">{viewingStudent.kit || "—"}</p></div>
               </div>
             </div>
           )}

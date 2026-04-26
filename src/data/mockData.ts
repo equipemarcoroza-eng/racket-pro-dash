@@ -35,6 +35,8 @@ export interface Student {
   planoId: string;
   vencimento: string;
   status: "Ativo" | "Inativo" | "Em análise" | "Passado" | "Extras";
+  camiseta?: "12" | "14" | "16" | "PP" | "P" | "M" | "G" | "GG";
+  kit?: "Sim" | "Não";
 }
 
 export const mockStudents: Student[] = [];
