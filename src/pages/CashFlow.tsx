@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { useAppContext } from "@/contexts/AppContext";
 
 const periodos = ["Mês Atual", "Mês Anterior", "Últimos 3 meses", "Últimos 6 meses", "Últimos 12 meses", "Últimos 24 meses", "Últimos 36 meses", "Últimos 48 meses"];
@@ -166,16 +166,51 @@ const CashFlow = () => {
                   </div>
                 ))}
               </div>
-              <div className="h-[300px] w-100%">
+              <div className="h-[300px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={metrics.dynamicChartData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="mes" />
-                    <YAxis />
-                    <Tooltip formatter={(value: number) => `R$ ${value.toLocaleString("pt-BR")}`} />
-                    <Bar dataKey="receitas" fill="hsl(240, 49%, 34%)" radius={[4, 4, 0, 0]} name="Receitas" />
-                    <Bar dataKey="despesas" fill="hsl(0, 0%, 73%)" radius={[4, 4, 0, 0]} name="Despesas" />
-                  </BarChart>
+                  <AreaChart data={metrics.dynamicChartData}>
+                    <defs>
+                      <linearGradient id="colorReceitas" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#1d4ed8" stopOpacity={0.15} />
+                        <stop offset="95%" stopColor="#1d4ed8" stopOpacity={0} />
+                      </linearGradient>
+                      <linearGradient id="colorDespesas" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#dc2626" stopOpacity={0.1} />
+                        <stop offset="95%" stopColor="#dc2626" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" vertical={true} stroke="#f0f0f0" />
+                    <XAxis dataKey="mes" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#666' }} />
+                    <YAxis 
+                      axisLine={false} 
+                      tickLine={false} 
+                      tick={{ fontSize: 12, fill: '#666' }} 
+                      tickFormatter={(value) => `R$ ${value >= 1000 ? (value/1000).toFixed(0) + 'k' : value}`}
+                    />
+                    <Tooltip 
+                      formatter={(value: number) => `R$ ${value.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`}
+                      contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
+                    />
+                    <Legend iconType="circle" wrapperStyle={{ paddingTop: '10px' }} />
+                    <Area 
+                      type="monotone" 
+                      dataKey="receitas" 
+                      name="Receitas" 
+                      stroke="#1d4ed8" 
+                      strokeWidth={3} 
+                      fillOpacity={1} 
+                      fill="url(#colorReceitas)" 
+                    />
+                    <Area 
+                      type="monotone" 
+                      dataKey="despesas" 
+                      name="Despesas" 
+                      stroke="#dc2626" 
+                      strokeWidth={3} 
+                      fillOpacity={1} 
+                      fill="url(#colorDespesas)" 
+                    />
+                  </AreaChart>
                 </ResponsiveContainer>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
