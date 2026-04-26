@@ -19,6 +19,7 @@ export type Database = {
           aluno_id: string
           created_at: string
           data: string
+          data_realizacao: string | null
           id: string
           presente: string
           turma_id: string
@@ -27,6 +28,7 @@ export type Database = {
           aluno_id: string
           created_at?: string
           data: string
+          data_realizacao?: string | null
           id?: string
           presente: string
           turma_id: string
@@ -35,6 +37,7 @@ export type Database = {
           aluno_id?: string
           created_at?: string
           data?: string
+          data_realizacao?: string | null
           id?: string
           presente?: string
           turma_id?: string
@@ -282,11 +285,13 @@ export type Database = {
       }
       students: {
         Row: {
+          camiseta: string | null
           categoria: string
           created_at: string
           data_entrada: string
           data_nascimento: string | null
           id: string
+          kit: string | null
           nome: string
           plano_id: string | null
           responsavel: string | null
@@ -298,11 +303,13 @@ export type Database = {
           whatsapp_responsavel: string | null
         }
         Insert: {
+          camiseta?: string | null
           categoria: string
           created_at?: string
           data_entrada?: string
           data_nascimento?: string | null
           id?: string
+          kit?: string | null
           nome: string
           plano_id?: string | null
           responsavel?: string | null
@@ -314,11 +321,13 @@ export type Database = {
           whatsapp_responsavel?: string | null
         }
         Update: {
+          camiseta?: string | null
           categoria?: string
           created_at?: string
           data_entrada?: string
           data_nascimento?: string | null
           id?: string
+          kit?: string | null
           nome?: string
           plano_id?: string | null
           responsavel?: string | null
