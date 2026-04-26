@@ -541,25 +541,37 @@ const Revenue = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filtered.map((r) => (
-                <TableRow key={r.id}>
-                  <TableCell className="font-medium">{r.aluno}</TableCell>
-                  <TableCell>{r.plano}</TableCell>
-                  <TableCell>{r.vencimento}</TableCell>
-                  <TableCell>R$ {r.valor.toFixed(2).replace(".", ",")}</TableCell>
-                  <TableCell>{r.status}</TableCell>
-                  <TableCell>
-                    <div className="flex gap-1">
-                      <Button variant="outline" size="sm" onClick={() => setViewingReceita(r)}>Detalhar</Button>
-                      <Button variant="outline" size="sm" className="bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100" onClick={() => handleEdit(r)}>Editar</Button>
-                      <Button variant="outline" size="sm" onClick={() => handleBaixar(r)} disabled={r.status === "Pago" || r.status === "Isento"}>Baixar</Button>
-                      <Button variant="outline" size="sm" onClick={() => handleIsentar(r)} disabled={r.status === "Pago" || r.status === "Isento"}>Isentar</Button>
-                      <Button variant="outline" size="sm" onClick={() => handleRecibo(r)}>Recibo</Button>
-                      <Button variant="outline" size="sm" className="text-destructive hover:bg-destructive/10" onClick={() => handleDelete(r)}>Excluir</Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
+              {filtered.map((r) => {
+                const student = students.find(s => s.id === r.alunoId || s.nome === r.aluno);
+                return (
+                  <TableRow key={r.id}>
+                    <TableCell className="font-medium">
+                      <div className="flex items-center gap-2">
+                        {r.aluno}
+                        {student && (
+                          <span className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded uppercase font-bold tracking-tighter">
+                            {student.status}
+                          </span>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>{r.plano}</TableCell>
+                    <TableCell>{r.vencimento}</TableCell>
+                    <TableCell>R$ {r.valor.toFixed(2).replace(".", ",")}</TableCell>
+                    <TableCell>{r.status}</TableCell>
+                    <TableCell>
+                      <div className="flex gap-1">
+                        <Button variant="outline" size="sm" onClick={() => setViewingReceita(r)}>Detalhar</Button>
+                        <Button variant="outline" size="sm" className="bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100" onClick={() => handleEdit(r)}>Editar</Button>
+                        <Button variant="outline" size="sm" onClick={() => handleBaixar(r)} disabled={r.status === "Pago" || r.status === "Isento"}>Baixar</Button>
+                        <Button variant="outline" size="sm" onClick={() => handleIsentar(r)} disabled={r.status === "Pago" || r.status === "Isento"}>Isentar</Button>
+                        <Button variant="outline" size="sm" onClick={() => handleRecibo(r)}>Recibo</Button>
+                        <Button variant="outline" size="sm" className="text-destructive hover:bg-destructive/10" onClick={() => handleDelete(r)}>Excluir</Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </CardContent>
@@ -572,11 +584,11 @@ const Revenue = () => {
           {viewingReceita && (
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-4">
-                <div><p className="text-sm text-muted-foreground">Aluno</p><p className="font-medium">{viewingReceita.aluno}</p></div>
+                <div><p className="text-sm text-muted-foreground">Aluno</p><p className="font-medium">{viewingReceita.aluno} {students.find(s => s.id === viewingReceita.alunoId || s.nome === viewingReceita.aluno)?.status && <span className="text-[10px] text-muted-foreground ml-1">({students.find(s => s.id === viewingReceita.alunoId || s.nome === viewingReceita.aluno)?.status})</span>}</p></div>
                 <div><p className="text-sm text-muted-foreground">Plano</p><p className="font-medium">{viewingReceita.plano}</p></div>
                 <div><p className="text-sm text-muted-foreground">Vencimento</p><p className="font-medium">{viewingReceita.vencimento}</p></div>
                 <div><p className="text-sm text-muted-foreground">Valor</p><p className="font-medium">R$ {viewingReceita.valor.toFixed(2).replace(".", ",")}</p></div>
-                <div><p className="text-sm text-muted-foreground">Status</p><p className="font-medium">{viewingReceita.status}</p></div>
+                <div><p className="text-sm text-muted-foreground">Status do Pagamento</p><p className="font-medium">{viewingReceita.status}</p></div>
               </div>
             </div>
           )}
