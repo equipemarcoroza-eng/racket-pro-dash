@@ -43,18 +43,21 @@ const Dashboard = () => {
       startDate = new Date(currentYear, currentMonth - 47, 1);
     }
 
-    // Alunos Ativos (Contamos todos os alunos ativos que já haviam entrado até o fim do período selecionado)
+    // Alunos Elegíveis (Ativo, Passado, Extras) que já haviam entrado até o fim do período selecionado
     const alunosAtivos = students.filter(s => {
       // dataEntrada is usually YYYY-MM-DD
       const [y, m, d] = s.dataEntrada.split("-").map(Number);
       const entryDate = new Date(y, m - 1, d);
-      return s.status === "Ativo" && entryDate <= endDate;
+      const isEligible = ["Ativo", "Passado", "Extras"].includes(s.status);
+      return isEligible && entryDate <= endDate;
     }).length;
 
-    // Faturamento no Período = (Total de Parcelas e Taxas Geradas) - (Isenções)
+    // Faturamento no Período = (Total de Parcelas e Taxas Geradas) - (Isenções) para alunos elegíveis
     const receitasValidas = revenues.filter(r => {
       const vDate = parseDate(r.vencimento);
-      return vDate >= startDate && vDate <= endDate;
+      const student = students.find(s => s.id === r.alunoId || s.nome === r.aluno);
+      const isEligible = student && ["Ativo", "Passado", "Extras"].includes(student.status);
+      return vDate >= startDate && vDate <= endDate && isEligible;
     });
     
     // Todas as taxas de matrículas, mensalidades e planos gerados no período
@@ -105,7 +108,9 @@ const Dashboard = () => {
 
       const mesReceitas = revenues.filter(r => {
         const vDate = parseDate(r.vencimento);
-        return vDate.getMonth() === mIdx && vDate.getFullYear() === yIdx;
+        const student = students.find(s => s.id === r.alunoId || s.nome === r.aluno);
+        const isEligible = student && ["Ativo", "Passado", "Extras"].includes(student.status);
+        return vDate.getMonth() === mIdx && vDate.getFullYear() === yIdx && isEligible;
       });
 
       const ganhos = mesReceitas

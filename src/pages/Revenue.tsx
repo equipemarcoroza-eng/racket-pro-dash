@@ -70,7 +70,11 @@ const Revenue = () => {
       const [dia, mes, ano] = r.vencimento.split("/");
       const matchesPeriod = mes === selectedMonth && ano === selectedYear;
       const matchesPlan = !filter || r.plano === filter;
-      return matchesPeriod && matchesPlan;
+      
+      const student = students.find(s => s.id === r.alunoId || s.nome === r.aluno);
+      const isEligible = student && ["Ativo", "Passado", "Extras"].includes(student.status);
+      
+      return matchesPeriod && matchesPlan && isEligible;
     })
     .sort((a, b) => a.aluno.localeCompare(b.aluno));
 
@@ -296,7 +300,11 @@ const Revenue = () => {
 
   const receitasMes = receitas.filter(r => {
     const [dia, mes, ano] = r.vencimento.split("/");
-    return mes === selectedMonth && ano === selectedYear;
+    const matchesPeriod = mes === selectedMonth && ano === selectedYear;
+    if (!matchesPeriod) return false;
+
+    const student = students.find(s => s.id === r.alunoId || s.nome === r.aluno);
+    return student && ["Ativo", "Passado", "Extras"].includes(student.status);
   });
 
   const totalFaturadoMes = receitasMes
