@@ -3,7 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useAppContext } from "@/contexts/AppContext";
-import { TrendingUp, Users, DollarSign, Wallet, AlertCircle } from "lucide-react";
+import { TrendingUp, Users, DollarSign, Wallet, AlertCircle, BarChart as BarChartIcon } from "lucide-react";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 
 const periods = [
   { label: "Próximos 3 meses", value: "3" },
@@ -205,6 +206,84 @@ const FinancialProjection = () => {
               <Wallet className="h-8 w-8 text-red-600 opacity-20" />
             </div>
           </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card className="p-4 shadow-sm border-muted/40">
+          <CardHeader className="p-2 mb-4">
+            <CardTitle className="text-sm font-bold text-muted-foreground flex items-center gap-2">
+              <Users className="h-4 w-4 text-primary" />
+              Crescimento de Alunos Ativos
+            </CardTitle>
+          </CardHeader>
+          <div className="h-[300px] w-100">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={projectionData}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                <XAxis 
+                  dataKey="label" 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{ fontSize: 10, fill: '#888' }}
+                  tickFormatter={(val) => val.split(' ')[0]} 
+                />
+                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#888' }} />
+                <Tooltip 
+                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
+                  labelStyle={{ fontWeight: 'bold', marginBottom: '4px' }}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="alunos" 
+                  name="Alunos" 
+                  stroke="#1d4ed8" 
+                  strokeWidth={3} 
+                  dot={{ r: 4, fill: '#1d4ed8' }}
+                  activeDot={{ r: 6, strokeWidth: 0 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
+
+        <Card className="p-4 shadow-sm border-muted/40">
+          <CardHeader className="p-2 mb-4">
+            <CardTitle className="text-sm font-bold text-muted-foreground flex items-center gap-2">
+              <TrendingUp className="h-4 w-4 text-green-600" />
+              Evolução Financeira Projetada
+            </CardTitle>
+          </CardHeader>
+          <div className="h-[300px] w-100">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={projectionData}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                <XAxis 
+                  dataKey="label" 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{ fontSize: 10, fill: '#888' }}
+                  tickFormatter={(val) => val.split(' ')[0]}
+                />
+                <YAxis 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{ fontSize: 10, fill: '#888' }} 
+                  tickFormatter={(val) => `R$ ${val >= 1000 ? (val/1000).toFixed(0) + 'k' : val}`}
+                />
+                <Tooltip 
+                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
+                  labelStyle={{ fontWeight: 'bold', marginBottom: '4px' }}
+                  formatter={(value: number) => [`R$ ${value.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`]}
+                />
+                <Legend iconType="circle" wrapperStyle={{ fontSize: '10px', paddingTop: '10px' }} />
+                <Line type="monotone" dataKey="faturamento" name="Faturamento" stroke="#1d4ed8" strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="pago" name="Pago" stroke="#15803d" strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="pendente" name="Pendente" stroke="#ea580c" strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="gastos" name="Contas Pagas" stroke="#dc2626" strokeWidth={2} dot={false} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
         </Card>
       </div>
 
