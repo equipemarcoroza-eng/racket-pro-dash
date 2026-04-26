@@ -43,13 +43,12 @@ const Dashboard = () => {
       startDate = new Date(currentYear, currentMonth - 47, 1);
     }
 
-    // Alunos Elegíveis (Ativo, Passado, Extras) que já haviam entrado até o fim do período selecionado
+    // Alunos Ativos (apenas status 'Ativo') que já haviam entrado até o fim do período selecionado
     const alunosAtivos = students.filter(s => {
       // dataEntrada is usually YYYY-MM-DD
       const [y, m, d] = s.dataEntrada.split("-").map(Number);
       const entryDate = new Date(y, m - 1, d);
-      const isEligible = ["Ativo", "Passado", "Extras", "Inativo"].includes(s.status);
-      return isEligible && entryDate <= endDate;
+      return s.status === "Ativo" && entryDate <= endDate;
     }).length;
 
     // Faturamento no Período = (Total de Parcelas e Taxas Geradas) - (Isenções) para alunos elegíveis
