@@ -54,6 +54,8 @@ const dbToStudent = (r: any): Student => ({
   planoId: r.plano_id ?? "",
   vencimento: r.vencimento,
   status: r.status,
+  camiseta: r.camiseta,
+  kit: r.kit,
 });
 const studentToDb = (s: Partial<Student>) => ({
   ...(s.id ? { id: s.id } : {}),
@@ -68,6 +70,8 @@ const studentToDb = (s: Partial<Student>) => ({
   plano_id: s.planoId || null,
   vencimento: s.vencimento,
   status: s.status,
+  camiseta: s.camiseta || null,
+  kit: s.kit || null,
 });
 
 const dbToSlot = (r: any): ClassSlot => ({
@@ -102,6 +106,7 @@ const dbToAttendance = (r: any): AttendanceLog => ({
   turmaId: r.turma_id,
   data: r.data,
   presente: r.presente as AttendanceLog["presente"],
+  dataRealizacao: r.data_realizacao,
 });
 const attendanceToDb = (a: Partial<AttendanceLog>) => ({
   ...(a.id ? { id: a.id } : {}),
@@ -109,6 +114,7 @@ const attendanceToDb = (a: Partial<AttendanceLog>) => ({
   turma_id: a.turmaId,
   data: a.data,
   presente: a.presente,
+  data_realizacao: a.dataRealizacao || null,
 });
 
 const dbToPlan = (r: any): Plan => ({
