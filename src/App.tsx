@@ -15,6 +15,7 @@ import Revenue from "./pages/Revenue";
 import Expenses from "./pages/Expenses";
 import CashFlow from "./pages/CashFlow";
 import Birthdays from "./pages/Birthdays";
+import FinancialProjection from "./pages/FinancialProjection";
 import AppLayout from "./components/AppLayout";
 import NotFound from "./pages/NotFound";
 import { AppProvider } from "@/contexts/AppContext";
@@ -45,6 +46,7 @@ const App = () => (
                 <Route path="/finance/revenue" element={<Revenue />} />
                 <Route path="/finance/expenses" element={<Expenses />} />
                 <Route path="/finance/cash-flow" element={<CashFlow />} />
+                <Route path="/finance/projection" element={<FinancialProjection />} />
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>

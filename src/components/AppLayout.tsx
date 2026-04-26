@@ -15,6 +15,7 @@ const navItems = [
   { to: "/finance/revenue", label: "Contas a Receber", icon: TrendingUp },
   { to: "/finance/expenses", label: "Contas a Pagar", icon: TrendingDown },
   { to: "/finance/cash-flow", label: "Fluxo de Caixa", icon: DollarSign },
+  { to: "/finance/projection", label: "Projeção Financeira", icon: BarChart3 },
 ];
 
 const AppLayout = () => {
