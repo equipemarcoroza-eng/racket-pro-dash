@@ -187,8 +187,8 @@ const Dashboard = () => {
         </Card>
         <Card>
           <CardContent className="pt-6">
-            <p className="text-sm text-primary font-medium">Faturamento</p>
-            <p className="text-xl font-bold mt-1">Faturamento Total</p>
+            <p className="text-sm text-primary font-medium">Mensalidades</p>
+            <p className="text-xl font-bold mt-1">Mensalidades Contratadas</p>
             <div className="mt-4 p-3 bg-secondary rounded-md text-center font-semibold text-blue-700">
               R$ {metrics.faturamentoPeriodo.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
             </div>
@@ -198,7 +198,7 @@ const Dashboard = () => {
         <Card>
           <CardContent className="pt-6">
             <p className="text-sm text-green-600 font-medium">Financeiro</p>
-            <p className="text-xl font-bold mt-1">Total Pago</p>
+            <p className="text-xl font-bold mt-1">Total Recebido</p>
             <div className="mt-4 p-3 bg-green-50 rounded-md text-center font-semibold text-green-700">
               R$ {metrics.totalPago.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
             </div>
@@ -208,7 +208,7 @@ const Dashboard = () => {
         <Card>
           <CardContent className="pt-6">
             <p className="text-sm text-destructive font-medium">Financeiro</p>
-            <p className="text-xl font-bold mt-1">Total Pendente</p>
+            <p className="text-xl font-bold mt-1">Mensalidades em Aberto</p>
             <div className="mt-4 p-3 bg-red-50 rounded-md text-center font-semibold text-destructive">
               R$ {metrics.totalPendente.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
             </div>
@@ -236,9 +236,9 @@ const Dashboard = () => {
               <p className="text-xl font-bold">Evolução de Ganhos, Pagos e Pendentes</p>
             </div>
             <div className="flex gap-2">
-              <div className="flex items-center gap-1.5 px-2 py-1 bg-blue-50 text-blue-700 text-[10px] font-bold rounded border border-blue-100">Faturamento</div>
-              <div className="flex items-center gap-1.5 px-2 py-1 bg-green-50 text-green-700 text-[10px] font-bold rounded border border-green-100">Pago</div>
-              <div className="flex items-center gap-1.5 px-2 py-1 bg-red-50 text-red-700 text-[10px] font-bold rounded border border-red-100">Pendente</div>
+              <div className="flex items-center gap-1.5 px-2 py-1 bg-blue-50 text-blue-700 text-[10px] font-bold rounded border border-blue-100">Mensalidades</div>
+              <div className="flex items-center gap-1.5 px-2 py-1 bg-green-50 text-green-700 text-[10px] font-bold rounded border border-green-100">Recebido</div>
+              <div className="flex items-center gap-1.5 px-2 py-1 bg-red-50 text-red-700 text-[10px] font-bold rounded border border-red-100">Em Aberto</div>
               <div className="flex items-center gap-1.5 px-2 py-1 bg-gray-50 text-gray-600 text-[10px] font-bold rounded border border-gray-100">Gastos</div>
             </div>
           </div>
@@ -271,7 +271,7 @@ const Dashboard = () => {
                 <Area 
                   type="monotone" 
                   dataKey="ganhos" 
-                  name="Faturamento" 
+                  name="Mensalidades" 
                   stroke="#1d4ed8" 
                   strokeWidth={3} 
                   fillOpacity={1} 
@@ -280,7 +280,7 @@ const Dashboard = () => {
                 <Area 
                   type="monotone" 
                   dataKey="pago" 
-                  name="Total Pago" 
+                  name="Total Recebido" 
                   stroke="#15803d" 
                   strokeWidth={3} 
                   fillOpacity={1} 
@@ -289,7 +289,7 @@ const Dashboard = () => {
                 <Area 
                   type="monotone" 
                   dataKey="pendente" 
-                  name="Total Pendente" 
+                  name="Mensalidades em Aberto" 
                   stroke="#b91c1c" 
                   strokeWidth={2} 
                   fill="none" 

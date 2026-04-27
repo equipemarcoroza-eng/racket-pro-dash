@@ -172,7 +172,7 @@ const FinancialProjection = () => {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs font-bold text-green-700 uppercase">Faturamento Total</p>
+                <p className="text-xs font-bold text-green-700 uppercase">Mensalidades Contratadas</p>
                 <p className="text-2xl font-black text-green-600">
                   R$ {totals.faturamento.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </p>
@@ -185,7 +185,7 @@ const FinancialProjection = () => {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs font-bold text-orange-700 uppercase">Pendente Total</p>
+                <p className="text-xs font-bold text-orange-700 uppercase">Mensalidades em Aberto</p>
                 <p className="text-2xl font-black text-orange-600">
                   R$ {totals.pendente.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </p>
@@ -295,9 +295,9 @@ const FinancialProjection = () => {
                   formatter={(value: number) => [`R$ ${value.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`]}
                 />
                 <Legend iconType="circle" wrapperStyle={{ fontSize: '10px', paddingTop: '10px' }} />
-                <Area type="monotone" dataKey="faturamento" name="Faturamento" stroke="#1d4ed8" strokeWidth={3} fillOpacity={1} fill="url(#colorFaturamento)" />
-                <Area type="monotone" dataKey="pago" name="Pago" stroke="#15803d" strokeWidth={3} fillOpacity={1} fill="url(#colorPago)" />
-                <Area type="monotone" dataKey="pendente" name="Pendente" stroke="#ea580c" strokeWidth={2} fill="none" strokeDasharray="5 5" />
+                <Area type="monotone" dataKey="faturamento" name="Mensalidades" stroke="#1d4ed8" strokeWidth={3} fillOpacity={1} fill="url(#colorFaturamento)" />
+                <Area type="monotone" dataKey="pago" name="Recebido" stroke="#15803d" strokeWidth={3} fillOpacity={1} fill="url(#colorPago)" />
+                <Area type="monotone" dataKey="pendente" name="Em Aberto" stroke="#ea580c" strokeWidth={2} fill="none" strokeDasharray="5 5" />
                 <Area type="monotone" dataKey="gastos" name="Contas Pagas" stroke="#dc2626" strokeWidth={2} fill="none" strokeDasharray="5 5" />
               </AreaChart>
             </ResponsiveContainer>
@@ -318,9 +318,9 @@ const FinancialProjection = () => {
               <TableRow className="bg-muted/50">
                 <TableHead>Mês</TableHead>
                 <TableHead className="text-center">Alunos Ativos</TableHead>
-                <TableHead className="text-right">Faturamento</TableHead>
-                <TableHead className="text-right">Total Pago</TableHead>
-                <TableHead className="text-right">Total Pendente</TableHead>
+                <TableHead className="text-right">Mensalidades Contratadas</TableHead>
+                <TableHead className="text-right">Total Recebido</TableHead>
+                <TableHead className="text-right">Mensalidades em Aberto</TableHead>
                 <TableHead className="text-right">Contas Pagas</TableHead>
               </TableRow>
             </TableHeader>
