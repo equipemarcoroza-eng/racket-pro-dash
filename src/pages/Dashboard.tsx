@@ -233,13 +233,13 @@ const Dashboard = () => {
           <div className="flex items-center justify-between mb-6">
             <div>
               <p className="text-sm text-primary font-medium">Financeiro</p>
-              <p className="text-xl font-bold">Evolução de Ganhos, Pagos e Pendentes</p>
+              <p className="text-xl font-bold">Evolução das Mensalidades Recebidas, Mensalidades em Aberto e Contas Pagas</p>
             </div>
             <div className="flex gap-2">
-              <div className="flex items-center gap-1.5 px-2 py-1 bg-blue-50 text-blue-700 text-[10px] font-bold rounded border border-blue-100">Mensalidades</div>
-              <div className="flex items-center gap-1.5 px-2 py-1 bg-green-50 text-green-700 text-[10px] font-bold rounded border border-green-100">Recebido</div>
-              <div className="flex items-center gap-1.5 px-2 py-1 bg-red-50 text-red-700 text-[10px] font-bold rounded border border-red-100">Em Aberto</div>
-              <div className="flex items-center gap-1.5 px-2 py-1 bg-gray-50 text-gray-600 text-[10px] font-bold rounded border border-gray-100">Gastos</div>
+              <div className="flex items-center gap-1.5 px-2 py-1 bg-blue-50 text-blue-700 text-[10px] font-bold rounded border border-blue-100">Contratado</div>
+              <div className="flex items-center gap-1.5 px-2 py-1 bg-green-50 text-green-700 text-[10px] font-bold rounded border border-green-100">Mensalidades Recebidas</div>
+              <div className="flex items-center gap-1.5 px-2 py-1 bg-red-50 text-red-700 text-[10px] font-bold rounded border border-red-100">Mensalidades em Aberto</div>
+              <div className="flex items-center gap-1.5 px-2 py-1 bg-gray-50 text-gray-600 text-[10px] font-bold rounded border border-gray-100">Contas Pagas</div>
             </div>
           </div>
           <div className="h-[350px] w-full">
@@ -271,7 +271,7 @@ const Dashboard = () => {
                 <Area 
                   type="monotone" 
                   dataKey="ganhos" 
-                  name="Mensalidades" 
+                  name="Mensalidades Contratadas" 
                   stroke="#1d4ed8" 
                   strokeWidth={3} 
                   fillOpacity={1} 
@@ -280,7 +280,7 @@ const Dashboard = () => {
                 <Area 
                   type="monotone" 
                   dataKey="pago" 
-                  name="Total Recebido" 
+                  name="Mensalidades Recebidas" 
                   stroke="#15803d" 
                   strokeWidth={3} 
                   fillOpacity={1} 
@@ -298,7 +298,7 @@ const Dashboard = () => {
                 <Area 
                   type="monotone" 
                   dataKey="gastos" 
-                  name="Gastos" 
+                  name="Contas Pagas" 
                   stroke="#4b5563" 
                   strokeWidth={2} 
                   fill="none" 

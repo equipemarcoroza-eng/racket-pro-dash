@@ -295,9 +295,9 @@ const FinancialProjection = () => {
                   formatter={(value: number) => [`R$ ${value.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`]}
                 />
                 <Legend iconType="circle" wrapperStyle={{ fontSize: '10px', paddingTop: '10px' }} />
-                <Area type="monotone" dataKey="faturamento" name="Mensalidades" stroke="#1d4ed8" strokeWidth={3} fillOpacity={1} fill="url(#colorFaturamento)" />
-                <Area type="monotone" dataKey="pago" name="Recebido" stroke="#15803d" strokeWidth={3} fillOpacity={1} fill="url(#colorPago)" />
-                <Area type="monotone" dataKey="pendente" name="Em Aberto" stroke="#ea580c" strokeWidth={2} fill="none" strokeDasharray="5 5" />
+                <Area type="monotone" dataKey="faturamento" name="Mensalidades Contratadas" stroke="#1d4ed8" strokeWidth={3} fillOpacity={1} fill="url(#colorFaturamento)" />
+                <Area type="monotone" dataKey="pago" name="Mensalidades Recebidas" stroke="#15803d" strokeWidth={3} fillOpacity={1} fill="url(#colorPago)" />
+                <Area type="monotone" dataKey="pendente" name="Mensalidades em Aberto" stroke="#ea580c" strokeWidth={2} fill="none" strokeDasharray="5 5" />
                 <Area type="monotone" dataKey="gastos" name="Contas Pagas" stroke="#dc2626" strokeWidth={2} fill="none" strokeDasharray="5 5" />
               </AreaChart>
             </ResponsiveContainer>
