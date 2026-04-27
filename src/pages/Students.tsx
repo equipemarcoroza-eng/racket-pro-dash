@@ -223,7 +223,7 @@ const Students = () => {
       
       doc.setFontSize(10);
       doc.text(`Total Faturado: R$ ${totals.faturado.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`, 20, 82);
-      doc.text(`Total Recebido: R$ ${totals.pago.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`, 80, 82);
+      doc.text(`Mensalidades Recebidas: R$ ${totals.pago.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`, 80, 82);
       doc.text(`Em Aberto: R$ ${totals.aReceber.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`, 140, 82);
       
       const tableData = list.map(r => [
@@ -600,7 +600,7 @@ const Students = () => {
                     <p className="text-xl font-black">R$ {getStudentFinance().totals.faturado.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
                   </div>
                   <div className="p-3 border rounded-lg bg-green-50/50">
-                    <p className="text-[10px] font-bold text-green-700 uppercase">Total Recebido</p>
+                    <p className="text-[10px] font-bold text-green-700 uppercase">Mensalidades Recebidas</p>
                     <p className="text-xl font-black">R$ {getStudentFinance().totals.pago.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
                   </div>
                   <div className="p-3 border rounded-lg bg-orange-50/50">

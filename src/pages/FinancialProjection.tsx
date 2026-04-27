@@ -319,7 +319,7 @@ const FinancialProjection = () => {
                 <TableHead>Mês</TableHead>
                 <TableHead className="text-center">Alunos Ativos</TableHead>
                 <TableHead className="text-right">Mensalidades Contratadas</TableHead>
-                <TableHead className="text-right">Total Recebido</TableHead>
+                <TableHead className="text-right">Mensalidades Recebidas</TableHead>
                 <TableHead className="text-right">Mensalidades em Aberto</TableHead>
                 <TableHead className="text-right">Contas Pagas</TableHead>
               </TableRow>

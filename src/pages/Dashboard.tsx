@@ -198,7 +198,7 @@ const Dashboard = () => {
         <Card>
           <CardContent className="pt-6">
             <p className="text-sm text-green-600 font-medium">Financeiro</p>
-            <p className="text-xl font-bold mt-1">Total Recebido</p>
+            <p className="text-xl font-bold mt-1">Mensalidades Recebidas</p>
             <div className="mt-4 p-3 bg-green-50 rounded-md text-center font-semibold text-green-700">
               R$ {metrics.totalPago.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
             </div>
