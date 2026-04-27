@@ -161,7 +161,7 @@ const CashFlow = () => {
                   <div key={item.label} className="border rounded-md p-3">
                     <p className="text-sm text-muted-foreground">{item.label}</p>
                     <p className={`text-xl font-bold ${item.color}`}>
-                      R$ {item.value.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                      R$ {item.value.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </p>
                   </div>
                 ))}
@@ -188,7 +188,7 @@ const CashFlow = () => {
                       tickFormatter={(value) => `R$ ${value >= 1000 ? (value/1000).toFixed(0) + 'k' : value}`}
                     />
                     <Tooltip 
-                      formatter={(value: number) => `R$ ${value.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`}
+                      formatter={(value: number) => `R$ ${value.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                       contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
                     />
                     <Legend iconType="circle" wrapperStyle={{ paddingTop: '10px' }} />
@@ -216,11 +216,11 @@ const CashFlow = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
                 <div className="border rounded-md p-3">
                   <p className="text-sm text-muted-foreground">Receitas previstas (total faturamento)</p>
-                  <p className="text-xl font-bold">R$ {metrics.receitasPrevistas.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
+                  <p className="text-xl font-bold">R$ {metrics.receitasPrevistas.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                 </div>
                 <div className="border rounded-md p-3">
                   <p className="text-sm text-muted-foreground">Despesas estimadas</p>
-                  <p className="text-xl font-bold">R$ {metrics.despesasPrevistas.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
+                  <p className="text-xl font-bold">R$ {metrics.despesasPrevistas.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                 </div>
               </div>
             </CardContent>
@@ -241,7 +241,7 @@ const CashFlow = () => {
               <div key={item.label} className="border rounded-md p-3">
                 <p className="text-sm text-muted-foreground">{item.label}</p>
                 <p className={`text-xl font-bold ${item.value >= 0 ? "text-foreground" : "text-destructive"}`}>
-                  R$ {item.value.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                  R$ {item.value.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </p>
               </div>
             ))}
