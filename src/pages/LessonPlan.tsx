@@ -83,46 +83,64 @@ const LessonPlan = () => {
   };
 
   // Lesson Plan Logic
-  const getSlotPlan = (slotId: string, date: string) => {
-    return lessonPlans.find(p => p.turmaId === slotId && p.data === date);
+  const getSlotPlans = (slotId: string, date: string) => {
+    return lessonPlans.filter(p => p.turmaId === slotId && p.data === date);
   };
 
-  const handleOpenPlanEdit = (slotId: string, date: string, quadra: string) => {
-    const existing = getSlotPlan(slotId, date);
+  const handleOpenPlanEdit = (slotId: string, date: string) => {
+    const existing = getSlotPlans(slotId, date);
     setEditingPlan({ slotId, date });
-    if (existing) {
-      setSelectedAulaId(existing.lessonTypeId);
-      setPlanObservacoes(existing.observacoes ?? "");
+    if (existing.length > 0) {
+      setSelectedAulas(existing.map(p => p.lessonTypeId));
+      setPlanObservacoes(existing[0].observacoes ?? "");
     } else {
-      setSelectedAulaId("");
+      setSelectedAulas([]);
       setPlanObservacoes("");
     }
   };
 
+  const [selectedAulas, setSelectedAulas] = useState<string[]>([]);
+
+  const toggleAulaSelection = (id: string) => {
+    setSelectedAulas(prev => 
+      prev.includes(id) ? prev.filter(a => a !== id) : [...prev, id]
+    );
+  };
+
   const handleSavePlan = (slotId: string, date: string, quadra: string) => {
-    if (!selectedAulaId) {
-      toast.error("Selecione uma aula");
+    if (selectedAulas.length === 0) {
+      toast.error("Selecione pelo menos uma aula");
       return;
     }
 
-    const existing = getSlotPlan(slotId, date);
-    if (existing) {
-      setLessonPlans(prev => prev.map(p => p.id === existing.id ? { 
-        ...p, 
-        lessonTypeId: selectedAulaId, 
-        observacoes: planObservacoes 
-      } : p));
-    } else {
-      setLessonPlans(prev => [...prev, { 
-        id: crypto.randomUUID(), 
-        data: date, 
-        turmaId: slotId, 
-        quadra, 
-        lessonTypeId: selectedAulaId, 
-        observacoes: planObservacoes 
-      }]);
-    }
-    toast.success("Plano de aula salvo");
+    const existing = getSlotPlans(slotId, date);
+    
+    // Identificar o que remover e o que adicionar
+    const toRemove = existing.filter(p => !selectedAulas.includes(p.lessonTypeId));
+    const currentTypeIds = existing.map(p => p.lessonTypeId);
+    const toAdd = selectedAulas.filter(id => !currentTypeIds.includes(id));
+
+    setLessonPlans(prev => {
+      // Remover os desmarcados
+      let next = prev.filter(p => !toRemove.some(r => r.id === p.id));
+      
+      // Atualizar observações nos que ficaram
+      next = next.map(p => (p.turmaId === slotId && p.data === date) ? { ...p, observacoes: planObservacoes } : p);
+
+      // Adicionar os novos
+      const newPlans = toAdd.map(lessonTypeId => ({
+        id: crypto.randomUUID(),
+        data: date,
+        turmaId: slotId,
+        quadra,
+        lessonTypeId,
+        observacoes: planObservacoes
+      }));
+
+      return [...next, ...newPlans];
+    });
+
+    toast.success("Plano de aula atualizado");
     setEditingPlan(null);
   };
 
@@ -179,8 +197,7 @@ const LessonPlan = () => {
                           <div className="flex flex-col gap-2">
                             {slots.map((slot) => {
                               const enrolled = enrollments.filter(e => e.turmaId === slot.id);
-                              const plan = getSlotPlan(slot.id, dateStr);
-                              const aula = lessonTypes.find(a => a.id === plan?.lessonTypeId);
+                              const slotPlans = getSlotPlans(slot.id, dateStr);
 
                               return (
                                 <div key={slot.id} className="border rounded p-2 bg-card shadow-sm border-primary/20">
@@ -210,17 +227,24 @@ const LessonPlan = () => {
                                   {/* Plano de Aula */}
                                   <div className="border-t pt-1 mt-1">
                                     <p className="text-[9px] font-semibold text-muted-foreground uppercase">Plano da Aula:</p>
-                                    {plan ? (
+                                    {slotPlans.length > 0 ? (
                                       <div className="space-y-1">
-                                        <p className="text-[10px] font-medium text-primary leading-tight">{aula?.nome}</p>
-                                        {plan.observacoes && (
-                                          <p className="text-[9px] text-muted-foreground line-clamp-2 italic">"{plan.observacoes}"</p>
+                                        <div className="flex flex-col gap-0.5">
+                                          {slotPlans.map(p => {
+                                            const aula = lessonTypes.find(a => a.id === p.lessonTypeId);
+                                            return (
+                                              <p key={p.id} className="text-[10px] font-medium text-primary leading-tight">• {aula?.nome}</p>
+                                            );
+                                          })}
+                                        </div>
+                                        {slotPlans[0].observacoes && (
+                                          <p className="text-[9px] text-muted-foreground line-clamp-2 italic">"{slotPlans[0].observacoes}"</p>
                                         )}
                                         <Button 
                                           variant="ghost" 
                                           size="sm" 
                                           className="h-5 px-1 text-[9px] text-primary w-full mt-1"
-                                          onClick={() => handleOpenPlanEdit(slot.id, dateStr, slot.quadra)}
+                                          onClick={() => handleOpenPlanEdit(slot.id, dateStr)}
                                         >
                                           Editar Plano
                                         </Button>
@@ -231,7 +255,7 @@ const LessonPlan = () => {
                                           variant="outline" 
                                           size="sm" 
                                           className="h-6 w-full text-[9px]"
-                                          onClick={() => handleOpenPlanEdit(slot.id, dateStr, slot.quadra)}
+                                          onClick={() => handleOpenPlanEdit(slot.id, dateStr)}
                                         >
                                           Selecionar Aula
                                         </Button>
@@ -315,22 +339,28 @@ const LessonPlan = () => {
           </DialogHeader>
           <div className="space-y-4 pt-2">
             <div>
-              <Label>Aula</Label>
-              <Select value={selectedAulaId} onValueChange={setSelectedAulaId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione uma aula..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {[...lessonTypes]
-                    .sort((a, b) => a.nome.localeCompare(b.nome))
-                    .map(aula => (
-                      <SelectItem key={aula.id} value={aula.id}>{aula.nome}</SelectItem>
-                    ))}
-                  {lessonTypes.length === 0 && (
-                    <div className="p-2 text-center text-xs text-muted-foreground">Nenhuma aula cadastrada.</div>
-                  )}
-                </SelectContent>
-              </Select>
+              <Label className="mb-2 block">Aulas Selecionadas</Label>
+              <div className="grid grid-cols-1 gap-2 max-h-[200px] overflow-y-auto p-2 border rounded-md">
+                {[...lessonTypes]
+                  .sort((a, b) => a.nome.localeCompare(b.nome))
+                  .map(aula => (
+                    <div 
+                      key={aula.id} 
+                      className={`flex items-center gap-2 p-2 rounded-md cursor-pointer transition-colors ${
+                        selectedAulas.includes(aula.id) ? "bg-primary/10 border-primary/20 border" : "hover:bg-muted border border-transparent"
+                      }`}
+                      onClick={() => toggleAulaSelection(aula.id)}
+                    >
+                      <div className={`w-4 h-4 rounded border flex items-center justify-center ${selectedAulas.includes(aula.id) ? "bg-primary border-primary" : "border-muted-foreground"}`}>
+                        {selectedAulas.includes(aula.id) && <div className="w-1.5 h-1.5 bg-white rounded-full" />}
+                      </div>
+                      <span className="text-sm">{aula.nome}</span>
+                    </div>
+                  ))}
+                {lessonTypes.length === 0 && (
+                  <div className="p-2 text-center text-xs text-muted-foreground">Nenhuma aula cadastrada.</div>
+                )}
+              </div>
             </div>
             <div>
               <Label>Observações / Detalhes (Opcional)</Label>
