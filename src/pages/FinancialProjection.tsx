@@ -59,10 +59,6 @@ const FinancialProjection = () => {
       .filter((r) => r.status === "Pago")
       .reduce((acc, curr) => acc + curr.valor, 0);
 
-    const basePendente = baseRevenues
-      .filter((r) => r.status === "Gerada" || r.status === "Em atraso")
-      .reduce((acc, curr) => acc + curr.valor, 0);
-
     const baseGastos = (scheduledPayments || [])
       .filter((p) => {
         if (!p.vencimento) return false;
@@ -80,7 +76,6 @@ const FinancialProjection = () => {
     let currentAlunos = baseAlunos;
     let currentFaturamento = baseFaturamento;
     let currentPago = basePago;
-    let currentPendente = basePendente;
     let currentGastos = baseGastos;
 
     for (let i = 0; i < numMonths; i++) {
@@ -91,7 +86,6 @@ const FinancialProjection = () => {
         currentAlunos = currentAlunos * (1 + rate);
         currentFaturamento = currentFaturamento * (1 + rate);
         currentPago = currentPago * (1 + rate);
-        currentPendente = currentPendente * (1 + rate);
         currentGastos = currentGastos * (1 + rate);
       }
 
@@ -100,7 +94,6 @@ const FinancialProjection = () => {
         alunos: Math.floor(currentAlunos),
         faturamento: currentFaturamento,
         pago: currentPago,
-        pendente: currentPendente,
         gastos: currentGastos,
       });
     }
@@ -113,7 +106,6 @@ const FinancialProjection = () => {
       alunos: projectionData[projectionData.length - 1]?.alunos || 0,
       faturamento: projectionData.reduce((acc, m) => acc + m.faturamento, 0),
       pago: projectionData.reduce((acc, m) => acc + m.pago, 0),
-      pendente: projectionData.reduce((acc, m) => acc + m.pendente, 0),
       gastos: projectionData.reduce((acc, m) => acc + m.gastos, 0),
     };
   }, [projectionData]);
@@ -178,19 +170,6 @@ const FinancialProjection = () => {
                 </p>
               </div>
               <TrendingUp className="h-8 w-8 text-green-600 opacity-20" />
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="bg-orange-50 border-orange-200">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-bold text-orange-700 uppercase">Mensalidades em Aberto</p>
-                <p className="text-2xl font-black text-orange-600">
-                  R$ {totals.pendente.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </p>
-              </div>
-              <AlertCircle className="h-8 w-8 text-orange-600 opacity-20" />
             </div>
           </CardContent>
         </Card>
@@ -297,7 +276,6 @@ const FinancialProjection = () => {
                 <Legend iconType="circle" wrapperStyle={{ fontSize: '10px', paddingTop: '10px' }} />
                 <Area type="monotone" dataKey="faturamento" name="Mensalidades Contratadas" stroke="#1d4ed8" strokeWidth={3} fillOpacity={1} fill="url(#colorFaturamento)" />
                 <Area type="monotone" dataKey="pago" name="Mensalidades Recebidas" stroke="#15803d" strokeWidth={3} fillOpacity={1} fill="url(#colorPago)" />
-                <Area type="monotone" dataKey="pendente" name="Mensalidades em Aberto" stroke="#ea580c" strokeWidth={2} fill="none" strokeDasharray="5 5" />
                 <Area type="monotone" dataKey="gastos" name="Contas Pagas" stroke="#dc2626" strokeWidth={2} fill="none" strokeDasharray="5 5" />
               </AreaChart>
             </ResponsiveContainer>
@@ -320,7 +298,6 @@ const FinancialProjection = () => {
                 <TableHead className="text-center">Alunos Ativos</TableHead>
                 <TableHead className="text-right">Mensalidades Contratadas</TableHead>
                 <TableHead className="text-right">Mensalidades Recebidas</TableHead>
-                <TableHead className="text-right">Mensalidades em Aberto</TableHead>
                 <TableHead className="text-right">Contas Pagas</TableHead>
               </TableRow>
             </TableHeader>
@@ -331,7 +308,6 @@ const FinancialProjection = () => {
                   <TableCell className="text-center font-bold text-primary">{m.alunos}</TableCell>
                   <TableCell className="text-right">R$ {m.faturamento.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
                   <TableCell className="text-right text-green-600 font-medium">R$ {m.pago.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
-                  <TableCell className="text-right text-orange-600 font-medium">R$ {m.pendente.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
                   <TableCell className="text-right text-red-600 font-medium">R$ {m.gastos.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
                 </TableRow>
               ))}
@@ -340,7 +316,6 @@ const FinancialProjection = () => {
                 <TableCell className="text-center text-primary">{totals.alunos}</TableCell>
                 <TableCell className="text-right">R$ {totals.faturamento.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
                 <TableCell className="text-right text-green-600">R$ {totals.pago.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
-                <TableCell className="text-right text-orange-600">R$ {totals.pendente.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
                 <TableCell className="text-right text-red-600">R$ {totals.gastos.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
               </TableRow>
             </TableBody>
