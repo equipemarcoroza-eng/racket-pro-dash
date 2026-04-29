@@ -37,6 +37,7 @@ export interface Student {
   status: "Ativo" | "Inativo" | "Em análise" | "Passado" | "Extras";
   camiseta?: "12" | "14" | "16" | "PP" | "P" | "M" | "G" | "GG";
   kit?: "Sim" | "Não";
+  observacoes?: string;
 }
 
 export const mockStudents: Student[] = [];

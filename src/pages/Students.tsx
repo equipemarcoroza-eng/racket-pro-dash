@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
 import type { Student } from "@/data/mockData";
 import { useAppContext } from "@/contexts/AppContext";
 import { toast } from "sonner";
@@ -31,6 +32,7 @@ type FormState = {
   status: Student["status"];
   camiseta: Student["camiseta"];
   kit: Student["kit"];
+  observacoes: string;
 };
 
 const emptyForm: FormState = {
@@ -47,6 +49,7 @@ const emptyForm: FormState = {
   status: "Ativo",
   camiseta: "M",
   kit: "Não",
+  observacoes: "",
 };
 
 // getPlanoNome agora usa o array `plans` do contexto (definido dentro do componente)
@@ -314,6 +317,7 @@ const Students = () => {
       status: s.status,
       camiseta: s.camiseta || "M",
       kit: s.kit || "Não",
+      observacoes: s.observacoes || "",
     });
     setShowForm(true);
   };
@@ -516,6 +520,15 @@ const Students = () => {
                   </SelectContent>
                 </Select>
               </div>
+              <div className="md:col-span-2 lg:col-span-3">
+                <Label>Observações</Label>
+                <Textarea 
+                  value={form.observacoes} 
+                  onChange={(e) => setForm({ ...form, observacoes: e.target.value })} 
+                  placeholder="Informações adicionais sobre o aluno..."
+                  className="h-20"
+                />
+              </div>
             </div>
             {form.status === "Inativo" && editingId && enrollments.some((e) => e.alunoId === editingId) && (
               <p className="mt-3 text-sm text-destructive font-medium">
@@ -716,6 +729,7 @@ const Students = () => {
                 </div>
                 <div><p className="text-sm text-muted-foreground">Camiseta</p><p className="font-medium">{viewingStudent.camiseta || "—"}</p></div>
                 <div><p className="text-sm text-muted-foreground">Kit</p><p className="font-medium">{viewingStudent.kit || "—"}</p></div>
+                <div className="col-span-2"><p className="text-sm text-muted-foreground">Observações</p><p className="font-medium whitespace-pre-wrap">{viewingStudent.observacoes || "—"}</p></div>
               </div>
             </div>
           )}
