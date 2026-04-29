@@ -319,6 +319,22 @@ const Revenue = () => {
     .filter(r => r.status === "Gerada" || r.status === "Em atraso")
     .reduce((acc, r) => acc + r.valor, 0);
 
+  const totalPagoPassadoMes = receitasMes
+    .filter(r => r.status === "Pago")
+    .filter(r => {
+      const student = students.find(s => s.id === r.alunoId || s.nome === r.aluno);
+      return student?.status === "Passado";
+    })
+    .reduce((acc, r) => acc + r.valor, 0);
+
+  const totalPagoExtrasMes = receitasMes
+    .filter(r => r.status === "Pago")
+    .filter(r => {
+      const student = students.find(s => s.id === r.alunoId || s.nome === r.aluno);
+      return student?.status === "Extras";
+    })
+    .reduce((acc, r) => acc + r.valor, 0);
+
   const chartData = [
     { name: "Faturado", valor: totalFaturadoMes, color: "#3b82f6" },
     { name: "Pago", valor: totalPagoMes, color: "#22c55e" },
@@ -407,7 +423,7 @@ const Revenue = () => {
           </div>
 
           {/* Subtotais em Destaque */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-8">
             <div className="bg-primary/5 border-l-4 border-primary p-5 rounded-lg shadow-sm">
               <p className="text-xs text-primary font-bold uppercase tracking-wider mb-1">Total Faturado</p>
               <p className="text-3xl font-black">R$ {totalFaturadoMes.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
@@ -423,6 +439,22 @@ const Revenue = () => {
               <p className="text-3xl font-black text-orange-600">R$ {totalAReceberMes.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
               <p className="text-[10px] text-muted-foreground mt-2 font-medium">Pendentes ou em atraso no mês.</p>
             </div>
+            
+            {totalPagoPassadoMes > 0 && (
+              <div className="bg-slate-50 border-l-4 border-slate-400 p-5 rounded-lg shadow-sm">
+                <p className="text-xs text-slate-700 font-bold uppercase tracking-wider mb-1">Recebido (Passado)</p>
+                <p className="text-3xl font-black text-slate-600">R$ {totalPagoPassadoMes.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
+                <p className="text-[10px] text-muted-foreground mt-2 font-medium">Total de alunos inativados pagos.</p>
+              </div>
+            )}
+
+            {totalPagoExtrasMes > 0 && (
+              <div className="bg-purple-50 border-l-4 border-purple-400 p-5 rounded-lg shadow-sm">
+                <p className="text-xs text-purple-700 font-bold uppercase tracking-wider mb-1">Recebido (Extras)</p>
+                <p className="text-3xl font-black text-purple-600">R$ {totalPagoExtrasMes.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
+                <p className="text-[10px] text-muted-foreground mt-2 font-medium">Total de alunos extras pagos.</p>
+              </div>
+            )}
           </div>
 
           {/* Gráficos */}
