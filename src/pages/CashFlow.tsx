@@ -80,6 +80,17 @@ const CashFlow = () => {
       })
       .reduce((acc, curr) => acc + curr.valor, 0);
 
+    const totalPendentesAtivosInativos = revenues
+      .filter(r => {
+        const vDate = parseDate(r.vencimento);
+        if (!(vDate >= startDate && vDate <= endDate)) return false;
+        if (r.status !== "Gerada" && r.status !== "Em atraso") return false;
+        
+        const student = students.find(s => s.id === r.alunoId || s.nome === r.aluno);
+        return student && (student.status === "Ativo" || student.status === "Inativo");
+      })
+      .reduce((acc, curr) => acc + curr.valor, 0);
+
     // Dados do Gráfico
     const chartMonths = periodo === "Mês Atual" || periodo === "Mês Anterior" ? 3 : 
                        periodo === "Últimos 3 meses" ? 3 :
@@ -118,6 +129,7 @@ const CashFlow = () => {
       saldo: receitas - despesas,
       receitasPrevistas,
       totalMensalidadesAtivos,
+      totalPendentesAtivosInativos,
       despesasPrevistas: despesas * 1.05, // Estimativa simples
       dynamicChartData
     };
@@ -233,6 +245,10 @@ const CashFlow = () => {
                 <div className="border rounded-md p-3 bg-blue-50/30 border-blue-100">
                   <p className="text-sm text-blue-700 font-medium">Total de Mensalidades (Ativos/Inativos e Pagos)</p>
                   <p className="text-xl font-black text-blue-800">R$ {metrics.totalMensalidadesAtivos.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                </div>
+                <div className="border rounded-md p-3 bg-amber-50/30 border-amber-100">
+                  <p className="text-sm text-amber-700 font-medium">Total Pendente (Ativos/Inativos)</p>
+                  <p className="text-xl font-black text-amber-800">R$ {metrics.totalPendentesAtivosInativos.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                 </div>
                 <div className="border rounded-md p-3">
                   <p className="text-sm text-muted-foreground">Despesas estimadas</p>
