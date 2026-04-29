@@ -409,7 +409,7 @@ const Expenses = () => {
       </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-2 space-y-6">
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center justify-between mb-4">
@@ -440,10 +440,64 @@ const Expenses = () => {
                     </div>
                   </div>
                 ))}
+                {payments.filter(p => p.status === "Em Aberto").length === 0 && (
+                  <div className="text-center py-6 text-muted-foreground italic border border-dashed rounded-lg">
+                    Nenhuma conta pendente para este filtro.
+                  </div>
+                )}
               </div>
               <div className="mt-4 bg-secondary rounded-md p-3">
                 <p className="text-sm text-muted-foreground">Total previsto no período</p>
                 <p className="text-xl font-bold">R$ {totalPrevisto.toLocaleString("pt-BR")}</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Seção de Contas Pagas no Período */}
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <p className="text-xl font-bold">Contas Pagas no Período</p>
+                  <p className="text-sm text-muted-foreground">Histórico de contas liquidadas no período selecionado.</p>
+                </div>
+              </div>
+              <div className="space-y-3">
+                {payments.filter(p => {
+                  if (p.status !== "Pago") return false;
+                  if (!p.vencimento) return false;
+                  const [y, m, d] = p.vencimento.split("-").map(Number);
+                  const vDate = new Date(y, m - 1, d);
+                  return vDate >= periodMetrics.startDate && vDate <= periodMetrics.endDate;
+                }).length > 0 ? (
+                  payments.filter(p => {
+                    if (p.status !== "Pago") return false;
+                    if (!p.vencimento) return false;
+                    const [y, m, d] = p.vencimento.split("-").map(Number);
+                    const vDate = new Date(y, m - 1, d);
+                    return vDate >= periodMetrics.startDate && vDate <= periodMetrics.endDate;
+                  }).map((p) => (
+                    <div key={p.id} className="flex items-center justify-between border rounded-md p-3 group bg-muted/20">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-muted-foreground line-through">{p.fornecedor}</span>
+                          <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded font-bold uppercase tracking-tight">PAGO</span>
+                        </div>
+                        <span className="text-xs text-muted-foreground">{p.categoria}</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="font-semibold mr-2 text-muted-foreground">R$ {p.valor.toLocaleString("pt-BR")}</span>
+                        <div className="flex gap-1">
+                          <Button variant="outline" size="sm" className="h-7 px-2 text-[10px]" onClick={() => setViewingPayment(p)}>Visualizar</Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground border border-dashed rounded-lg italic">
+                    Nenhuma conta paga encontrada para o período selecionado.
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
