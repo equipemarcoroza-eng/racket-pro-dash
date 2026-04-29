@@ -116,6 +116,69 @@ export type Database = {
         }
         Relationships: []
       }
+      lesson_plans: {
+        Row: {
+          created_at: string
+          data: string
+          id: string
+          lesson_type_id: string
+          observacoes: string | null
+          quadra: string | null
+          turma_id: string
+        }
+        Insert: {
+          created_at?: string
+          data: string
+          id?: string
+          lesson_type_id: string
+          observacoes?: string | null
+          quadra?: string | null
+          turma_id: string
+        }
+        Update: {
+          created_at?: string
+          data?: string
+          id?: string
+          lesson_type_id?: string
+          observacoes?: string | null
+          quadra?: string | null
+          turma_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_plans_lesson_type_id_fkey"
+            columns: ["lesson_type_id"]
+            isOneToOne: false
+            referencedRelation: "lesson_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_plans_turma_id_fkey"
+            columns: ["turma_id"]
+            isOneToOne: false
+            referencedRelation: "schedule_slots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lesson_types: {
+        Row: {
+          created_at: string
+          id: string
+          nome: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          nome: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          nome?: string
+        }
+        Relationships: []
+      }
       plans: {
         Row: {
           created_at: string
