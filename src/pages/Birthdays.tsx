@@ -5,8 +5,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useAppContext } from "@/contexts/AppContext";
 import { toast } from "sonner";
-import { Cake, Printer } from "lucide-react";
+import { Cake, Printer, Edit, Check, X } from "lucide-react";
 import logo from "@/assets/logo.png";
+import { Input } from "@/components/ui/input";
 
 const months = [
   { value: "01", label: "Janeiro" },
@@ -28,6 +29,9 @@ const Birthdays = () => {
   const [selectedMonth, setSelectedMonth] = useState<string>(
     String(new Date().getMonth() + 1).padStart(2, "0")
   );
+  const { setStudents } = useAppContext();
+  const [editingObsId, setEditingObsId] = useState<string | null>(null);
+  const [tempObs, setTempObs] = useState("");
 
   const filteredStudents = students.filter((s) => {
     if (!s.dataNascimento) return false;
@@ -38,6 +42,12 @@ const Birthdays = () => {
     const dayB = parseInt(b.dataNascimento.split("-")[2]);
     return dayA - dayB;
   });
+  
+  const handleSaveObs = (studentId: string) => {
+    setStudents(prev => prev.map(s => s.id === studentId ? { ...s, observacoes: tempObs } : s));
+    setEditingObsId(null);
+    toast.success("Observação atualizada");
+  };
 
   const handlePrint = async () => {
     try {
@@ -149,8 +159,42 @@ const Birthdays = () => {
                       <TableCell className="font-medium">{s.nome}</TableCell>
                       <TableCell>{s.categoria}</TableCell>
                       <TableCell>{new Date(s.dataNascimento).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}</TableCell>
-                      <TableCell className="text-sm text-muted-foreground max-w-[300px] truncate" title={s.observacoes}>
-                        {s.observacoes || "—"}
+                      <TableCell className="text-sm text-muted-foreground min-w-[200px]">
+                        {editingObsId === s.id ? (
+                          <div className="flex items-center gap-1">
+                            <Input 
+                              className="h-8 text-sm" 
+                              value={tempObs} 
+                              onChange={(e) => setTempObs(e.target.value)}
+                              autoFocus
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') handleSaveObs(s.id);
+                                if (e.key === 'Escape') setEditingObsId(null);
+                              }}
+                            />
+                            <Button size="icon" variant="ghost" className="h-8 w-8 text-green-600" onClick={() => handleSaveObs(s.id)}>
+                              <Check className="h-4 w-4" />
+                            </Button>
+                            <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" onClick={() => setEditingObsId(null)}>
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center group justify-between gap-2">
+                            <span className="truncate max-w-[250px]" title={s.observacoes}>{s.observacoes || "—"}</span>
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+                              onClick={() => {
+                                setEditingObsId(s.id);
+                                setTempObs(s.observacoes || "");
+                              }}
+                            >
+                              <Edit className="h-3.5 w-3.5 text-primary" />
+                            </Button>
+                          </div>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))
