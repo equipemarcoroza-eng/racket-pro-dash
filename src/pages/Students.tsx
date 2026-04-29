@@ -404,28 +404,37 @@ const Students = () => {
             </div>
             <Button variant="outline" size="sm" onClick={() => { setCatFilter(null); setStatusFilter(null); setSexoFilter(null); }}>Limpar filtros</Button>
           </div>
-          <div className="flex flex-wrap gap-6">
+          <div className="flex flex-wrap gap-10">
             <div>
-              <p className="text-sm font-medium mb-2">Categoria</p>
-              <div className="flex gap-2">
+              <p className="text-sm font-medium mb-3">Categoria</p>
+              <div className="flex gap-3">
                 {categorias.map((c) => (
-                  <Button key={c} variant={catFilter === c ? "default" : "outline"} size="sm" onClick={() => setCatFilter(catFilter === c ? null : c)}>{c}</Button>
+                  <div key={c} className="flex flex-col items-center gap-1">
+                    <Button variant={catFilter === c ? "default" : "outline"} size="sm" onClick={() => setCatFilter(catFilter === c ? null : c)}>{c}</Button>
+                    <span className="text-[10px] text-muted-foreground font-bold">{students.filter(s => s.categoria === c).length} alunos</span>
+                  </div>
                 ))}
               </div>
             </div>
             <div>
-              <p className="text-sm font-medium mb-2">Status</p>
-              <div className="flex gap-2">
+              <p className="text-sm font-medium mb-3">Status</p>
+              <div className="flex gap-3">
                 {statuses.map((s) => (
-                  <Button key={s} variant={statusFilter === s ? "default" : "outline"} size="sm" onClick={() => setStatusFilter(statusFilter === s ? null : s)}>{s}</Button>
+                  <div key={s} className="flex flex-col items-center gap-1">
+                    <Button variant={statusFilter === s ? "default" : "outline"} size="sm" onClick={() => setStatusFilter(statusFilter === s ? null : s)}>{s}</Button>
+                    <span className="text-[10px] text-muted-foreground font-bold">{students.filter(s => s.status === s).length} alunos</span>
+                  </div>
                 ))}
               </div>
             </div>
             <div>
-              <p className="text-sm font-medium mb-2">Sexo</p>
-              <div className="flex gap-2">
+              <p className="text-sm font-medium mb-3">Sexo</p>
+              <div className="flex gap-3">
                 {(["M", "F"] as const).map((s) => (
-                  <Button key={s} variant={sexoFilter === s ? "default" : "outline"} size="sm" onClick={() => setSexoFilter(sexoFilter === s ? null : s)}>{s === "M" ? "M" : "F"}</Button>
+                  <div key={s} className="flex flex-col items-center gap-1">
+                    <Button variant={sexoFilter === s ? "default" : "outline"} size="sm" onClick={() => setSexoFilter(sexoFilter === s ? null : s)}>{s === "M" ? "Masculino" : "Feminino"}</Button>
+                    <span className="text-[10px] text-muted-foreground font-bold">{students.filter(st => st.sexo === s).length} alunos</span>
+                  </div>
                 ))}
               </div>
             </div>
