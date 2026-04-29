@@ -422,7 +422,7 @@ const Students = () => {
                 {statuses.map((s) => (
                   <div key={s} className="flex flex-col items-center gap-1">
                     <Button variant={statusFilter === s ? "default" : "outline"} size="sm" onClick={() => setStatusFilter(statusFilter === s ? null : s)}>{s}</Button>
-                    <span className="text-[10px] text-muted-foreground font-bold">{students.filter(s => s.status === s).length} alunos</span>
+                    <span className="text-[10px] text-muted-foreground font-bold">{students.filter(st => st.status === s).length} alunos</span>
                   </div>
                 ))}
               </div>
