@@ -12,6 +12,8 @@ import type {
   Plan,
   ScheduledPayment,
   Expense,
+  LessonType,
+  LessonPlan,
 } from "@/data/mockData";
 
 type Updater<T> = T[] | ((prev: T[]) => T[]);
@@ -35,6 +37,10 @@ interface AppContextType {
   setScheduledPayments: (u: Updater<ScheduledPayment>) => void;
   expenseCategories: Expense[];
   setExpenseCategories: (u: Updater<Expense>) => void;
+  lessonTypes: LessonType[];
+  setLessonTypes: (u: Updater<LessonType>) => void;
+  lessonPlans: LessonPlan[];
+  setLessonPlans: (u: Updater<LessonPlan>) => void;
   loading: boolean;
 }
 
@@ -195,6 +201,32 @@ const expenseCategoryToDb = (e: Partial<Expense>) => ({
   valor: e.valor,
 });
 
+const dbToLessonType = (r: any): LessonType => ({
+  id: r.id,
+  nome: r.nome,
+});
+const lessonTypeToDb = (l: Partial<LessonType>) => ({
+  ...(l.id ? { id: l.id } : {}),
+  nome: l.nome,
+});
+
+const dbToLessonPlan = (r: any): LessonPlan => ({
+  id: r.id,
+  data: r.data,
+  turmaId: r.turma_id,
+  quadra: r.quadra,
+  lessonTypeId: r.lesson_type_id,
+  observacoes: r.observacoes ?? "",
+});
+const lessonPlanToDb = (l: Partial<LessonPlan>) => ({
+  ...(l.id ? { id: l.id } : {}),
+  data: l.data,
+  turma_id: l.turmaId,
+  quadra: l.quadra,
+  lesson_type_id: l.lessonTypeId,
+  observacoes: l.observacoes || null,
+});
+
 // Diff helper: aplica novo array contra antigo, fazendo upsert/delete
 async function syncTable<T extends { id: string }>(
   table: string,
@@ -252,6 +284,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [plans, setPlansState] = useState<Plan[]>([]);
   const [scheduledPayments, setScheduledPaymentsState] = useState<ScheduledPayment[]>([]);
   const [expenseCategories, setExpenseCategoriesState] = useState<Expense[]>([]);
+  const [lessonTypes, setLessonTypesState] = useState<LessonType[]>([]);
+  const [lessonPlans, setLessonPlansState] = useState<LessonPlan[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Refs para garantir sincronização com o estado mais atualizado absoluto
@@ -297,6 +331,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         aRes,
         spRes,
         ecRes,
+        ltRes,
+        lpRes,
       ] = await Promise.all([
         supabase.from("students").select("*").limit(10000),
         supabase.from("plans").select("*").limit(10000),
@@ -306,6 +342,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         fetchAll("attendance_logs"),
         supabase.from("scheduled_payments").select("*").limit(10000),
         supabase.from("expense_categories").select("*").limit(10000),
+        supabase.from("lesson_types").select("*").limit(10000),
+        supabase.from("lesson_plans").select("*").limit(10000),
       ]);
       if (cancelled) return;
       
@@ -325,6 +363,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
           .map((p) => ({ id: p.id, categoria: p.categoria, valor: p.valor, data: p.vencimento }))
       );
       setExpenseCategoriesState((ecRes.data ?? []).map(dbToExpenseCategory));
+      setLessonTypesState((ltRes.data ?? []).map(dbToLessonType));
+      setLessonPlansState((lpRes.data ?? []).map(dbToLessonPlan));
       setLoading(false);
     })();
     return () => {
@@ -410,6 +450,22 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     // não persistido diretamente — derive via scheduled_payments
   };
 
+  const setLessonTypes = (u: Updater<LessonType>) => {
+    setLessonTypesState((prev) => {
+      const next = typeof u === "function" ? (u as (p: LessonType[]) => LessonType[])(prev) : u;
+      syncTable("lesson_types", prev, next, lessonTypeToDb).catch(e => console.error(e));
+      return next;
+    });
+  };
+
+  const setLessonPlans = (u: Updater<LessonPlan>) => {
+    setLessonPlansState((prev) => {
+      const next = typeof u === "function" ? (u as (p: LessonPlan[]) => LessonPlan[])(prev) : u;
+      syncTable("lesson_plans", prev, next, lessonPlanToDb).catch(e => console.error(e));
+      return next;
+    });
+  };
+
   return (
     <AppContext.Provider
       value={{
@@ -431,6 +487,10 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         setScheduledPayments,
         expenseCategories,
         setExpenseCategories,
+        lessonTypes,
+        setLessonTypes,
+        lessonPlans,
+        setLessonPlans,
         loading,
       }}
     >

@@ -16,6 +16,7 @@ import Expenses from "./pages/Expenses";
 import CashFlow from "./pages/CashFlow";
 import Birthdays from "./pages/Birthdays";
 import FinancialProjection from "./pages/FinancialProjection";
+import LessonPlan from "./pages/LessonPlan";
 import AppLayout from "./components/AppLayout";
 import NotFound from "./pages/NotFound";
 import { AppProvider } from "@/contexts/AppContext";
@@ -43,6 +44,7 @@ const App = () => (
                 <Route path="/classes" element={<ClassManagement />} />
                 <Route path="/attendance" element={<AttendanceControl />} />
                 <Route path="/frequency" element={<FrequencyReport />} />
+                <Route path="/lesson-plan" element={<LessonPlan />} />
                 <Route path="/finance/revenue" element={<Revenue />} />
                 <Route path="/finance/expenses" element={<Expenses />} />
                 <Route path="/finance/cash-flow" element={<CashFlow />} />

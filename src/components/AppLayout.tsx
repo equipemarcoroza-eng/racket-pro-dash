@@ -12,6 +12,7 @@ const navItems = [
   { to: "/classes", label: "Controle de Turmas", icon: Users },
   { to: "/attendance", label: "Controle de Presença", icon: ClipboardCheck },
   { to: "/frequency", label: "Frequência", icon: BarChart3 },
+  { to: "/lesson-plan", label: "Plano de Aulas", icon: ClipboardList },
   { to: "/finance/revenue", label: "Contas a Receber", icon: TrendingUp },
   { to: "/finance/expenses", label: "Contas a Pagar", icon: TrendingDown },
   { to: "/finance/cash-flow", label: "Fluxo de Caixa", icon: DollarSign },

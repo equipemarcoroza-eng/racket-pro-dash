@@ -119,3 +119,21 @@ export interface ScheduledPayment {
 }
 
 export const mockScheduledPayments: ScheduledPayment[] = [];
+
+export interface LessonType {
+  id: string;
+  nome: string;
+}
+
+export const mockLessonTypes: LessonType[] = [];
+
+export interface LessonPlan {
+  id: string;
+  data: string; // YYYY-MM-DD
+  turmaId: string;
+  quadra: string;
+  lessonTypeId: string;
+  observacoes?: string;
+}
+
+export const mockLessonPlans: LessonPlan[] = [];
