@@ -42,6 +42,7 @@ const Birthdays = () => {
   const handlePrint = async () => {
     try {
       const { jsPDF } = await import("jspdf");
+      const autoTable = (await import("jspdf-autotable")).default;
       const doc = new jsPDF();
       const monthLabel = months.find((m) => m.value === selectedMonth)?.label || "";
 
@@ -60,38 +61,31 @@ const Birthdays = () => {
       doc.setTextColor(0, 0, 0);
       doc.text(`Mês: ${monthLabel}`, 105, 70, { align: "center" });
       
-      doc.setDrawColor(200, 200, 200);
-      doc.line(20, 80, 190, 80);
+      const tableData = filteredStudents.map(s => [
+        s.dataNascimento.split("-")[2],
+        s.nome,
+        s.categoria,
+        new Date(s.dataNascimento).toLocaleDateString('pt-BR', {timeZone: 'UTC'}),
+        s.observacoes || "—"
+      ]);
 
-      doc.setFontSize(12);
-      let y = 95;
-      
-      doc.setFont("helvetica", "bold");
-      doc.text("Dia", 25, y);
-      doc.text("Nome do Aluno", 45, y);
-      doc.text("Categoria", 145, y);
-      doc.setFont("helvetica", "normal");
-      
-      y += 5;
-      doc.line(20, y, 190, y);
-      y += 10;
-
-      filteredStudents.forEach((s) => {
-        if (y > 270) {
-          doc.addPage();
-          y = 20;
+      autoTable(doc, {
+        startY: 85,
+        head: [["Dia", "Nome do Aluno", "Categoria", "Nascimento", "Observações"]],
+        body: tableData,
+        theme: 'striped',
+        headStyles: { fillColor: [20, 40, 100] },
+        styles: { fontSize: 9 },
+        columnStyles: {
+          0: { cellWidth: 15 },
+          1: { cellWidth: 50 },
+          2: { cellWidth: 30 },
+          3: { cellWidth: 30 },
+          4: { cellWidth: 'auto' }
         }
-        const day = s.dataNascimento.split("-")[2];
-        doc.text(day, 25, y);
-        doc.text(s.nome, 45, y);
-        doc.text(s.categoria, 145, y);
-        y += 8;
       });
 
-      if (filteredStudents.length === 0) {
-        doc.text("Nenhum aniversariante encontrado neste mês.", 105, y, { align: "center" });
-      }
-
+      const finalY = (doc as any).lastAutoTable.finalY || 200;
       doc.setFontSize(10);
       doc.setTextColor(150, 150, 150);
       doc.text(`Gerado em: ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}`, 105, 285, { align: "center" });
@@ -144,6 +138,7 @@ const Birthdays = () => {
                   <TableHead>Nome</TableHead>
                   <TableHead>Categoria</TableHead>
                   <TableHead>Data de Nascimento</TableHead>
+                  <TableHead>Observações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -154,11 +149,14 @@ const Birthdays = () => {
                       <TableCell className="font-medium">{s.nome}</TableCell>
                       <TableCell>{s.categoria}</TableCell>
                       <TableCell>{new Date(s.dataNascimento).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground max-w-[300px] truncate" title={s.observacoes}>
+                        {s.observacoes || "—"}
+                      </TableCell>
                     </TableRow>
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
                       Nenhum aniversariante encontrado para este mês.
                     </TableCell>
                   </TableRow>
