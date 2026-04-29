@@ -356,6 +356,7 @@ export type Database = {
           id: string
           kit: string | null
           nome: string
+          observacoes: string | null
           plano_id: string | null
           responsavel: string | null
           sexo: string | null
@@ -374,6 +375,7 @@ export type Database = {
           id?: string
           kit?: string | null
           nome: string
+          observacoes?: string | null
           plano_id?: string | null
           responsavel?: string | null
           sexo?: string | null
@@ -392,6 +394,7 @@ export type Database = {
           id?: string
           kit?: string | null
           nome?: string
+          observacoes?: string | null
           plano_id?: string | null
           responsavel?: string | null
           sexo?: string | null
