@@ -337,7 +337,7 @@ const Revenue = () => {
 
   const chartData = [
     { name: "Faturado", valor: totalFaturadoMes, color: "#3b82f6" },
-    { name: "Pago", valor: totalPagoMes, color: "#22c55e" },
+    { name: "Recebido", valor: totalPagoMes, color: "#22c55e" },
     { name: "A Receber", valor: totalAReceberMes, color: "#f59e0b" }
   ];
 
@@ -430,7 +430,7 @@ const Revenue = () => {
               <p className="text-[10px] text-muted-foreground mt-2 font-medium">Total gerado (exceto isenções) no mês.</p>
             </div>
             <div className="bg-green-50 border-l-4 border-green-500 p-5 rounded-lg shadow-sm">
-              <p className="text-xs text-green-700 font-bold uppercase tracking-wider mb-1">Total Pago</p>
+              <p className="text-xs text-green-700 font-bold uppercase tracking-wider mb-1">Total Recebido</p>
               <p className="text-3xl font-black text-green-600">R$ {totalPagoMes.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
               <p className="text-[10px] text-muted-foreground mt-2 font-medium">Total baixado e confirmado no mês.</p>
             </div>
@@ -534,7 +534,7 @@ const Revenue = () => {
                           <span className="font-bold text-foreground">R$ {sub.faturado.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</span>
                         </div>
                         <div className="flex justify-between items-center text-[10px]">
-                          <span className="text-muted-foreground">Pago:</span>
+                          <span className="text-muted-foreground">Recebido:</span>
                           <span className="font-bold text-green-600">R$ {sub.pago.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</span>
                         </div>
                         <div className="flex justify-between items-center text-[10px]">
