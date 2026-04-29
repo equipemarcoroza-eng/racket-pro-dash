@@ -286,19 +286,21 @@ const LessonPlan = () => {
               {lessonTypes.length === 0 ? (
                 <p className="text-center py-4 text-muted-foreground text-sm">Nenhuma aula cadastrada.</p>
               ) : (
-                lessonTypes.map((aula) => (
-                  <div key={aula.id} className="flex items-center justify-between p-2 border rounded-md hover:bg-muted/50 transition-colors">
-                    <span className="text-sm font-medium">{aula.nome}</span>
-                    <div className="flex gap-1">
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingAula(aula); setAulaNome(aula.nome); setShowAulaForm(true); }}>
-                        <Edit className="h-4 w-4 text-muted-foreground" />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDeleteAula(aula.id)}>
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
+                [...lessonTypes]
+                  .sort((a, b) => a.nome.localeCompare(b.nome))
+                  .map((aula) => (
+                    <div key={aula.id} className="flex items-center justify-between p-2 border rounded-md hover:bg-muted/50 transition-colors">
+                      <span className="text-sm font-medium">{aula.nome}</span>
+                      <div className="flex gap-1">
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingAula(aula); setAulaNome(aula.nome); setShowAulaForm(true); }}>
+                          <Edit className="h-4 w-4 text-muted-foreground" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDeleteAula(aula.id)}>
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
                     </div>
-                  </div>
-                ))
+                  ))
               )}
             </div>
           </div>
@@ -319,9 +321,11 @@ const LessonPlan = () => {
                   <SelectValue placeholder="Selecione uma aula..." />
                 </SelectTrigger>
                 <SelectContent>
-                  {lessonTypes.map(aula => (
-                    <SelectItem key={aula.id} value={aula.id}>{aula.nome}</SelectItem>
-                  ))}
+                  {[...lessonTypes]
+                    .sort((a, b) => a.nome.localeCompare(b.nome))
+                    .map(aula => (
+                      <SelectItem key={aula.id} value={aula.id}>{aula.nome}</SelectItem>
+                    ))}
                   {lessonTypes.length === 0 && (
                     <div className="p-2 text-center text-xs text-muted-foreground">Nenhuma aula cadastrada.</div>
                   )}
