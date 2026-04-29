@@ -7,7 +7,7 @@ import { useAppContext } from "@/contexts/AppContext";
 const periodos = ["Mês Atual", "Mês Anterior", "Últimos 3 meses", "Últimos 6 meses", "Últimos 12 meses", "Últimos 24 meses", "Últimos 36 meses", "Últimos 48 meses"];
 
 const CashFlow = () => {
-  const { revenues, expenseLogs } = useAppContext();
+  const { revenues, expenseLogs, students } = useAppContext();
   const [periodo, setPeriodo] = useState("Mês Atual");
 
   const parseDate = (dateStr: string) => {
@@ -69,6 +69,17 @@ const CashFlow = () => {
       })
       .reduce((acc, curr) => acc + curr.valor, 0);
 
+    const totalMensalidadesAtivos = revenues
+      .filter(r => {
+        const vDate = parseDate(r.vencimento);
+        if (!(vDate >= startDate && vDate <= endDate)) return false;
+        if (r.status !== "Pago") return false;
+        
+        const student = students.find(s => s.id === r.alunoId || s.nome === r.aluno);
+        return student?.status === "Ativo";
+      })
+      .reduce((acc, curr) => acc + curr.valor, 0);
+
     // Dados do Gráfico
     const chartMonths = periodo === "Mês Atual" || periodo === "Mês Anterior" ? 3 : 
                        periodo === "Últimos 3 meses" ? 3 :
@@ -106,10 +117,11 @@ const CashFlow = () => {
       despesas,
       saldo: receitas - despesas,
       receitasPrevistas,
+      totalMensalidadesAtivos,
       despesasPrevistas: despesas * 1.05, // Estimativa simples
       dynamicChartData
     };
-  }, [periodo, revenues, expenseLogs]);
+  }, [periodo, revenues, expenseLogs, students]);
 
   return (
     <div className="space-y-6">
@@ -217,6 +229,10 @@ const CashFlow = () => {
                 <div className="border rounded-md p-3">
                   <p className="text-sm text-muted-foreground">Receitas previstas (total faturamento)</p>
                   <p className="text-xl font-bold">R$ {metrics.receitasPrevistas.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                </div>
+                <div className="border rounded-md p-3 bg-blue-50/30 border-blue-100">
+                  <p className="text-sm text-blue-700 font-medium">Total de Mensalidades (Ativos e Pagos)</p>
+                  <p className="text-xl font-black text-blue-800">R$ {metrics.totalMensalidadesAtivos.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                 </div>
                 <div className="border rounded-md p-3">
                   <p className="text-sm text-muted-foreground">Despesas estimadas</p>
