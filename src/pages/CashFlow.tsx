@@ -76,7 +76,7 @@ const CashFlow = () => {
         if (r.status !== "Pago") return false;
         
         const student = students.find(s => s.id === r.alunoId || s.nome === r.aluno);
-        return student?.status === "Ativo";
+        return student && (student.status === "Ativo" || student.status === "Inativo");
       })
       .reduce((acc, curr) => acc + curr.valor, 0);
 
@@ -231,7 +231,7 @@ const CashFlow = () => {
                   <p className="text-xl font-bold">R$ {metrics.receitasPrevistas.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                 </div>
                 <div className="border rounded-md p-3 bg-blue-50/30 border-blue-100">
-                  <p className="text-sm text-blue-700 font-medium">Total de Mensalidades (Ativos e Pagos)</p>
+                  <p className="text-sm text-blue-700 font-medium">Total de Mensalidades (Ativos/Inativos e Pagos)</p>
                   <p className="text-xl font-black text-blue-800">R$ {metrics.totalMensalidadesAtivos.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                 </div>
                 <div className="border rounded-md p-3">
