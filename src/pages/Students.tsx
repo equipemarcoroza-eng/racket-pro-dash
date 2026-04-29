@@ -107,10 +107,6 @@ const Students = () => {
   const [catFilter, setCatFilter] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [sexoFilter, setSexoFilter] = useState<Student["sexo"] | null>(null);
-  const [entryDateFilter, setEntryDateFilter] = useState<string>(() => {
-    const now = new Date();
-    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
-  });
   const [form, setForm] = useState<FormState>(emptyForm);
 
   // Estados para os novos relatórios financeiros e de frequência
@@ -137,8 +133,7 @@ const Students = () => {
     (s) => 
       (!catFilter || s.categoria === catFilter) && 
       (!statusFilter || s.status === statusFilter) &&
-      (!sexoFilter || s.sexo === sexoFilter) &&
-      (!entryDateFilter || s.dataEntrada >= entryDateFilter)
+      (!sexoFilter || s.sexo === sexoFilter)
   ).sort((a, b) => a.nome.localeCompare(b.nome));
 
   const toIsoDate = (dateStr: string) => {
@@ -407,13 +402,7 @@ const Students = () => {
               <p className="text-sm text-primary font-medium">Filtros de Lista</p>
               <p className="font-semibold">Refinar resultados</p>
             </div>
-            <Button variant="outline" size="sm" onClick={() => { 
-              setCatFilter(null); 
-              setStatusFilter(null); 
-              setSexoFilter(null);
-              const now = new Date();
-              setEntryDateFilter(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`);
-            }}>Limpar filtros</Button>
+            <Button variant="outline" size="sm" onClick={() => { setCatFilter(null); setStatusFilter(null); setSexoFilter(null); }}>Limpar filtros</Button>
           </div>
           <div className="flex flex-wrap gap-10">
             <div>
@@ -447,18 +436,6 @@ const Students = () => {
                     <span className="text-[10px] text-muted-foreground font-bold">{students.filter(st => st.sexo === s).length} alunos</span>
                   </div>
                 ))}
-              </div>
-            </div>
-            <div>
-              <p className="text-sm font-medium mb-3">Entrada a partir de</p>
-              <div className="flex flex-col items-center gap-1">
-                <Input 
-                  type="date" 
-                  className="w-40 h-9" 
-                  value={entryDateFilter} 
-                  onChange={(e) => setEntryDateFilter(e.target.value)} 
-                />
-                <span className="text-[10px] text-muted-foreground font-bold">{students.filter(s => s.dataEntrada >= entryDateFilter).length} alunos</span>
               </div>
             </div>
           </div>
