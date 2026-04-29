@@ -108,6 +108,11 @@ const Students = () => {
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [sexoFilter, setSexoFilter] = useState<Student["sexo"] | null>(null);
   const [form, setForm] = useState<FormState>(emptyForm);
+  const [showEntryDateModal, setShowEntryDateModal] = useState(false);
+  const [queryEntryDate, setQueryEntryDate] = useState(() => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
+  });
 
   // Estados para os novos relatórios financeiros e de frequência
   const [reportStudent, setReportStudent] = useState<Student | null>(null);
@@ -533,6 +538,7 @@ const Students = () => {
               <p className="font-semibold text-lg">Registros</p>
             </div>
             <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={() => setShowEntryDateModal(true)}>Consultar por Entrada</Button>
               <Button variant="outline" size="sm" onClick={handleExport}>Exportar</Button>
               <Button size="sm" onClick={openNew}>Novo aluno</Button>
             </div>
@@ -713,6 +719,70 @@ const Students = () => {
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal Consulta por Data de Entrada */}
+      <Dialog open={showEntryDateModal} onOpenChange={setShowEntryDateModal}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Consulta de Alunos por Data de Entrada</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="flex items-center gap-4 p-4 bg-muted/30 rounded-lg">
+              <div className="flex-1 space-y-1.5">
+                <Label>Entrada a partir de</Label>
+                <Input 
+                  type="date" 
+                  value={queryEntryDate} 
+                  onChange={(e) => setQueryEntryDate(e.target.value)} 
+                />
+              </div>
+              <div className="flex-1 pt-6 text-right">
+                <p className="text-sm text-muted-foreground">Total encontrado para o período:</p>
+                <p className="text-2xl font-black text-primary">
+                  {students.filter(s => s.dataEntrada >= queryEntryDate).length} alunos
+                </p>
+              </div>
+            </div>
+
+            <div className="border rounded-lg max-h-[400px] overflow-y-auto">
+              <Table>
+                <TableHeader className="bg-muted/50 sticky top-0 z-10">
+                  <TableRow>
+                    <TableHead>Nome</TableHead>
+                    <TableHead>Data de Entrada</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Categoria</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {students
+                    .filter(s => s.dataEntrada >= queryEntryDate)
+                    .sort((a, b) => b.dataEntrada.localeCompare(a.dataEntrada))
+                    .map((s) => (
+                      <TableRow key={s.id}>
+                        <TableCell className="font-medium text-sm">{s.nome}</TableCell>
+                        <TableCell className="text-sm">{new Date(s.dataEntrada).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}</TableCell>
+                        <TableCell><Badge variant={statusVariant[s.status]} className="text-[10px]">{s.status}</Badge></TableCell>
+                        <TableCell className="text-sm">{s.categoria}</TableCell>
+                      </TableRow>
+                    ))
+                  }
+                  {students.filter(s => s.dataEntrada >= queryEntryDate).length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={4} className="text-center py-8 text-muted-foreground italic">
+                        Nenhum aluno encontrado com entrada a partir desta data.
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+            <div className="flex justify-end pt-2">
+              <Button variant="outline" onClick={() => setShowEntryDateModal(false)}>Fechar</Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
