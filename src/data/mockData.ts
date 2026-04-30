@@ -139,3 +139,28 @@ export interface LessonPlan {
 }
 
 export const mockLessonPlans: LessonPlan[] = [];
+
+export interface Activity {
+  id: string;
+  nome: string;
+  quantidadeLancamentos: number;
+}
+
+export interface Test {
+  id: string;
+  data: string; // YYYY-MM-DD
+  slotId: string;
+  atividadesIds: string[];
+}
+
+export interface TestResult {
+  id: string;
+  testId: string;
+  alunoId: string;
+  atividadeId: string;
+  acertos: number;
+}
+
+export const mockActivities: Activity[] = [];
+export const mockTests: Test[] = [];
+export const mockTestResults: TestResult[] = [];

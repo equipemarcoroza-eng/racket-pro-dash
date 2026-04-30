@@ -14,6 +14,9 @@ import type {
   Expense,
   LessonType,
   LessonPlan,
+  Activity,
+  Test,
+  TestResult,
 } from "@/data/mockData";
 
 type Updater<T> = T[] | ((prev: T[]) => T[]);
@@ -41,6 +44,12 @@ interface AppContextType {
   setLessonTypes: (u: Updater<LessonType>) => void;
   lessonPlans: LessonPlan[];
   setLessonPlans: (u: Updater<LessonPlan>) => void;
+  activities: Activity[];
+  setActivities: (u: Updater<Activity>) => void;
+  tests: Test[];
+  setTests: (u: Updater<Test>) => void;
+  testResults: TestResult[];
+  setTestResults: (u: Updater<TestResult>) => void;
   loading: boolean;
 }
 
@@ -231,6 +240,45 @@ const lessonPlanToDb = (l: Partial<LessonPlan>) => ({
   observacoes: l.observacoes || null,
 });
 
+const dbToActivity = (r: any): Activity => ({
+  id: r.id,
+  nome: r.nome,
+  quantidadeLancamentos: r.quantidade_lancamentos,
+});
+const activityToDb = (a: Partial<Activity>) => ({
+  ...(a.id ? { id: a.id } : {}),
+  nome: a.nome,
+  quantidade_lancamentos: a.quantidadeLancamentos,
+});
+
+const dbToTest = (r: any): Test => ({
+  id: r.id,
+  data: r.data,
+  slotId: r.slot_id,
+  atividadesIds: r.atividades_ids ?? [],
+});
+const testToDb = (t: Partial<Test>) => ({
+  ...(t.id ? { id: t.id } : {}),
+  data: t.data,
+  slot_id: t.slotId,
+  atividades_ids: t.atividadesIds,
+});
+
+const dbToTestResult = (r: any): TestResult => ({
+  id: r.id,
+  testId: r.test_id,
+  alunoId: r.aluno_id,
+  atividadeId: r.atividade_id,
+  acertos: r.acertos,
+});
+const testResultToDb = (r: Partial<TestResult>) => ({
+  ...(r.id ? { id: r.id } : {}),
+  test_id: r.testId,
+  aluno_id: r.alunoId,
+  atividade_id: r.atividadeId,
+  acertos: r.acertos,
+});
+
 // Diff helper: aplica novo array contra antigo, fazendo upsert/delete
 async function syncTable<T extends { id: string }>(
   table: string,
@@ -290,6 +338,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [expenseCategories, setExpenseCategoriesState] = useState<Expense[]>([]);
   const [lessonTypes, setLessonTypesState] = useState<LessonType[]>([]);
   const [lessonPlans, setLessonPlansState] = useState<LessonPlan[]>([]);
+  const [activities, setActivitiesState] = useState<Activity[]>([]);
+  const [tests, setTestsState] = useState<Test[]>([]);
+  const [testResults, setTestResultsState] = useState<TestResult[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Refs para garantir sincronização com o estado mais atualizado absoluto
@@ -337,6 +388,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         ecRes,
         ltRes,
         lpRes,
+        actRes,
+        tRes,
+        trRes,
       ] = await Promise.all([
         supabase.from("students").select("*").limit(10000),
         supabase.from("plans").select("*").limit(10000),
@@ -348,6 +402,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         supabase.from("expense_categories").select("*").limit(10000),
         supabase.from("lesson_types").select("*").limit(10000),
         supabase.from("lesson_plans").select("*").limit(10000),
+        supabase.from("activities").select("*").limit(10000),
+        supabase.from("tests").select("*").limit(10000),
+        supabase.from("test_results").select("*").limit(10000),
       ]);
       if (cancelled) return;
       
@@ -369,6 +426,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       setExpenseCategoriesState((ecRes.data ?? []).map(dbToExpenseCategory));
       setLessonTypesState((ltRes.data ?? []).map(dbToLessonType));
       setLessonPlansState((lpRes.data ?? []).map(dbToLessonPlan));
+      setActivitiesState((actRes.data ?? []).map(dbToActivity));
+      setTestsState((tRes.data ?? []).map(dbToTest));
+      setTestResultsState((trRes.data ?? []).map(dbToTestResult));
       setLoading(false);
     })();
     return () => {
@@ -470,6 +530,30 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
+  const setActivities = (u: Updater<Activity>) => {
+    setActivitiesState((prev) => {
+      const next = typeof u === "function" ? (u as (p: Activity[]) => Activity[])(prev) : u;
+      syncTable("activities", prev, next, activityToDb).catch(e => console.error(e));
+      return next;
+    });
+  };
+
+  const setTests = (u: Updater<Test>) => {
+    setTestsState((prev) => {
+      const next = typeof u === "function" ? (u as (p: Test[]) => Test[])(prev) : u;
+      syncTable("tests", prev, next, testToDb).catch(e => console.error(e));
+      return next;
+    });
+  };
+
+  const setTestResults = (u: Updater<TestResult>) => {
+    setTestResultsState((prev) => {
+      const next = typeof u === "function" ? (u as (p: TestResult[]) => TestResult[])(prev) : u;
+      syncTable("test_results", prev, next, testResultToDb).catch(e => console.error(e));
+      return next;
+    });
+  };
+
   return (
     <AppContext.Provider
       value={{
@@ -495,6 +579,12 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         setLessonTypes,
         lessonPlans,
         setLessonPlans,
+        activities,
+        setActivities,
+        tests,
+        setTests,
+        testResults,
+        setTestResults,
         loading,
       }}
     >
