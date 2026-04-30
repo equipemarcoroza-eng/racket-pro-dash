@@ -1,0 +1,1 @@
+ALTER TABLE public.attendance_logs ADD COLUMN IF NOT EXISTS motivo_cancelamento TEXT;

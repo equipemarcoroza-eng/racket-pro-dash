@@ -21,6 +21,7 @@ export type Database = {
           data: string
           data_realizacao: string | null
           id: string
+          motivo_cancelamento: string | null
           presente: string
           turma_id: string
         }
@@ -30,6 +31,7 @@ export type Database = {
           data: string
           data_realizacao?: string | null
           id?: string
+          motivo_cancelamento?: string | null
           presente: string
           turma_id: string
         }
@@ -39,6 +41,7 @@ export type Database = {
           data?: string
           data_realizacao?: string | null
           id?: string
+          motivo_cancelamento?: string | null
           presente?: string
           turma_id?: string
         }
