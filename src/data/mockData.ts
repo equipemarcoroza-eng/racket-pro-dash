@@ -67,6 +67,7 @@ export interface AttendanceLog {
   data: string;
   presente: "Presente" | "Falta" | "Cancelado" | "Miniliga" | "Reposição";
   dataRealizacao?: string;
+  motivoCancelamento?: string;
 }
 
 export const mockAttendanceLogs: AttendanceLog[] = [];

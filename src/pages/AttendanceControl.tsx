@@ -16,6 +16,7 @@ const AttendanceControl = () => {
   const { students: mockStudents, enrollments: mockEnrollments, attendanceLogs, setAttendanceLogs, schedule: mockSchedule } = useAppContext();
   const [selectedDate, setSelectedDate] = useState(format(new Date(), "yyyy-MM-dd"));
   const [presencas, setPresencas] = useState<Record<string, Record<string, "Presente" | "Falta" | "Cancelado" | null>>>({});
+  const [motivos, setMotivos] = useState<Record<string, Record<string, string>>>({});
 
   const dayOfWeek = new Date(selectedDate + "T12:00:00").getDay();
   const diaLabel = diasReverse[dayOfWeek];
@@ -50,6 +51,19 @@ const AttendanceControl = () => {
     });
   };
 
+  const handleMotivoChange = (slotId: string, alunoId: string, value: string) => {
+    setMotivos(prev => {
+      const slotMotivos = prev[slotId] || {};
+      return {
+        ...prev,
+        [slotId]: {
+          ...slotMotivos,
+          [alunoId]: value
+        }
+      };
+    });
+  };
+
   const getPresenca = (slotId: string, alunoId: string): "Presente" | "Falta" | "Cancelado" | null => {
     return presencas[slotId]?.[alunoId] ?? null;
   };
@@ -69,6 +83,7 @@ const AttendanceControl = () => {
       turmaId: slotId,
       data: selectedDate,
       presente: slotPresencas[s.id] as "Presente" | "Falta" | "Cancelado",
+      motivoCancelamento: slotPresencas[s.id] === "Cancelado" ? (motivos[slotId]?.[s.id] || "") : undefined
     }));
 
     // Remove existing logs for this slot/date, add new
@@ -122,11 +137,13 @@ const AttendanceControl = () => {
                   </div>
                   <div className="flex items-center gap-2">
                     <Button size="sm" variant="outline" className="text-yellow-600 border-yellow-600 hover:bg-yellow-50" onClick={() => {
-                      alunos.forEach(aluno => {
-                        if (getPresenca(slot.id, aluno.id) !== "Cancelado") {
+                      const reason = window.prompt("Informe o motivo do cancelamento da turma:");
+                      if (reason !== null) {
+                        alunos.forEach(aluno => {
                           togglePresenca(slot.id, aluno.id, "Cancelado");
-                        }
-                      });
+                          handleMotivoChange(slot.id, aluno.id, reason);
+                        });
+                      }
                     }} disabled={alunos.length === 0}>
                       Cancelar Turma
                     </Button>
@@ -145,34 +162,47 @@ const AttendanceControl = () => {
                       const logExisting = attendanceLogs.find((l) => l.turmaId === slot.id && l.data === selectedDate && l.alunoId === aluno.id);
                       const displayValue = value ?? (logExisting ? logExisting.presente : null);
                       return (
-                        <div key={aluno.id} className="flex items-center justify-between border rounded-md p-3">
-                          <p className="font-medium text-sm">{aluno.nome}</p>
-                          <div className="flex gap-2">
-                            <Button
-                              size="sm"
-                              variant={displayValue === "Presente" ? "default" : "outline"}
-                              className={displayValue === "Presente" ? "bg-green-600 hover:bg-green-700 text-white" : ""}
-                              onClick={() => togglePresenca(slot.id, aluno.id, "Presente")}
-                            >
-                              Presente
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant={displayValue === "Falta" ? "destructive" : "outline"}
-                              onClick={() => togglePresenca(slot.id, aluno.id, "Falta")}
-                            >
-                              Ausente
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant={displayValue === "Cancelado" ? "default" : "outline"}
-                              className={displayValue === "Cancelado" ? "bg-yellow-500 hover:bg-yellow-600 text-white border-yellow-500" : ""}
-                              onClick={() => togglePresenca(slot.id, aluno.id, "Cancelado")}
-                            >
-                              Cancelado
-                            </Button>
+                        <div key={aluno.id} className="flex flex-col gap-2">
+                            <div className="flex items-center justify-between border rounded-md p-3">
+                              <p className="font-medium text-sm">{aluno.nome}</p>
+                              <div className="flex gap-2">
+                                <Button
+                                  size="sm"
+                                  variant={displayValue === "Presente" ? "default" : "outline"}
+                                  className={displayValue === "Presente" ? "bg-green-600 hover:bg-green-700 text-white" : ""}
+                                  onClick={() => togglePresenca(slot.id, aluno.id, "Presente")}
+                                >
+                                  Presente
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant={displayValue === "Falta" ? "destructive" : "outline"}
+                                  onClick={() => togglePresenca(slot.id, aluno.id, "Falta")}
+                                >
+                                  Ausente
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant={displayValue === "Cancelado" ? "default" : "outline"}
+                                  className={displayValue === "Cancelado" ? "bg-yellow-500 hover:bg-yellow-600 text-white border-yellow-500" : ""}
+                                  onClick={() => togglePresenca(slot.id, aluno.id, "Cancelado")}
+                                >
+                                  Cancelado
+                                </Button>
+                              </div>
+                            </div>
+                            
+                            {displayValue === "Cancelado" && (
+                              <div className="px-3 pb-3 -mt-2">
+                                <Input 
+                                  placeholder="Motivo do cancelamento..." 
+                                  value={motivos[slot.id]?.[aluno.id] ?? (logExisting?.motivoCancelamento ?? "")}
+                                  onChange={(e) => handleMotivoChange(slot.id, aluno.id, e.target.value)}
+                                  className="text-xs border-yellow-200 focus-visible:ring-yellow-500"
+                                />
+                              </div>
+                            )}
                           </div>
-                        </div>
                       );
                     })}
                   </div>

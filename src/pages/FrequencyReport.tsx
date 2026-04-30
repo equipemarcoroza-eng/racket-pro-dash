@@ -33,14 +33,15 @@ const FrequencyReport = () => {
   const enrolledSlotIds = enrollments.filter((e) => e.alunoId === selectedAlunoId).map((e) => e.turmaId);
   const enrolledSlots = mockSchedule.filter((s) => enrolledSlotIds.includes(s.id));
 
-  const handleDirectRegister = (data: string, turmaId: string, status: AttendanceLog["presente"], dataRealizacao?: string) => {
+  const handleDirectRegister = (data: string, turmaId: string, status: AttendanceLog["presente"], extra?: string) => {
     const newLog: AttendanceLog = {
       id: crypto.randomUUID(),
       alunoId: selectedAlunoId,
       turmaId,
       data,
       presente: status,
-      ...(dataRealizacao ? { dataRealizacao } : {})
+      ...(status === "Miniliga" || status === "Reposição" ? { dataRealizacao: extra } : {}),
+      ...(status === "Cancelado" ? { motivoCancelamento: extra } : {})
     };
 
     setAttendanceLogs((prev) => [
@@ -48,6 +49,13 @@ const FrequencyReport = () => {
       newLog,
     ]);
     toast.success("Status atualizado");
+  };
+
+  const handleCancelWithPrompt = (data: string, turmaId: string) => {
+    const reason = window.prompt("Informe o motivo do cancelamento:");
+    if (reason !== null) {
+      handleDirectRegister(data, turmaId, "Cancelado", reason);
+    }
   };
 
   const [specialDialog, setSpecialDialog] = useState<{ open: boolean; dateToUpdate: string; turmaId: string; status: "Miniliga" | "Reposição" | null }>({ open: false, dateToUpdate: "", turmaId: "", status: null });
@@ -91,7 +99,8 @@ const FrequencyReport = () => {
           horario: slot.horario,
           quadra: slot.quadra,
           status: log ? log.presente : "Não lançado",
-          dataRealizacao: log?.dataRealizacao
+          dataRealizacao: log?.dataRealizacao,
+          motivoCancelamento: log?.motivoCancelamento
         });
       }
     }
@@ -166,6 +175,7 @@ const FrequencyReport = () => {
                     <TableHead>Horário</TableHead>
                     <TableHead>Quadra</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead>Motivo</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -183,7 +193,7 @@ const FrequencyReport = () => {
                             <div className="flex gap-1 flex-wrap">
                               <Button size="sm" variant="outline" className="h-7 text-[10px] px-2 bg-green-50 text-green-700 border-green-200 hover:bg-green-100" onClick={() => handleDirectRegister(row.data, row.turmaId, "Presente")}>Pres.</Button>
                               <Button size="sm" variant="outline" className="h-7 text-[10px] px-2 bg-red-50 text-red-700 border-red-200 hover:bg-red-100" onClick={() => handleDirectRegister(row.data, row.turmaId, "Falta")}>Aus.</Button>
-                              <Button size="sm" variant="outline" className="h-7 text-[10px] px-2 bg-yellow-50 text-yellow-700 border-yellow-200 hover:bg-yellow-100" onClick={() => handleDirectRegister(row.data, row.turmaId, "Cancelado")}>Canc.</Button>
+                              <Button size="sm" variant="outline" className="h-7 text-[10px] px-2 bg-yellow-50 text-yellow-700 border-yellow-200 hover:bg-yellow-100" onClick={() => handleCancelWithPrompt(row.data, row.turmaId)}>Canc.</Button>
                               <Button size="sm" variant="outline" className="h-7 text-[10px] px-2 bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100" onClick={() => setSpecialDialog({ open: true, dateToUpdate: row.data, turmaId: row.turmaId, status: "Miniliga" })}>Miniliga</Button>
                               <Button size="sm" variant="outline" className="h-7 text-[10px] px-2 bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100" onClick={() => setSpecialDialog({ open: true, dateToUpdate: row.data, turmaId: row.turmaId, status: "Reposição" })}>Repos.</Button>
                             </div>
@@ -205,6 +215,9 @@ const FrequencyReport = () => {
                               )}
                             </div>
                           )}
+                        </TableCell>
+                        <TableCell className="text-xs text-muted-foreground italic max-w-[200px] truncate" title={row.motivoCancelamento}>
+                          {row.status === "Cancelado" ? (row.motivoCancelamento || "—") : "—"}
                         </TableCell>
                       </TableRow>
                     ))

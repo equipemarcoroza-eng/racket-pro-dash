@@ -674,6 +674,7 @@ const Students = () => {
                       <TableHead>Data</TableHead>
                       <TableHead>Turma / Horário</TableHead>
                       <TableHead>Status</TableHead>
+                      <TableHead>Motivo</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -692,6 +693,9 @@ const Students = () => {
                               {l.presente === "Falta" ? "Ausente" : l.presente}
                               {l.dataRealizacao && ` (${new Date(l.dataRealizacao).toLocaleDateString('pt-BR', {timeZone: 'UTC'})})`}
                             </Badge>
+                          </TableCell>
+                          <TableCell className="text-xs text-muted-foreground italic max-w-[200px] truncate" title={l.motivoCancelamento}>
+                            {l.presente === "Cancelado" ? (l.motivoCancelamento || "—") : "—"}
                           </TableCell>
                         </TableRow>
                       ))
