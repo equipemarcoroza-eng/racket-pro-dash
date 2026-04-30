@@ -14,6 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      activities: {
+        Row: {
+          created_at: string
+          id: string
+          nome: string
+          quantidade_lancamentos: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          nome: string
+          quantidade_lancamentos?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          nome?: string
+          quantidade_lancamentos?: number
+        }
+        Relationships: []
+      }
       attendance_logs: {
         Row: {
           aluno_id: string
@@ -413,6 +434,87 @@ export type Database = {
             columns: ["plano_id"]
             isOneToOne: false
             referencedRelation: "plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      test_results: {
+        Row: {
+          acertos: number
+          aluno_id: string
+          atividade_id: string
+          created_at: string
+          id: string
+          test_id: string
+        }
+        Insert: {
+          acertos?: number
+          aluno_id: string
+          atividade_id: string
+          created_at?: string
+          id?: string
+          test_id: string
+        }
+        Update: {
+          acertos?: number
+          aluno_id?: string
+          atividade_id?: string
+          created_at?: string
+          id?: string
+          test_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "test_results_aluno_id_fkey"
+            columns: ["aluno_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "test_results_atividade_id_fkey"
+            columns: ["atividade_id"]
+            isOneToOne: false
+            referencedRelation: "activities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "test_results_test_id_fkey"
+            columns: ["test_id"]
+            isOneToOne: false
+            referencedRelation: "tests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tests: {
+        Row: {
+          atividades_ids: string[]
+          created_at: string
+          data: string
+          id: string
+          slot_id: string
+        }
+        Insert: {
+          atividades_ids: string[]
+          created_at?: string
+          data: string
+          id?: string
+          slot_id: string
+        }
+        Update: {
+          atividades_ids?: string[]
+          created_at?: string
+          data?: string
+          id?: string
+          slot_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tests_slot_id_fkey"
+            columns: ["slot_id"]
+            isOneToOne: false
+            referencedRelation: "schedule_slots"
             referencedColumns: ["id"]
           },
         ]
