@@ -86,7 +86,7 @@ const FrequencyReport = () => {
   };
 
   // Build report rows
-  const reportRows: { data: string; turmaId: string; turmaLabel: string; horario: string; quadra: string; status: AttendanceLog["presente"] | "Não lançado"; dataRealizacao?: string }[] = [];
+  const reportRows: { data: string; turmaId: string; turmaLabel: string; horario: string; quadra: string; status: AttendanceLog["presente"] | "Não lançado"; dataRealizacao?: string; motivoCancelamento?: string }[] = [];
   if (selectedAlunoId) {
     for (const slot of enrolledSlots) {
       const dates = getDatesForSlot(slot);
