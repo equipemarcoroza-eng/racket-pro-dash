@@ -115,6 +115,7 @@ const dbToAttendance = (r: any): AttendanceLog => ({
   data: r.data,
   presente: r.presente as AttendanceLog["presente"],
   dataRealizacao: r.data_realizacao,
+  motivoCancelamento: r.motivo_cancelamento,
 });
 const attendanceToDb = (a: Partial<AttendanceLog>) => ({
   ...(a.id ? { id: a.id } : {}),
@@ -123,6 +124,7 @@ const attendanceToDb = (a: Partial<AttendanceLog>) => ({
   data: a.data,
   presente: a.presente,
   data_realizacao: a.dataRealizacao || null,
+  motivo_cancelamento: a.motivoCancelamento || null,
 });
 
 const dbToPlan = (r: any): Plan => ({
