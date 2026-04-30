@@ -11,7 +11,8 @@ import { useAppContext } from "@/contexts/AppContext";
 import { toast } from "sonner";
 import { startOfWeek, addDays, format, startOfDay, addWeeks, subWeeks } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Search, Plus, Edit, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, Plus, Edit, Trash2, ChevronLeft, ChevronRight, Printer } from "lucide-react";
+import logo from "@/assets/logo.png";
 import { CLASS_LIMIT, type LessonType, type LessonPlan as LessonPlanType } from "@/data/mockData";
 
 const dias = ["Seg", "Ter", "Qua", "Qui", "Sex"];
@@ -40,6 +41,9 @@ const LessonPlan = () => {
   const [editingPlan, setEditingPlan] = useState<{ slotId: string, date: string } | null>(null);
   const [selectedAulaId, setSelectedAulaId] = useState("");
   const [planObservacoes, setPlanObservacoes] = useState("");
+  
+  const [showPrintModal, setShowPrintModal] = useState(false);
+  const [printDate, setPrintDate] = useState(format(new Date(), "yyyy-MM-dd"));
 
   // Week calculation
   const weekStart = startOfWeek(currentWeek, { weekStartsOn: 1 });
@@ -144,6 +148,135 @@ const LessonPlan = () => {
     setEditingPlan(null);
   };
 
+  const handlePrintPDF = async () => {
+    try {
+      const { jsPDF } = await import("jspdf");
+      const autoTable = (await import("jspdf-autotable")).default;
+      const doc = new jsPDF();
+
+      // Logo
+      try {
+        doc.addImage(logo, "PNG", 85, 10, 40, 40);
+      } catch (e) {
+        console.error("Erro ao carregar o logotipo", e);
+      }
+
+      const formattedDate = format(new Date(printDate + "T12:00:00"), "dd/MM/yyyy");
+
+      doc.setFontSize(22);
+      doc.setTextColor(20, 40, 100);
+      doc.text("Plano de Aulas", 105, 60, { align: "center" });
+      
+      doc.setFontSize(14);
+      doc.setTextColor(0, 0, 0);
+      doc.text(`Data: ${formattedDate}`, 105, 70, { align: "center" });
+
+      doc.setDrawColor(200, 200, 200);
+      doc.line(20, 75, 190, 75);
+
+      // Filtrar horários que possuem turmas e planos para este dia
+      const dayOfWeekMap: Record<number, string> = {
+        1: "Seg", 2: "Ter", 3: "Qua", 4: "Qui", 5: "Sex", 6: "Sáb", 0: "Dom"
+      };
+      const dayOfWeek = dayOfWeekMap[new Date(printDate + "T12:00:00").getDay()];
+
+      const daySlots = schedule.filter(s => s.dia === dayOfWeek);
+      
+      let currentY = 85;
+
+      if (daySlots.length === 0) {
+        doc.setFontSize(12);
+        doc.text("Nenhuma turma cadastrada para este dia da semana.", 105, 95, { align: "center" });
+      } else {
+        // Ordenar slots por horário
+        const sortedSlots = [...daySlots].sort((a, b) => a.horario.localeCompare(b.horario));
+
+        sortedSlots.forEach((slot) => {
+          const slotPlans = lessonPlans.filter(p => p.turmaId === slot.id && p.data === printDate);
+          const enrolled = enrollments.filter(e => e.turmaId === slot.id);
+          const classStudents = enrolled
+            .map(e => students.find(s => s.id === e.alunoId))
+            .filter((st): st is NonNullable<typeof st> => !!st)
+            .sort((a, b) => a.nome.localeCompare(b.nome));
+
+          // Verificar espaço na página
+          if (currentY > 250) {
+            doc.addPage();
+            currentY = 20;
+          }
+
+          // Header da Turma
+          doc.setFillColor(245, 247, 250);
+          doc.rect(20, currentY, 170, 8, 'F');
+          doc.setFontSize(11);
+          doc.setFont("helvetica", "bold");
+          doc.setTextColor(20, 40, 100);
+          doc.text(`${slot.horario} - Turma: ${slot.turmaId} (${slot.quadra})`, 25, currentY + 5.5);
+          
+          currentY += 12;
+
+          // Alunos
+          doc.setFontSize(9);
+          doc.setFont("helvetica", "bold");
+          doc.setTextColor(100, 100, 100);
+          doc.text("ALUNOS:", 25, currentY);
+          
+          doc.setFont("helvetica", "normal");
+          doc.setTextColor(0, 0, 0);
+          const studentsText = classStudents.length > 0 
+            ? classStudents.map(s => s.nome).join(", ") 
+            : "Nenhum aluno matriculado.";
+          
+          const splitStudents = doc.splitTextToSize(studentsText, 160);
+          doc.text(splitStudents, 25, currentY + 5);
+          currentY += (splitStudents.length * 5) + 5;
+
+          // Plano de Aula
+          doc.setFont("helvetica", "bold");
+          doc.setTextColor(100, 100, 100);
+          doc.text("CONTEÚDO DA AULA:", 25, currentY);
+          
+          doc.setFont("helvetica", "normal");
+          doc.setTextColor(0, 0, 0);
+          
+          if (slotPlans.length > 0) {
+            let planText = slotPlans.map(p => {
+              const aula = lessonTypes.find(a => a.id === p.lessonTypeId);
+              return `• ${aula?.nome || "Aula não identificada"}`;
+            }).join("\n");
+
+            if (slotPlans[0].observacoes) {
+              planText += `\n\nObs: ${slotPlans[0].observacoes}`;
+            }
+
+            const splitPlan = doc.splitTextToSize(planText, 160);
+            doc.text(splitPlan, 25, currentY + 5);
+            currentY += (splitPlan.length * 5) + 10;
+          } else {
+            doc.setFont("helvetica", "italic");
+            doc.text("Nenhum plano de aula definido para este dia.", 25, currentY + 5);
+            currentY += 15;
+          }
+
+          doc.setDrawColor(240, 240, 240);
+          doc.line(20, currentY - 5, 190, currentY - 5);
+          currentY += 5;
+        });
+      }
+
+      doc.setFontSize(10);
+      doc.setTextColor(150, 150, 150);
+      doc.text(`Gerado em: ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}`, 105, 285, { align: "center" });
+
+      doc.save(`plano-aulas-${printDate}.pdf`);
+      toast.success("Plano de aulas gerado com sucesso");
+      setShowPrintModal(false);
+    } catch (err) {
+      console.error("Falha ao gerar PDF", err);
+      toast.error("Erro ao gerar o PDF");
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Seção 1: Seleção de Semana e Botão Cadastrar Aulas */}
@@ -153,18 +286,21 @@ const LessonPlan = () => {
             <p className="text-sm text-primary font-medium">Plano de Aulas</p>
             <CardTitle className="text-2xl">Gestão de Planos Semanais</CardTitle>
           </div>
-          <div className="flex gap-4 items-center">
-            <div className="flex items-center gap-2 bg-secondary/50 rounded-md p-1">
-              <Button variant="ghost" size="icon" onClick={handlePrevWeek}><ChevronLeft className="h-4 w-4" /></Button>
-              <span className="text-sm font-medium min-w-[140px] text-center">
-                Semana de {format(weekStart, "dd/MM")} a {format(addDays(weekStart, 4), "dd/MM")}
-              </span>
-              <Button variant="ghost" size="icon" onClick={handleNextWeek}><ChevronRight className="h-4 w-4" /></Button>
+            <div className="flex gap-2 flex-wrap">
+              <div className="flex items-center gap-2 bg-secondary/50 rounded-md p-1">
+                <Button variant="ghost" size="icon" onClick={handlePrevWeek}><ChevronLeft className="h-4 w-4" /></Button>
+                <span className="text-sm font-medium min-w-[140px] text-center">
+                  Semana de {format(weekStart, "dd/MM")} a {format(addDays(weekStart, 4), "dd/MM")}
+                </span>
+                <Button variant="ghost" size="icon" onClick={handleNextWeek}><ChevronRight className="h-4 w-4" /></Button>
+              </div>
+              <Button variant="outline" onClick={() => setShowPrintModal(true)} className="flex gap-2">
+                <Printer className="h-4 w-4" /> Imprimir Plano (PDF)
+              </Button>
+              <Button onClick={() => setShowAulasModal(true)} className="flex gap-2">
+                <Plus className="h-4 w-4" /> Cadastrar Aulas
+              </Button>
             </div>
-            <Button onClick={() => setShowAulasModal(true)} className="flex gap-2">
-              <Plus className="h-4 w-4" /> Cadastrar Aulas
-            </Button>
-          </div>
         </CardHeader>
       </Card>
 
@@ -376,6 +512,32 @@ const LessonPlan = () => {
               <Button onClick={() => editingPlan && handleSavePlan(editingPlan.slotId, editingPlan.date, schedule.find(s => s.id === editingPlan.slotId)?.quadra || "")}>
                 Salvar Plano
               </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+      {/* Modal de Impressão */}
+      <Dialog open={showPrintModal} onOpenChange={setShowPrintModal}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Imprimir Plano de Aulas</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-2">
+            <div>
+              <Label>Selecione a Data</Label>
+              <Input 
+                type="date" 
+                value={printDate} 
+                onChange={(e) => setPrintDate(e.target.value)} 
+                className="mt-1"
+              />
+              <p className="text-[10px] text-muted-foreground mt-2">
+                O PDF incluirá todas as turmas do dia selecionado com seus respectivos planos e listas de alunos.
+              </p>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setShowPrintModal(false)}>Cancelar</Button>
+              <Button onClick={handlePrintPDF}>Gerar PDF</Button>
             </div>
           </div>
         </DialogContent>
