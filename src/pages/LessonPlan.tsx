@@ -281,26 +281,36 @@ const LessonPlan = () => {
     <div className="space-y-6">
       {/* Seção 1: Seleção de Semana e Botão Cadastrar Aulas */}
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <div>
-            <p className="text-sm text-primary font-medium">Plano de Aulas</p>
-            <CardTitle className="text-2xl">Gestão de Planos Semanais</CardTitle>
-          </div>
-            <div className="flex gap-2 flex-wrap">
-              <div className="flex items-center gap-2 bg-secondary/50 rounded-md p-1">
-                <Button variant="ghost" size="icon" onClick={handlePrevWeek}><ChevronLeft className="h-4 w-4" /></Button>
-                <span className="text-sm font-medium min-w-[140px] text-center">
-                  Semana de {format(weekStart, "dd/MM")} a {format(addDays(weekStart, 4), "dd/MM")}
+        <CardHeader>
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <p className="text-sm text-primary font-medium">Plano de Aulas</p>
+              <CardTitle className="text-2xl font-bold tracking-tight">Gestão de Planos Semanais</CardTitle>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="flex items-center gap-1 bg-secondary/50 rounded-md p-1 mr-2">
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handlePrevWeek}><ChevronLeft className="h-4 w-4" /></Button>
+                <span className="text-xs font-bold min-w-[120px] text-center">
+                  {format(weekStart, "dd/MM")} a {format(addDays(weekStart, 4), "dd/MM")}
                 </span>
-                <Button variant="ghost" size="icon" onClick={handleNextWeek}><ChevronRight className="h-4 w-4" /></Button>
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleNextWeek}><ChevronRight className="h-4 w-4" /></Button>
               </div>
-              <Button variant="outline" onClick={() => setShowPrintModal(true)} className="flex gap-2">
+              <Button 
+                variant="default" 
+                onClick={() => setShowPrintModal(true)} 
+                className="flex gap-2 shadow-sm font-semibold"
+              >
                 <Printer className="h-4 w-4" /> Imprimir Plano (PDF)
               </Button>
-              <Button onClick={() => setShowAulasModal(true)} className="flex gap-2">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowAulasModal(true)} 
+                className="flex gap-2"
+              >
                 <Plus className="h-4 w-4" /> Cadastrar Aulas
               </Button>
             </div>
+          </div>
         </CardHeader>
       </Card>
 
