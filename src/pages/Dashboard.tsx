@@ -218,7 +218,7 @@ const Dashboard = () => {
         <Card>
           <CardContent className="pt-6">
             <p className="text-sm text-gray-600 font-medium">Financeiro</p>
-            <p className="text-xl font-bold mt-1">Contas Pagas</p>
+            <p className="text-xl font-bold mt-1">Contas a Pagar</p>
             <div className="mt-4 p-3 bg-gray-50 rounded-md text-center font-semibold text-gray-700">
               R$ {metrics.totalGastos.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
             </div>
@@ -233,13 +233,13 @@ const Dashboard = () => {
           <div className="flex items-center justify-between mb-6">
             <div>
               <p className="text-sm text-primary font-medium">Financeiro</p>
-              <p className="text-xl font-bold">Evolução das Mensalidades Recebidas, Mensalidades em Aberto e Contas Pagas</p>
+              <p className="text-xl font-bold">Evolução das Mensalidades Recebidas, Mensalidades em Aberto e Contas a Pagar</p>
             </div>
             <div className="flex gap-2">
               <div className="flex items-center gap-1.5 px-2 py-1 bg-blue-50 text-blue-700 text-[10px] font-bold rounded border border-blue-100">Contratado</div>
               <div className="flex items-center gap-1.5 px-2 py-1 bg-green-50 text-green-700 text-[10px] font-bold rounded border border-green-100">Mensalidades Recebidas</div>
               <div className="flex items-center gap-1.5 px-2 py-1 bg-red-50 text-red-700 text-[10px] font-bold rounded border border-red-100">Mensalidades em Aberto</div>
-              <div className="flex items-center gap-1.5 px-2 py-1 bg-gray-50 text-gray-600 text-[10px] font-bold rounded border border-gray-100">Contas Pagas</div>
+              <div className="flex items-center gap-1.5 px-2 py-1 bg-gray-50 text-gray-600 text-[10px] font-bold rounded border border-gray-100">Contas a Pagar</div>
             </div>
           </div>
           <div className="h-[350px] w-full">
@@ -298,7 +298,7 @@ const Dashboard = () => {
                 <Area 
                   type="monotone" 
                   dataKey="gastos" 
-                  name="Contas Pagas" 
+                  name="Contas a Pagar" 
                   stroke="#4b5563" 
                   strokeWidth={2} 
                   fill="none" 
