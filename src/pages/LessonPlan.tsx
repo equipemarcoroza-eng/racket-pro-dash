@@ -207,21 +207,21 @@ const LessonPlan = () => {
 
           // Header da Turma
           doc.setFillColor(245, 247, 250);
-          doc.rect(20, currentY, 170, 10, 'F');
-          doc.setFontSize(14);
+          doc.rect(20, currentY, 170, 12, 'F');
+          doc.setFontSize(16);
           doc.setFont("helvetica", "bold");
           doc.setTextColor(20, 40, 100);
-          doc.text(`${slot.horario} - Turma: ${slot.turmaId} (${slot.quadra})`, 25, currentY + 6.5);
+          doc.text(`${slot.horario} - Turma: ${slot.turmaId} (${slot.quadra})`, 25, currentY + 8);
           
-          currentY += 16;
+          currentY += 20;
 
           // Alunos
-          doc.setFontSize(11);
+          doc.setFontSize(13);
           doc.setFont("helvetica", "bold");
           doc.setTextColor(100, 100, 100);
           doc.text("ALUNOS:", 25, currentY);
           
-          doc.setFontSize(10);
+          doc.setFontSize(12);
           doc.setFont("helvetica", "normal");
           doc.setTextColor(0, 0, 0);
           const studentsText = classStudents.length > 0 
@@ -229,16 +229,16 @@ const LessonPlan = () => {
             : "Nenhum aluno matriculado.";
           
           const splitStudents = doc.splitTextToSize(studentsText, 160);
-          doc.text(splitStudents, 25, currentY + 6);
-          currentY += (splitStudents.length * 6) + 8;
+          doc.text(splitStudents, 25, currentY + 7);
+          currentY += (splitStudents.length * 7) + 10;
 
           // Plano de Aula
-          doc.setFontSize(11);
+          doc.setFontSize(13);
           doc.setFont("helvetica", "bold");
           doc.setTextColor(100, 100, 100);
           doc.text("CONTEÚDO DA AULA:", 25, currentY);
           
-          doc.setFontSize(10);
+          doc.setFontSize(12);
           doc.setFont("helvetica", "normal");
           doc.setTextColor(0, 0, 0);
           
@@ -253,12 +253,12 @@ const LessonPlan = () => {
             }
 
             const splitPlan = doc.splitTextToSize(planText, 160);
-            doc.text(splitPlan, 25, currentY + 6);
-            currentY += (splitPlan.length * 6) + 12;
+            doc.text(splitPlan, 25, currentY + 7);
+            currentY += (splitPlan.length * 7) + 14;
           } else {
             doc.setFont("helvetica", "italic");
-            doc.text("Nenhum plano de aula definido para este dia.", 25, currentY + 6);
-            currentY += 18;
+            doc.text("Nenhum plano de aula definido para este dia.", 25, currentY + 7);
+            currentY += 20;
           }
 
           doc.setDrawColor(240, 240, 240);
