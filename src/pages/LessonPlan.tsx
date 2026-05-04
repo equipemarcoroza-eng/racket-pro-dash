@@ -199,29 +199,34 @@ const LessonPlan = () => {
             .filter((st): st is NonNullable<typeof st> => !!st)
             .sort((a, b) => a.nome.localeCompare(b.nome));
 
-          // Verificar espaço na página
-          if (currentY > 250) {
-            doc.addPage();
-            currentY = 20;
-          }
+          // Função auxiliar para verificar espaço e pular página se necessário
+          const checkSpace = (neededHeight: number) => {
+            if (currentY + neededHeight > 270) {
+              doc.addPage();
+              currentY = 20;
+              return true;
+            }
+            return false;
+          };
 
-          // Header da Turma
+          // 1. Header da Turma
+          checkSpace(25); // Espaço mínimo para header + início do conteúdo
           doc.setFillColor(245, 247, 250);
-          doc.rect(20, currentY, 170, 12, 'F');
-          doc.setFontSize(16);
+          doc.rect(20, currentY, 170, 14, 'F');
+          doc.setFontSize(18);
           doc.setFont("helvetica", "bold");
           doc.setTextColor(20, 40, 100);
-          doc.text(`${slot.horario} - Turma: ${slot.turmaId} (${slot.quadra})`, 25, currentY + 8);
-          
-          currentY += 20;
+          doc.text(`${slot.horario} - Turma: ${slot.turmaId} (${slot.quadra})`, 25, currentY + 9);
+          currentY += 22;
 
-          // Alunos
-          doc.setFontSize(13);
+          // 2. Alunos
+          doc.setFontSize(15);
           doc.setFont("helvetica", "bold");
           doc.setTextColor(100, 100, 100);
           doc.text("ALUNOS:", 25, currentY);
+          currentY += 8;
           
-          doc.setFontSize(12);
+          doc.setFontSize(14);
           doc.setFont("helvetica", "normal");
           doc.setTextColor(0, 0, 0);
           const studentsText = classStudents.length > 0 
@@ -229,16 +234,20 @@ const LessonPlan = () => {
             : "Nenhum aluno matriculado.";
           
           const splitStudents = doc.splitTextToSize(studentsText, 160);
-          doc.text(splitStudents, 25, currentY + 7);
-          currentY += (splitStudents.length * 7) + 10;
+          const studentsHeight = splitStudents.length * 8;
+          
+          checkSpace(studentsHeight + 10); // Verifica se a lista de alunos cabe
+          doc.text(splitStudents, 25, currentY);
+          currentY += studentsHeight + 12;
 
-          // Plano de Aula
-          doc.setFontSize(13);
+          // 3. Plano de Aula
+          doc.setFontSize(15);
           doc.setFont("helvetica", "bold");
           doc.setTextColor(100, 100, 100);
           doc.text("CONTEÚDO DA AULA:", 25, currentY);
+          currentY += 8;
           
-          doc.setFontSize(12);
+          doc.setFontSize(14);
           doc.setFont("helvetica", "normal");
           doc.setTextColor(0, 0, 0);
           
@@ -253,17 +262,20 @@ const LessonPlan = () => {
             }
 
             const splitPlan = doc.splitTextToSize(planText, 160);
-            doc.text(splitPlan, 25, currentY + 7);
-            currentY += (splitPlan.length * 7) + 14;
+            const planHeight = splitPlan.length * 8;
+            
+            checkSpace(planHeight + 10); // Verifica se o plano cabe
+            doc.text(splitPlan, 25, currentY);
+            currentY += planHeight + 15;
           } else {
             doc.setFont("helvetica", "italic");
-            doc.text("Nenhum plano de aula definido para este dia.", 25, currentY + 7);
+            doc.text("Nenhum plano de aula definido para este dia.", 25, currentY);
             currentY += 20;
           }
 
-          doc.setDrawColor(240, 240, 240);
+          doc.setDrawColor(230, 230, 230);
           doc.line(20, currentY - 5, 190, currentY - 5);
-          currentY += 6;
+          currentY += 10;
         });
       }
 
