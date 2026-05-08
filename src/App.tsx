@@ -37,6 +37,7 @@ const App = () => (
           <AppProvider>
             <Routes>
               <Route path="/" element={<Login />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
               <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/plans/manage" element={<PlansManage />} />
