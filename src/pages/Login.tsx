@@ -4,7 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
+} from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -15,8 +17,10 @@ const Login = () => {
   const { user, loading } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [displayName, setDisplayName] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [forgotOpen, setForgotOpen] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
+  const [resetSubmitting, setResetSubmitting] = useState(false);
 
   useEffect(() => {
     if (!loading && user) navigate("/dashboard", { replace: true });
@@ -35,24 +39,20 @@ const Login = () => {
     navigate("/dashboard", { replace: true });
   };
 
-  const handleSignup = async (e: React.FormEvent) => {
+  const handleForgot = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitting(true);
-    const redirectUrl = `${window.location.origin}/dashboard`;
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: redirectUrl,
-        data: { display_name: displayName || email },
-      },
+    setResetSubmitting(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+      redirectTo: `${window.location.origin}/reset-password`,
     });
-    setSubmitting(false);
+    setResetSubmitting(false);
     if (error) {
       toast.error(error.message);
       return;
     }
-    toast.success("Cadastro realizado! Você já pode entrar.");
+    toast.success("Enviamos um e-mail com instruções para redefinir sua senha.");
+    setForgotOpen(false);
+    setResetEmail("");
   };
 
   return (
@@ -64,53 +64,52 @@ const Login = () => {
           <CardDescription>Sistema administrativo — acesso restrito</CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="login" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="login">Entrar</TabsTrigger>
-              <TabsTrigger value="signup">Cadastrar</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="login">
-              <form onSubmit={handleLogin} className="space-y-4 mt-4">
-                <div className="space-y-2">
-                  <Label htmlFor="login-email">E-mail</Label>
-                  <Input id="login-email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="login-password">Senha</Label>
-                  <Input id="login-password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
-                </div>
-                <Button type="submit" className="w-full" disabled={submitting}>
-                  {submitting ? "Entrando..." : "Entrar"}
-                </Button>
-              </form>
-            </TabsContent>
-
-            <TabsContent value="signup">
-              <form onSubmit={handleSignup} className="space-y-4 mt-4">
-                <div className="space-y-2">
-                  <Label htmlFor="su-name">Nome</Label>
-                  <Input id="su-name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="Seu nome" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="su-email">E-mail</Label>
-                  <Input id="su-email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="su-password">Senha</Label>
-                  <Input id="su-password" type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} />
-                </div>
-                <Button type="submit" className="w-full" disabled={submitting}>
-                  {submitting ? "Cadastrando..." : "Criar conta administradora"}
-                </Button>
-                <p className="text-xs text-muted-foreground text-center">
-                  Toda nova conta recebe perfil de administrador automaticamente.
-                </p>
-              </form>
-            </TabsContent>
-          </Tabs>
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="login-email">E-mail</Label>
+              <Input id="login-email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="login-password">Senha</Label>
+              <Input id="login-password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
+            </div>
+            <Button type="submit" className="w-full" disabled={submitting}>
+              {submitting ? "Entrando..." : "Entrar"}
+            </Button>
+            <div className="text-center">
+              <button
+                type="button"
+                onClick={() => { setResetEmail(email); setForgotOpen(true); }}
+                className="text-sm text-primary hover:underline"
+              >
+                Esqueci minha senha
+              </button>
+            </div>
+          </form>
         </CardContent>
       </Card>
+
+      <Dialog open={forgotOpen} onOpenChange={setForgotOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Redefinir senha</DialogTitle>
+            <DialogDescription>
+              Informe o e-mail da sua conta. Enviaremos um link para você criar uma nova senha.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleForgot} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="reset-email">E-mail</Label>
+              <Input id="reset-email" type="email" required value={resetEmail} onChange={(e) => setResetEmail(e.target.value)} />
+            </div>
+            <DialogFooter>
+              <Button type="submit" disabled={resetSubmitting} className="w-full">
+                {resetSubmitting ? "Enviando..." : "Enviar link de redefinição"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
