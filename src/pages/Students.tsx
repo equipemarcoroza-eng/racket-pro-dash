@@ -6,7 +6,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import type { Student } from "@/data/mockData";
@@ -111,6 +121,7 @@ const Students = () => {
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [sexoFilter, setSexoFilter] = useState<Student["sexo"] | null>(null);
   const [form, setForm] = useState<FormState>(emptyForm);
+  const [studentToDelete, setStudentToDelete] = useState<string | null>(null);
   const [showEntryDateModal, setShowEntryDateModal] = useState(false);
   const [queryEntryDate, setQueryEntryDate] = useState(() => {
     const now = new Date();
@@ -159,11 +170,10 @@ const Students = () => {
     return new Date(y, m - 1, d);
   };
 
-  const handleDelete = (id: string) => {
-    if (window.confirm("Tem certeza que deseja excluir este aluno? Esta ação não pode ser desfeita e removerá todos os dados vinculados.")) {
-      setStudents((prev) => prev.filter((s) => s.id !== id));
-      toast.success("Aluno removido com sucesso");
-    }
+  const confirmDelete = (id: string) => {
+    setStudents((prev) => prev.filter((s) => s.id !== id));
+    toast.success("Aluno removido com sucesso");
+    setStudentToDelete(null);
   };
 
   const getStudentFinance = () => {
@@ -451,97 +461,96 @@ const Students = () => {
         </CardContent>
       </Card>
 
-      {showForm && (
-        <Card>
-          <CardContent className="pt-6">
-            <p className="text-sm text-primary font-medium">Cadastro rápido</p>
-            <p className="font-semibold text-lg mb-4">{editingId ? "Editar aluno" : "Novo aluno"}</p>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div><Label>Nome do aluno</Label><Input value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} /></div>
-              <div><Label>WhatsApp Aluno</Label><Input value={form.whatsappAluno} onChange={(e) => setForm({ ...form, whatsappAluno: maskPhone(e.target.value) })} placeholder="(00) 00000-0000" /></div>
-              <div><Label>Responsável</Label><Input value={form.responsavel} onChange={(e) => setForm({ ...form, responsavel: e.target.value })} /></div>
-              <div><Label>WhatsApp Responsável</Label><Input value={form.whatsappResponsavel} onChange={(e) => setForm({ ...form, whatsappResponsavel: maskPhone(e.target.value) })} placeholder="(00) 00000-0000" /></div>
-              <div><Label>Data de nascimento</Label>
-                <Input type="date" value={form.dataNascimento} onChange={(e) => {
-                  const date = e.target.value;
-                  setForm({ ...form, dataNascimento: date, categoria: getCategoryFromBirthDate(date) });
-                }} />
-              </div>
-              <div><Label>Sexo</Label>
-                <Select value={form.sexo} onValueChange={(v) => setForm({ ...form, sexo: v as Student["sexo"] })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="M">Masculino</SelectItem>
-                    <SelectItem value="F">Feminino</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div><Label>Data de Entrada</Label><Input type="date" value={form.dataEntrada} onChange={(e) => setForm({ ...form, dataEntrada: e.target.value })} /></div>
-              <div><Label>Categoria</Label>
-                <Select value={form.categoria} onValueChange={(v) => setForm({ ...form, categoria: v as Student["categoria"] })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>{categorias.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
-                </Select>
-              </div>
-              <div><Label>Plano</Label>
-                <Select value={form.planoId} onValueChange={(v) => setForm({ ...form, planoId: v })}>
-                  <SelectTrigger><SelectValue placeholder="Selecione um plano" /></SelectTrigger>
-                  <SelectContent>{plans.map((p) => <SelectItem key={p.id} value={p.id}>{p.nome} - R$ {p.valor.toFixed(2).replace(".", ",")}</SelectItem>)}</SelectContent>
-                </Select>
-              </div>
-              <div><Label>Dia de Vencimento</Label>
-                <Select value={form.vencimento} onValueChange={(v) => setForm({ ...form, vencimento: v })}>
-                  <SelectTrigger><SelectValue placeholder="Selecione o dia" /></SelectTrigger>
-                  <SelectContent>{vencimentoOptions.map((d) => <SelectItem key={d} value={d}>Dia {d}</SelectItem>)}</SelectContent>
-                </Select>
-              </div>
-              <div><Label>Status</Label>
-                <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v as Student["status"] })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {statuses.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div><Label>Camiseta</Label>
-                <Select value={form.camiseta} onValueChange={(v) => setForm({ ...form, camiseta: v as any })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {["12", "14", "16", "PP", "P", "M", "G", "GG"].map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div><Label>Kit</Label>
-                <Select value={form.kit} onValueChange={(v) => setForm({ ...form, kit: v as any })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Sim">Sim</SelectItem>
-                    <SelectItem value="Não">Não</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="md:col-span-2 lg:col-span-3">
-                <Label>Observações</Label>
-                <Textarea 
-                  value={form.observacoes} 
-                  onChange={(e) => setForm({ ...form, observacoes: e.target.value })} 
-                  placeholder="Informações adicionais sobre o aluno..."
-                  className="h-20"
-                />
-              </div>
+      <Dialog open={showForm} onOpenChange={setShowForm}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{editingId ? "Editar Aluno" : "Novo Aluno"}</DialogTitle>
+          </DialogHeader>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 py-4">
+            <div><Label>Nome do aluno</Label><Input value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} /></div>
+            <div><Label>WhatsApp Aluno</Label><Input value={form.whatsappAluno} onChange={(e) => setForm({ ...form, whatsappAluno: maskPhone(e.target.value) })} placeholder="(00) 00000-0000" /></div>
+            <div><Label>Responsável</Label><Input value={form.responsavel} onChange={(e) => setForm({ ...form, responsavel: e.target.value })} /></div>
+            <div><Label>WhatsApp Responsável</Label><Input value={form.whatsappResponsavel} onChange={(e) => setForm({ ...form, whatsappResponsavel: maskPhone(e.target.value) })} placeholder="(00) 00000-0000" /></div>
+            <div><Label>Data de nascimento</Label>
+              <Input type="date" value={form.dataNascimento} onChange={(e) => {
+                const date = e.target.value;
+                setForm({ ...form, dataNascimento: date, categoria: getCategoryFromBirthDate(date) });
+              }} />
             </div>
-            {form.status === "Inativo" && editingId && enrollments.some((e) => e.alunoId === editingId) && (
-              <p className="mt-3 text-sm text-destructive font-medium">
-                ⚠️ Ao salvar como Inativo, todas as matrículas deste aluno serão removidas e as vagas serão liberadas.
-              </p>
-            )}
-            <div className="flex justify-end gap-2 mt-4">
-              <Button variant="outline" onClick={() => { setShowForm(false); setEditingId(null); }}>Cancelar</Button>
-              <Button onClick={handleSave}>{editingId ? "Atualizar" : "Salvar aluno"}</Button>
+            <div><Label>Sexo</Label>
+              <Select value={form.sexo} onValueChange={(v) => setForm({ ...form, sexo: v as Student["sexo"] })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="M">Masculino</SelectItem>
+                  <SelectItem value="F">Feminino</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-          </CardContent>
-        </Card>
-      )}
+            <div><Label>Data de Entrada</Label><Input type="date" value={form.dataEntrada} onChange={(e) => setForm({ ...form, dataEntrada: e.target.value })} /></div>
+            <div><Label>Categoria</Label>
+              <Select value={form.categoria} onValueChange={(v) => setForm({ ...form, categoria: v as Student["categoria"] })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>{categorias.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+            <div><Label>Plano</Label>
+              <Select value={form.planoId} onValueChange={(v) => setForm({ ...form, planoId: v })}>
+                <SelectTrigger><SelectValue placeholder="Selecione um plano" /></SelectTrigger>
+                <SelectContent>{plans.map((p) => <SelectItem key={p.id} value={p.id}>{p.nome} - R$ {p.valor.toFixed(2).replace(".", ",")}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+            <div><Label>Dia de Vencimento</Label>
+              <Select value={form.vencimento} onValueChange={(v) => setForm({ ...form, vencimento: v })}>
+                <SelectTrigger><SelectValue placeholder="Selecione o dia" /></SelectTrigger>
+                <SelectContent>{vencimentoOptions.map((d) => <SelectItem key={d} value={d}>Dia {d}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+            <div><Label>Status</Label>
+              <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v as Student["status"] })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {statuses.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div><Label>Camiseta</Label>
+              <Select value={form.camiseta} onValueChange={(v) => setForm({ ...form, camiseta: v as any })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {["12", "14", "16", "PP", "P", "M", "G", "GG"].map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div><Label>Kit</Label>
+              <Select value={form.kit} onValueChange={(v) => setForm({ ...form, kit: v as any })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Sim">Sim</SelectItem>
+                  <SelectItem value="Não">Não</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="md:col-span-2 lg:col-span-3">
+              <Label>Observações</Label>
+              <Textarea 
+                value={form.observacoes} 
+                onChange={(e) => setForm({ ...form, observacoes: e.target.value })} 
+                placeholder="Informações adicionais sobre o aluno..."
+                className="h-20"
+              />
+            </div>
+          </div>
+          {form.status === "Inativo" && editingId && enrollments.some((e) => e.alunoId === editingId) && (
+            <p className="text-sm text-destructive font-medium mb-4">
+              ⚠️ Ao salvar como Inativo, todas as matrículas deste aluno serão removidas e as vagas serão liberadas.
+            </p>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setShowForm(false); setEditingId(null); }}>Cancelar</Button>
+            <Button onClick={handleSave}>{editingId ? "Atualizar" : "Salvar aluno"}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Card>
         <CardContent className="pt-6">
@@ -585,7 +594,7 @@ const Students = () => {
                       <Button variant="outline" size="sm" onClick={() => openEdit(s)}>Editar</Button>
                       <Button variant="outline" size="sm" className="text-blue-600 border-blue-200 hover:bg-blue-50" onClick={() => { setReportStudent(s); setReportType("finance"); }}>Financeiro</Button>
                       <Button variant="outline" size="sm" className="text-green-600 border-green-200 hover:bg-green-50" onClick={() => { setReportStudent(s); setReportType("frequency"); }}>Frequência</Button>
-                      <Button variant="outline" size="sm" className="text-destructive border-red-200 hover:bg-red-50" onClick={() => handleDelete(s.id)}>
+                      <Button variant="outline" size="sm" className="text-destructive border-red-200 hover:bg-red-50" onClick={() => setStudentToDelete(s.id)}>
                         <Trash2 className="h-4 w-4 mr-1" />
                         Excluir
                       </Button>
@@ -803,6 +812,23 @@ const Students = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={!!studentToDelete} onOpenChange={(open) => !open && setStudentToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Tem certeza que deseja excluir este aluno?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação não pode ser desfeita e removerá todos os dados vinculados a este aluno.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={() => studentToDelete && confirmDelete(studentToDelete)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Confirmar Exclusão
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
