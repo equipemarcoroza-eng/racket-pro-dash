@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { Plus, Trash2, Edit, Save, ClipboardCheck } from "lucide-react";
 import type { Activity, Test, TestResult } from "@/data/mockData";
+import { supabase } from "@/integrations/supabase/client";
 
 const Tests = () => {
   const { 
@@ -81,7 +82,7 @@ const Tests = () => {
     setShowTestModal(true);
   };
 
-  const handleSaveTest = () => {
+  const handleSaveTest = async () => {
     if (!currentSlotId) return;
     if (selectedAtividadesIds.length === 0) {
       toast.error("Selecione ao menos uma atividade para a prova");
@@ -103,8 +104,9 @@ const Tests = () => {
     presentStudents.forEach(aluno => {
       selectedAtividadesIds.forEach(actId => {
         const acertos = tempResults[aluno.id]?.[actId] || 0;
+        const existingResult = testResults.find(tr => tr.testId === testId && tr.alunoId === aluno.id && tr.atividadeId === actId);
         newResults.push({
-          id: crypto.randomUUID(),
+          id: existingResult ? existingResult.id : crypto.randomUUID(),
           testId,
           alunoId: aluno.id,
           atividadeId: actId,
@@ -112,6 +114,18 @@ const Tests = () => {
         });
       });
     });
+
+    // Pré-salva o teste no banco para evitar erro de Foreign Key (race condition) ao salvar os resultados em seguida.
+    try {
+      await supabase.from("tests").upsert({
+        id: newTest.id,
+        data: newTest.data,
+        slot_id: newTest.slotId,
+        atividades_ids: newTest.atividadesIds,
+      });
+    } catch (err) {
+      console.error("Erro ao pré-salvar teste:", err);
+    }
 
     setTests(prev => [...prev.filter(t => t.id !== testId), newTest]);
     setTestResults(prev => [...prev.filter(tr => tr.testId !== testId), ...newResults]);
