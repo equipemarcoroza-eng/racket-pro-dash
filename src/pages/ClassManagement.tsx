@@ -164,13 +164,16 @@ const ClassManagement = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {activeStudents.filter((s) => getAlunoEnrollments(s.id).length > 0).map((student) => {
-                const plano = getPlano(student.planoId);
-                const enrs = getAlunoEnrollments(student.id);
-                return (
-                  <TableRow key={student.id}>
-                    <TableCell className="font-medium">{student.nome}</TableCell>
-                    <TableCell>{plano?.nome || "—"}</TableCell>
+              {activeStudents
+                .filter((s) => getAlunoEnrollments(s.id).length > 0)
+                .sort((a, b) => a.nome.localeCompare(b.nome))
+                .map((student) => {
+                  const plano = getPlano(student.planoId);
+                  const enrs = getAlunoEnrollments(student.id);
+                  return (
+                    <TableRow key={student.id}>
+                      <TableCell className="font-medium">{student.nome}</TableCell>
+                      <TableCell>{plano?.nome || "—"}</TableCell>
                     <TableCell>{plano?.frequencia || "—"}</TableCell>
                     <TableCell>
                       <div className="flex flex-wrap gap-1">
