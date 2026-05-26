@@ -76,7 +76,14 @@ const Revenue = () => {
       
       return matchesPeriod && matchesPlan && isEligible;
     })
-    .sort((a, b) => a.aluno.localeCompare(b.aluno));
+    .sort((a, b) => {
+      const dateA = parseDate(a.vencimento).getTime();
+      const dateB = parseDate(b.vencimento).getTime();
+      if (dateA !== dateB) {
+        return dateA - dateB;
+      }
+      return a.aluno.localeCompare(b.aluno);
+    });
 
   const gerarParcelas = () => {
     const now = new Date();
@@ -558,7 +565,7 @@ const Revenue = () => {
             <div>
               <p className="text-sm text-primary font-medium">Lista de Receitas</p>
               <p className="text-xl font-bold">Mensalidades e planos ({selectedMonth}/{selectedYear})</p>
-              <p className="text-xs text-muted-foreground mt-1">Registros em ordem alfabética de Alunos.</p>
+              <p className="text-xs text-muted-foreground mt-1">Registros ordenados por data de vencimento e depois por ordem alfabética.</p>
             </div>
             <div className="flex gap-2 text-sm">
               {["Mensalidade", "Trimestral", "Semestral", "Anual"].map((f) => (
