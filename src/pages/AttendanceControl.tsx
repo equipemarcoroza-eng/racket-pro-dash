@@ -28,7 +28,12 @@ const AttendanceControl = () => {
   const getEnrolledStudents = (slotId: string) => {
     const enrolledIds = mockEnrollments.filter((e) => e.turmaId === slotId).map((e) => e.alunoId);
     return mockStudents
-      .filter((s) => enrolledIds.includes(s.id) && s.status === "Ativo")
+      .filter((s) => {
+        const isEnrolledActive = enrolledIds.includes(s.id) && s.status === "Ativo";
+        if (!isEnrolledActive) return false;
+        // Aluno só aparece se a data de entrada for anterior ou igual à data selecionada para a presença
+        return !s.dataEntrada || s.dataEntrada <= selectedDate;
+      })
       .sort((a, b) => a.nome.localeCompare(b.nome));
   };
 
