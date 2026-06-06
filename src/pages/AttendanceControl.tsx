@@ -76,20 +76,34 @@ const AttendanceControl = () => {
   const salvarPresenca = (slotId: string) => {
     const enrolled = getEnrolledStudents(slotId);
     const slotPresencas = presencas[slotId] || {};
-    const pending = enrolled.filter((s) => slotPresencas[s.id] === undefined || slotPresencas[s.id] === null);
-    if (pending.length > 0) {
-      toast.error(`Registre a presença de todos os ${pending.length} aluno(s) pendente(s)`);
-      return;
-    }
 
-    const newLogs: AttendanceLog[] = enrolled.map((s) => ({
-      id: crypto.randomUUID(),
-      alunoId: s.id,
-      turmaId: slotId,
-      data: selectedDate,
-      presente: slotPresencas[s.id] as "Presente" | "Falta" | "Cancelado",
-      motivoCancelamento: slotPresencas[s.id] === "Cancelado" ? (motivos[slotId]?.[s.id] || "") : undefined
-    }));
+    const newLogs: AttendanceLog[] = enrolled.map((s) => {
+      const localValue = slotPresencas[s.id];
+      const logExisting = attendanceLogs.find((l) => l.turmaId === slotId && l.data === selectedDate && l.alunoId === s.id);
+      
+      let status: "Presente" | "Falta" | "Cancelado";
+      let motivo: string | undefined;
+
+      if (localValue !== undefined && localValue !== null) {
+        status = localValue;
+        motivo = status === "Cancelado" ? (motivos[slotId]?.[s.id] || "") : undefined;
+      } else if (logExisting) {
+        status = logExisting.presente;
+        motivo = logExisting.motivoCancelamento;
+      } else {
+        status = "Cancelado";
+        motivo = "Justificar";
+      }
+
+      return {
+        id: logExisting?.id || crypto.randomUUID(),
+        alunoId: s.id,
+        turmaId: slotId,
+        data: selectedDate,
+        presente: status,
+        motivoCancelamento: motivo
+      };
+    });
 
     // Remove existing logs for this slot/date, add new
     setAttendanceLogs((prev) => [
