@@ -81,7 +81,7 @@ const AttendanceControl = () => {
       const localValue = slotPresencas[s.id];
       const logExisting = attendanceLogs.find((l) => l.turmaId === slotId && l.data === selectedDate && l.alunoId === s.id);
       
-      let status: "Presente" | "Falta" | "Cancelado";
+      let status: AttendanceLog["presente"];
       let motivo: string | undefined;
 
       if (localValue !== undefined && localValue !== null) {
