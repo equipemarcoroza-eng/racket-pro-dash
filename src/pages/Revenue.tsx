@@ -271,7 +271,7 @@ const Revenue = () => {
     const { data: insertData, error } = await supabase.from("revenues").insert(dbRecord).select();
 
     if (error) {
-      toast.error(`ERRO DO BANCO: ${error.message} (código: ${error.code})`, { duration: 10000 });
+      toast.error("Falha ao salvar. Tente novamente.", { duration: 5000 });
       console.error("Supabase insert error completo:", JSON.stringify(error));
       return;
     }
@@ -280,12 +280,12 @@ const Revenue = () => {
     const { data: verify } = await supabase.from("revenues").select("*").eq("id", dbRecord.id);
 
     if (!verify || verify.length === 0) {
-      toast.error("⚠️ O banco de dados REJEITOU SILENCIOSAMENTE o registro (RLS). O insert retornou sucesso mas o dado NÃO foi salvo. Verifique as políticas de segurança (RLS) no Supabase.", { duration: 15000 });
-      console.error("RLS Silent Rejection! Insert returned:", insertData, "but verify returned:", verify);
+      toast.error("Não foi possível salvar o registro. Tente novamente.", { duration: 5000 });
+      console.error("Insert verification failed. Insert returned:", insertData, "verify:", verify);
       return;
     }
 
-    toast.success(`✅ CONFIRMADO no banco! Registro ${dbRecord.id.substring(0, 8)} verificado.`, { duration: 5000 });
+    toast.success("Registro salvo com sucesso!", { duration: 5000 });
 
     // Salvar período selecionado para restaurar após reload
     sessionStorage.setItem("revenue_month", month);
