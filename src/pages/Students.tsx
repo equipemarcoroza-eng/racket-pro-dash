@@ -24,6 +24,8 @@ import { useAppContext } from "@/contexts/AppContext";
 import { toast } from "sonner";
 import { Printer, Trash2 } from "lucide-react";
 import logo from "@/assets/logo.png";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
+
 
 const categorias = ["Infantil", "Juvenil", "Adulto"] as const;
 const statuses = ["Ativo", "Inativo", "Em análise", "Passado", "Extras"] as const;
@@ -169,6 +171,55 @@ const Students = () => {
     const [y, m, d] = iso.split("-").map(Number);
     return new Date(y, m - 1, d);
   };
+
+  const calculateActiveMonths = (dataEntradaStr: string) => {
+    if (!dataEntradaStr) return 0;
+    try {
+      const entryDate = parseDateStr(dataEntradaStr);
+      if (isNaN(entryDate.getTime())) return 0;
+      const today = new Date();
+      
+      const yearDiff = today.getFullYear() - entryDate.getFullYear();
+      const monthDiff = today.getMonth() - entryDate.getMonth();
+      let totalMonths = yearDiff * 12 + monthDiff;
+      
+      if (today.getDate() < entryDate.getDate()) {
+        totalMonths--;
+      }
+      return Math.max(0, totalMonths);
+    } catch (e) {
+      console.error("Erro ao calcular meses ativos:", e);
+      return 0;
+    }
+  };
+
+  const activeStudents = students.filter(s => s.status === "Ativo");
+  
+  const studentsWithMonths = activeStudents.map(s => {
+    const months = calculateActiveMonths(s.dataEntrada);
+    return { ...s, months };
+  });
+
+  const monthsCount: Record<number, number> = {};
+  studentsWithMonths.forEach(s => {
+    monthsCount[s.months] = (monthsCount[s.months] || 0) + 1;
+  });
+
+  const rankingChartData = Object.keys(monthsCount)
+    .map(key => {
+      const m = Number(key);
+      return {
+        months: m,
+        label: m === 0 ? "0 meses" : m === 1 ? "1 mês" : `${m} meses`,
+        Quantidade: monthsCount[m],
+      };
+    })
+    .sort((a, b) => a.months - b.months);
+
+  const top5ActiveStudents = [...studentsWithMonths]
+    .sort((a, b) => b.months - a.months)
+    .slice(0, 5);
+
 
   const confirmDelete = (id: string) => {
     setStudents((prev) => prev.filter((s) => s.id !== id));
@@ -554,6 +605,88 @@ const Students = () => {
 
       <Card>
         <CardContent className="pt-6">
+          <div className="flex flex-col space-y-4">
+            <div>
+              <p className="text-sm text-primary font-medium">Ranking dos Ativos</p>
+              <p className="font-semibold text-lg">Tempo de Permanência dos Alunos Ativos</p>
+            </div>
+
+            {activeStudents.length === 0 ? (
+              <div className="flex items-center justify-center h-48 border border-dashed rounded-xl bg-muted/10">
+                <p className="text-muted-foreground italic">Nenhum aluno ativo cadastrado para exibir o ranking.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="lg:col-span-2">
+                  <p className="text-xs font-bold text-muted-foreground mb-6 flex items-center gap-2">
+                    <span className="w-2 h-2 bg-primary rounded-full"></span>
+                    Distribuição de Alunos Ativos por Meses de Permanência
+                  </p>
+                  <div className="h-[280px] w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={rankingChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f5f5f5" />
+                        <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#888' }} />
+                        <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#888' }} allowDecimals={false} />
+                        <Tooltip
+                          cursor={{ fill: 'rgba(0,0,0,0.02)' }}
+                          formatter={(value: number) => [`${value} ${value === 1 ? 'aluno' : 'alunos'}`, "Quantidade"]}
+                          contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
+                        />
+                        <Bar dataKey="Quantidade" radius={[6, 6, 0, 0]} barSize={40}>
+                          {rankingChartData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={index % 2 === 0 ? "#1d4ed8" : "#3b82f6"} />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+
+                <div className="lg:col-span-1">
+                  <p className="text-xs font-bold text-muted-foreground mb-6 flex items-center gap-2">
+                    <span className="w-2 h-2 bg-primary rounded-full"></span>
+                    TOP 5 Alunos com Maior Tempo de Casa
+                  </p>
+                  <div className="space-y-3">
+                    {top5ActiveStudents.map((s, index) => {
+                      const colors = [
+                        "bg-yellow-500 text-yellow-950", // 1st
+                        "bg-slate-300 text-slate-900",   // 2nd
+                        "bg-amber-600 text-amber-50",    // 3rd
+                        "bg-muted text-muted-foreground", // 4th
+                        "bg-muted text-muted-foreground", // 5th
+                      ];
+                      return (
+                        <div key={s.id} className="flex items-center justify-between p-3 rounded-xl border border-border bg-card shadow-sm hover:shadow-md transition-all duration-200">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <span className={`flex items-center justify-center w-6 h-6 rounded-full font-bold text-xs shrink-0 ${colors[index] || 'bg-muted'}`}>
+                              {index + 1}º
+                            </span>
+                            <div className="flex flex-col min-w-0">
+                              <span className="font-semibold text-sm truncate">{s.nome}</span>
+                              <span className="text-[10px] text-muted-foreground">
+                                Entrada: {new Date(s.dataEntrada).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}
+                              </span>
+                            </div>
+                          </div>
+                          <Badge variant="secondary" className="font-bold text-xs shrink-0 ml-2">
+                            {s.months} {s.months === 1 ? 'mês' : 'meses'}
+                          </Badge>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent className="pt-6">
+
           <div className="flex items-center justify-between mb-4">
             <div>
               <p className="text-sm text-primary font-medium">Tabela de Alunos</p>
