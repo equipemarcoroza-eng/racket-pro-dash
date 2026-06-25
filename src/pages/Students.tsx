@@ -220,6 +220,11 @@ const Students = () => {
     .sort((a, b) => b.months - a.months)
     .slice(0, 5);
 
+  const averageMonths = activeStudents.length > 0
+    ? studentsWithMonths.reduce((acc, curr) => acc + curr.months, 0) / activeStudents.length
+    : 0;
+
+
 
   const confirmDelete = (id: string) => {
     setStudents((prev) => prev.filter((s) => s.id !== id));
@@ -606,10 +611,19 @@ const Students = () => {
       <Card>
         <CardContent className="pt-6">
           <div className="flex flex-col space-y-4">
-            <div>
-              <p className="text-sm text-primary font-medium">Ranking dos Ativos</p>
-              <p className="font-semibold text-lg">Tempo de Permanência dos Alunos Ativos</p>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b pb-4">
+              <div>
+                <p className="text-sm text-primary font-medium">Ranking dos Ativos</p>
+                <p className="font-semibold text-lg">Tempo de Permanência dos Alunos Ativos</p>
+              </div>
+              <div className="bg-primary/5 border border-primary/10 rounded-xl px-4 py-2.5 flex flex-col sm:items-end justify-center shrink-0">
+                <span className="text-[10px] uppercase font-bold text-primary tracking-wider">Tempo Médio de Permanência</span>
+                <span className="text-lg font-black text-primary mt-1">
+                  {averageMonths.toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })} {averageMonths === 1 ? 'mês' : 'meses'}
+                </span>
+              </div>
             </div>
+
 
             {activeStudents.length === 0 ? (
               <div className="flex items-center justify-center h-48 border border-dashed rounded-xl bg-muted/10">
