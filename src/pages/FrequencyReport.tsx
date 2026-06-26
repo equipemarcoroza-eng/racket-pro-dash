@@ -31,7 +31,25 @@ const FrequencyReport = () => {
 
   // Get enrolled slots for student
   const enrolledSlotIds = enrollments.filter((e) => e.alunoId === selectedAlunoId).map((e) => e.turmaId);
-  const enrolledSlots = mockSchedule.filter((s) => enrolledSlotIds.includes(s.id));
+  
+  // Find all attendance logs for the student in the selected month/year
+  const studentLogsInMonth = attendanceLogs.filter(
+    (l) => l.alunoId === selectedAlunoId && l.data.startsWith(`${selectedYear}-${selectedMonth}`)
+  );
+  
+  // Unique slot IDs from logs in this month
+  const loggedSlotIds = Array.from(new Set(studentLogsInMonth.map((l) => l.turmaId)));
+  
+  // Combined slots
+  const allSlotIds = Array.from(new Set([...enrolledSlotIds, ...loggedSlotIds]));
+  const relevantSlots = mockSchedule.filter((s) => allSlotIds.includes(s.id));
+  
+  // Historical slots: slots that have logs in this month but are NOT in active enrolledSlotIds
+  const historicalSlotIds = loggedSlotIds.filter((id) => !enrolledSlotIds.includes(id));
+  const historicalLogs = studentLogsInMonth.filter((l) => historicalSlotIds.includes(l.turmaId));
+  const latestHistoricalLogDate = historicalLogs.length > 0
+    ? historicalLogs.reduce((max, l) => (l.data > max ? l.data : max), "")
+    : "";
 
   const handleDirectRegister = (data: string, turmaId: string, status: AttendanceLog["presente"], extra?: string) => {
     const newLog: AttendanceLog = {
@@ -88,20 +106,36 @@ const FrequencyReport = () => {
   // Build report rows
   const reportRows: { data: string; turmaId: string; turmaLabel: string; horario: string; quadra: string; status: AttendanceLog["presente"] | "Não lançado"; dataRealizacao?: string; motivoCancelamento?: string }[] = [];
   if (selectedAlunoId) {
-    for (const slot of enrolledSlots) {
+    for (const slot of relevantSlots) {
       const dates = getDatesForSlot(slot);
       for (const date of dates) {
-        const log = attendanceLogs.find((l) => l.alunoId === selectedAlunoId && l.turmaId === slot.id && l.data === date);
-        reportRows.push({
-          data: date,
-          turmaId: slot.id,
-          turmaLabel: slot.turmaId,
-          horario: slot.horario,
-          quadra: slot.quadra,
-          status: log ? log.presente : "Não lançado",
-          dataRealizacao: log?.dataRealizacao,
-          motivoCancelamento: log?.motivoCancelamento
-        });
+        const log = studentLogsInMonth.find((l) => l.turmaId === slot.id && l.data === date);
+        const isEnrolled = enrolledSlotIds.includes(slot.id);
+        
+        if (log) {
+          reportRows.push({
+            data: date,
+            turmaId: slot.id,
+            turmaLabel: slot.turmaId,
+            horario: slot.horario,
+            quadra: slot.quadra,
+            status: log.presente,
+            dataRealizacao: log.dataRealizacao,
+            motivoCancelamento: log.motivoCancelamento
+          });
+        } else if (isEnrolled) {
+          // If the slot is active, only show "Não lançado" if it is after the latest historical log date in the month
+          if (!latestHistoricalLogDate || date > latestHistoricalLogDate) {
+            reportRows.push({
+              data: date,
+              turmaId: slot.id,
+              turmaLabel: slot.turmaId,
+              horario: slot.horario,
+              quadra: slot.quadra,
+              status: "Não lançado"
+            });
+          }
+        }
       }
     }
     reportRows.sort((a, b) => a.data.localeCompare(b.data));
