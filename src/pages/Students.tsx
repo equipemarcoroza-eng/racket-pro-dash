@@ -216,9 +216,9 @@ const Students = () => {
     })
     .sort((a, b) => a.months - b.months);
 
-  const top5ActiveStudents = [...studentsWithMonths]
+  const top10ActiveStudents = [...studentsWithMonths]
     .sort((a, b) => b.months - a.months)
-    .slice(0, 5);
+    .slice(0, 10);
 
   const averageMonths = activeStudents.length > 0
     ? studentsWithMonths.reduce((acc, curr) => acc + curr.months, 0) / activeStudents.length
@@ -636,7 +636,7 @@ const Students = () => {
                     <span className="w-2 h-2 bg-primary rounded-full"></span>
                     Distribuição de Alunos Ativos por Meses de Permanência
                   </p>
-                  <div className="h-[280px] w-full">
+                  <div className="h-[360px] w-full">
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={rankingChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f5f5f5" />
@@ -660,31 +660,29 @@ const Students = () => {
                 <div className="lg:col-span-1">
                   <p className="text-xs font-bold text-muted-foreground mb-6 flex items-center gap-2">
                     <span className="w-2 h-2 bg-primary rounded-full"></span>
-                    TOP 5 Alunos com Maior Tempo de Casa
+                    TOP 10 Alunos com Maior Tempo de Casa
                   </p>
-                  <div className="space-y-3">
-                    {top5ActiveStudents.map((s, index) => {
+                  <div className="space-y-2">
+                    {top10ActiveStudents.map((s, index) => {
                       const colors = [
                         "bg-yellow-500 text-yellow-950", // 1st
                         "bg-slate-300 text-slate-900",   // 2nd
                         "bg-amber-600 text-amber-50",    // 3rd
-                        "bg-muted text-muted-foreground", // 4th
-                        "bg-muted text-muted-foreground", // 5th
                       ];
                       return (
-                        <div key={s.id} className="flex items-center justify-between p-3 rounded-xl border border-border bg-card shadow-sm hover:shadow-md transition-all duration-200">
-                          <div className="flex items-center gap-3 min-w-0">
-                            <span className={`flex items-center justify-center w-6 h-6 rounded-full font-bold text-xs shrink-0 ${colors[index] || 'bg-muted'}`}>
+                        <div key={s.id} className="flex items-center justify-between py-2 px-2.5 rounded-xl border border-border bg-card shadow-sm hover:shadow-md transition-all duration-200">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className={`flex items-center justify-center w-5 h-5 rounded-full font-bold text-[10px] shrink-0 ${colors[index] || 'bg-muted text-muted-foreground'}`}>
                               {index + 1}º
                             </span>
                             <div className="flex flex-col min-w-0">
-                              <span className="font-semibold text-sm truncate">{s.nome}</span>
-                              <span className="text-[10px] text-muted-foreground">
+                              <span className="font-semibold text-xs truncate">{s.nome}</span>
+                              <span className="text-[9px] text-muted-foreground">
                                 Entrada: {new Date(s.dataEntrada).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}
                               </span>
                             </div>
                           </div>
-                          <Badge variant="secondary" className="font-bold text-xs shrink-0 ml-2">
+                          <Badge variant="secondary" className="font-bold text-[10px] px-2 py-0.5 shrink-0 ml-1.5">
                             {s.months} {s.months === 1 ? 'mês' : 'meses'}
                           </Badge>
                         </div>
