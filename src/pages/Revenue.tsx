@@ -26,7 +26,7 @@ const Revenue = () => {
   const [showRecebimento, setShowRecebimento] = useState(false);
   const [showAvulso, setShowAvulso] = useState(false);
   const [recebimentoForm, setRecebimentoForm] = useState({ aluno: "", valor: "", plano: "Mensalidade" });
-  const [avulsoForm, setAvulsoForm] = useState({ aluno: "", alunoId: "", valor: "", plano: "Selecione um aluno", vencimento: new Date().toISOString().split("T")[0] });
+  const [avulsoForm, setAvulsoForm] = useState({ aluno: "", alunoId: "", valor: "", plano: "Uniformes", vencimento: new Date().toISOString().split("T")[0] });
 
   const now = new Date();
   const [selectedMonth, setSelectedMonth] = useState(() => {
@@ -729,8 +729,7 @@ const Revenue = () => {
             <div><Label>Aluno</Label>
               <Select value={avulsoForm.aluno} onValueChange={(v) => {
                 const aluno = students.find(s => s.nome === v);
-                const plano = mockPlans.find(p => p.id === aluno?.planoId);
-                setAvulsoForm({ ...avulsoForm, aluno: v, alunoId: aluno?.id || "", plano: plano?.nome || "Sem plano" });
+                setAvulsoForm({ ...avulsoForm, aluno: v, alunoId: aluno?.id || "" });
               }}>
                 <SelectTrigger><SelectValue placeholder="Selecione o aluno" /></SelectTrigger>
                 <SelectContent>
@@ -746,8 +745,15 @@ const Revenue = () => {
                 </SelectContent>
               </Select>
             </div>
-            <div><Label>Plano contratado</Label>
-              <Input value={avulsoForm.plano} readOnly className="bg-muted" />
+            <div><Label>Plano</Label>
+              <Select value={avulsoForm.plano} onValueChange={(v) => setAvulsoForm({ ...avulsoForm, plano: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Uniformes">Uniformes</SelectItem>
+                  <SelectItem value="Kids BT Camp">Kids BT Camp</SelectItem>
+                  <SelectItem value="Torneio">Torneio</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div><Label>Data de Vencimento</Label>
               <Input type="date" value={avulsoForm.vencimento} onChange={(e) => setAvulsoForm({ ...avulsoForm, vencimento: e.target.value })} />
