@@ -752,6 +752,7 @@ const Revenue = () => {
                   <SelectItem value="Uniformes">Uniformes</SelectItem>
                   <SelectItem value="Kids BT Camp">Kids BT Camp</SelectItem>
                   <SelectItem value="Torneio">Torneio</SelectItem>
+                  <SelectItem value="Residual de Plano">Residual de Plano</SelectItem>
                 </SelectContent>
               </Select>
             </div>
