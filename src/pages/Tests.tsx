@@ -342,8 +342,8 @@ const Tests = () => {
                           <TableHead className="text-right">Ação</TableHead>
                         </TableRow>
                       </TableHeader>
-                      <TableBody>
-                        {appliedTestsList.slice(0, 10).map((prova) => {
+                       <TableBody>
+                        {appliedTestsList.map((prova) => {
                           const dateObj = new Date(prova.data + "T00:00:00");
                           const formattedDate = format(dateObj, "dd/MM/yyyy");
                           
@@ -393,11 +393,9 @@ const Tests = () => {
                         })}
                       </TableBody>
                     </Table>
-                    {appliedTestsList.length > 10 && (
-                      <div className="p-3 text-center bg-muted/20 border-t">
-                        <p className="text-xs text-muted-foreground">Exibindo as 10 provas mais recentes de um total de {appliedTestsList.length}.</p>
-                      </div>
-                    )}
+                    <div className="p-3 text-center bg-muted/20 border-t">
+                      <p className="text-xs text-muted-foreground">Exibindo todas as {appliedTestsList.length} prova(s) registrada(s).</p>
+                    </div>
                   </div>
                 )}
               </CardContent>
