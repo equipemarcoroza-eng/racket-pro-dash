@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useAppContext } from "@/contexts/AppContext";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { Plus, Trash2, Edit, Save, ClipboardCheck } from "lucide-react";
+import { Plus, Trash2, Edit, Save, ClipboardCheck, BarChart3, Users, Award, Calendar, ArrowRight } from "lucide-react";
 import type { Activity, Test, TestResult } from "@/data/mockData";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -23,9 +24,66 @@ const Tests = () => {
     testResults, setTestResults 
   } = useAppContext();
 
+  const navigate = useNavigate();
+
   const [selectedDate, setSelectedDate] = useState(format(new Date(), "yyyy-MM-dd"));
   const [showTestModal, setShowTestModal] = useState(false);
   const [showActivityModal, setShowActivityModal] = useState(false);
+
+  // Calculando estatísticas do mini-dashboard
+  const miniDashboardStats = useMemo(() => {
+    const totalTests = tests.length;
+    
+    // Obter número de alunos únicos avaliados no total de todas as provas
+    const uniqueStudents = new Set(testResults.map(tr => tr.alunoId)).size;
+    
+    // Média geral de acertos de todas as provas
+    let totalPercentual = 0;
+    let countResults = 0;
+    testResults.forEach(tr => {
+      const act = activities.find(a => a.id === tr.atividadeId);
+      if (act && act.quantidadeLancamentos > 0) {
+        totalPercentual += (tr.acertos / act.quantidadeLancamentos) * 100;
+        countResults++;
+      }
+    });
+    const mediaGeral = countResults > 0 ? (totalPercentual / countResults) : 0;
+    
+    return {
+      totalTests,
+      uniqueStudents,
+      mediaGeral,
+    };
+  }, [tests, testResults, activities]);
+
+  // Lista detalhada das provas já aplicadas com informações de aproveitamento
+  const appliedTestsList = useMemo(() => {
+    return [...tests]
+      .sort((a, b) => b.data.localeCompare(a.data)) // Ordena por data mais recente
+      .map(test => {
+        const slot = schedule.find(s => s.id === test.slotId);
+        const testRes = testResults.filter(tr => tr.testId === test.id);
+        const uniqueStudentsCount = new Set(testRes.map(tr => tr.alunoId)).size;
+        
+        let testTotalPercentual = 0;
+        let testCountResults = 0;
+        testRes.forEach(tr => {
+          const act = activities.find(a => a.id === tr.atividadeId);
+          if (act && act.quantidadeLancamentos > 0) {
+            testTotalPercentual += (tr.acertos / act.quantidadeLancamentos) * 100;
+            testCountResults++;
+          }
+        });
+        const mediaGeralProva = testCountResults > 0 ? (testTotalPercentual / testCountResults) : 0;
+        
+        return {
+          ...test,
+          slot,
+          studentsCount: uniqueStudentsCount,
+          mediaGeral: mediaGeralProva,
+        };
+      });
+  }, [tests, schedule, testResults, activities]);
   
   // States for the Test Modal
   const [currentSlotId, setCurrentSlotId] = useState<string | null>(null);
@@ -199,18 +257,153 @@ const Tests = () => {
       </Card>
 
       {slotsWithAttendance.length === 0 ? (
-        <Card>
-          <CardContent className="pt-10 pb-10 text-center">
-            <div className="flex flex-col items-center gap-3">
-              <div className="p-3 bg-yellow-50 rounded-full">
-                <ClipboardCheck className="h-8 w-8 text-yellow-600" />
+        <div className="space-y-6">
+          <Card>
+            <CardContent className="pt-10 pb-10 text-center">
+              <div className="flex flex-col items-center gap-3">
+                <div className="p-3 bg-yellow-50 rounded-full">
+                  <ClipboardCheck className="h-8 w-8 text-yellow-600" />
+                </div>
+                <p className="text-lg font-semibold text-muted-foreground">Nenhuma presença registrada para esta data.</p>
+                <p className="text-sm text-muted-foreground max-w-sm">Você precisa primeiro realizar o <b>Controle de Presença</b> nas turmas antes de aplicar uma prova.</p>
+                <Button variant="default" className="mt-2 bg-yellow-600 hover:bg-yellow-700" onClick={() => navigate("/attendance")}>
+                  Registrar as Presenças desta Data
+                </Button>
               </div>
-              <p className="text-lg font-semibold text-muted-foreground">Nenhuma presença registrada para esta data.</p>
-              <p className="text-sm text-muted-foreground max-w-sm">Você precisa primeiro realizar o <b>Controle de Presença</b> nas turmas antes de aplicar uma prova.</p>
-              <Button variant="default" className="mt-2 bg-yellow-600 hover:bg-yellow-700">Registrar as Presenças desta Data</Button>
+            </CardContent>
+          </Card>
+
+          {/* Mini-dashboard de Provas Aplicadas */}
+          <div className="space-y-6">
+            <div className="flex items-center gap-2">
+              <BarChart3 className="h-5 w-5 text-primary" />
+              <h3 className="text-lg font-semibold tracking-tight">Painel de Provas Aplicadas</h3>
             </div>
-          </CardContent>
-        </Card>
+
+            {/* Grid de Métricas Rápidas */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20 shadow-sm">
+                <CardContent className="p-4 flex items-center gap-4">
+                  <div className="p-3 bg-primary/10 rounded-xl text-primary">
+                    <Calendar className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-muted-foreground uppercase">Provas Aplicadas</p>
+                    <p className="text-2xl font-bold text-primary">{miniDashboardStats.totalTests}</p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gradient-to-br from-green-50/50 to-green-100/20 border-green-200/50 shadow-sm">
+                <CardContent className="p-4 flex items-center gap-4">
+                  <div className="p-3 bg-green-500/10 rounded-xl text-green-600">
+                    <Users className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-muted-foreground uppercase">Alunos Avaliados</p>
+                    <p className="text-2xl font-bold text-green-700">{miniDashboardStats.uniqueStudents}</p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gradient-to-br from-yellow-50/50 to-yellow-100/20 border-yellow-200/50 shadow-sm">
+                <CardContent className="p-4 flex items-center gap-4">
+                  <div className="p-3 bg-yellow-500/10 rounded-xl text-yellow-600">
+                    <Award className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-muted-foreground uppercase">Média Geral de Acertos</p>
+                    <p className="text-2xl font-bold text-yellow-700">{miniDashboardStats.mediaGeral.toFixed(1)}%</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Tabela de Histórico de Provas */}
+            <Card className="shadow-sm">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base font-semibold">Histórico de Provas Registradas</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {appliedTestsList.length === 0 ? (
+                  <p className="text-sm italic text-muted-foreground text-center py-6">
+                    Nenhuma prova foi aplicada no sistema até o momento.
+                  </p>
+                ) : (
+                  <div className="border rounded-lg overflow-hidden">
+                    <Table>
+                      <TableHeader className="bg-muted/50">
+                        <TableRow>
+                          <TableHead>Data</TableHead>
+                          <TableHead>Horário / Quadra</TableHead>
+                          <TableHead>Atividades</TableHead>
+                          <TableHead className="text-center">Alunos</TableHead>
+                          <TableHead className="text-center">Média Geral</TableHead>
+                          <TableHead className="text-right">Ação</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {appliedTestsList.slice(0, 10).map((prova) => {
+                          const dateObj = new Date(prova.data + "T00:00:00");
+                          const formattedDate = format(dateObj, "dd/MM/yyyy");
+                          
+                          return (
+                            <TableRow key={prova.id} className="hover:bg-muted/30 transition-colors">
+                              <TableCell className="font-semibold">{formattedDate}</TableCell>
+                              <TableCell>
+                                {prova.slot ? (
+                                  <span>{prova.slot.horario} · <span className="text-muted-foreground">{prova.slot.quadra}</span></span>
+                                ) : (
+                                  <span className="text-muted-foreground">Turma não encontrada</span>
+                                )}
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex flex-wrap gap-1">
+                                  {prova.atividadesIds.map(actId => {
+                                    const act = activities.find(a => a.id === actId);
+                                    return act ? (
+                                      <Badge key={actId} variant="outline" className="text-xs py-0 px-2">
+                                        {act.nome}
+                                      </Badge>
+                                    ) : null;
+                                  })}
+                                </div>
+                              </TableCell>
+                              <TableCell className="text-center font-medium">{prova.studentsCount}</TableCell>
+                              <TableCell className="text-center">
+                                <span className={`font-bold ${prova.mediaGeral >= 70 ? 'text-green-600' : prova.mediaGeral >= 50 ? 'text-yellow-600' : 'text-red-500'}`}>
+                                  {prova.mediaGeral.toFixed(1)}%
+                                </span>
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  className="gap-1 hover:text-primary"
+                                  onClick={() => {
+                                    setSelectedDate(prova.data);
+                                    toast.info(`Visualizando provas do dia ${formattedDate}`);
+                                  }}
+                                >
+                                  Ver Provas do Dia <ArrowRight className="h-3 w-3" />
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                    {appliedTestsList.length > 10 && (
+                      <div className="p-3 text-center bg-muted/20 border-t">
+                        <p className="text-xs text-muted-foreground">Exibindo as 10 provas mais recentes de um total de {appliedTestsList.length}.</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {slotsWithAttendance.map((slot) => {
