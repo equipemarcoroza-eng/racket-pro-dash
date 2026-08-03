@@ -1,7 +1,23 @@
+import { useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
-import { LayoutDashboard, Users, Calendar, CreditCard, TrendingUp, TrendingDown, DollarSign, ClipboardList, LogOut, ClipboardCheck, BarChart3, Cake } from "lucide-react";
+import {
+  LayoutDashboard,
+  Users,
+  Calendar,
+  ClipboardList,
+  LogOut,
+  ClipboardCheck,
+  BarChart3,
+  Cake,
+  TrendingUp,
+  TrendingDown,
+  DollarSign,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import logo from "@/assets/logo.png";
 import { useAuth } from "@/contexts/AuthContext";
+import { cn } from "@/lib/utils";
 
 const navItems = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -23,6 +39,20 @@ const navItems = [
 const AppLayout = () => {
   const navigate = useNavigate();
   const { signOut } = useAuth();
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("racket_sidebar_collapsed") === "true";
+    }
+    return false;
+  });
+
+  const toggleCollapse = () => {
+    setIsCollapsed((prev) => {
+      const next = !prev;
+      localStorage.setItem("racket_sidebar_collapsed", String(next));
+      return next;
+    });
+  };
 
   const handleLogout = async () => {
     await signOut();
@@ -31,41 +61,90 @@ const AppLayout = () => {
 
   return (
     <div className="flex min-h-screen">
-      <aside className="w-64 bg-sidebar text-sidebar-foreground flex flex-col shrink-0">
-        <div className="p-6 border-b border-sidebar-border">
+      <aside
+        className={cn(
+          "relative bg-sidebar text-sidebar-foreground flex flex-col shrink-0 transition-all duration-300",
+          isCollapsed ? "w-16" : "w-64"
+        )}
+      >
+        {/* Toggle Collapse Button */}
+        <button
+          onClick={toggleCollapse}
+          className="absolute -right-3 top-20 flex h-6 w-6 items-center justify-center rounded-full border border-sidebar-border bg-sidebar text-sidebar-foreground shadow-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground z-50 cursor-pointer"
+          title={isCollapsed ? "Expandir Menu" : "Recolher Menu"}
+        >
+          {isCollapsed ? (
+            <ChevronRight className="h-3.5 w-3.5" />
+          ) : (
+            <ChevronLeft className="h-3.5 w-3.5" />
+          )}
+        </button>
+
+        <div
+          className={cn(
+            "p-6 border-b border-sidebar-border transition-all duration-300",
+            isCollapsed ? "px-2 py-4 flex justify-center" : "p-6"
+          )}
+        >
           <div className="flex items-center gap-3">
-            <img src={logo} alt="Beach Tennis Equipe Marco Roza" className="h-10 w-10 rounded-full" />
-            <div>
-              <h1 className="text-base font-bold tracking-tight leading-tight">Equipe Marco Roza</h1>
-              <p className="text-xs opacity-70">Beach Tennis</p>
-            </div>
+            <img
+              src={logo}
+              alt="Beach Tennis Equipe Marco Roza"
+              className="h-10 w-10 rounded-full shrink-0"
+            />
+            {!isCollapsed && (
+              <div className="animate-in fade-in duration-300">
+                <h1 className="text-base font-bold tracking-tight leading-tight whitespace-nowrap">
+                  Equipe Marco Roza
+                </h1>
+                <p className="text-xs opacity-70">Beach Tennis</p>
+              </div>
+            )}
           </div>
         </div>
-        <nav className="flex-1 p-4 space-y-1">
+
+        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
           {navItems.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors ${
+                cn(
+                  "flex items-center gap-3 py-2.5 rounded-md text-sm font-medium transition-colors",
+                  isCollapsed ? "justify-center px-0 h-10 w-10 mx-auto" : "px-3",
                   isActive
                     ? "bg-sidebar-accent text-sidebar-accent-foreground"
                     : "hover:bg-sidebar-accent/50 text-sidebar-foreground/80"
-                }`
+                )
               }
+              title={isCollapsed ? item.label : undefined}
             >
-              <item.icon className="h-4 w-4" />
-              {item.label}
+              <item.icon className="h-4 w-4 shrink-0" />
+              {!isCollapsed && (
+                <span className="animate-in fade-in duration-300 truncate">
+                  {item.label}
+                </span>
+              )}
             </NavLink>
           ))}
         </nav>
-        <div className="p-4 border-t border-sidebar-border">
+
+        <div
+          className={cn(
+            "p-4 border-t border-sidebar-border transition-all duration-300",
+            isCollapsed ? "px-2" : "p-4"
+          )}
+        >
           <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium hover:bg-sidebar-accent/50 text-sidebar-foreground/80 transition-colors"
+            className={cn(
+              "flex items-center gap-3 py-2.5 rounded-md text-sm font-medium hover:bg-sidebar-accent/50 text-sidebar-foreground/80 transition-colors",
+              isCollapsed ? "justify-center w-10 h-10 mx-auto px-0" : "w-full px-3"
+            )}
+            title={isCollapsed ? "Sair" : undefined}
           >
-            <LogOut className="h-4 w-4" />
-            Sair
+            <LogOut className="h-4 w-4 shrink-0" />
+            {!isCollapsed && <span>Sair</span>}
           </button>
         </div>
       </aside>
