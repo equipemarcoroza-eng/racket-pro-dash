@@ -31,7 +31,7 @@ const generateTurmaId = (dia: string, quadra: string, horario: string) => {
 };
 
 const Schedule = () => {
-  const { schedule, setSchedule, enrollments, students } = useAppContext();
+  const { schedule, setSchedule, enrollments, setEnrollments, students } = useAppContext();
   const [showSlotForm, setShowSlotForm] = useState(false);
   const [editingSlotId, setEditingSlotId] = useState<string | null>(null);
   const [slotForm, setSlotForm] = useState(emptySlotForm);
@@ -80,10 +80,17 @@ const Schedule = () => {
 
   const handleDeleteSlot = () => {
     if (!editingSlotId) return;
-    setSchedule((prev) => prev.filter((s) => s.id !== editingSlotId));
-    toast.success("Turma removida");
-    setShowSlotForm(false);
-    setEditingSlotId(null);
+    const enrolledCount = getSlotCount(editingSlotId);
+    const msg = enrolledCount > 0
+      ? `Esta turma possui ${enrolledCount} aluno(s) matriculado(s). Ao excluir a turma, todas as matrículas dela serão canceladas. Deseja prosseguir?`
+      : `Deseja realmente excluir a turma ${slotForm.turmaId}?`;
+    if (confirm(msg)) {
+      setSchedule((prev) => prev.filter((s) => s.id !== editingSlotId));
+      setEnrollments((prev) => prev.filter((e) => e.turmaId !== editingSlotId));
+      toast.success("Turma removida");
+      setShowSlotForm(false);
+      setEditingSlotId(null);
+    }
   };
 
   const totalEnrolled = enrollments.length;
@@ -191,6 +198,22 @@ const Schedule = () => {
 
                                   <div className="flex gap-1 mt-1 pt-1 border-t">
                                     <Button variant="outline" size="sm" className="text-[9px] h-4 px-1" onClick={() => openEditSlot(slot)}>Editar</Button>
+                                    {count === 0 && (
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="text-[9px] h-4 px-1 text-destructive hover:bg-destructive/10 border-destructive/20"
+                                        onClick={() => {
+                                          if (confirm(`Deseja realmente cancelar a turma ${slot.turmaId}?`)) {
+                                            setSchedule((prev) => prev.filter((s) => s.id !== slot.id));
+                                            setEnrollments((prev) => prev.filter((e) => e.turmaId !== slot.id));
+                                            toast.success(`Turma ${slot.turmaId} cancelada com sucesso!`);
+                                          }
+                                        }}
+                                      >
+                                        Cancelar
+                                      </Button>
+                                    )}
                                   </div>
                                 </div>
                               );
@@ -242,9 +265,18 @@ const Schedule = () => {
               </Select>
             </div>
             <div><Label>ID da Turma</Label><Input value={slotForm.turmaId} readOnly className="bg-muted" /></div>
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => { setShowSlotForm(false); setEditingSlotId(null); }}>Cancelar</Button>
-              <Button onClick={handleSaveSlot}>{editingSlotId ? "Atualizar" : "Cadastrar"}</Button>
+            <div className="flex justify-between items-center pt-2 border-t mt-4">
+              {editingSlotId ? (
+                <Button type="button" variant="destructive" size="sm" onClick={handleDeleteSlot}>
+                  Excluir Turma
+                </Button>
+              ) : (
+                <div />
+              )}
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={() => { setShowSlotForm(false); setEditingSlotId(null); }}>Cancelar</Button>
+                <Button onClick={handleSaveSlot}>{editingSlotId ? "Atualizar" : "Cadastrar"}</Button>
+              </div>
             </div>
           </div>
         </DialogContent>
