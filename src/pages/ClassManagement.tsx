@@ -10,6 +10,7 @@ import { getFrequenciaCount, CLASS_LIMIT, type ClassSlot } from "@/data/mockData
 import { useAppContext } from "@/contexts/AppContext";
 import { toast } from "sonner";
 import { startOfWeek, addDays, format } from "date-fns";
+import { Plus, Trash2 } from "lucide-react";
 
 const dias = ["Seg", "Ter", "Qua", "Qui", "Sex"];
 const horarios = [
@@ -77,7 +78,7 @@ const ClassManagement = () => {
     const existing = editingAlunoId ? getAlunoEnrollments(alunoId).map((e) => e.turmaId) : [];
     const selections = [...existing];
     while (selections.length < count) selections.push("");
-    setSlotSelections(selections.slice(0, count));
+    setSlotSelections(selections);
   };
 
   const handleSlotChange = (index: number, value: string) => {
@@ -99,9 +100,19 @@ const ClassManagement = () => {
 
   const handleSaveEnrollment = () => {
     if (!selectedAlunoId) { toast.error("Selecione um aluno"); return; }
+    if (slotSelections.length === 0) { toast.error("Selecione pelo menos um horário"); return; }
     if (slotSelections.some((s) => !s)) { toast.error("Selecione todos os horários"); return; }
     const duplicates = new Set(slotSelections).size !== slotSelections.length;
     if (duplicates) { toast.error("Não é possível selecionar o mesmo horário duas vezes"); return; }
+
+    const student = students.find((s) => s.id === selectedAlunoId);
+    const plano = student ? getPlano(student.planoId) : null;
+    const count = plano ? getFrequenciaCount(plano.frequencia) : 1;
+
+    if (slotSelections.length > count) {
+      toast.error(`O plano deste aluno permite no máximo ${count} aula(s) por semana. Remova o excesso.`);
+      return;
+    }
 
     // Validate all slots have capacity
     for (const slotId of slotSelections) {
@@ -313,39 +324,77 @@ const ClassManagement = () => {
               </Select>
             </div>
 
-            {selectedAlunoId && (
-              <>
-                {(() => {
-                  const student = students.find((s) => s.id === selectedAlunoId);
-                  const plano = student ? getPlano(student.planoId) : null;
-                  return plano ? (
-                    <div className="bg-secondary rounded-md p-3 text-sm">
-                      <p><span className="font-medium">Plano:</span> {plano.nome}</p>
-                      <p><span className="font-medium">Frequência:</span> {plano.frequencia}</p>
-                    </div>
-                  ) : null;
-                })()}
+            {selectedAlunoId && (() => {
+              const student = students.find((s) => s.id === selectedAlunoId);
+              const plano = student ? getPlano(student.planoId) : null;
+              const count = plano ? getFrequenciaCount(plano.frequencia) : 1;
 
-                {slotSelections.map((selected, index) => (
-                  <div key={index}>
-                    <Label>Aula {index + 1}</Label>
-                    <Select value={selected} onValueChange={(v) => handleSlotChange(index, v)}>
-                      <SelectTrigger><SelectValue placeholder="Selecione dia/horário" /></SelectTrigger>
-                      <SelectContent>
-                        {schedule.map((slot) => {
-                          const available = isSlotAvailable(slot.id, index);
-                          return (
-                            <SelectItem key={slot.id} value={slot.id} disabled={!available && slot.id !== selected}>
-                              {getSlotLabel(slot)} {!available && slot.id !== selected ? "· Lotada" : ""}
-                            </SelectItem>
-                          );
-                        })}
-                      </SelectContent>
-                    </Select>
+              return (
+                <>
+                  {plano && (
+                    <div className="bg-secondary/50 border border-border rounded-md p-3 text-sm space-y-1">
+                      <p><span className="font-medium">Plano:</span> {plano.nome}</p>
+                      <p><span className="font-medium">Frequência do Plano:</span> {plano.frequencia} ({count}x na semana)</p>
+                      <p><span className="font-medium">Turmas selecionadas:</span> {slotSelections.length} de {count}</p>
+                    </div>
+                  )}
+
+                  {slotSelections.length > count && (
+                    <div className="bg-destructive/10 text-destructive text-xs p-3 rounded-md border border-destructive/20 font-medium">
+                      Atenção: O plano do aluno permite no máximo {count} aula(s) por semana, mas ele está com {slotSelections.length} turmas listadas. Remova {slotSelections.length - count} turma(s) abaixo para poder salvar.
+                    </div>
+                  )}
+
+                  <div className="space-y-4">
+                    {slotSelections.map((selected, index) => (
+                      <div key={index} className="space-y-1.5 p-3 border rounded-lg bg-card shadow-sm">
+                        <div className="flex items-center justify-between">
+                          <Label className="text-xs font-semibold text-muted-foreground uppercase">Aula {index + 1}</Label>
+                          {slotSelections.length > 1 && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 px-2 text-destructive hover:bg-destructive/10 gap-1 text-xs"
+                              onClick={() => {
+                                setSlotSelections((prev) => prev.filter((_, i) => i !== index));
+                              }}
+                            >
+                              <Trash2 className="h-3 w-3" /> Remover
+                            </Button>
+                          )}
+                        </div>
+                        <Select value={selected} onValueChange={(v) => handleSlotChange(index, v)}>
+                          <SelectTrigger className="w-full"><SelectValue placeholder="Selecione dia/horário" /></SelectTrigger>
+                          <SelectContent>
+                            {schedule.map((slot) => {
+                              const available = isSlotAvailable(slot.id, index);
+                              return (
+                                <SelectItem key={slot.id} value={slot.id} disabled={!available && slot.id !== selected}>
+                                  {getSlotLabel(slot)} {!available && slot.id !== selected ? "· Lotada" : ""}
+                                </SelectItem>
+                              );
+                            })}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </>
-            )}
+
+                  {slotSelections.length < count && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="w-full gap-2 border-dashed border-primary/40 hover:border-primary text-primary"
+                      onClick={() => setSlotSelections((prev) => [...prev, ""])}
+                    >
+                      <Plus className="h-4 w-4" /> Adicionar Aula ({slotSelections.length} de {count})
+                    </Button>
+                  )}
+                </>
+              );
+            })()}
 
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => { setShowEnrollDialog(false); setEditingAlunoId(null); }}>Cancelar</Button>
