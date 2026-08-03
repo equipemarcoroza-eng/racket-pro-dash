@@ -20,7 +20,7 @@ export const getFrequenciaCount = (frequencia: string): number => {
   return 1;
 };
 
-export const CLASS_LIMIT = 6;
+export const CLASS_LIMIT = 7;
 
 export interface Student {
   id: string;
