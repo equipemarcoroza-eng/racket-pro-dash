@@ -13,18 +13,19 @@ import { toast } from "sonner";
 
 const diasMap: Record<string, number> = { "Dom": 0, "Seg": 1, "Ter": 2, "Qua": 3, "Qui": 4, "Sex": 5, "Sáb": 6 };
 
-const months = [
-  { value: "01", label: "Janeiro" }, { value: "02", label: "Fevereiro" }, { value: "03", label: "Março" },
-  { value: "04", label: "Abril" }, { value: "05", label: "Maio" }, { value: "06", label: "Junho" },
-  { value: "07", label: "Julho" }, { value: "08", label: "Agosto" }, { value: "09", label: "Setembro" },
-  { value: "10", label: "Outubro" }, { value: "11", label: "Novembro" }, { value: "12", label: "Dezembro" },
-];
+// Período de datas padrão inicializado no relatório de frequência
 
 const FrequencyReport = () => {
   const { students, enrollments, attendanceLogs, setAttendanceLogs, schedule: mockSchedule } = useAppContext();
   const now = new Date();
-  const [selectedMonth, setSelectedMonth] = useState(String(now.getMonth() + 1).padStart(2, "0"));
-  const [selectedYear, setSelectedYear] = useState(String(now.getFullYear()));
+
+  // Calcular datas padrão do mês atual (1º dia ao último dia do mês)
+  const defaultStartStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
+  const lastDayDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+  const defaultEndStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(lastDayDate.getDate()).padStart(2, "0")}`;
+
+  const [startDate, setStartDate] = useState(defaultStartStr);
+  const [endDate, setEndDate] = useState(defaultEndStr);
   const [selectedAlunoId, setSelectedAlunoId] = useState("");
 
   const activeStudents = students.filter((s) => s.status === "Ativo").sort((a, b) => a.nome.localeCompare(b.nome));
@@ -32,21 +33,21 @@ const FrequencyReport = () => {
   // Get enrolled slots for student
   const enrolledSlotIds = enrollments.filter((e) => e.alunoId === selectedAlunoId).map((e) => e.turmaId);
   
-  // Find all attendance logs for the student in the selected month/year
-  const studentLogsInMonth = attendanceLogs.filter(
-    (l) => l.alunoId === selectedAlunoId && l.data.startsWith(`${selectedYear}-${selectedMonth}`)
+  // Find all attendance logs for the student in the selected period
+  const studentLogsInPeriod = attendanceLogs.filter(
+    (l) => l.alunoId === selectedAlunoId && l.data >= startDate && l.data <= endDate
   );
   
-  // Unique slot IDs from logs in this month
-  const loggedSlotIds = Array.from(new Set(studentLogsInMonth.map((l) => l.turmaId)));
+  // Unique slot IDs from logs in this period
+  const loggedSlotIds = Array.from(new Set(studentLogsInPeriod.map((l) => l.turmaId)));
   
   // Combined slots
   const allSlotIds = Array.from(new Set([...enrolledSlotIds, ...loggedSlotIds]));
   const relevantSlots = mockSchedule.filter((s) => allSlotIds.includes(s.id));
   
-  // Historical slots: slots that have logs in this month but are NOT in active enrolledSlotIds
+  // Historical slots: slots that have logs in this period but are NOT in active enrolledSlotIds
   const historicalSlotIds = loggedSlotIds.filter((id) => !enrolledSlotIds.includes(id));
-  const historicalLogs = studentLogsInMonth.filter((l) => historicalSlotIds.includes(l.turmaId));
+  const historicalLogs = studentLogsInPeriod.filter((l) => historicalSlotIds.includes(l.turmaId));
   const latestHistoricalLogDate = historicalLogs.length > 0
     ? historicalLogs.reduce((max, l) => (l.data > max ? l.data : max), "")
     : "";
@@ -87,16 +88,22 @@ const FrequencyReport = () => {
     setSpecialDialog({ open: false, dateToUpdate: "", turmaId: "", status: null });
   };
 
-  // Calculate all dates in the month for the enrolled day-of-week
+  // Calculate all dates in the period for the enrolled day-of-week
   const getDatesForSlot = (slot: ClassSlot) => {
     const dayTarget = diasMap[slot.dia];
-    const year = parseInt(selectedYear);
-    const month = parseInt(selectedMonth) - 1;
     const dates: string[] = [];
-    const d = new Date(year, month, 1);
-    while (d.getMonth() === month) {
+    
+    // Parse start and end dates with T00:00:00 to avoid timezone issues
+    const start = new Date(startDate + "T00:00:00");
+    const end = new Date(endDate + "T00:00:00");
+    
+    const d = new Date(start);
+    while (d <= end) {
       if (d.getDay() === dayTarget) {
-        dates.push(`${year}-${selectedMonth}-${String(d.getDate()).padStart(2, "0")}`);
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, "0");
+        const dayStr = String(d.getDate()).padStart(2, "0");
+        dates.push(`${y}-${m}-${dayStr}`);
       }
       d.setDate(d.getDate() + 1);
     }
@@ -109,7 +116,7 @@ const FrequencyReport = () => {
     for (const slot of relevantSlots) {
       const dates = getDatesForSlot(slot);
       for (const date of dates) {
-        const log = studentLogsInMonth.find((l) => l.turmaId === slot.id && l.data === date);
+        const log = studentLogsInPeriod.find((l) => l.turmaId === slot.id && l.data === date);
         const isEnrolled = enrolledSlotIds.includes(slot.id);
         
         if (log) {
@@ -162,20 +169,22 @@ const FrequencyReport = () => {
         <CardContent>
           <div className="flex flex-wrap gap-4 items-end">
             <div>
-              <Label>Mês</Label>
-              <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-                <SelectTrigger className="w-36"><SelectValue /></SelectTrigger>
-                <SelectContent>{months.map((m) => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent>
-              </Select>
+              <Label>Período Inicial</Label>
+              <Input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="w-44"
+              />
             </div>
             <div>
-              <Label>Ano</Label>
-              <Select value={selectedYear} onValueChange={setSelectedYear}>
-                <SelectTrigger className="w-24"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {["2025", "2026", "2027"].map((y) => <SelectItem key={y} value={y}>{y}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              <Label>Período Final</Label>
+              <Input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="w-44"
+              />
             </div>
             <div>
               <Label>Aluno</Label>
