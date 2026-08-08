@@ -71,6 +71,7 @@ const dbToStudent = (r: any): Student => ({
   status: r.status,
   camiseta: r.camiseta,
   kit: r.kit,
+  indicacao: r.indicacao ?? "",
   observacoes: r.observacoes ?? "",
 });
 const studentToDb = (s: Partial<Student>) => ({
@@ -88,6 +89,7 @@ const studentToDb = (s: Partial<Student>) => ({
   status: s.status,
   camiseta: s.camiseta || null,
   kit: s.kit || null,
+  indicacao: s.indicacao || null,
   observacoes: s.observacoes || null,
 });
 

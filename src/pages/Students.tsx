@@ -44,6 +44,7 @@ type FormState = {
   status: Student["status"];
   camiseta: Student["camiseta"];
   kit: Student["kit"];
+  indicacao: string;
   observacoes: string;
 };
 
@@ -61,6 +62,7 @@ const emptyForm: FormState = {
   status: "Ativo",
   camiseta: "M",
   kit: "Não",
+  indicacao: "",
   observacoes: "",
 };
 
@@ -383,6 +385,7 @@ const Students = () => {
       status: s.status,
       camiseta: s.camiseta || "M",
       kit: s.kit || "Não",
+      indicacao: s.indicacao || "",
       observacoes: s.observacoes || "",
     });
     setShowForm(true);
@@ -445,10 +448,10 @@ const Students = () => {
 
 
   const handleExport = () => {
-    const headers = ["Nome", "WhatsApp Aluno", "Responsável", "WhatsApp Responsável", "Data Nascimento", "Sexo", "Data Entrada", "Categoria", "Plano", "Vencimento", "Status"];
+    const headers = ["Nome", "WhatsApp Aluno", "Responsável", "WhatsApp Responsável", "Data Nascimento", "Sexo", "Data Entrada", "Categoria", "Plano", "Vencimento", "Status", "Indicação"];
     const rows = filtered.map((s) => [
       s.nome, s.whatsappAluno, s.responsavel, s.whatsappResponsavel, s.dataNascimento, s.sexo, s.dataEntrada, s.categoria,
-      getPlanoNome(s.planoId), s.vencimento, s.status,
+      getPlanoNome(s.planoId), s.vencimento, s.status, s.indicacao || "",
     ]);
     const csv = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
@@ -585,6 +588,13 @@ const Students = () => {
                   <SelectItem value="Não">Não</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+            <div><Label>Indicação</Label>
+              <Input 
+                value={form.indicacao} 
+                onChange={(e) => setForm({ ...form, indicacao: e.target.value })} 
+                placeholder="Pessoa ou empresa que indicou" 
+              />
             </div>
             <div className="md:col-span-2 lg:col-span-3">
               <Label>Observações</Label>
@@ -887,6 +897,7 @@ const Students = () => {
                 </div>
                 <div><p className="text-sm text-muted-foreground">Camiseta</p><p className="font-medium">{viewingStudent.camiseta || "—"}</p></div>
                 <div><p className="text-sm text-muted-foreground">Kit</p><p className="font-medium">{viewingStudent.kit || "—"}</p></div>
+                <div><p className="text-sm text-muted-foreground">Indicação</p><p className="font-medium">{viewingStudent.indicacao || "—"}</p></div>
                 <div className="col-span-2"><p className="text-sm text-muted-foreground">Observações</p><p className="font-medium whitespace-pre-wrap">{viewingStudent.observacoes || "—"}</p></div>
               </div>
             </div>
