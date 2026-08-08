@@ -14,6 +14,7 @@ import {
   DollarSign,
   ChevronLeft,
   ChevronRight,
+  PieChart,
 } from "lucide-react";
 import logo from "@/assets/logo.png";
 import { useAuth } from "@/contexts/AuthContext";
@@ -34,6 +35,7 @@ const navItems = [
   { to: "/finance/expenses", label: "Contas a Pagar", icon: TrendingDown },
   { to: "/finance/cash-flow", label: "Fluxo de Caixa", icon: DollarSign },
   { to: "/finance/projection", label: "Projeção Financeira", icon: BarChart3 },
+  { to: "/bi-dashboard", label: "Análise de BI", icon: PieChart },
 ];
 
 const AppLayout = () => {

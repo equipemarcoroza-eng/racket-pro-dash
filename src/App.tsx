@@ -19,6 +19,7 @@ import Birthdays from "./pages/Birthdays";
 import FinancialProjection from "./pages/FinancialProjection";
 import LessonPlan from "./pages/LessonPlan";
 import Tests from "./pages/Tests";
+import BiDashboard from "./pages/BiDashboard";
 import AppLayout from "./components/AppLayout";
 import NotFound from "./pages/NotFound";
 import { AppProvider } from "@/contexts/AppContext";
@@ -53,6 +54,7 @@ const App = () => (
                 <Route path="/finance/expenses" element={<Expenses />} />
                 <Route path="/finance/cash-flow" element={<CashFlow />} />
                 <Route path="/finance/projection" element={<FinancialProjection />} />
+                <Route path="/bi-dashboard" element={<BiDashboard />} />
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>
