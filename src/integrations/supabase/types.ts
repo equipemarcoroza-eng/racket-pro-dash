@@ -378,7 +378,6 @@ export type Database = {
           data_entrada: string
           data_nascimento: string | null
           id: string
-          indicacao: string | null
           kit: string | null
           nome: string
           observacoes: string | null
@@ -398,7 +397,6 @@ export type Database = {
           data_entrada?: string
           data_nascimento?: string | null
           id?: string
-          indicacao?: string | null
           kit?: string | null
           nome: string
           observacoes?: string | null
@@ -418,7 +416,6 @@ export type Database = {
           data_entrada?: string
           data_nascimento?: string | null
           id?: string
-          indicacao?: string | null
           kit?: string | null
           nome?: string
           observacoes?: string | null
