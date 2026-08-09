@@ -56,175 +56,182 @@ const Login = () => {
   };
 
   return (
-    <div className="flex min-h-screen w-screen overflow-hidden bg-[#0b0c16]">
-      {/* Painel Esquerdo - Apresentação de Marca (Premium) */}
-      <div className="relative hidden w-1/2 flex-col justify-between p-12 text-white md:flex bg-gradient-to-br from-[#0c0f24] via-[#0e1231] to-[#12163b] border-r border-white/5">
-        {/* Efeitos de Luz de Fundo */}
-        <div className="absolute top-1/4 left-1/4 h-80 w-80 rounded-full bg-[#de392a]/5 blur-[120px] pointer-events-none" />
-        <div className="absolute bottom-1/4 right-1/4 h-[400px] w-[400px] rounded-full bg-[#1c2394]/15 blur-[150px] pointer-events-none" />
+    <div className="flex min-h-screen w-full items-center justify-center p-4 bg-gradient-to-br from-[#06070c] via-[#090b17] to-[#12152b] relative">
+      {/* Efeitos de Luz de Fundo na Página */}
+      <div className="absolute top-1/6 left-1/6 h-[400px] w-[400px] rounded-full bg-[#de392a]/5 blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-1/6 right-1/6 h-[500px] w-[500px] rounded-full bg-[#1c2394]/10 blur-[150px] pointer-events-none" />
 
-        {/* Logo e Nome da Marca */}
-        <div className="flex items-center gap-3 z-10">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/10 p-1.5 backdrop-blur-md border border-white/10 shadow-lg">
-            <img src={logo} alt="Logo" className="h-full w-full object-contain rounded-lg" />
-          </div>
-          <div>
-            <span className="font-extrabold text-sm lg:text-base tracking-wider text-white">EQUIPE MARCO ROZA</span>
-            <p className="text-[9px] text-[#de392a] tracking-widest uppercase font-bold">Racket Pro Dashboard</p>
-          </div>
-        </div>
+      {/* Card Container Principal (Compacto e Elegante) */}
+      <div className="relative w-full max-w-4xl min-h-[550px] flex flex-col md:flex-row rounded-3xl overflow-hidden shadow-2xl border border-white/5 bg-[#0e101f] z-10">
+        
+        {/* Painel Esquerdo - Apresentação (Premium Brand Gradient) */}
+        <div className="relative hidden md:flex md:w-[45%] flex-col justify-between p-8 text-white bg-gradient-to-br from-[#0f1236] via-[#1c2394] to-[#de392a] overflow-hidden">
+          {/* Overlay de Vidro / Textura */}
+          <div className="absolute inset-0 bg-black/10 pointer-events-none" />
+          <div className="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-white/10 blur-2xl pointer-events-none" />
 
-        {/* Conteúdo Central */}
-        <div className="my-auto space-y-6 z-10">
-          <h1 className="text-4xl lg:text-5xl font-black text-white leading-[1.15] tracking-tight">
-            A nova era do seu<br />
-            treinamento de <span className="text-[#de392a]">tênis &amp; beach tennis.</span>
-          </h1>
-          <p className="text-white/60 text-sm lg:text-base font-normal max-w-md leading-relaxed">
-            Acompanhe sua frequência, planos, relatórios e evolua no esporte com uma plataforma intuitiva de alta performance administrativa.
-          </p>
-
-          <div className="h-px bg-white/10 my-8 w-full max-w-sm" />
-
-          {/* Indicadores de Qualidade */}
-          <div className="grid grid-cols-2 gap-6 max-w-sm">
-            <div>
-              <div className="flex items-center gap-2 text-white">
-                <Shield className="h-5 w-5 text-[#de392a]" />
-                <span className="text-xl lg:text-2xl font-black">100%</span>
-              </div>
-              <p className="text-[10px] text-white/40 uppercase tracking-widest font-bold mt-1">
-                SEGURO &amp; CRIPTOGRAFADO
-              </p>
+          {/* Cabeçalho de Marca */}
+          <div className="flex items-center gap-3 z-10">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 p-1.5 backdrop-blur-md border border-white/10 shadow-lg">
+              <img src={logo} alt="Logo" className="h-full w-full object-contain rounded-lg" />
             </div>
             <div>
-              <div className="flex items-center gap-2 text-white">
-                <Zap className="h-5 w-5 text-[#de392a]" />
-                <span className="text-xl lg:text-2xl font-black">24/7</span>
-              </div>
-              <p className="text-[10px] text-white/40 uppercase tracking-widest font-bold mt-1">
-                MONITORAMENTO ATIVO
-              </p>
+              <span className="font-black text-xs tracking-wider text-white">EQUIPE MARCO ROZA</span>
+              <p className="text-[8px] text-white/70 tracking-widest uppercase font-bold">Racket Pro</p>
             </div>
           </div>
-        </div>
 
-        {/* Rodapé do Painel Esquerdo */}
-        <div className="flex items-center gap-2 text-xs text-white/30 z-10">
-          <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span>SISTEMAS EQUIPE MARCO ROZA • V2.0</span>
-        </div>
-      </div>
-
-      {/* Painel Direito - Formulário de Login */}
-      <div className="flex flex-1 flex-col justify-center px-6 py-12 lg:px-12 bg-[#080911] relative">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-96 w-96 rounded-full bg-[#1c2394]/5 blur-[100px] pointer-events-none" />
-
-        <div className="mx-auto w-full max-w-md space-y-8 z-10">
-          {/* Logo exibido apenas em dispositivos móveis */}
-          <div className="flex md:hidden flex-col items-center mb-6">
-            <img src={logo} alt="Equipe Marco Roza" className="h-20 w-20 rounded-full mb-3 shadow-lg shadow-[#1c2394]/20 border border-white/10" />
-            <h1 className="text-2xl font-black text-white text-center">EQUIPE MARCO ROZA</h1>
-            <p className="text-[10px] text-[#de392a] uppercase tracking-widest font-bold text-center mt-1">Performance no Tênis</p>
-          </div>
-
-          <div>
-            <h2 className="text-3xl lg:text-4xl font-extrabold tracking-tight text-white">
-              Acesse seu Painel
-            </h2>
-            <p className="mt-2 text-sm text-gray-400">
-              Bem-vindo de volta! Insira seus dados para continuar.
+          {/* Texto Central */}
+          <div className="my-auto space-y-4 z-10 pt-8">
+            <h1 className="text-3xl lg:text-4xl font-black text-white leading-tight tracking-tight">
+              A nova era do seu<br />
+              treinamento de <span className="text-white bg-white/15 px-2 py-0.5 rounded-lg border border-white/20">tênis &amp; BT.</span>
+            </h1>
+            <p className="text-white/70 text-xs lg:text-sm leading-relaxed max-w-xs">
+              Acompanhe sua frequência, planos, relatórios e evolua no esporte com uma plataforma intuitiva e de alta performance.
             </p>
+
+            <div className="h-px bg-white/15 my-6 w-full" />
+
+            {/* Indicadores de Qualidade */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <div className="flex items-center gap-1.5 text-white">
+                  <Shield className="h-4 w-4 text-white" />
+                  <span className="text-lg font-black">100%</span>
+                </div>
+                <p className="text-[9px] text-white/60 uppercase tracking-wider font-bold">
+                  CRIPTOGRAFADO
+                </p>
+              </div>
+              <div>
+                <div className="flex items-center gap-1.5 text-white">
+                  <Zap className="h-4 w-4 text-white" />
+                  <span className="text-lg font-black">24/7</span>
+                </div>
+                <p className="text-[9px] text-white/60 uppercase tracking-wider font-bold">
+                  ATIVO
+                </p>
+              </div>
+            </div>
           </div>
 
-          <form onSubmit={handleLogin} className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="login-email" className="text-xs uppercase tracking-widest font-black text-gray-400">
-                E-mail
-              </Label>
-              <div className="relative">
-                <Mail className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-500" />
-                <Input
-                  id="login-email"
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="seu@email.com"
-                  className="bg-white/[0.02] border-white/10 text-white placeholder-gray-600 focus:border-[#de392a] focus:ring-[#de392a] pl-12 h-12 rounded-lg transition-all"
-                />
-              </div>
+          {/* Rodapé Esquerdo */}
+          <div className="flex items-center gap-2 text-[10px] text-white/40 z-10">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span>EQUIPE MARCO ROZA • V2.0</span>
+          </div>
+        </div>
+
+        {/* Painel Direito - Formulário de Digitação (Luminoso e Premium) */}
+        <div className="w-full md:w-[55%] flex flex-col justify-center p-8 lg:p-12 bg-gradient-to-br from-[#f8fafc] via-[#f1f5f9] to-[#e2e8f0] text-slate-800 relative">
+          
+          {/* Logo em Mobile */}
+          <div className="flex md:hidden flex-col items-center mb-6">
+            <img src={logo} alt="Equipe Marco Roza" className="h-16 w-16 rounded-full mb-2 shadow-lg border border-slate-200" />
+            <h1 className="text-xl font-black text-slate-900">EQUIPE MARCO ROZA</h1>
+            <p className="text-[9px] text-[#de392a] uppercase tracking-widest font-bold">Performance no Tênis</p>
+          </div>
+
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-2xl lg:text-3xl font-black tracking-tight text-slate-900">
+                Acesse seu Painel
+              </h2>
+              <p className="mt-2 text-xs lg:text-sm text-slate-500 font-medium">
+                Bem-vindo de volta! Insira seus dados abaixo.
+              </p>
             </div>
 
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="login-password" className="text-xs uppercase tracking-widest font-black text-gray-400">
-                  Senha
+            <form onSubmit={handleLogin} className="space-y-5">
+              <div className="space-y-1.5">
+                <Label htmlFor="login-email" className="text-[10px] uppercase tracking-wider font-black text-slate-500">
+                  E-mail
                 </Label>
-                <button
-                  type="button"
-                  onClick={() => { setResetEmail(email); setForgotOpen(true); }}
-                  className="text-xs font-bold text-[#de392a] hover:underline uppercase tracking-widest"
-                >
-                  Esqueceu?
-                </button>
+                <div className="relative">
+                  <Mail className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                  <Input
+                    id="login-email"
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="seu@email.com"
+                    className="bg-white border-slate-200 text-slate-900 placeholder-slate-400 focus:border-[#1c2394] focus:ring-[#1c2394] pl-11 h-11 rounded-xl shadow-sm transition-all"
+                  />
+                </div>
               </div>
-              <div className="relative">
-                <Lock className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-500" />
-                <Input
-                  id="login-password"
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••"
-                  className="bg-white/[0.02] border-white/10 text-white placeholder-gray-600 focus:border-[#de392a] focus:ring-[#de392a] pl-12 h-12 rounded-lg transition-all"
-                />
-              </div>
-            </div>
 
-            <Button
-              type="submit"
-              disabled={submitting}
-              className="w-full h-12 bg-gradient-to-r from-[#1c2394] to-[#2d36ab] hover:from-[#151970] hover:to-[#222991] text-white font-bold rounded-lg shadow-lg shadow-[#1c2394]/30 flex items-center justify-center gap-2 group transition-all"
-            >
-              {submitting ? "Entrando..." : (
-                <>
-                  ENTRAR NA PLATAFORMA
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                </>
-              )}
-            </Button>
-          </form>
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="login-password" className="text-[10px] uppercase tracking-wider font-black text-slate-500">
+                    Senha
+                  </Label>
+                  <button
+                    type="button"
+                    onClick={() => { setResetEmail(email); setForgotOpen(true); }}
+                    className="text-[10px] font-bold text-[#de392a] hover:text-[#c12e20] hover:underline uppercase tracking-wider"
+                  >
+                    Esqueceu?
+                  </button>
+                </div>
+                <div className="relative">
+                  <Lock className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                  <Input
+                    id="login-password"
+                    type="password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••"
+                    className="bg-white border-slate-200 text-slate-900 placeholder-slate-400 focus:border-[#1c2394] focus:ring-[#1c2394] pl-11 h-11 rounded-xl shadow-sm transition-all"
+                  />
+                </div>
+              </div>
+
+              <Button
+                type="submit"
+                disabled={submitting}
+                className="w-full h-11 bg-gradient-to-r from-[#1c2394] to-[#242bb5] hover:from-[#151970] hover:to-[#1c2294] text-white font-bold rounded-xl shadow-md shadow-[#1c2394]/15 flex items-center justify-center gap-2 group transition-all mt-6"
+              >
+                {submitting ? "Entrando..." : (
+                  <>
+                    ENTRAR NA PLATAFORMA
+                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                  </>
+                )}
+              </Button>
+            </form>
+          </div>
         </div>
       </div>
 
       {/* Modal Esqueci a Senha */}
       <Dialog open={forgotOpen} onOpenChange={setForgotOpen}>
-        <DialogContent className="bg-[#0b0c16] text-white border-white/10 max-w-sm">
+        <DialogContent className="bg-white text-slate-850 border-slate-200 max-w-sm rounded-2xl shadow-2xl">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold text-white">Redefinir senha</DialogTitle>
-            <DialogDescription className="text-gray-400 text-sm">
+            <DialogTitle className="text-lg font-black text-slate-900">Redefinir senha</DialogTitle>
+            <DialogDescription className="text-slate-500 text-xs">
               Informe o e-mail cadastrado. Enviaremos um link de redefinição.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleForgot} className="space-y-4 pt-2">
-            <div className="space-y-2">
-              <Label htmlFor="reset-email" className="text-xs uppercase tracking-widest font-black text-gray-400">E-mail</Label>
+            <div className="space-y-1.5">
+              <Label htmlFor="reset-email" className="text-[10px] uppercase tracking-wider font-black text-slate-500">E-mail</Label>
               <Input
                 id="reset-email"
                 type="email"
                 required
                 value={resetEmail}
                 onChange={(e) => setResetEmail(e.target.value)}
-                className="bg-white/[0.02] border-white/10 text-white placeholder-gray-600 focus:border-[#de392a]"
+                className="bg-white border-slate-200 text-slate-900 focus:border-[#1c2394] rounded-xl h-11"
               />
             </div>
             <DialogFooter className="pt-2">
               <Button
                 type="submit"
                 disabled={resetSubmitting}
-                className="w-full bg-[#de392a] hover:bg-[#c12e20] text-white font-bold"
+                className="w-full bg-[#de392a] hover:bg-[#c12e20] text-white font-bold rounded-xl h-11"
               >
                 {resetSubmitting ? "Enviando..." : "Enviar link de redefinição"}
               </Button>
