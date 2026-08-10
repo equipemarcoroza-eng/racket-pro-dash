@@ -489,10 +489,6 @@ export default function BiDashboard() {
       return { x, y };
     };
 
-    const { x: tickStartX, y: tickStartY } = getCoordinates(80, radius - 2);
-    const { x: tickEndX, y: tickEndY } = getCoordinates(80, radius + 6);
-    const { x: labelX, y: labelY } = getCoordinates(80, radius + 13);
-
     return (
       <div className="flex flex-col items-center justify-center p-6 bg-card rounded-xl border border-border shadow-sm hover:shadow-md transition-all">
         <div className="relative w-40 h-28 flex items-end justify-center overflow-hidden">
@@ -534,27 +530,6 @@ export default function BiDashboard() {
                 />
               );
             })}
-
-            {/* 80% Threshold Line */}
-            <line
-              x1={tickStartX}
-              y1={tickStartY}
-              x2={tickEndX}
-              y2={tickEndY}
-              stroke="#f59e0b"
-              strokeWidth="1.5"
-              strokeDasharray="2,2"
-            />
-            <text
-              x={labelX}
-              y={labelY}
-              fill="#f59e0b"
-              fontSize="6px"
-              fontWeight="bold"
-              textAnchor="middle"
-            >
-              0,80
-            </text>
 
             {/* Pointer / Needle */}
             <g transform={`rotate(${angle}, ${cx}, ${cy})`}>
