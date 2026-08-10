@@ -409,10 +409,10 @@ export default function BiDashboard() {
   const SVGAvatar = ({ type }: { type: "woman" | "teen" | "child" }) => {
     if (type === "woman") {
       return (
-        <svg className="w-16 h-16 rounded-full ring-2 ring-emerald-500/20 shadow-lg shadow-emerald-500/5" viewBox="0 0 100 100">
-          <circle cx="50" cy="50" r="50" fill="#115e59" />
-          <circle cx="50" cy="48" r="20" fill="#fdd1a9" />
-          <path d="M 30,45 C 30,22 70,22 70,45 C 70,60 30,60 30,45 Z" fill="#451a03" />
+        <svg className="w-16 h-16 rounded-full shadow" viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="50" fill="#fed7aa" />
+          <circle cx="50" cy="48" r="20" fill="#fdba74" />
+          <path d="M 30,45 C 30,22 70,22 70,45 C 70,60 30,60 30,45 Z" fill="#7c2d12" />
           <circle cx="50" cy="45" r="16" fill="#ffedd5" />
           <circle cx="44" cy="43" r="2.5" fill="#1e293b" />
           <circle cx="56" cy="43" r="2.5" fill="#1e293b" />
@@ -425,10 +425,10 @@ export default function BiDashboard() {
     }
     if (type === "teen") {
       return (
-        <svg className="w-16 h-16 rounded-full ring-2 ring-cyan-500/20 shadow-lg shadow-cyan-500/5" viewBox="0 0 100 100">
-          <circle cx="50" cy="50" r="50" fill="#1e3a8a" />
+        <svg className="w-16 h-16 rounded-full shadow" viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="50" fill="#bfdbfe" />
           <circle cx="50" cy="45" r="17" fill="#ffedd5" />
-          <path d="M 33,35 Q 50,15 67,35 C 72,40 68,45 68,45 L 32,45 C 32,45 28,40 33,35 Z" fill="#0f172a" />
+          <path d="M 33,35 Q 50,15 67,35 C 72,40 68,45 68,45 L 32,45 C 32,45 28,40 33,35 Z" fill="#1e293b" />
           <circle cx="44" cy="42" r="2.5" fill="#1e293b" />
           <circle cx="56" cy="42" r="2.5" fill="#1e293b" />
           <path d="M 45,49 Q 50,53 55,49" fill="none" stroke="#1e293b" strokeWidth="2.5" strokeLinecap="round" />
@@ -438,8 +438,8 @@ export default function BiDashboard() {
     }
     // child
     return (
-      <svg className="w-16 h-16 rounded-full ring-2 ring-pink-500/20 shadow-lg shadow-pink-500/5" viewBox="0 0 100 100">
-        <circle cx="50" cy="50" r="50" fill="#831843" />
+      <svg className="w-16 h-16 rounded-full shadow" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="50" fill="#fbcfe8" />
         <circle cx="50" cy="46" r="16" fill="#ffedd5" />
         <circle cx="30" cy="35" r="10" fill="#b45309" />
         <circle cx="70" cy="35" r="10" fill="#b45309" />
@@ -458,7 +458,7 @@ export default function BiDashboard() {
   const GaugeSpeedometer = ({
     value,
     label,
-    color = "#f59e0b",
+    color = "#2563eb",
     subtitle,
   }: {
     value: number;
@@ -466,7 +466,7 @@ export default function BiDashboard() {
     color?: string;
     subtitle?: string;
   }) => {
-    // Map 0 - 100 to an arc of 180 degrees (pointing from -180deg on the left to 0deg on the right).
+    // Map 0 - 100 to an arc of 180 degrees (from left/9 o'clock to right/3 o'clock).
     const radius = 42;
     const cx = 60;
     const cy = 60;
@@ -475,54 +475,53 @@ export default function BiDashboard() {
     const cleanValue = Math.min(100, Math.max(0, value));
     const strokeDashoffset = circumference - (cleanValue / 100) * circumference;
 
-    // Needle rotation angle (0% -> -180deg, 100% -> 0deg)
-    const angle = (cleanValue / 100) * 180 - 180;
+    // Angle: 0% -> 0deg (left), 50% -> 90deg (top), 100% -> 180deg (right)
+    const angle = (cleanValue / 100) * 180;
 
-    // Threshold indicator line at 80% (0,80)
-    const thresholdAngle = 0.8 * 180 - 180;
-    const rad = (thresholdAngle * Math.PI) / 180;
-    const tickStartX = cx + (radius - 2) * Math.cos(rad);
-    const tickStartY = cy + (radius - 2) * Math.sin(rad);
-    const tickEndX = cx + (radius + 6) * Math.cos(rad);
-    const tickEndY = cy + (radius + 6) * Math.sin(rad);
-    const labelX = cx + (radius + 14) * Math.cos(rad);
-    const labelY = cy + (radius + 14) * Math.sin(rad) + 2;
+    // Trigger math coordinates relative to LEFT horizontal axis:
+    // X = cx - r * cos(theta)
+    // Y = cy - r * sin(theta)
+    const getCoordinates = (percent: number, r: number) => {
+      const theta = (percent / 100) * 180;
+      const rad = (theta * Math.PI) / 180;
+      const x = cx - r * Math.cos(rad);
+      const y = cy - r * Math.sin(rad);
+      return { x, y };
+    };
 
-    const displayValue = `${Math.round(cleanValue)}%`;
+    const { x: tickStartX, y: tickStartY } = getCoordinates(80, radius - 2);
+    const { x: tickEndX, y: tickEndY } = getCoordinates(80, radius + 6);
+    const { x: labelX, y: labelY } = getCoordinates(80, radius + 13);
 
     return (
-      <div className="flex flex-col items-center justify-center p-6 bg-[#0e1322]/90 backdrop-blur-md border border-[#1e293b] rounded-2xl shadow-xl hover:border-amber-500/30 hover:shadow-amber-500/5 transition-all duration-300 group">
+      <div className="flex flex-col items-center justify-center p-6 bg-card rounded-xl border border-border shadow-sm hover:shadow-md transition-all">
         <div className="relative w-40 h-28 flex items-end justify-center overflow-hidden">
           <svg className="w-40 h-40 absolute -bottom-10" viewBox="0 0 120 120">
-            <defs>
-              <linearGradient id={`gauge-grad-${label.replace(/\s+/g, '-')}`} x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#ef4444" />
-                <stop offset="60%" stopColor="#eab308" />
-                <stop offset="100%" stopColor="#10b981" />
-              </linearGradient>
-              <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-                <feGaussianBlur stdDeviation="2" result="blur" />
-                <feComposite in="SourceGraphic" in2="blur" operator="over" />
-              </filter>
-            </defs>
-
             {/* Background Arc */}
             <path
               d="M 18,60 A 42,42 0 0,1 102,60"
               fill="none"
-              stroke="#1e293b"
+              stroke="#f1f5f9"
               strokeWidth={strokeWidth}
               strokeLinecap="round"
+            />
+            
+            {/* Active Arc */}
+            <path
+              d="M 18,60 A 42,42 0 0,1 102,60"
+              fill="none"
+              stroke={color}
+              strokeWidth={strokeWidth}
+              strokeLinecap="round"
+              strokeDasharray={circumference}
+              strokeDashoffset={strokeDashoffset}
+              className="transition-all duration-1000 ease-out"
             />
 
             {/* Scale Ticks */}
             {[0, 20, 40, 60, 80, 100].map((tick) => {
-              const tickAng = (tick / 100) * 180 - 180;
-              const tickRad = (tickAng * Math.PI) / 180;
-              const x1 = cx + (radius + 2) * Math.cos(tickRad);
-              const y1 = cy + (radius + 2) * Math.sin(tickRad);
-              const x2 = cx + (radius + 5) * Math.cos(tickRad);
-              const y2 = cy + (radius + 5) * Math.sin(tickRad);
+              const { x: x1, y: y1 } = getCoordinates(tick, radius + 2);
+              const { x: x2, y: y2 } = getCoordinates(tick, radius + 5);
               return (
                 <line
                   key={tick}
@@ -530,26 +529,13 @@ export default function BiDashboard() {
                   y1={y1}
                   x2={x2}
                   y2={y2}
-                  stroke="#334155"
+                  stroke="#cbd5e1"
                   strokeWidth="1.5"
                 />
               );
             })}
 
-            {/* Active Filled Arc */}
-            <path
-              d="M 18,60 A 42,42 0 0,1 102,60"
-              fill="none"
-              stroke={color === "#3b82f6" ? "#06b6d4" : color === "#10b981" ? "#10b981" : "url(#gauge-grad-" + label.replace(/\s+/g, '-') + ")"}
-              strokeWidth={strokeWidth}
-              strokeLinecap="round"
-              strokeDasharray={circumference}
-              strokeDashoffset={strokeDashoffset}
-              className="transition-all duration-1000 ease-out"
-              filter="url(#glow)"
-            />
-
-            {/* 80% Dotted Reference */}
+            {/* 80% Threshold Line */}
             <line
               x1={tickStartX}
               y1={tickStartY}
@@ -566,7 +552,6 @@ export default function BiDashboard() {
               fontSize="6px"
               fontWeight="bold"
               textAnchor="middle"
-              className="font-mono-precise"
             >
               0,80
             </text>
@@ -574,176 +559,122 @@ export default function BiDashboard() {
             {/* Pointer / Needle */}
             <g transform={`rotate(${angle}, ${cx}, ${cy})`}>
               <polygon
-                points="58.5,60 61.5,60 60,18"
+                points="60,58.5 60,61.5 22,60"
                 fill="#f59e0b"
                 className="transition-transform duration-1000 ease-out"
               />
-              <circle cx="60" cy="60" r="4" fill="#f59e0b" stroke="#070b13" strokeWidth="1.5" />
+              <circle cx="60" cy="60" r="4.5" fill="#f59e0b" stroke="#ffffff" strokeWidth="1.5" />
             </g>
           </svg>
-
-          {/* Value Display */}
           <div className="z-10 flex flex-col items-center pb-1">
-            <span className="text-3xl font-bold font-mono-precise tracking-tight text-[#f59e0b] group-hover:scale-110 transition-transform duration-300">
-              {displayValue}
-            </span>
-            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
-              {label}
-            </span>
+            <span className="text-3xl font-extrabold tracking-tight">{Math.round(cleanValue)}%</span>
+            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{label}</span>
           </div>
         </div>
-        {subtitle && (
-          <p className="text-xs text-slate-400 text-center mt-3 font-medium min-h-[32px] line-clamp-2 leading-relaxed">
-            {subtitle}
-          </p>
-        )}
+        {subtitle && <p className="text-xs text-muted-foreground text-center mt-3 font-medium">{subtitle}</p>}
       </div>
     );
   };
 
   // Cores do gráfico de rosca (Sexo)
-  const COLORS = ["#ec4899", "#06b6d4"];
+  const COLORS = ["#ec4899", "#2563eb"];
 
   return (
-    <div className="font-sans-modern min-h-screen bg-[#070b13] text-[#e2e8f0] p-6 lg:p-8 -m-6 lg:-m-8 space-y-8 overflow-hidden relative">
-      {/* Import de fontes do Google Fonts */}
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;600;700;800&display=swap');
-        
-        .font-serif-elegant {
-          font-family: 'Playfair Display', serif;
-        }
-        .font-sans-modern {
-          font-family: 'Plus Jakarta Sans', sans-serif;
-        }
-        .font-mono-precise {
-          font-family: 'JetBrains Mono', monospace;
-        }
-        
-        /* Custom tabs triggers */
-        .bi-tabs-list {
-          background-color: #0e1322 !important;
-          border: 1px solid #1e293b !important;
-          padding: 4px !important;
-          border-radius: 9999px !important;
-        }
-        .bi-tab-trigger {
-          border-radius: 9999px !important;
-          color: #94a3b8 !important;
-          font-size: 0.75rem !important;
-          font-weight: 600 !important;
-          padding: 6px 18px !important;
-          transition: all 0.3s ease !important;
-        }
-        .bi-tab-trigger[data-state="active"] {
-          background-color: #1e293b !important;
-          color: #f59e0b !important;
-          box-shadow: 0 0 12px rgba(245, 158, 11, 0.25) !important;
-          border: 1px solid rgba(245, 158, 11, 0.4) !important;
-        }
-      `}</style>
-
-      {/* Gradientes ambientais em segundo plano (Glow Effects) */}
-      <div className="absolute top-0 right-1/4 w-[400px] h-[400px] rounded-full bg-amber-500/5 blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-10 left-10 w-[300px] h-[300px] rounded-full bg-cyan-500/5 blur-[100px] pointer-events-none" />
-
+    <div className="space-y-6">
       {/* Título Principal */}
-      <Card className="bg-gradient-to-r from-[#0e1322] to-[#161f36] border-[#1e293b] shadow-2xl relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-1.5 h-full bg-amber-500" />
-        <CardContent className="p-6 md:p-8">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <Card className="border-l-4 border-l-primary shadow-sm">
+        <CardHeader>
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <p className="text-xs text-amber-500 font-bold tracking-widest uppercase">Business Intelligence Avançado</p>
-              <h2 className="font-serif-elegant text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-amber-100 via-amber-400 to-amber-600 mt-1">
-                Dashboard de Inteligência Comportamental
-              </h2>
-              <p className="text-sm text-slate-400 mt-2 font-medium">
+              <p className="text-sm text-primary font-semibold tracking-wider uppercase">Business Intelligence Avançado</p>
+              <CardTitle className="text-3xl font-black mt-1">Dashboard de Inteligência Comportamental</CardTitle>
+              <p className="text-sm text-muted-foreground mt-1.5">
                 Análise aprofundada de comportamento, correlações de grupo, fidelidade e tendências de alunos ativos.
               </p>
             </div>
-            <div className="flex items-center gap-2 px-4 py-2 bg-amber-500/10 text-amber-400 text-xs font-bold rounded-full border border-amber-500/20 shrink-0 self-start md:self-auto">
+            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 text-primary text-xs font-bold rounded-lg border border-primary/20">
               <Sparkles className="w-4 h-4 animate-pulse" />
               BI Ativo com Varredura Histórica
             </div>
           </div>
-        </CardContent>
+        </CardHeader>
       </Card>
 
       {/* KPI Cards de BI */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="bg-[#0e1322]/80 border-[#1e293b] hover:border-amber-500/30 hover:shadow-lg hover:shadow-amber-500/5 transition-all duration-300 rounded-2xl group">
-          <CardContent className="p-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card className="bg-card hover:shadow-md transition-shadow">
+          <CardContent className="pt-6">
             <div className="flex justify-between items-start">
               <div>
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">LTV Médio (Histórico)</p>
-                <h3 className="text-2xl font-bold font-mono-precise mt-3 text-amber-500 group-hover:scale-105 transition-transform duration-300">
+                <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">LTV Médio (Histórico)</p>
+                <h3 className="text-2xl font-black mt-2 text-primary">
                   R$ {generalMetrics.avgLtv.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                 </h3>
               </div>
-              <div className="p-2.5 bg-amber-500/10 rounded-xl text-amber-500">
+              <div className="p-2 bg-primary/10 rounded-lg text-primary">
                 <DollarSign className="w-5 h-5" />
               </div>
             </div>
-            <div className="mt-4 flex items-center text-[11px] text-slate-400 font-semibold">
-              <TrendingUp className="w-3.5 h-3.5 text-emerald-500 mr-1" />
+            <div className="mt-4 flex items-center text-xs text-muted-foreground font-medium">
+              <TrendingUp className="w-3.5 h-3.5 text-green-500 mr-1" />
               <span>Soma de faturas pagas desde a origem</span>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-[#0e1322]/80 border-[#1e293b] hover:border-amber-500/30 hover:shadow-lg hover:shadow-amber-500/5 transition-all duration-300 rounded-2xl group">
-          <CardContent className="p-6">
+        <Card className="bg-card hover:shadow-md transition-shadow">
+          <CardContent className="pt-6">
             <div className="flex justify-between items-start">
               <div>
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Permanência (Tenure)</p>
-                <h3 className="text-2xl font-bold font-mono-precise mt-3 text-slate-200 group-hover:scale-105 transition-transform duration-300">
-                  {generalMetrics.avgTenure.toFixed(1)} <span className="text-sm font-semibold text-slate-400">meses</span>
+                <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Permanência (Tenure)</p>
+                <h3 className="text-2xl font-black mt-2">
+                  {generalMetrics.avgTenure.toFixed(1)} <span className="text-sm font-semibold text-muted-foreground">meses</span>
                 </h3>
               </div>
-              <div className="p-2.5 bg-cyan-500/10 rounded-xl text-cyan-400">
+              <div className="p-2 bg-blue-100 rounded-lg text-blue-600">
                 <Calendar className="w-5 h-5" />
               </div>
             </div>
-            <div className="mt-4 flex items-center text-[11px] text-slate-400 font-semibold">
+            <div className="mt-4 flex items-center text-xs text-muted-foreground font-medium">
               <span>Média de meses ativos no sistema</span>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-[#0e1322]/80 border-[#1e293b] hover:border-amber-500/30 hover:shadow-lg hover:shadow-amber-500/5 transition-all duration-300 rounded-2xl group">
-          <CardContent className="p-6">
+        <Card className="bg-card hover:shadow-md transition-shadow">
+          <CardContent className="pt-6">
             <div className="flex justify-between items-start">
               <div>
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Presença Média Geral</p>
-                <h3 className="text-2xl font-bold font-mono-precise mt-3 text-emerald-500 group-hover:scale-105 transition-transform duration-300">
+                <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Presença Média Geral</p>
+                <h3 className="text-2xl font-black mt-2 text-green-600">
                   {generalMetrics.avgAttendance.toFixed(1)}%
                 </h3>
               </div>
-              <div className="p-2.5 bg-emerald-500/10 rounded-xl text-emerald-500">
+              <div className="p-2 bg-green-100 rounded-lg text-green-600">
                 <Activity className="w-5 h-5" />
               </div>
             </div>
-            <div className="mt-4 flex items-center text-[11px] text-slate-400 font-semibold">
-              <TrendingUp className="w-3.5 h-3.5 text-emerald-500 mr-1" />
+            <div className="mt-4 flex items-center text-xs text-muted-foreground font-medium">
+              <TrendingUp className="w-3.5 h-3.5 text-green-500 mr-1" />
               <span>Aulas marcadas como presentes</span>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-[#0e1322]/80 border-[#1e293b] hover:border-amber-500/30 hover:shadow-lg hover:shadow-amber-500/5 transition-all duration-300 rounded-2xl group">
-          <CardContent className="p-6">
+        <Card className="bg-card hover:shadow-md transition-shadow">
+          <CardContent className="pt-6">
             <div className="flex justify-between items-start">
               <div>
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Idade Média</p>
-                <h3 className="text-2xl font-bold font-mono-precise mt-3 text-slate-200 group-hover:scale-105 transition-transform duration-300">
-                  {generalMetrics.avgAge.toFixed(1)} <span className="text-sm font-semibold text-slate-400">anos</span>
+                <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Idade Média</p>
+                <h3 className="text-2xl font-black mt-2">
+                  {generalMetrics.avgAge.toFixed(1)} <span className="text-sm font-semibold text-muted-foreground">anos</span>
                 </h3>
               </div>
-              <div className="p-2.5 bg-rose-500/10 rounded-xl text-rose-400">
+              <div className="p-2 bg-orange-100 rounded-lg text-orange-600">
                 <Users className="w-5 h-5" />
               </div>
             </div>
-            <div className="mt-4 flex items-center text-[11px] text-slate-400 font-semibold">
+            <div className="mt-4 flex items-center text-xs text-muted-foreground font-medium">
               <span>Mapeamento etário dos ativos</span>
             </div>
           </CardContent>
@@ -761,75 +692,73 @@ export default function BiDashboard() {
         <GaugeSpeedometer
           value={generalMetrics.avgAdimplencia}
           label="Adimplência Histórica"
-          color="#3b82f6"
+          color="#2563eb"
           subtitle="Taxa de pagamento de faturas geradas ao longo da história do aluno."
         />
         <GaugeSpeedometer
           value={Math.min(100, generalMetrics.avgAttendance * 1.1)}
           label="Saúde de Retenção"
-          color="#f59e0b"
+          color="#eab308"
           subtitle="Estimativa de retenção de alunos para os próximos 3 meses com base no engajamento recente."
         />
       </div>
 
       {/* Abas e Análise de Segmentos */}
       <Tabs defaultValue="overview" className="w-full space-y-6" onValueChange={setActiveTab}>
-        <div className="flex items-center justify-between overflow-x-auto pb-2 custom-scroll">
-          <TabsList className="bi-tabs-list">
-            <TabsTrigger value="overview" className="bi-tab-trigger">Visão Geral & Vieses</TabsTrigger>
-            <TabsTrigger value="gender" className="bi-tab-trigger">Gênero</TabsTrigger>
-            <TabsTrigger value="age" className="bi-tab-trigger">Faixas Etárias</TabsTrigger>
-            <TabsTrigger value="plans" className="bi-tab-trigger">Frequência Planos</TabsTrigger>
-            <TabsTrigger value="tenure" className="bi-tab-trigger">Tempo de Casa</TabsTrigger>
+        <div className="flex items-center justify-between overflow-x-auto pb-2">
+          <TabsList className="bg-muted p-1 rounded-lg">
+            <TabsTrigger value="overview">Visão Geral & Vieses</TabsTrigger>
+            <TabsTrigger value="gender">Gênero</TabsTrigger>
+            <TabsTrigger value="age">Faixas Etárias</TabsTrigger>
+            <TabsTrigger value="plans">Frequência Planos</TabsTrigger>
+            <TabsTrigger value="tenure">Tempo de Casa</TabsTrigger>
           </TabsList>
         </div>
 
         {/* Tab 1: Visão Geral e Painel de Vieses */}
-        <TabsContent value="overview" className="space-y-6 animate-in fade-in duration-300">
+        <TabsContent value="overview" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Box de Análise de Vieses e Tendências */}
-            <Card className="lg:col-span-2 bg-[#0e1322]/80 border-[#1e293b] rounded-2xl shadow-xl">
-              <CardHeader className="p-6 pb-2">
+            <Card className="lg:col-span-2 border-primary/20">
+              <CardHeader>
                 <div className="flex items-center gap-2">
-                  <Award className="w-5 h-5 text-amber-500" />
-                  <CardTitle className="font-serif-elegant text-xl font-bold text-slate-100">
-                    Análise Estatística de Vieses e Tendências
-                  </CardTitle>
+                  <Award className="w-5 h-5 text-primary" />
+                  <CardTitle className="text-lg">Análise Estatística de Vieses e Tendências</CardTitle>
                 </div>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-muted-foreground">
                   Correlações encontradas a partir do cruzamento de idade, gênero, plano e comportamento histórico de presença.
                 </p>
               </CardHeader>
-              <CardContent className="p-6 space-y-4">
+              <CardContent className="space-y-4">
                 {trendsAndBiases.map((bias, idx) => (
                   <div
                     key={idx}
-                    className="p-4 rounded-xl border border-[#1e293b]/70 bg-[#111827]/40 flex justify-between items-start gap-4 hover:bg-[#111827]/70 hover:border-amber-500/20 transition-all duration-300"
+                    className="p-4 rounded-xl border border-border bg-muted/30 flex justify-between items-start gap-4 hover:bg-muted/50 transition-colors"
                   >
-                    <div className="space-y-2">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="font-bold text-sm text-slate-200">{bias.title}</span>
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-sm text-foreground">{bias.title}</span>
                         {bias.type === "positive" && (
-                          <span className="text-[9px] px-2 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold rounded-full">
+                          <span className="text-[10px] px-1.5 py-0.5 bg-green-100 text-green-700 font-bold rounded">
                             Força Alta
                           </span>
                         )}
                         {bias.type === "warning" && (
-                          <span className="text-[9px] px-2 py-0.5 bg-rose-500/10 text-rose-400 border border-rose-500/20 font-bold rounded-full">
+                          <span className="text-[10px] px-1.5 py-0.5 bg-amber-100 text-amber-700 font-bold rounded">
                             Atenção
                           </span>
                         )}
                         {bias.type === "info" && (
-                          <span className="text-[9px] px-2 py-0.5 bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 font-bold rounded-full">
+                          <span className="text-[10px] px-1.5 py-0.5 bg-blue-100 text-blue-700 font-bold rounded">
                             Correlação
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-slate-400 leading-relaxed">{bias.desc}</p>
+                      <p className="text-xs text-muted-foreground leading-relaxed">{bias.desc}</p>
                     </div>
                     <div className="text-right shrink-0">
-                      <span className="text-base font-bold font-mono-precise text-amber-500">{bias.metric}</span>
-                      <p className="text-[8px] text-slate-400 uppercase font-bold tracking-wider mt-0.5">Indicador</p>
+                      <span className="text-base font-black text-primary">{bias.metric}</span>
+                      <p className="text-[9px] text-muted-foreground uppercase font-bold tracking-wider mt-0.5">Indicador</p>
                     </div>
                   </div>
                 ))}
@@ -837,14 +766,12 @@ export default function BiDashboard() {
             </Card>
 
             {/* Fatores de Decisão */}
-            <Card className="bg-[#0e1322]/80 border-[#1e293b] rounded-2xl shadow-xl">
-              <CardHeader className="p-6 pb-2">
-                <CardTitle className="font-serif-elegant text-xl font-bold text-slate-100">
-                  Composição dos Alunos Ativos
-                </CardTitle>
-                <p className="text-xs text-slate-400">Distribuição demográfica por sexo.</p>
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Composição dos Alunos Ativos</CardTitle>
+                <p className="text-xs text-muted-foreground">Distribuição demográfica simples.</p>
               </CardHeader>
-              <CardContent className="p-6 flex justify-center items-center h-[260px]">
+              <CardContent className="flex justify-center items-center h-[260px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
@@ -860,13 +787,8 @@ export default function BiDashboard() {
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
-                    <Tooltip
-                      contentStyle={{ backgroundColor: "#0e1322", borderColor: "#1e293b", borderRadius: "12px" }}
-                      itemStyle={{ color: "#e2e8f0" }}
-                      labelStyle={{ color: "#f59e0b", fontWeight: "bold" }}
-                      formatter={(value) => [`${value} Alunos`, "Quantidade"]}
-                    />
-                    <Legend verticalAlign="bottom" height={36} wrapperStyle={{ fontSize: "11px", fontWeight: "600", color: "#94a3b8" }} />
+                    <Tooltip formatter={(value) => [`${value} Alunos`, "Quantidade"]} />
+                    <Legend />
                   </PieChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -875,32 +797,23 @@ export default function BiDashboard() {
         </TabsContent>
 
         {/* Tab 2: Análise por Gênero */}
-        <TabsContent value="gender" className="animate-in fade-in duration-300">
-          <Card className="bg-[#0e1322]/80 border-[#1e293b] rounded-2xl shadow-xl">
-            <CardHeader className="p-6">
-              <CardTitle className="font-serif-elegant text-xl font-bold text-slate-100">
-                Desempenho e Engajamento por Gênero
-              </CardTitle>
-              <p className="text-xs text-slate-400">
-                Comparativo de tempo de casa (Tenure), faturamento médio (LTV) e presença entre gêneros.
-              </p>
+        <TabsContent value="gender">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Desempenho e Engajamento por Gênero</CardTitle>
+              <p className="text-xs text-muted-foreground">Comparativo de tempo de casa (Tenure), faturamento médio (LTV) e presença entre gêneros.</p>
             </CardHeader>
-            <CardContent className="p-6 pt-0 space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="h-[250px]">
-                  <p className="text-xs font-bold text-slate-400 mb-4 text-center uppercase tracking-wider">Frequência Média de Presença (%)</p>
+                  <p className="text-xs font-bold text-muted-foreground mb-2 text-center">Frequência Média de Presença (%)</p>
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={genderData} barSize={40}>
-                      <CartesianGrid stroke="#1e293b" strokeDasharray="3 3" vertical={false} />
-                      <XAxis dataKey="name" stroke="#94a3b8" fontSize={11} tickLine={false} />
-                      <YAxis domain={[0, 100]} stroke="#94a3b8" fontSize={11} tickLine={false} />
-                      <Tooltip
-                        contentStyle={{ backgroundColor: "#0e1322", borderColor: "#1e293b", borderRadius: "12px" }}
-                        itemStyle={{ color: "#e2e8f0" }}
-                        labelStyle={{ color: "#f59e0b", fontWeight: "bold" }}
-                        formatter={(val) => [`${val}%`, "Presença"]}
-                      />
-                      <Bar dataKey="attendance">
+                    <BarChart data={genderData}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                      <XAxis dataKey="name" />
+                      <YAxis domain={[0, 100]} />
+                      <Tooltip formatter={(val) => [`${val}%`, "Presença"]} />
+                      <Bar dataKey="attendance" fill="#8884d8">
                         {genderData.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
@@ -910,19 +823,14 @@ export default function BiDashboard() {
                 </div>
 
                 <div className="h-[250px]">
-                  <p className="text-xs font-bold text-slate-400 mb-4 text-center uppercase tracking-wider">LTV Médio Histórico (R$)</p>
+                  <p className="text-xs font-bold text-muted-foreground mb-2 text-center">LTV Médio Histórico (R$)</p>
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={genderData} barSize={40}>
-                      <CartesianGrid stroke="#1e293b" strokeDasharray="3 3" vertical={false} />
-                      <XAxis dataKey="name" stroke="#94a3b8" fontSize={11} tickLine={false} />
-                      <YAxis stroke="#94a3b8" fontSize={11} tickLine={false} />
-                      <Tooltip
-                        contentStyle={{ backgroundColor: "#0e1322", borderColor: "#1e293b", borderRadius: "12px" }}
-                        itemStyle={{ color: "#e2e8f0" }}
-                        labelStyle={{ color: "#f59e0b", fontWeight: "bold" }}
-                        formatter={(val) => [`R$ ${val}`, "LTV"]}
-                      />
-                      <Bar dataKey="ltv">
+                    <BarChart data={genderData}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                      <XAxis dataKey="name" />
+                      <YAxis />
+                      <Tooltip formatter={(val) => [`R$ ${val}`, "LTV"]} />
+                      <Bar dataKey="ltv" fill="#82ca9d">
                         {genderData.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
@@ -936,50 +844,37 @@ export default function BiDashboard() {
         </TabsContent>
 
         {/* Tab 3: Análise por Faixa Etária */}
-        <TabsContent value="age" className="animate-in fade-in duration-300">
-          <Card className="bg-[#0e1322]/80 border-[#1e293b] rounded-2xl shadow-xl">
-            <CardHeader className="p-6">
-              <CardTitle className="font-serif-elegant text-xl font-bold text-slate-100">
-                Indicadores por Faixa Etária
-              </CardTitle>
-              <p className="text-xs text-slate-400">
-                Visão de volume de alunos, adimplência e presença por faixas etárias.
-              </p>
+        <TabsContent value="age">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Indicadores por Faixa Etária</CardTitle>
+              <p className="text-xs text-muted-foreground">Visão de volume de alunos, adimplência e presença por faixas etárias.</p>
             </CardHeader>
-            <CardContent className="p-6 pt-0">
+            <CardContent>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div className="h-[280px]">
-                  <p className="text-xs font-bold text-slate-400 mb-4 uppercase tracking-wider">Comportamento Geral (Presença x Adimplência %)</p>
+                  <p className="text-xs font-bold text-muted-foreground mb-2">Comportamento Geral (Presença x Adimplência %)</p>
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={ageGroupData}>
-                      <CartesianGrid stroke="#1e293b" strokeDasharray="3 3" vertical={false} />
-                      <XAxis dataKey="name" stroke="#94a3b8" fontSize={11} tickLine={false} />
-                      <YAxis domain={[0, 100]} stroke="#94a3b8" fontSize={11} tickLine={false} />
-                      <Tooltip
-                        contentStyle={{ backgroundColor: "#0e1322", borderColor: "#1e293b", borderRadius: "12px" }}
-                        itemStyle={{ color: "#e2e8f0" }}
-                        labelStyle={{ color: "#f59e0b", fontWeight: "bold" }}
-                      />
-                      <Legend verticalAlign="top" height={36} wrapperStyle={{ fontSize: "11px", fontWeight: "600" }} />
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                      <XAxis dataKey="name" />
+                      <YAxis domain={[0, 100]} />
+                      <Tooltip />
+                      <Legend />
                       <Bar dataKey="attendance" name="Presença (%)" fill="#10b981" />
-                      <Bar dataKey="adimplencia" name="Adimplência (%)" fill="#06b6d4" />
+                      <Bar dataKey="adimplencia" name="Adimplência (%)" fill="#3b82f6" />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
 
                 <div className="h-[280px]">
-                  <p className="text-xs font-bold text-slate-400 mb-4 uppercase tracking-wider">LTV Médio por Segmento Etário (R$)</p>
+                  <p className="text-xs font-bold text-muted-foreground mb-2">LTV Médio por Segmento Etário (R$)</p>
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={ageGroupData} barSize={45}>
-                      <CartesianGrid stroke="#1e293b" strokeDasharray="3 3" vertical={false} />
-                      <XAxis dataKey="name" stroke="#94a3b8" fontSize={11} tickLine={false} />
-                      <YAxis stroke="#94a3b8" fontSize={11} tickLine={false} />
-                      <Tooltip
-                        contentStyle={{ backgroundColor: "#0e1322", borderColor: "#1e293b", borderRadius: "12px" }}
-                        itemStyle={{ color: "#e2e8f0" }}
-                        labelStyle={{ color: "#f59e0b", fontWeight: "bold" }}
-                        formatter={(val) => [`R$ ${val}`, "LTV"]}
-                      />
+                    <BarChart data={ageGroupData}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                      <XAxis dataKey="name" />
+                      <YAxis />
+                      <Tooltip formatter={(val) => [`R$ ${val}`, "LTV"]} />
                       <Bar dataKey="ltv" name="LTV Médio (R$)" fill="#f59e0b" />
                     </BarChart>
                   </ResponsiveContainer>
@@ -990,49 +885,35 @@ export default function BiDashboard() {
         </TabsContent>
 
         {/* Tab 4: Análise por Frequência Contratada */}
-        <TabsContent value="plans" className="animate-in fade-in duration-300">
-          <Card className="bg-[#0e1322]/80 border-[#1e293b] rounded-2xl shadow-xl">
-            <CardHeader className="p-6">
-              <CardTitle className="font-serif-elegant text-xl font-bold text-slate-100">
-                Comportamento de Acordo com Frequência de Aulas Contratadas
-              </CardTitle>
-              <p className="text-xs text-slate-400">
-                Avaliação de adesão e gasto total médio baseado no plano semanal contratado.
-              </p>
+        <TabsContent value="plans">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Comportamento de Acordo com Frequência de Aulas Contratadas</CardTitle>
+              <p className="text-xs text-muted-foreground">Avaliação de adesão e gasto total médio baseado no plano semanal contratado.</p>
             </CardHeader>
-            <CardContent className="p-6 pt-0">
+            <CardContent>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div className="h-[280px]">
-                  <p className="text-xs font-bold text-slate-400 mb-4 uppercase tracking-wider">Presença Real de Acordo com Plano Contratado (%)</p>
+                  <p className="text-xs font-bold text-muted-foreground mb-2">Presença Real de Acordo com Plano Contratado (%)</p>
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={planFrequencyData} barSize={45}>
-                      <CartesianGrid stroke="#1e293b" strokeDasharray="3 3" vertical={false} />
-                      <XAxis dataKey="name" stroke="#94a3b8" fontSize={11} tickLine={false} />
-                      <YAxis domain={[0, 100]} stroke="#94a3b8" fontSize={11} tickLine={false} />
-                      <Tooltip
-                        contentStyle={{ backgroundColor: "#0e1322", borderColor: "#1e293b", borderRadius: "12px" }}
-                        itemStyle={{ color: "#e2e8f0" }}
-                        labelStyle={{ color: "#f59e0b", fontWeight: "bold" }}
-                        formatter={(val) => [`${val}%`, "Presença Real"]}
-                      />
+                    <BarChart data={planFrequencyData}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                      <XAxis dataKey="name" />
+                      <YAxis domain={[0, 100]} />
+                      <Tooltip formatter={(val) => [`${val}%`, "Presença Real"]} />
                       <Bar dataKey="attendance" fill="#8b5cf6" />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
 
                 <div className="h-[280px]">
-                  <p className="text-xs font-bold text-slate-400 mb-4 uppercase tracking-wider">LTV Médio por Plano Contratado (R$)</p>
+                  <p className="text-xs font-bold text-muted-foreground mb-2">LTV Médio por Plano Contratado (R$)</p>
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={planFrequencyData} barSize={45}>
-                      <CartesianGrid stroke="#1e293b" strokeDasharray="3 3" vertical={false} />
-                      <XAxis dataKey="name" stroke="#94a3b8" fontSize={11} tickLine={false} />
-                      <YAxis stroke="#94a3b8" fontSize={11} tickLine={false} />
-                      <Tooltip
-                        contentStyle={{ backgroundColor: "#0e1322", borderColor: "#1e293b", borderRadius: "12px" }}
-                        itemStyle={{ color: "#e2e8f0" }}
-                        labelStyle={{ color: "#f59e0b", fontWeight: "bold" }}
-                        formatter={(val) => [`R$ ${val}`, "LTV Médio"]}
-                      />
+                    <BarChart data={planFrequencyData}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                      <XAxis dataKey="name" />
+                      <YAxis />
+                      <Tooltip formatter={(val) => [`R$ ${val}`, "LTV Médio"]} />
                       <Bar dataKey="ltv" fill="#ec4899" />
                     </BarChart>
                   </ResponsiveContainer>
@@ -1043,49 +924,35 @@ export default function BiDashboard() {
         </TabsContent>
 
         {/* Tab 5: Análise por Tempo de Casa */}
-        <TabsContent value="tenure" className="animate-in fade-in duration-300">
-          <Card className="bg-[#0e1322]/80 border-[#1e293b] rounded-2xl shadow-xl">
-            <CardHeader className="p-6">
-              <CardTitle className="font-serif-elegant text-xl font-bold text-slate-100">
-                Análise de Tempo de Permanência (Tenure)
-              </CardTitle>
-              <p className="text-xs text-slate-400">
-                Comparação de alunos novos, em fase de adaptação, e alunos veteranos fidelizados.
-              </p>
+        <TabsContent value="tenure">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Análise de Tempo de Permanência (Tenure)</CardTitle>
+              <p className="text-xs text-muted-foreground">Comparação de alunos novos, em fase de adaptação, e alunos veteranos fidelizados.</p>
             </CardHeader>
-            <CardContent className="p-6 pt-0">
+            <CardContent>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div className="h-[280px]">
-                  <p className="text-xs font-bold text-slate-400 mb-4 uppercase tracking-wider">Evolução do Engajamento / Presença (%)</p>
+                  <p className="text-xs font-bold text-muted-foreground mb-2">Evolução do Engajamento / Presença (%)</p>
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={tenureBracketsData}>
-                      <CartesianGrid stroke="#1e293b" strokeDasharray="3 3" />
-                      <XAxis dataKey="name" stroke="#94a3b8" fontSize={11} tickLine={false} />
-                      <YAxis domain={[50, 100]} stroke="#94a3b8" fontSize={11} tickLine={false} />
-                      <Tooltip
-                        contentStyle={{ backgroundColor: "#0e1322", borderColor: "#1e293b", borderRadius: "12px" }}
-                        itemStyle={{ color: "#e2e8f0" }}
-                        labelStyle={{ color: "#f59e0b", fontWeight: "bold" }}
-                        formatter={(val) => [`${val}%`, "Presença Média"]}
-                      />
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="name" />
+                      <YAxis domain={[50, 100]} />
+                      <Tooltip formatter={(val) => [`${val}%`, "Presença Média"]} />
                       <Line type="monotone" dataKey="attendance" stroke="#ef4444" strokeWidth={3} activeDot={{ r: 8 }} />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
 
                 <div className="h-[280px]">
-                  <p className="text-xs font-bold text-slate-400 mb-4 uppercase tracking-wider">Evolução da Adimplência Histórica por Estágio (%)</p>
+                  <p className="text-xs font-bold text-muted-foreground mb-2">Evolução da Adimplência Histórica por Estágio (%)</p>
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={tenureBracketsData} barSize={45}>
-                      <CartesianGrid stroke="#1e293b" strokeDasharray="3 3" vertical={false} />
-                      <XAxis dataKey="name" stroke="#94a3b8" fontSize={11} tickLine={false} />
-                      <YAxis domain={[0, 100]} stroke="#94a3b8" fontSize={11} tickLine={false} />
-                      <Tooltip
-                        contentStyle={{ backgroundColor: "#0e1322", borderColor: "#1e293b", borderRadius: "12px" }}
-                        itemStyle={{ color: "#e2e8f0" }}
-                        labelStyle={{ color: "#f59e0b", fontWeight: "bold" }}
-                        formatter={(val) => [`${val}%`, "Adimplência"]}
-                      />
+                    <BarChart data={tenureBracketsData}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                      <XAxis dataKey="name" />
+                      <YAxis domain={[0, 100]} />
+                      <Tooltip formatter={(val) => [`${val}%`, "Adimplência"]} />
                       <Bar dataKey="adimplencia" fill="#06b6d4" />
                     </BarChart>
                   </ResponsiveContainer>
@@ -1097,100 +964,92 @@ export default function BiDashboard() {
       </Tabs>
 
       {/* Perfis Comportamentais (Personas) */}
-      <Card className="bg-[#0e1322]/80 border-[#1e293b] rounded-2xl shadow-xl relative overflow-hidden">
-        <CardHeader className="p-6">
+      <Card className="border border-border">
+        <CardHeader>
           <div className="flex items-center gap-2">
-            <Users className="w-5 h-5 text-amber-500" />
-            <CardTitle className="font-serif-elegant text-xl font-bold text-slate-100">
-              Os 3 Perfis Comportamentais Mais Comuns de Alunos
-            </CardTitle>
+            <Users className="w-5 h-5 text-primary" />
+            <CardTitle className="text-lg font-bold">Os 3 Perfis Comportamentais Mais Comuns de Alunos</CardTitle>
           </div>
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-muted-foreground">
             Modelados empiricamente a partir dos padrões de frequência contratada, faixas etárias, sexo e constância financeira da base de dados.
           </p>
         </CardHeader>
-        <CardContent className="p-6 pt-0">
+        <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Persona 1: Clara (Mulher Adulta) */}
-            <div className="p-6 rounded-2xl border border-[#1e293b]/70 bg-[#111827]/40 hover:bg-[#111827]/70 hover:border-amber-500/20 transition-all duration-300 flex flex-col items-center text-center space-y-4 shadow-md group">
+            <div className="p-5 rounded-xl border border-border bg-card hover:bg-muted/10 transition-colors flex flex-col items-center text-center space-y-4 shadow-sm">
               <SVGAvatar type="woman" />
               <div>
-                <h4 className="font-bold text-base text-slate-200">Clara (Mulher Adulta)</h4>
-                <p className="text-[9px] font-bold text-teal-400 uppercase tracking-widest mt-1 bg-teal-500/10 px-2 py-0.5 rounded-full border border-teal-500/20">
-                  Perfil: Foco Social & Saúde
-                </p>
+                <h4 className="font-bold text-base text-foreground">Clara (Mulher Adulta)</h4>
+                <p className="text-[10px] font-bold text-teal-600 uppercase tracking-widest mt-0.5">Perfil: Foco Social & Saúde</p>
               </div>
-              <p className="text-xs text-slate-400 leading-relaxed">
+              <p className="text-xs text-muted-foreground leading-relaxed">
                 Praticante assídua, motivada pela socialização pós-jogo e condicionamento físico. Apresenta a maior adimplência histórica e menor taxa de cancelamentos por motivos climáticos.
               </p>
-              <div className="w-full pt-4 border-t border-[#1e293b] flex justify-around text-center">
+              <div className="w-full pt-3 border-t border-border flex justify-around text-center">
                 <div>
-                  <span className="text-xs font-bold font-mono-precise block text-slate-200">~85%</span>
-                  <span className="text-[8px] text-slate-400 uppercase font-semibold">Presença</span>
+                  <span className="text-xs font-black block">~85%</span>
+                  <span className="text-[8px] text-muted-foreground uppercase font-semibold">Presença</span>
                 </div>
                 <div>
-                  <span className="text-xs font-bold font-mono-precise block text-slate-200">12+ meses</span>
-                  <span className="text-[8px] text-slate-400 uppercase font-semibold">Retenção</span>
+                  <span className="text-xs font-black block">12+ meses</span>
+                  <span className="text-[8px] text-muted-foreground uppercase font-semibold">Retenção</span>
                 </div>
                 <div>
-                  <span className="text-xs font-bold font-mono-precise block text-teal-400">Alto</span>
-                  <span className="text-[8px] text-slate-400 uppercase font-semibold">LTV Histórico</span>
+                  <span className="text-xs font-black block text-teal-600">Alto</span>
+                  <span className="text-[8px] text-muted-foreground uppercase font-semibold">LTV Histórico</span>
                 </div>
               </div>
             </div>
 
             {/* Persona 2: Lucas (Adolescente Masculino) */}
-            <div className="p-6 rounded-2xl border border-[#1e293b]/70 bg-[#111827]/40 hover:bg-[#111827]/70 hover:border-amber-500/20 transition-all duration-300 flex flex-col items-center text-center space-y-4 shadow-md group">
+            <div className="p-5 rounded-xl border border-border bg-card hover:bg-muted/10 transition-colors flex flex-col items-center text-center space-y-4 shadow-sm">
               <SVGAvatar type="teen" />
               <div>
-                <h4 className="font-bold text-base text-slate-200">Lucas (Jovem Atleta)</h4>
-                <p className="text-[9px] font-bold text-cyan-400 uppercase tracking-widest mt-1 bg-cyan-500/10 px-2 py-0.5 rounded-full border border-cyan-500/20">
-                  Perfil: Foco Competitivo
-                </p>
+                <h4 className="font-bold text-base text-foreground">Lucas (Jovem Atleta)</h4>
+                <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mt-0.5">Perfil: Foco Competitivo</p>
               </div>
-              <p className="text-xs text-slate-400 leading-relaxed">
+              <p className="text-xs text-muted-foreground leading-relaxed">
                 Foco no ranking, adora participar de torneios e miniligas. Possui frequência excelente, com pequenas oscilações em períodos de exames escolares. Prefere treinar 2x a 3x por semana.
               </p>
-              <div className="w-full pt-4 border-t border-[#1e293b] flex justify-around text-center">
+              <div className="w-full pt-3 border-t border-border flex justify-around text-center">
                 <div>
-                  <span className="text-xs font-bold font-mono-precise block text-slate-200">~90%</span>
-                  <span className="text-[8px] text-slate-400 uppercase font-semibold">Presença</span>
+                  <span className="text-xs font-black block">~90%</span>
+                  <span className="text-[8px] text-muted-foreground uppercase font-semibold">Presença</span>
                 </div>
                 <div>
-                  <span className="text-xs font-bold font-mono-precise block text-slate-200">6-12 m</span>
-                  <span className="text-[8px] text-slate-400 uppercase font-semibold">Retenção</span>
+                  <span className="text-xs font-black block">6-12 meses</span>
+                  <span className="text-[8px] text-muted-foreground uppercase font-semibold">Retenção</span>
                 </div>
                 <div>
-                  <span className="text-xs font-bold font-mono-precise block text-cyan-400">Médio</span>
-                  <span className="text-[8px] text-slate-400 uppercase font-semibold">LTV Histórico</span>
+                  <span className="text-xs font-black block text-blue-600">Médio</span>
+                  <span className="text-[8px] text-muted-foreground uppercase font-semibold">LTV Histórico</span>
                 </div>
               </div>
             </div>
 
             {/* Persona 3: Sofia (Criança Feminina) */}
-            <div className="p-6 rounded-2xl border border-[#1e293b]/70 bg-[#111827]/40 hover:bg-[#111827]/70 hover:border-amber-500/20 transition-all duration-300 flex flex-col items-center text-center space-y-4 shadow-md group">
+            <div className="p-5 rounded-xl border border-border bg-card hover:bg-muted/10 transition-colors flex flex-col items-center text-center space-y-4 shadow-sm">
               <SVGAvatar type="child" />
               <div>
-                <h4 className="font-bold text-base text-slate-200">Sofia (Aluna Infantil)</h4>
-                <p className="text-[9px] font-bold text-pink-400 uppercase tracking-widest mt-1 bg-pink-500/10 px-2 py-0.5 rounded-full border border-pink-500/20">
-                  Perfil: Formação & Lazer
-                </p>
+                <h4 className="font-bold text-base text-foreground">Sofia (Aluna Infantil)</h4>
+                <p className="text-[10px] font-bold text-pink-600 uppercase tracking-widest mt-0.5">Perfil: Formação & Lazer</p>
               </div>
-              <p className="text-xs text-slate-400 leading-relaxed">
+              <p className="text-xs text-muted-foreground leading-relaxed">
                 Iniciada no esporte por incentivo dos pais. A frequência é quase de 100%, garantida pelo compromisso dos responsáveis. Foco em brincadeiras cooperativas e avaliações do Beach Tennis.
               </p>
-              <div className="w-full pt-4 border-t border-[#1e293b] flex justify-around text-center">
+              <div className="w-full pt-3 border-t border-border flex justify-around text-center">
                 <div>
-                  <span className="text-xs font-bold font-mono-precise block text-slate-200">~95%</span>
-                  <span className="text-[8px] text-slate-400 uppercase font-semibold">Presença</span>
+                  <span className="text-xs font-black block">~95%</span>
+                  <span className="text-[8px] text-muted-foreground uppercase font-semibold">Presença</span>
                 </div>
                 <div>
-                  <span className="text-xs font-bold font-mono-precise block text-slate-200">12+ meses</span>
-                  <span className="text-[8px] text-slate-400 uppercase font-semibold">Retenção</span>
+                  <span className="text-xs font-black block">12+ meses</span>
+                  <span className="text-[8px] text-muted-foreground uppercase font-semibold">Retenção</span>
                 </div>
                 <div>
-                  <span className="text-xs font-bold font-mono-precise block text-pink-400">Constante</span>
-                  <span className="text-[8px] text-slate-400 uppercase font-semibold">LTV Histórico</span>
+                  <span className="text-xs font-black block text-pink-600">Constante</span>
+                  <span className="text-[8px] text-muted-foreground uppercase font-semibold">LTV Histórico</span>
                 </div>
               </div>
             </div>
