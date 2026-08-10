@@ -15,8 +15,9 @@ const diasReverse: Record<number, string> = { 0: "Dom", 1: "Seg", 2: "Ter", 3: "
 const AttendanceControl = () => {
   const { students: mockStudents, enrollments: mockEnrollments, attendanceLogs, setAttendanceLogs, schedule: mockSchedule } = useAppContext();
   const [selectedDate, setSelectedDate] = useState(format(new Date(), "yyyy-MM-dd"));
-  const [presencas, setPresencas] = useState<Record<string, Record<string, "Presente" | "Falta" | "Cancelado" | null>>>({});
+  const [presencas, setPresencas] = useState<Record<string, Record<string, AttendanceLog["presente"] | null>>>({});
   const [motivos, setMotivos] = useState<Record<string, Record<string, string>>>({});
+  const [realizacaoDates, setRealizacaoDates] = useState<Record<string, Record<string, string>>>({});
 
   const dayOfWeek = new Date(selectedDate + "T12:00:00").getDay();
   const diaLabel = diasReverse[dayOfWeek];
@@ -52,7 +53,7 @@ const AttendanceControl = () => {
     return enrolled.every((s) => attendanceLogs.some((l) => l.turmaId === slotId && l.data === selectedDate && l.alunoId === s.id));
   };
 
-  const togglePresenca = (slotId: string, alunoId: string, value: "Presente" | "Falta" | "Cancelado") => {
+  const togglePresenca = (slotId: string, alunoId: string, value: AttendanceLog["presente"]) => {
     setPresencas((prev) => {
       const slotPresencas = prev[slotId] || {};
       return {
@@ -78,7 +79,20 @@ const AttendanceControl = () => {
     });
   };
 
-  const getPresenca = (slotId: string, alunoId: string): "Presente" | "Falta" | "Cancelado" | null => {
+  const handleRealizacaoDateChange = (slotId: string, alunoId: string, value: string) => {
+    setRealizacaoDates(prev => {
+      const slotDates = prev[slotId] || {};
+      return {
+        ...prev,
+        [slotId]: {
+          ...slotDates,
+          [alunoId]: value
+        }
+      };
+    });
+  };
+
+  const getPresenca = (slotId: string, alunoId: string): AttendanceLog["presente"] | null => {
     return presencas[slotId]?.[alunoId] ?? null;
   };
 
@@ -92,13 +106,18 @@ const AttendanceControl = () => {
       
       let status: AttendanceLog["presente"];
       let motivo: string | undefined;
+      let dataReal: string | undefined;
 
       if (localValue !== undefined && localValue !== null) {
         status = localValue;
         motivo = status === "Cancelado" ? (motivos[slotId]?.[s.id] || "") : undefined;
+        dataReal = (status === "Miniliga" || status === "Reposição")
+          ? (realizacaoDates[slotId]?.[s.id] || logExisting?.dataRealizacao || selectedDate)
+          : undefined;
       } else if (logExisting) {
         status = logExisting.presente;
         motivo = logExisting.motivoCancelamento;
+        dataReal = logExisting.dataRealizacao;
       } else {
         status = "Cancelado";
         motivo = "Justificar";
@@ -110,7 +129,8 @@ const AttendanceControl = () => {
         turmaId: slotId,
         data: selectedDate,
         presente: status,
-        motivoCancelamento: motivo
+        motivoCancelamento: motivo,
+        dataRealizacao: dataReal
       };
     });
 
@@ -217,6 +237,22 @@ const AttendanceControl = () => {
                                 >
                                   Cancelado
                                 </Button>
+                                <Button
+                                  size="sm"
+                                  variant={displayValue === "Miniliga" ? "default" : "outline"}
+                                  className={displayValue === "Miniliga" ? "bg-blue-600 hover:bg-blue-700 text-white border-blue-600" : ""}
+                                  onClick={() => togglePresenca(slot.id, aluno.id, "Miniliga")}
+                                >
+                                  Miniliga
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant={displayValue === "Reposição" ? "default" : "outline"}
+                                  className={displayValue === "Reposição" ? "bg-purple-600 hover:bg-purple-700 text-white border-purple-600" : ""}
+                                  onClick={() => togglePresenca(slot.id, aluno.id, "Reposição")}
+                                >
+                                  Reposição
+                                </Button>
                               </div>
                             </div>
                             
@@ -227,6 +263,18 @@ const AttendanceControl = () => {
                                   value={motivos[slot.id]?.[aluno.id] ?? (logExisting?.motivoCancelamento ?? "")}
                                   onChange={(e) => handleMotivoChange(slot.id, aluno.id, e.target.value)}
                                   className="text-xs border-yellow-200 focus-visible:ring-yellow-500"
+                                />
+                              </div>
+                            )}
+
+                            {(displayValue === "Miniliga" || displayValue === "Reposição") && (
+                              <div className="px-3 pb-3 -mt-2 flex items-center gap-2">
+                                <Label className="text-xs text-muted-foreground whitespace-nowrap">Data de realização:</Label>
+                                <Input 
+                                  type="date"
+                                  value={realizacaoDates[slot.id]?.[aluno.id] ?? (logExisting?.dataRealizacao ?? selectedDate)}
+                                  onChange={(e) => handleRealizacaoDateChange(slot.id, aluno.id, e.target.value)}
+                                  className="text-xs w-40"
                                 />
                               </div>
                             )}
