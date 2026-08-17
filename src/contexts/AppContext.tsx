@@ -55,6 +55,40 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
+export const parseDate = (dStr: string) => {
+  if (!dStr) return null;
+  const parts = dStr.split("-");
+  if (parts.length === 3) {
+    return new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+  }
+  const partsBr = dStr.split("/");
+  if (partsBr.length === 3) {
+    return new Date(Number(partsBr[2]), Number(partsBr[1]) - 1, Number(partsBr[0]));
+  }
+  return null;
+};
+
+export const calculateAge = (birthDateStr: string) => {
+  if (!birthDateStr) return 0;
+  const birthDate = parseDate(birthDateStr);
+  if (!birthDate) return 0;
+  const now = new Date();
+  let age = now.getFullYear() - birthDate.getFullYear();
+  const m = now.getMonth() - birthDate.getMonth();
+  if (m < 0 || (m === 0 && now.getDate() < birthDate.getDate())) {
+    age--;
+  }
+  return age;
+};
+
+export const getCategoryFromBirthDate = (birthDateStr: string): Student["categoria"] => {
+  if (!birthDateStr) return "Infantil";
+  const age = calculateAge(birthDateStr);
+  if (age >= 13 && age <= 17) return "Juvenil";
+  if (age > 17) return "Adulto";
+  return "Infantil";
+};
+
 // ========== Mappers DB <-> App ==========
 const dbToStudent = (r: any): Student => ({
   id: r.id,
@@ -411,7 +445,36 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       if (cancelled) return;
       
       const loadedRevenues = revenueData.map(dbToRevenue);
-      setStudentsState((sRes.data ?? []).map(dbToStudent));
+      const rawStudents = (sRes.data ?? []).map(dbToStudent);
+      const correctedStudents = rawStudents.map((student) => {
+        if (student.dataNascimento) {
+          const correctCategory = getCategoryFromBirthDate(student.dataNascimento);
+          if (student.categoria !== correctCategory) {
+            return { ...student, categoria: correctCategory };
+          }
+        }
+        return student;
+      });
+
+      const mismatchStudents = correctedStudents.filter(
+        (s, idx) => s.categoria !== rawStudents[idx].categoria
+      );
+
+      if (mismatchStudents.length > 0) {
+        console.log("Detectados alunos com categorias desatualizadas de acordo com a idade. Corrigindo no Supabase...", mismatchStudents);
+        supabase
+          .from("students")
+          .upsert(mismatchStudents.map(studentToDb))
+          .then(({ error }) => {
+            if (error) {
+              console.error("Erro ao sincronizar categorias corrigidas no Supabase:", error);
+            } else {
+              console.log("Categorias corrigidas sincronizadas com sucesso no Supabase.");
+            }
+          });
+      }
+
+      setStudentsState(correctedStudents);
       setEnrollmentsState((eRes.data ?? []).map(dbToEnrollment));
       setRevenuesState(loadedRevenues);
       setAttendanceLogsState((aRes ?? []).map(dbToAttendance));

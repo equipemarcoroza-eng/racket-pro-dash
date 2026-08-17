@@ -20,7 +20,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import type { Student } from "@/data/mockData";
-import { useAppContext } from "@/contexts/AppContext";
+import { useAppContext, getCategoryFromBirthDate, calculateAge } from "@/contexts/AppContext";
 import { toast } from "sonner";
 import { Printer, Trash2 } from "lucide-react";
 import logo from "@/assets/logo.png";
@@ -76,21 +76,7 @@ const statusVariant: Record<Student["status"], "default" | "secondary" | "destru
   Extras: "secondary",
 };
 
-const getCategoryFromBirthDate = (birthDateStr: string): Student["categoria"] => {
-  if (!birthDateStr) return "Infantil";
-  const birthDate = new Date(birthDateStr);
-  const today = new Date();
-  let age = today.getFullYear() - birthDate.getFullYear();
-  const m = today.getMonth() - birthDate.getMonth();
-  if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-    age--;
-  }
 
-  if (age >= 7 && age <= 12) return "Infantil";
-  if (age >= 13 && age <= 17) return "Juvenil";
-  if (age > 17) return "Adulto";
-  return "Infantil"; // Padrão se for menor que 7
-};
 
 const maskPhone = (value: string) => {
   if (!value) return "";
@@ -547,10 +533,19 @@ const Students = () => {
             </div>
             <div><Label>Data de Entrada</Label><Input type="date" value={form.dataEntrada} onChange={(e) => setForm({ ...form, dataEntrada: e.target.value })} /></div>
             <div><Label>Categoria</Label>
-              <Select value={form.categoria} onValueChange={(v) => setForm({ ...form, categoria: v as Student["categoria"] })}>
+              <Select 
+                value={form.categoria} 
+                onValueChange={(v) => setForm({ ...form, categoria: v as Student["categoria"] })}
+                disabled={!!form.dataNascimento}
+              >
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>{categorias.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
               </Select>
+              {form.dataNascimento && (
+                <span className="text-[10px] text-muted-foreground mt-1 block">
+                  Definida automaticamente pela idade ({calculateAge(form.dataNascimento)} anos)
+                </span>
+              )}
             </div>
             <div><Label>Plano</Label>
               <Select value={form.planoId} onValueChange={(v) => setForm({ ...form, planoId: v })}>
@@ -885,7 +880,7 @@ const Students = () => {
                 <div><p className="text-sm text-muted-foreground">WhatsApp Aluno</p><p className="font-medium">{viewingStudent.whatsappAluno || "—"}</p></div>
                 <div><p className="text-sm text-muted-foreground">Responsável</p><p className="font-medium">{viewingStudent.responsavel}</p></div>
                 <div><p className="text-sm text-muted-foreground">WhatsApp Responsável</p><p className="font-medium">{viewingStudent.whatsappResponsavel || "—"}</p></div>
-                <div><p className="text-sm text-muted-foreground">Data de Nascimento</p><p className="font-medium">{new Date(viewingStudent.dataNascimento).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}</p></div>
+                <div><p className="text-sm text-muted-foreground">Data de Nascimento (Idade)</p><p className="font-medium">{new Date(viewingStudent.dataNascimento).toLocaleDateString('pt-BR', {timeZone: 'UTC'})} ({calculateAge(viewingStudent.dataNascimento)} anos)</p></div>
                 <div><p className="text-sm text-muted-foreground">Sexo</p><p className="font-medium">{viewingStudent.sexo === "M" ? "Masculino" : "Feminino"}</p></div>
                 <div><p className="text-sm text-muted-foreground">Data de Entrada</p><p className="font-medium">{new Date(viewingStudent.dataEntrada).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}</p></div>
                 <div><p className="text-sm text-muted-foreground">Categoria</p><p className="font-medium">{viewingStudent.categoria}</p></div>
