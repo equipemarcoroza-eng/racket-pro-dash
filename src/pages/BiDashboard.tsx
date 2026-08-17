@@ -422,6 +422,44 @@ export default function BiDashboard() {
 
     return list;
   }, [biData, genderData, ageGroupData, planFrequencyData, tenureBracketsData]);
+  const personaNames = useMemo(() => {
+    const adultWomen = biData.filter((s) => s.sexo === "F" && s.idade > 18);
+    const teenStudents = biData.filter((s) => s.idade > 12 && s.idade <= 18);
+    const kidStudents = biData.filter((s) => s.idade <= 12);
+
+    const getMostCommonData = (list: typeof biData, fallbackName: string, fallbackGender: "M" | "F") => {
+      if (list.length === 0) return { name: fallbackName, sexo: fallbackGender };
+      const counts: Record<string, { count: number; sexo: "M" | "F" }> = {};
+      list.forEach((s) => {
+        const first = s.nome.trim().split(/\s+/)[0];
+        if (first) {
+          const capitalized = first.charAt(0).toUpperCase() + first.slice(1).toLowerCase();
+          if (!counts[capitalized]) {
+            counts[capitalized] = { count: 0, sexo: s.sexo || "M" };
+          }
+          counts[capitalized].count++;
+        }
+      });
+      let bestName = fallbackName;
+      let bestGender = fallbackGender;
+      let max = 0;
+      Object.entries(counts).forEach(([name, data]) => {
+        if (data.count > max) {
+          max = data.count;
+          bestName = name;
+          bestGender = data.sexo;
+        }
+      });
+      return { name: bestName, sexo: bestGender };
+    };
+
+    return {
+      woman: getMostCommonData(adultWomen, "Daniela", "F"),
+      teen: getMostCommonData(teenStudents, "Lucas", "M"),
+      child: getMostCommonData(kidStudents, "Júlia", "F"),
+    };
+  }, [biData]);
+
   const SVGAvatar = ({ type }: { type: "woman" | "teen" | "child" }) => {
     if (type === "woman") {
       return (
@@ -976,7 +1014,7 @@ export default function BiDashboard() {
             <div className="p-5 rounded-xl border border-border bg-card hover:bg-muted/10 transition-colors flex flex-col items-center text-center space-y-4 shadow-sm">
               <SVGAvatar type="woman" />
               <div>
-                <h4 className="font-bold text-base text-foreground">Daniela (Mulher Adulta)</h4>
+                <h4 className="font-bold text-base text-foreground">{personaNames.woman.name} (Mulher Adulta)</h4>
                 <p className="text-[10px] font-bold text-teal-600 uppercase tracking-widest mt-0.5">Perfil: Foco Social & Saúde</p>
               </div>
               <p className="text-xs text-muted-foreground leading-relaxed">
@@ -1002,7 +1040,7 @@ export default function BiDashboard() {
             <div className="p-5 rounded-xl border border-border bg-card hover:bg-muted/10 transition-colors flex flex-col items-center text-center space-y-4 shadow-sm">
               <SVGAvatar type="teen" />
               <div>
-                <h4 className="font-bold text-base text-foreground">Sub16 (Jovem Atleta)</h4>
+                <h4 className="font-bold text-base text-foreground">{personaNames.teen.name} (Jovem Atleta)</h4>
                 <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mt-0.5">Perfil: Foco Competitivo</p>
               </div>
               <p className="text-xs text-muted-foreground leading-relaxed">
@@ -1028,7 +1066,7 @@ export default function BiDashboard() {
             <div className="p-5 rounded-xl border border-border bg-card hover:bg-muted/10 transition-colors flex flex-col items-center text-center space-y-4 shadow-sm">
               <SVGAvatar type="child" />
               <div>
-                <h4 className="font-bold text-base text-foreground">Júlia (Aluna Infantil)</h4>
+                <h4 className="font-bold text-base text-foreground">{personaNames.child.name} ({personaNames.child.sexo === "M" ? "Aluno Infantil" : "Aluna Infantil"})</h4>
                 <p className="text-[10px] font-bold text-pink-600 uppercase tracking-widest mt-0.5">Perfil: Formação & Lazer</p>
               </div>
               <p className="text-xs text-muted-foreground leading-relaxed">
