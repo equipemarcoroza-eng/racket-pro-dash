@@ -107,7 +107,9 @@ export default function BiDashboard() {
       const adimplenciaRate = totalInvoices > 0 ? (paidInvoices / totalInvoices) * 100 : 100;
 
       // 2. Histórico de frequência
-      const studentLogs = attendanceLogs.filter((log) => log.alunoId === student.id);
+      const studentLogs = attendanceLogs.filter(
+        (log) => log.alunoId === student.id && (!student.dataEntrada || log.data >= student.dataEntrada)
+      );
       const totalClasses = studentLogs.length;
       const presentClasses = studentLogs.filter((log) =>
         ["Presente", "Miniliga", "Reposição"].includes(log.presente)

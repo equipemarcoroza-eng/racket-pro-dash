@@ -36,13 +36,14 @@ const AttendanceControl = () => {
 
     return mockStudents
       .filter((s) => {
+        // Aluno não aparece se a data selecionada for anterior à data de entrada
+        if (s.dataEntrada && s.dataEntrada > selectedDate) return false;
+
         const hasLog = loggedStudentIds.includes(s.id);
         if (hasLog) return true;
 
         const isEnrolledActive = enrolledIds.includes(s.id) && s.status === "Ativo";
-        if (!isEnrolledActive) return false;
-        // Aluno só aparece se a data de entrada for anterior ou igual à data selecionada para a presença
-        return !s.dataEntrada || s.dataEntrada <= selectedDate;
+        return isEnrolledActive;
       })
       .sort((a, b) => a.nome.localeCompare(b.nome));
   };

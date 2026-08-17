@@ -113,9 +113,17 @@ const FrequencyReport = () => {
   // Build report rows
   const reportRows: { data: string; turmaId: string; turmaLabel: string; horario: string; quadra: string; status: AttendanceLog["presente"] | "Não lançado"; dataRealizacao?: string; motivoCancelamento?: string }[] = [];
   if (selectedAlunoId) {
+    const student = students.find((s) => s.id === selectedAlunoId);
+    const dataEntrada = student?.dataEntrada || "";
+
     for (const slot of relevantSlots) {
       const dates = getDatesForSlot(slot);
       for (const date of dates) {
+        // Ignora datas anteriores à data de entrada do aluno
+        if (dataEntrada && date < dataEntrada) {
+          continue;
+        }
+
         const log = studentLogsInPeriod.find((l) => l.turmaId === slot.id && l.data === date);
         const isEnrolled = enrolledSlotIds.includes(slot.id);
         

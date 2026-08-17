@@ -255,6 +255,7 @@ const Students = () => {
       .filter((l) => {
         if (l.alunoId !== reportStudent.id) return false;
         const logDate = toIsoDate(l.data);
+        if (reportStudent.dataEntrada && logDate < toIsoDate(reportStudent.dataEntrada)) return false;
         return logDate >= dateRange.start && logDate <= dateRange.end;
       })
       .map(l => {
