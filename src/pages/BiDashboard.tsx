@@ -29,7 +29,11 @@ import {
   Award,
   AlertCircle,
   HelpCircle,
+  Database,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 // Definição dos tipos para os cálculos de BI
 interface StudentMetrics {
@@ -48,6 +52,121 @@ interface StudentMetrics {
 export default function BiDashboard() {
   const { students, revenues, attendanceLogs, plans } = useAppContext();
   const [activeTab, setActiveTab] = useState("overview");
+  const [isBackfilling, setIsBackfilling] = useState(false);
+
+  const handleBackfill = async () => {
+    setIsBackfilling(true);
+    const toastId = toast.loading("Executando carga de presenças de 2025...");
+    try {
+      const { data: dbStudents, error: studentsError } = await supabase
+        .from("students")
+        .select("*")
+        .eq("status", "Ativo");
+
+      if (studentsError) throw studentsError;
+
+      const targetStudents = (dbStudents ?? []).filter((s) => {
+        const entryIso = toIsoDate(s.data_entrada);
+        return entryIso && entryIso < "2026-01-01";
+      });
+
+      if (targetStudents.length === 0) {
+        toast.info("Nenhum aluno ativo com data de entrada em 2025 ou anterior.", { id: toastId });
+        setIsBackfilling(false);
+        return;
+      }
+
+      const [slotsRes, enrollmentsRes, logsRes] = await Promise.all([
+        supabase.from("schedule_slots").select("*"),
+        supabase.from("enrollments").select("*"),
+        supabase.from("attendance_logs").select("*"),
+      ]);
+
+      if (slotsRes.error) throw slotsRes.error;
+      if (enrollmentsRes.error) throw enrollmentsRes.error;
+      if (logsRes.error) throw logsRes.error;
+
+      const slots = slotsRes.data ?? [];
+      const enrollments = enrollmentsRes.data ?? [];
+      const logs = logsRes.data ?? [];
+
+      const logsMap = new Set(logs.map((l) => `${l.aluno_id}_${l.turma_id}_${l.data}`));
+      const insertList: any[] = [];
+
+      const diasMap: Record<string, number> = { "Dom": 0, "Seg": 1, "Ter": 2, "Qua": 3, "Qui": 4, "Sex": 5, "Sáb": 6 };
+
+      const getDatesForWeekday = (startStr: string, endStr: string, weekdayStr: string) => {
+        const targetDay = diasMap[weekdayStr];
+        if (targetDay === undefined) return [];
+        const dates = [];
+        const start = new Date(startStr + "T12:00:00");
+        const end = new Date(endStr + "T12:00:00");
+        const current = new Date(start);
+        while (current <= end) {
+          if (current.getDay() === targetDay) {
+            const year = current.getFullYear();
+            const month = String(current.getMonth() + 1).padStart(2, "0");
+            const day = String(current.getDate()).padStart(2, "0");
+            dates.push(`${year}-${month}-${day}`);
+          }
+          current.setDate(current.getDate() + 1);
+        }
+        return dates;
+      };
+
+      for (const student of targetStudents) {
+        const studentEnrollments = enrollments.filter((e) => e.aluno_id === student.id);
+        const entryIso = toIsoDate(student.data_entrada);
+        const startPeriod = entryIso;
+        const endPeriod = "2025-12-31";
+
+        if (startPeriod > endPeriod) continue;
+
+        for (const enrollment of studentEnrollments) {
+          const slot = slots.find((s) => s.id === enrollment.turma_id);
+          if (!slot) continue;
+
+          const dates = getDatesForWeekday(startPeriod, endPeriod, slot.dia);
+          for (const date of dates) {
+            const key = `${student.id}_${slot.id}_${date}`;
+            if (!logsMap.has(key)) {
+              insertList.push({
+                aluno_id: student.id,
+                turma_id: slot.id,
+                data: date,
+                presente: "Presente",
+                data_realizacao: null,
+                motivo_cancelamento: null,
+              });
+            }
+          }
+        }
+      }
+
+      if (insertList.length === 0) {
+        toast.info("Todas as presenças de 2025 já estão lançadas no banco.", { id: toastId });
+        setIsBackfilling(false);
+        return;
+      }
+
+      const batchSize = 200;
+      for (let i = 0; i < insertList.length; i += batchSize) {
+        const batch = insertList.slice(i, i + batchSize);
+        const { error: insertError } = await supabase.from("attendance_logs").insert(batch);
+        if (insertError) throw insertError;
+      }
+
+      toast.success(`Carga de presença concluída! ${insertList.length} aulas geradas.`, { id: toastId });
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
+    } catch (err: any) {
+      console.error(err);
+      toast.error(`Erro ao rodar carga: ${err.message || "Erro desconhecido"}`, { id: toastId });
+    } finally {
+      setIsBackfilling(false);
+    }
+  };
 
   // --- FUNÇÕES AUXILIARES DE PARSE E CÁLCULO ---
   const parseDate = (dStr: string) => {
@@ -621,9 +740,20 @@ export default function BiDashboard() {
                 Análise aprofundada de comportamento, correlações de grupo, fidelidade e tendências de alunos ativos.
               </p>
             </div>
-            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 text-primary text-xs font-bold rounded-lg border border-primary/20">
-              <Sparkles className="w-4 h-4 animate-pulse" />
-              BI Ativo com Varredura Histórica
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 text-primary text-xs font-bold rounded-lg border border-primary/20">
+                <Sparkles className="w-4 h-4 animate-pulse" />
+                BI Ativo com Varredura Histórica
+              </div>
+              <Button 
+                onClick={handleBackfill} 
+                disabled={isBackfilling}
+                size="sm"
+                className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-1.5 h-8"
+              >
+                <Database className="w-4 h-4" />
+                {isBackfilling ? "Carregando..." : "Carga Histórica 2025"}
+              </Button>
             </div>
           </div>
         </CardHeader>
