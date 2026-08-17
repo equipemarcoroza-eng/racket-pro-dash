@@ -17,7 +17,7 @@ import {
   LineChart,
   Line,
 } from "recharts";
-import { useAppContext } from "@/contexts/AppContext";
+import { useAppContext, toIsoDate } from "@/contexts/AppContext";
 import {
   TrendingUp,
   TrendingDown,
@@ -108,7 +108,7 @@ export default function BiDashboard() {
 
       // 2. Histórico de frequência
       const studentLogs = attendanceLogs.filter(
-        (log) => log.alunoId === student.id && (!student.dataEntrada || log.data >= student.dataEntrada)
+        (log) => log.alunoId === student.id && (!student.dataEntrada || toIsoDate(log.data) >= toIsoDate(student.dataEntrada))
       );
       const totalClasses = studentLogs.length;
       const presentClasses = studentLogs.filter((log) =>

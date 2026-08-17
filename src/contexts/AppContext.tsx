@@ -89,6 +89,15 @@ export const getCategoryFromBirthDate = (birthDateStr: string): Student["categor
   return "Infantil";
 };
 
+export const toIsoDate = (dateStr: string) => {
+  if (!dateStr) return "";
+  if (dateStr.includes("/")) {
+    const [d, m, y] = dateStr.split("/");
+    return `${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}`;
+  }
+  return dateStr.split("T")[0];
+};
+
 // ========== Mappers DB <-> App ==========
 const dbToStudent = (r: any): Student => ({
   id: r.id,

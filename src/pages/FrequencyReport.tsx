@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { useAppContext } from "@/contexts/AppContext";
+import { useAppContext, toIsoDate } from "@/contexts/AppContext";
 import type { AttendanceLog, ClassSlot } from "@/data/mockData";
 import { toast } from "sonner";
 
@@ -114,13 +114,13 @@ const FrequencyReport = () => {
   const reportRows: { data: string; turmaId: string; turmaLabel: string; horario: string; quadra: string; status: AttendanceLog["presente"] | "Não lançado"; dataRealizacao?: string; motivoCancelamento?: string }[] = [];
   if (selectedAlunoId) {
     const student = students.find((s) => s.id === selectedAlunoId);
-    const dataEntrada = student?.dataEntrada || "";
+    const dataEntradaIso = student?.dataEntrada ? toIsoDate(student.dataEntrada) : "";
 
     for (const slot of relevantSlots) {
       const dates = getDatesForSlot(slot);
       for (const date of dates) {
         // Ignora datas anteriores à data de entrada do aluno
-        if (dataEntrada && date < dataEntrada) {
+        if (dataEntradaIso && date < dataEntradaIso) {
           continue;
         }
 

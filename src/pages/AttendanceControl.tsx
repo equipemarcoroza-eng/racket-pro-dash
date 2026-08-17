@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useAppContext } from "@/contexts/AppContext";
+import { useAppContext, toIsoDate } from "@/contexts/AppContext";
 import type { AttendanceLog } from "@/data/mockData";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -37,7 +37,7 @@ const AttendanceControl = () => {
     return mockStudents
       .filter((s) => {
         // Aluno não aparece se a data selecionada for anterior à data de entrada
-        if (s.dataEntrada && s.dataEntrada > selectedDate) return false;
+        if (s.dataEntrada && toIsoDate(s.dataEntrada) > toIsoDate(selectedDate)) return false;
 
         const hasLog = loggedStudentIds.includes(s.id);
         if (hasLog) return true;
