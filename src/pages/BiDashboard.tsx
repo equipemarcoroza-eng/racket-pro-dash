@@ -153,6 +153,8 @@ export default function BiDashboard() {
         avgLtv: 0,
         avgTenure: 0,
         avgAge: 0,
+        avgAgeKids: 0,
+        avgAgeAdults: 0,
         avgAttendance: 0,
         avgAdimplencia: 0,
         engagementRate: 0, // % de alunos com frequência >= 80%
@@ -178,11 +180,23 @@ export default function BiDashboard() {
       ? (highlyEngagedCount / studentsWithAttendance.length) * 100
       : 80;
 
+    const kidsStudents = biData.filter((s) => s.idade <= 12);
+    const adultsStudents = biData.filter((s) => s.idade > 12);
+
+    const avgAgeKids = kidsStudents.length > 0
+      ? kidsStudents.reduce((sum, s) => sum + s.idade, 0) / kidsStudents.length
+      : 0;
+    const avgAgeAdults = adultsStudents.length > 0
+      ? adultsStudents.reduce((sum, s) => sum + s.idade, 0) / adultsStudents.length
+      : 0;
+
     return {
       totalAlunos,
       avgLtv: sumLtv / totalAlunos,
       avgTenure: sumTenure / totalAlunos,
       avgAge: sumAge / totalAlunos,
+      avgAgeKids,
+      avgAgeAdults,
       avgAttendance,
       avgAdimplencia,
       engagementRate,
@@ -337,9 +351,9 @@ export default function BiDashboard() {
         const percent = Math.round((Math.abs(ltvDiff) / Math.min(fem.ltv, masc.ltv)) * 100);
         list.push({
           title: "Retorno Financeiro (LTV) por Gênero",
-          desc: `O grupo ${higherLtvGroup.toLowerCase()} tem um valor de tempo de vida (LTV) acumulado ${percent}% maior, sendo o segmento comercialmente mais duradouro.`,
+          desc: `LTV Médio por gênero: Masculino R$ ${masc.ltv.toLocaleString("pt-BR")} vs Feminino R$ ${fem.ltv.toLocaleString("pt-BR")}. O grupo ${higherLtvGroup.toLowerCase()} tem retorno acumulado ${percent}% maior.`,
           type: "info",
-          metric: `R$ ${Math.abs(ltvDiff).toLocaleString("pt-BR")}`,
+          metric: `M: R$ ${masc.ltv.toLocaleString("pt-BR")} | F: R$ ${fem.ltv.toLocaleString("pt-BR")}`,
         });
       }
     }
@@ -643,15 +657,20 @@ export default function BiDashboard() {
             <div className="flex justify-between items-start">
               <div>
                 <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Idade Média</p>
-                <h3 className="text-2xl font-black mt-2">
-                  {generalMetrics.avgAge.toFixed(1)} <span className="text-sm font-semibold text-muted-foreground">anos</span>
-                </h3>
+                <div className="mt-2 space-y-1">
+                  <h3 className="text-base font-black text-foreground">
+                    {generalMetrics.avgAgeAdults.toFixed(1)} <span className="text-xs font-semibold text-muted-foreground">anos (Adultos)</span>
+                  </h3>
+                  <h3 className="text-base font-black text-foreground">
+                    {generalMetrics.avgAgeKids.toFixed(1)} <span className="text-xs font-semibold text-muted-foreground">anos (Infantil/Juv)</span>
+                  </h3>
+                </div>
               </div>
               <div className="p-2 bg-orange-100 rounded-lg text-orange-600">
                 <Users className="w-5 h-5" />
               </div>
             </div>
-            <div className="mt-4 flex items-center text-xs text-muted-foreground font-medium">
+            <div className="mt-3 flex items-center text-xs text-muted-foreground font-medium">
               <span>Mapeamento etário dos ativos</span>
             </div>
           </CardContent>
@@ -953,11 +972,11 @@ export default function BiDashboard() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Persona 1: Clara (Mulher Adulta) */}
+            {/* Persona 1: Daniela (Mulher Adulta) */}
             <div className="p-5 rounded-xl border border-border bg-card hover:bg-muted/10 transition-colors flex flex-col items-center text-center space-y-4 shadow-sm">
               <SVGAvatar type="woman" />
               <div>
-                <h4 className="font-bold text-base text-foreground">Clara (Mulher Adulta)</h4>
+                <h4 className="font-bold text-base text-foreground">Daniela (Mulher Adulta)</h4>
                 <p className="text-[10px] font-bold text-teal-600 uppercase tracking-widest mt-0.5">Perfil: Foco Social & Saúde</p>
               </div>
               <p className="text-xs text-muted-foreground leading-relaxed">
@@ -979,11 +998,11 @@ export default function BiDashboard() {
               </div>
             </div>
 
-            {/* Persona 2: Lucas (Adolescente Masculino) */}
+            {/* Persona 2: Sub16 (Jovem Atleta) */}
             <div className="p-5 rounded-xl border border-border bg-card hover:bg-muted/10 transition-colors flex flex-col items-center text-center space-y-4 shadow-sm">
               <SVGAvatar type="teen" />
               <div>
-                <h4 className="font-bold text-base text-foreground">Lucas (Jovem Atleta)</h4>
+                <h4 className="font-bold text-base text-foreground">Sub16 (Jovem Atleta)</h4>
                 <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mt-0.5">Perfil: Foco Competitivo</p>
               </div>
               <p className="text-xs text-muted-foreground leading-relaxed">
@@ -1005,11 +1024,11 @@ export default function BiDashboard() {
               </div>
             </div>
 
-            {/* Persona 3: Sofia (Criança Feminina) */}
+            {/* Persona 3: Júlia (Aluna Infantil) */}
             <div className="p-5 rounded-xl border border-border bg-card hover:bg-muted/10 transition-colors flex flex-col items-center text-center space-y-4 shadow-sm">
               <SVGAvatar type="child" />
               <div>
-                <h4 className="font-bold text-base text-foreground">Sofia (Aluna Infantil)</h4>
+                <h4 className="font-bold text-base text-foreground">Júlia (Aluna Infantil)</h4>
                 <p className="text-[10px] font-bold text-pink-600 uppercase tracking-widest mt-0.5">Perfil: Formação & Lazer</p>
               </div>
               <p className="text-xs text-muted-foreground leading-relaxed">
