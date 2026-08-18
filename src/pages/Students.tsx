@@ -758,7 +758,7 @@ const Students = () => {
         </CardContent>
       </Card>
       <Dialog open={!!reportType} onOpenChange={(open) => !open && setReportType(null)}>
-        <DialogContent className="max-w-4xl">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader className="flex flex-row items-center justify-between space-y-0">
             <DialogTitle>
               {reportType === "finance" ? "Histórico Financeiro" : "Histórico de Frequência"} - {reportStudent?.nome}
@@ -870,7 +870,7 @@ const Students = () => {
 
       {/* Dialog Visualizar */}
       <Dialog open={!!viewingStudent} onOpenChange={(open) => !open && setViewingStudent(null)}>
-        <DialogContent>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Detalhes do Aluno</DialogTitle>
           </DialogHeader>
@@ -903,7 +903,7 @@ const Students = () => {
 
       {/* Modal Consulta por Data de Entrada */}
       <Dialog open={showEntryDateModal} onOpenChange={setShowEntryDateModal}>
-        <DialogContent className="max-w-3xl">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Consulta de Alunos por Data de Entrada</DialogTitle>
           </DialogHeader>
