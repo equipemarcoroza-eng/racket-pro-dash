@@ -51,13 +51,18 @@ export default function BiDashboard() {
   // --- FUNÇÕES AUXILIARES DE PARSE E CÁLCULO ---
   const parseDate = (dStr: string) => {
     if (!dStr) return null;
-    const parts = dStr.split("-");
-    if (parts.length === 3) {
-      return new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+    const cleanStr = dStr.split("T")[0];
+    if (cleanStr.includes("-")) {
+      const parts = cleanStr.split("-");
+      if (parts.length === 3) {
+        return new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+      }
     }
-    const partsBr = dStr.split("/");
-    if (partsBr.length === 3) {
-      return new Date(Number(partsBr[2]), Number(partsBr[1]) - 1, Number(partsBr[0]));
+    if (cleanStr.includes("/")) {
+      const parts = cleanStr.split("/");
+      if (parts.length === 3) {
+        return new Date(Number(parts[2]), Number(parts[1]) - 1, Number(parts[0]));
+      }
     }
     return null;
   };
@@ -76,13 +81,13 @@ export default function BiDashboard() {
   };
 
   const calculateTenure = (entryDateStr: string) => {
-    if (!entryDateStr) return 1;
+    if (!entryDateStr) return 0;
     const entryDate = parseDate(entryDateStr);
-    if (!entryDate) return 1;
+    if (!entryDate || isNaN(entryDate.getTime())) return 0;
     const now = new Date();
-    const diffTime = Math.abs(now.getTime() - entryDate.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return Math.max(1, Math.round(diffDays / 30.4));
+    const diffTime = now.getTime() - entryDate.getTime();
+    const diffDays = diffTime / (1000 * 60 * 60 * 24);
+    return Math.max(0, diffDays / 30.4375);
   };
 
   // --- CÁLCULO DO DATASET DE BI ---

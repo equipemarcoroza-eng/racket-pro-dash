@@ -160,21 +160,33 @@ const Students = () => {
     return new Date(y, m - 1, d);
   };
 
+  const parseDate = (dStr: string) => {
+    if (!dStr) return null;
+    const cleanStr = dStr.split("T")[0];
+    if (cleanStr.includes("-")) {
+      const parts = cleanStr.split("-");
+      if (parts.length === 3) {
+        return new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+      }
+    }
+    if (cleanStr.includes("/")) {
+      const parts = cleanStr.split("/");
+      if (parts.length === 3) {
+        return new Date(Number(parts[2]), Number(parts[1]) - 1, Number(parts[0]));
+      }
+    }
+    return null;
+  };
+
   const calculateActiveMonths = (dataEntradaStr: string) => {
     if (!dataEntradaStr) return 0;
     try {
-      const entryDate = parseDateStr(dataEntradaStr);
-      if (isNaN(entryDate.getTime())) return 0;
+      const entryDate = parseDate(dataEntradaStr);
+      if (!entryDate || isNaN(entryDate.getTime())) return 0;
       const today = new Date();
-      
-      const yearDiff = today.getFullYear() - entryDate.getFullYear();
-      const monthDiff = today.getMonth() - entryDate.getMonth();
-      let totalMonths = yearDiff * 12 + monthDiff;
-      
-      if (today.getDate() < entryDate.getDate()) {
-        totalMonths--;
-      }
-      return Math.max(0, totalMonths);
+      const diffTime = today.getTime() - entryDate.getTime();
+      const diffDays = diffTime / (1000 * 60 * 60 * 24);
+      return Math.max(0, diffDays / 30.4375);
     } catch (e) {
       console.error("Erro ao calcular meses ativos:", e);
       return 0;
@@ -184,8 +196,9 @@ const Students = () => {
   const activeStudents = students.filter(s => s.status === "Ativo");
   
   const studentsWithMonths = activeStudents.map(s => {
-    const months = calculateActiveMonths(s.dataEntrada);
-    return { ...s, months };
+    const monthsDecimal = calculateActiveMonths(s.dataEntrada);
+    const months = Math.floor(monthsDecimal);
+    return { ...s, months, monthsDecimal };
   });
 
   const monthsCount: Record<number, number> = {};
@@ -205,11 +218,11 @@ const Students = () => {
     .sort((a, b) => a.months - b.months);
 
   const top10ActiveStudents = [...studentsWithMonths]
-    .sort((a, b) => b.months - a.months)
+    .sort((a, b) => b.monthsDecimal - a.monthsDecimal)
     .slice(0, 10);
 
   const averageMonths = activeStudents.length > 0
-    ? studentsWithMonths.reduce((acc, curr) => acc + curr.months, 0) / activeStudents.length
+    ? studentsWithMonths.reduce((acc, curr) => acc + curr.monthsDecimal, 0) / activeStudents.length
     : 0;
 
 
