@@ -55,10 +55,21 @@ const ResetPassword = () => {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
+      <Helmet>
+        <title>Redefinir senha | Equipe Marco Roza</title>
+        <meta name="description" content="Defina uma nova senha de acesso à plataforma da Equipe Marco Roza." />
+        <meta name="robots" content="noindex, nofollow" />
+        <link rel="canonical" href="https://equipemr.marcoroza.com.br/reset-password" />
+        <meta property="og:title" content="Redefinir senha | Equipe Marco Roza" />
+        <meta property="og:description" content="Defina uma nova senha de acesso à plataforma da Equipe Marco Roza." />
+        <meta property="og:url" content="https://equipemr.marcoroza.com.br/reset-password" />
+      </Helmet>
       <Card className="w-full max-w-md">
         <CardHeader className="items-center">
-          <img src={logo} alt="Equipe Marco Roza" className="h-28 w-28 rounded-full mb-2" />
-          <CardTitle className="text-2xl">Redefinir senha</CardTitle>
+          <img src={logo} alt="Logotipo da Equipe Marco Roza Beach Tennis" className="h-28 w-28 rounded-full mb-2" />
+          <CardTitle asChild className="text-2xl">
+            <h1>Redefinir senha</h1>
+          </CardTitle>
           <CardDescription>Defina sua nova senha de acesso</CardDescription>
         </CardHeader>
         <CardContent>
