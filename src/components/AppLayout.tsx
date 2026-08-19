@@ -68,6 +68,14 @@ const AppLayout = () => {
 
   return (
     <div className="flex min-h-screen">
+      <Helmet>
+        <title>{`${pageLabel} | Equipe Marco Roza`}</title>
+        <meta name="description" content={`${pageLabel} da plataforma de gestão da Equipe Marco Roza.`} />
+        <meta name="robots" content="noindex, nofollow" />
+        <meta property="og:title" content={`${pageLabel} | Equipe Marco Roza`} />
+        <meta property="og:url" content={`https://equipemr.marcoroza.com.br${location.pathname}`} />
+        <link rel="canonical" href={`https://equipemr.marcoroza.com.br${location.pathname}`} />
+      </Helmet>
       <aside
         className={cn(
           "relative bg-sidebar text-sidebar-foreground flex flex-col shrink-0 transition-all duration-300",
