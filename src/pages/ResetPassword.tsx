@@ -67,9 +67,7 @@ const ResetPassword = () => {
       <Card className="w-full max-w-md">
         <CardHeader className="items-center">
           <img src={logo} alt="Logotipo da Equipe Marco Roza Beach Tennis" className="h-28 w-28 rounded-full mb-2" />
-          <CardTitle asChild className="text-2xl">
-            <h1>Redefinir senha</h1>
-          </CardTitle>
+          <h1 className="text-2xl font-semibold leading-none tracking-tight">Redefinir senha</h1>
           <CardDescription>Defina sua nova senha de acesso</CardDescription>
         </CardHeader>
         <CardContent>
