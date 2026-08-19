@@ -82,7 +82,7 @@ const Login = () => {
           {/* Cabeçalho de Marca */}
           <div className="flex items-center gap-3 z-10">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 p-1.5 backdrop-blur-md border border-white/10 shadow-lg">
-              <img src={logo} alt="Logo" className="h-full w-full object-contain rounded-lg" />
+              <img src={logo} alt="Logotipo da Equipe Marco Roza Beach Tennis" className="h-full w-full object-contain rounded-lg" />
             </div>
             <div>
               <span className="font-black text-xs tracking-wider text-white">EQUIPE MARCO ROZA</span>
