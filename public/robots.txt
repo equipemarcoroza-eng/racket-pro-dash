@@ -12,3 +12,18 @@ Allow: /
 
 User-agent: *
 Allow: /
+Disallow: /dashboard
+Disallow: /students
+Disallow: /birthdays
+Disallow: /schedule
+Disallow: /classes
+Disallow: /attendance
+Disallow: /frequency
+Disallow: /lesson-plan
+Disallow: /tests
+Disallow: /plans/
+Disallow: /finance/
+Disallow: /bi-dashboard
+Disallow: /reset-password
+
+Sitemap: https://equipemr.marcoroza.com.br/sitemap.xml
