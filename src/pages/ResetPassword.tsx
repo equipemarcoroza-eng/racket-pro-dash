@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
+import { Helmet } from "react-helmet-async";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -55,10 +56,19 @@ const ResetPassword = () => {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
+      <Helmet>
+        <title>Redefinir senha | Equipe Marco Roza</title>
+        <meta name="description" content="Defina uma nova senha de acesso à plataforma da Equipe Marco Roza." />
+        <meta name="robots" content="noindex, nofollow" />
+        <link rel="canonical" href="https://equipemr.marcoroza.com.br/reset-password" />
+        <meta property="og:title" content="Redefinir senha | Equipe Marco Roza" />
+        <meta property="og:description" content="Defina uma nova senha de acesso à plataforma da Equipe Marco Roza." />
+        <meta property="og:url" content="https://equipemr.marcoroza.com.br/reset-password" />
+      </Helmet>
       <Card className="w-full max-w-md">
         <CardHeader className="items-center">
-          <img src={logo} alt="Equipe Marco Roza" className="h-28 w-28 rounded-full mb-2" />
-          <CardTitle className="text-2xl">Redefinir senha</CardTitle>
+          <img src={logo} alt="Logotipo da Equipe Marco Roza Beach Tennis" className="h-28 w-28 rounded-full mb-2" />
+          <h1 className="text-2xl font-semibold leading-none tracking-tight">Redefinir senha</h1>
           <CardDescription>Defina sua nova senha de acesso</CardDescription>
         </CardHeader>
         <CardContent>

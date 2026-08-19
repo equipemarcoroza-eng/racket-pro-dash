@@ -17,6 +17,8 @@ import {
   PieChart,
 } from "lucide-react";
 import logo from "@/assets/logo.png";
+import { Helmet } from "react-helmet-async";
+import { useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 
@@ -40,6 +42,9 @@ const navItems = [
 
 const AppLayout = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const pageLabel =
+    navItems.find((i) => location.pathname.startsWith(i.to))?.label ?? "Painel";
   const { signOut } = useAuth();
   const [isCollapsed, setIsCollapsed] = useState(() => {
     if (typeof window !== "undefined") {
@@ -63,6 +68,14 @@ const AppLayout = () => {
 
   return (
     <div className="flex min-h-screen">
+      <Helmet>
+        <title>{`${pageLabel} | Equipe Marco Roza`}</title>
+        <meta name="description" content={`${pageLabel} da plataforma de gestão da Equipe Marco Roza.`} />
+        <meta name="robots" content="noindex, nofollow" />
+        <meta property="og:title" content={`${pageLabel} | Equipe Marco Roza`} />
+        <meta property="og:url" content={`https://equipemr.marcoroza.com.br${location.pathname}`} />
+        <link rel="canonical" href={`https://equipemr.marcoroza.com.br${location.pathname}`} />
+      </Helmet>
       <aside
         className={cn(
           "relative bg-sidebar text-sidebar-foreground flex flex-col shrink-0 transition-all duration-300",
