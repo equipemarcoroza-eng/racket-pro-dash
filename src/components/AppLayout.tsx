@@ -17,6 +17,8 @@ import {
   PieChart,
 } from "lucide-react";
 import logo from "@/assets/logo.png";
+import { Helmet } from "react-helmet-async";
+import { useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 
