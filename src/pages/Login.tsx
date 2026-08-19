@@ -58,6 +58,14 @@ const Login = () => {
 
   return (
     <div className="flex min-h-screen w-full items-center justify-center p-4 bg-gradient-to-br from-[#06070c] via-[#090b17] to-[#12152b] relative">
+      <Helmet>
+        <title>Equipe Marco Roza — Gestão de Tênis & Beach Tennis</title>
+        <meta name="description" content="Acesse o painel da Equipe Marco Roza: alunos, turmas, frequência, planos e finanças em uma só plataforma." />
+        <link rel="canonical" href="https://equipemr.marcoroza.com.br/" />
+        <meta property="og:title" content="Equipe Marco Roza — Gestão de Tênis & Beach Tennis" />
+        <meta property="og:description" content="Acesse o painel da Equipe Marco Roza: alunos, turmas, frequência, planos e finanças em uma só plataforma." />
+        <meta property="og:url" content="https://equipemr.marcoroza.com.br/" />
+      </Helmet>
       {/* Efeitos de Luz de Fundo na Página */}
       <div className="absolute top-1/6 left-1/6 h-[400px] w-[400px] rounded-full bg-[#de392a]/5 blur-[120px] pointer-events-none" />
       <div className="absolute bottom-1/6 right-1/6 h-[500px] w-[500px] rounded-full bg-[#1c2394]/10 blur-[150px] pointer-events-none" />
