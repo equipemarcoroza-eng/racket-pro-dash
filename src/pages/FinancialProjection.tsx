@@ -1,10 +1,13 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useAppContext } from "@/contexts/AppContext";
-import { TrendingUp, Users, DollarSign, Wallet, AlertCircle, BarChart as BarChartIcon } from "lucide-react";
+import { TrendingUp, Users, DollarSign, Wallet, AlertCircle, BarChart as BarChartIcon, FileText } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { Button } from "@/components/ui/button";
+import logo from "@/assets/logo.png";
+import { toast } from "sonner";
 
 const periods = [
   { label: "Próximos 3 meses", value: "3" },
@@ -22,6 +25,181 @@ const FinancialProjection = () => {
   const { students, revenues, scheduledPayments } = useAppContext();
   const [period, setPeriod] = useState("6");
   const [growthRate, setGrowthRate] = useState("0");
+  const chartAlunosRef = useRef<HTMLDivElement>(null);
+  const chartFinanceiroRef = useRef<HTMLDivElement>(null);
+
+  const handleExportPDF = async () => {
+    try {
+      const { jsPDF } = await import("jspdf");
+      const autoTable = (await import("jspdf-autotable")).default;
+      const doc = new jsPDF();
+
+      // Logo
+      try {
+        doc.addImage(logo, "PNG", 15, 12, 25, 25);
+      } catch (e) {
+        console.error("Erro ao carregar o logotipo", e);
+      }
+
+      // Title & Header info
+      doc.setFontSize(20);
+      doc.setTextColor(20, 40, 100);
+      doc.text("Equipe Marco Roza", 45, 20);
+      doc.setFontSize(14);
+      doc.setTextColor(100, 100, 100);
+      doc.text("Relatório de Projeção Financeira", 45, 27);
+      doc.setFontSize(10);
+      doc.text(`Período: Próximos ${period} meses | Crescimento Mensal: ${growthRate}%`, 45, 33);
+      doc.text(`Gerado em: ${new Date().toLocaleDateString('pt-BR')} ${new Date().toLocaleTimeString('pt-BR')}`, 45, 38);
+
+      doc.setDrawColor(200, 200, 200);
+      doc.line(15, 45, 195, 45);
+
+      // Section 1: Resumo da Simulação
+      doc.setFontSize(12);
+      doc.setTextColor(20, 40, 100);
+      doc.text("Resumo da Simulação (Valores Totais)", 15, 53);
+
+      const summaryBody = [
+        ["Alunos Ativos (Final)", `${totals.alunos} alunos`],
+        ["Total de Mensalidades Contratadas", `R$ ${totals.faturamento.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`],
+        ["Total de Contas a Pagar (Despesas)", `R$ ${totals.gastos.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`],
+        ["Saldo Projetado (Acumulado)", `R$ ${(totals.faturamento - totals.gastos).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`]
+      ];
+
+      autoTable(doc, {
+        startY: 58,
+        body: summaryBody,
+        theme: 'plain',
+        styles: { fontSize: 10, cellPadding: 2 },
+        columnStyles: {
+          0: { fontStyle: 'bold', textColor: [100, 100, 100], cellWidth: 80 },
+          1: { fontStyle: 'bold', textColor: [0, 0, 0] }
+        }
+      });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let finalY = (doc as any).lastAutoTable.finalY + 10;
+
+      // Capture Chart 1 & Chart 2
+      const charts = [];
+      const html2canvas = (await import("html2canvas")).default;
+
+      if (chartAlunosRef.current) {
+        try {
+          const canvas = await html2canvas(chartAlunosRef.current, {
+            scale: 2,
+            backgroundColor: "#ffffff",
+            logging: false
+          });
+          charts.push({ title: "Crescimento de Alunos Ativos", data: canvas.toDataURL("image/png"), canvas });
+        } catch (err) {
+          console.error("Erro ao incluir gráfico de alunos no PDF", err);
+        }
+      }
+
+      if (chartFinanceiroRef.current) {
+        try {
+          const canvas = await html2canvas(chartFinanceiroRef.current, {
+            scale: 2,
+            backgroundColor: "#ffffff",
+            logging: false
+          });
+          charts.push({ title: "Evolução Financeira Projetada", data: canvas.toDataURL("image/png"), canvas });
+        } catch (err) {
+          console.error("Erro ao incluir gráfico financeiro no PDF", err);
+        }
+      }
+
+      if (charts.length > 0) {
+        if (finalY + 70 > 280) {
+          doc.addPage();
+          finalY = 20;
+        }
+
+        if (charts.length === 1) {
+          const c = charts[0];
+          const imgWidth = 180;
+          const imgHeight = (c.canvas.height * imgWidth) / c.canvas.width;
+          doc.setFontSize(11);
+          doc.setTextColor(20, 40, 100);
+          doc.text(c.title, 15, finalY);
+          doc.addImage(c.data, "PNG", 15, finalY + 4, imgWidth, imgHeight);
+          finalY += imgHeight + 15;
+        } else if (charts.length === 2) {
+          const c1 = charts[0];
+          const c2 = charts[1];
+          const imgWidth = 85;
+          const imgHeight1 = (c1.canvas.height * imgWidth) / c1.canvas.width;
+          const imgHeight2 = (c2.canvas.height * imgWidth) / c2.canvas.width;
+          
+          doc.setFontSize(11);
+          doc.setTextColor(20, 40, 100);
+          
+          doc.text(c1.title, 15, finalY);
+          doc.addImage(c1.data, "PNG", 15, finalY + 4, imgWidth, imgHeight1);
+
+          doc.text(c2.title, 110, finalY);
+          doc.addImage(c2.data, "PNG", 110, finalY + 4, imgWidth, imgHeight2);
+
+          finalY += Math.max(imgHeight1, imgHeight2) + 15;
+        }
+      }
+
+      // Projection Table
+      const headers = ["Mês", "Alunos Ativos", "Mensalidades Contratadas", "Contas a Pagar"];
+      const tableData = projectionData.map(m => [
+        m.label,
+        m.alunos,
+        `R$ ${m.faturamento.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`,
+        `R$ ${m.gastos.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`
+      ]);
+
+      // Add a totals row
+      tableData.push([
+        "TOTAIS",
+        totals.alunos.toString(),
+        `R$ ${totals.faturamento.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`,
+        `R$ ${totals.gastos.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`
+      ]);
+
+      if (finalY + 40 > 280) {
+        doc.addPage();
+        finalY = 20;
+      }
+
+      doc.setFontSize(12);
+      doc.setTextColor(20, 40, 100);
+      doc.text("Tabela de Projeção Mensal", 15, finalY);
+
+      autoTable(doc, {
+        startY: finalY + 4,
+        head: [headers],
+        body: tableData,
+        theme: 'striped',
+        headStyles: { fillColor: [20, 40, 100] },
+        styles: { fontSize: 9 },
+        didParseCell: (data) => {
+          if (data.row.index === tableData.length - 1) {
+            data.cell.styles.fontStyle = 'bold';
+            if (data.column.index === 0) {
+              data.cell.styles.textColor = [0, 0, 0];
+            }
+          }
+        }
+      });
+
+      // Footer
+      doc.setFontSize(8);
+      doc.setTextColor(150, 150, 150);
+      doc.text("Racket Pro - Sistema de Gestão Esportiva", 105, 290, { align: "center" });
+
+      doc.save(`projecao-financeira-${Date.now()}.pdf`);
+      toast.success("Projeção Financeira exportada com sucesso!");
+    } catch (err) {
+      console.error("Falha ao exportar PDF", err);
+      toast.error("Erro ao gerar o relatório de projeção em PDF");
+    }
+  };
 
   const parseDate = (dateStr: string) => {
     const [d, m, y] = dateStr.split("/").map(Number);
@@ -110,7 +288,7 @@ const FinancialProjection = () => {
           <h1 className="text-2xl font-bold tracking-tight">Projeção Financeira</h1>
           <p className="text-xs text-muted-foreground mt-1">Simulação de crescimento baseada no mês atual.</p>
         </div>
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-end gap-3">
           <div className="w-48">
             <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1 mb-1 block">Período</label>
             <Select value={period} onValueChange={setPeriod}>
@@ -137,6 +315,9 @@ const FinancialProjection = () => {
               </SelectContent>
             </Select>
           </div>
+          <Button onClick={handleExportPDF} className="flex items-center gap-2">
+            <FileText className="h-4 w-4" /> Exportar Relatório PDF
+          </Button>
         </div>
       </div>
 
@@ -181,7 +362,7 @@ const FinancialProjection = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="p-4 shadow-sm border-muted/40">
+        <Card ref={chartAlunosRef} className="p-4 shadow-sm border-muted/40 bg-white">
           <CardHeader className="p-2 mb-4">
             <CardTitle className="text-sm font-bold text-muted-foreground flex items-center gap-2">
               <Users className="h-4 w-4 text-primary" />
@@ -226,7 +407,7 @@ const FinancialProjection = () => {
           </div>
         </Card>
 
-        <Card className="p-4 shadow-sm border-muted/40">
+        <Card ref={chartFinanceiroRef} className="p-4 shadow-sm border-muted/40 bg-white">
           <CardHeader className="p-2 mb-4">
             <CardTitle className="text-sm font-bold text-muted-foreground flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-green-600" />

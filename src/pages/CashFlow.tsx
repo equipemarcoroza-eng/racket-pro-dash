@@ -1,14 +1,142 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { useAppContext } from "@/contexts/AppContext";
+import logo from "@/assets/logo.png";
+import { toast } from "sonner";
 
 const periodos = ["Mês Atual", "Mês Anterior", "Últimos 3 meses", "Últimos 6 meses", "Últimos 12 meses", "Últimos 24 meses", "Últimos 36 meses", "Últimos 48 meses"];
 
 const CashFlow = () => {
   const { revenues, expenseLogs, students } = useAppContext();
   const [periodo, setPeriodo] = useState("Mês Atual");
+  const chartRef = useRef<HTMLDivElement>(null);
+
+  const handleExportPDF = async () => {
+    try {
+      const { jsPDF } = await import("jspdf");
+      const autoTable = (await import("jspdf-autotable")).default;
+      const doc = new jsPDF();
+
+      // Logo
+      try {
+        doc.addImage(logo, "PNG", 15, 12, 25, 25);
+      } catch (e) {
+        console.error("Erro ao carregar o logotipo", e);
+      }
+
+      // Title & Header info
+      doc.setFontSize(20);
+      doc.setTextColor(20, 40, 100);
+      doc.text("Equipe Marco Roza", 45, 20);
+      doc.setFontSize(14);
+      doc.setTextColor(100, 100, 100);
+      doc.text("Relatório de Fluxo de Caixa", 45, 27);
+      doc.setFontSize(10);
+      doc.text(`Período: ${periodo} | Gerado em: ${new Date().toLocaleDateString('pt-BR')} ${new Date().toLocaleTimeString('pt-BR')}`, 45, 33);
+
+      doc.setDrawColor(200, 200, 200);
+      doc.line(15, 42, 195, 42);
+
+      // Section 1: Resumo Financeiro
+      doc.setFontSize(12);
+      doc.setTextColor(20, 40, 100);
+      doc.text("Resumo Financeiro do Período", 15, 50);
+
+      // Summary table
+      const summaryBody = [
+        ["Receitas Reais (Pagas)", `R$ ${metrics.receitas.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, "Receitas Previstas (Faturamento)", `R$ ${metrics.receitasPrevistas.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`],
+        ["Despesas Reais (Pagas)", `R$ ${metrics.despesas.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, "Despesas Estimadas", `R$ ${metrics.despesasPrevistas.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`],
+        ["Saldo Real do Período", `R$ ${metrics.saldo.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, "Mensalidades (Ativos/Inativos)", `R$ ${metrics.totalMensalidadesAtivos.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`],
+        ["Total Pendente (Ativos)", `R$ ${metrics.totalPendentesAtivosInativos.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, "", ""]
+      ];
+
+      autoTable(doc, {
+        startY: 55,
+        body: summaryBody,
+        theme: 'plain',
+        styles: { fontSize: 10, cellPadding: 2 },
+        columnStyles: {
+          0: { fontStyle: 'bold', textColor: [100, 100, 100] },
+          1: { fontStyle: 'bold', textColor: [0, 0, 0] },
+          2: { fontStyle: 'bold', textColor: [100, 100, 100] },
+          3: { fontStyle: 'bold', textColor: [0, 0, 0] }
+        }
+      });
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let finalY = (doc as any).lastAutoTable.finalY + 10;
+      
+      if (chartRef.current) {
+        try {
+          const html2canvas = (await import("html2canvas")).default;
+          const canvas = await html2canvas(chartRef.current, {
+            scale: 2,
+            backgroundColor: "#ffffff",
+            logging: false
+          });
+          const imgData = canvas.toDataURL("image/png");
+          
+          const imgWidth = 180;
+          const imgHeight = (canvas.height * imgWidth) / canvas.width;
+          
+          if (finalY + imgHeight > 280) {
+            doc.addPage();
+            finalY = 20;
+          }
+          
+          doc.setFontSize(12);
+          doc.setTextColor(20, 40, 100);
+          doc.text("Evolução Mensal (Gráfico)", 15, finalY);
+          doc.addImage(imgData, "PNG", 15, finalY + 5, imgWidth, imgHeight);
+          finalY += imgHeight + 15;
+        } catch (err) {
+          console.error("Erro ao incluir gráfico no PDF", err);
+        }
+      }
+
+      // Monthly Table
+      const monthlyHeaders = ["Mês", "Receitas", "Despesas", "Saldo"];
+      const monthlyBody = metrics.dynamicChartData.map(m => [
+        m.mes,
+        `R$ ${m.receitas.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`,
+        `R$ ${m.despesas.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`,
+        `R$ ${(m.receitas - m.despesas).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`
+      ]);
+
+      if (finalY + 30 > 280) {
+        doc.addPage();
+        finalY = 20;
+      } else {
+        finalY += 5;
+      }
+
+      doc.setFontSize(12);
+      doc.setTextColor(20, 40, 100);
+      doc.text("Detalhamento Mensal", 15, finalY);
+
+      autoTable(doc, {
+        startY: finalY + 5,
+        head: [monthlyHeaders],
+        body: monthlyBody,
+        theme: 'striped',
+        headStyles: { fillColor: [20, 40, 100] },
+        styles: { fontSize: 9 }
+      });
+
+      // Footer
+      doc.setFontSize(8);
+      doc.setTextColor(150, 150, 150);
+      doc.text("Racket Pro - Sistema de Gestão Esportiva", 105, 290, { align: "center" });
+
+      doc.save(`relatorio-fluxo-caixa-${Date.now()}.pdf`);
+      toast.success("Relatório de Fluxo de Caixa exportado com sucesso!");
+    } catch (err) {
+      console.error("Falha ao exportar PDF", err);
+      toast.error("Erro ao gerar o relatório em PDF");
+    }
+  };
 
   const parseDate = (dateStr: string) => {
     // Para vencimento DD/MM/YYYY
@@ -144,7 +272,7 @@ const CashFlow = () => {
             <CardTitle className="text-2xl">Fluxo de Caixa</CardTitle>
             <p className="text-sm text-muted-foreground">Análise detalhada da saúde financeira mensal da escola.</p>
           </div>
-          <Button>Exportar Relatório PDF</Button>
+          <Button onClick={handleExportPDF}>Exportar Relatório PDF</Button>
         </CardHeader>
       </Card>
 
@@ -190,7 +318,7 @@ const CashFlow = () => {
                   </div>
                 ))}
               </div>
-              <div className="h-[300px] w-full">
+              <div ref={chartRef} className="h-[300px] w-full bg-white p-2 rounded-md">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={metrics.dynamicChartData}>
                     <defs>
