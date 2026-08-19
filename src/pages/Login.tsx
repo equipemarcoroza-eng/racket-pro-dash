@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import logo from "@/assets/logo.png";
+import { Helmet } from "react-helmet-async";
 import { ArrowRight, Shield, Zap, Mail, Lock } from "lucide-react";
 
 const Login = () => {
