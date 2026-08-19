@@ -42,6 +42,9 @@ const navItems = [
 
 const AppLayout = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const pageLabel =
+    navItems.find((i) => location.pathname.startsWith(i.to))?.label ?? "Painel";
   const { signOut } = useAuth();
   const [isCollapsed, setIsCollapsed] = useState(() => {
     if (typeof window !== "undefined") {
