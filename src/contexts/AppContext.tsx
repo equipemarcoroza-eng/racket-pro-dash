@@ -570,7 +570,10 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const setScheduledPayments = (u: Updater<ScheduledPayment>) => {
-    const next = typeof u === "function" ? (u as (p: ScheduledPayment[]) => ScheduledPayment[])(scheduledPayments) : u;
+    const prev = scheduledPaymentsRef.current;
+    const next = typeof u === "function" ? (u as (p: ScheduledPayment[]) => ScheduledPayment[])(prev) : u;
+    
+    scheduledPaymentsRef.current = next;
     setScheduledPaymentsState(next);
     // refresh expense logs derivados
     setExpenseLogsState(
@@ -578,7 +581,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         .filter((p) => p.status === "Pago")
         .map((p) => ({ id: p.id, categoria: p.categoria, valor: p.valor, data: p.vencimento }))
     );
-    syncTable("scheduled_payments", scheduledPayments, next, scheduledToDb).catch((err) =>
+    syncTable("scheduled_payments", prev, next, scheduledToDb).catch((err) =>
       console.error("Erro ao sincronizar scheduled_payments:", err)
     );
   };
