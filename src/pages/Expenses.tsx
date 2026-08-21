@@ -156,7 +156,11 @@ const Expenses = () => {
     setExpenseForm({ id: "", fornecedor: "", valor: "", categoria: "", vencimento: "", status: "Em Aberto" });
   };
 
-  const handlePay = (id: string) => {
+  const handlePay = (id: string, e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     setPayments((prev) => prev.map((p) => p.id === id ? { ...p, status: "Pago" } : p));
     toast.success("Baixa realizada com sucesso");
   };
@@ -421,22 +425,22 @@ const Expenses = () => {
               </div>
               <div className="space-y-3">
                 {payments.filter(p => p.status === "Em Aberto").map((p) => (
-                  <div key={p.id} className="flex items-center justify-between border rounded-md p-3 group">
+                  <div key={p.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border rounded-md p-3 group">
                     <div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-medium">{p.fornecedor}</span>
                         <span className="text-[10px] bg-muted px-1.5 py-0.5 rounded text-muted-foreground font-mono">Venc. {p.vencimento ? p.vencimento.split('-').reverse().join('/') : "—"}</span>
                       </div>
                       <span className="text-xs text-muted-foreground">{p.categoria}</span>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto">
                       <span className="font-semibold mr-2">R$ {p.valor.toLocaleString("pt-BR")}</span>
-                      <div className="flex gap-1">
-                        <Button variant="outline" size="sm" className="h-7 px-2 text-[10px]" onClick={() => setViewingPayment(p)}>Visualizar</Button>
-                        <Button variant="outline" size="sm" className="h-7 px-2 text-[10px]" onClick={() => openEdit(p)}>Editar</Button>
-                        <Button variant="default" size="sm" className="h-7 px-2 text-[10px] bg-green-600 hover:bg-green-700" onClick={() => handlePay(p.id)}>Baixa</Button>
+                      <div className="flex gap-1.5">
+                        <Button variant="outline" size="sm" className="h-8 px-2.5 text-xs" onClick={() => setViewingPayment(p)}>Visualizar</Button>
+                        <Button variant="outline" size="sm" className="h-8 px-2.5 text-xs" onClick={() => openEdit(p)}>Editar</Button>
+                        <Button variant="default" size="sm" className="h-8 px-3 text-xs bg-green-600 hover:bg-green-600/90 active:bg-green-700 text-white font-medium transition-colors" onClick={(e) => handlePay(p.id, e)}>Baixa</Button>
                       </div>
-                      <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 text-xs h-7 w-7 p-0" onClick={() => handleDeletePayment(p.id)}>✕</Button>
+                      <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto text-xs h-8 w-8 p-0" onClick={() => handleDeletePayment(p.id)}>✕</Button>
                     </div>
                   </div>
                 ))}
@@ -477,18 +481,18 @@ const Expenses = () => {
                     const vDate = new Date(y, m - 1, d);
                     return vDate >= periodMetrics.startDate && vDate <= periodMetrics.endDate;
                   }).map((p) => (
-                    <div key={p.id} className="flex items-center justify-between border rounded-md p-3 group bg-muted/20">
+                    <div key={p.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border rounded-md p-3 group bg-muted/20">
                       <div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <span className="font-medium text-muted-foreground line-through">{p.fornecedor}</span>
                           <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded font-bold uppercase tracking-tight">PAGO</span>
                         </div>
                         <span className="text-xs text-muted-foreground">{p.categoria}</span>
                       </div>
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto">
                         <span className="font-semibold mr-2 text-muted-foreground">R$ {p.valor.toLocaleString("pt-BR")}</span>
                         <div className="flex gap-1">
-                          <Button variant="outline" size="sm" className="h-7 px-2 text-[10px]" onClick={() => setViewingPayment(p)}>Visualizar</Button>
+                          <Button variant="outline" size="sm" className="h-8 px-2.5 text-xs" onClick={() => setViewingPayment(p)}>Visualizar</Button>
                         </div>
                       </div>
                     </div>
