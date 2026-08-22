@@ -515,97 +515,210 @@ export default function BiDashboard() {
 
   const GaugeSpeedometer = ({
     value,
-    label,
-    color = "#2563eb",
+    title,
     subtitle,
+    description,
   }: {
     value: number;
-    label: string;
-    color?: string;
-    subtitle?: string;
+    title: string;
+    subtitle: string;
+    description: string;
   }) => {
-    // Map 0 - 100 to an arc of 180 degrees (from left/9 o'clock to right/3 o'clock).
-    const radius = 42;
-    const cx = 60;
-    const cy = 60;
-    const strokeWidth = 8;
-    const circumference = Math.PI * radius; // 131.95
     const cleanValue = Math.min(100, Math.max(0, value));
-    const strokeDashoffset = circumference - (cleanValue / 100) * circumference;
+    
+    // Status and colors based on value
+    let status: "SINAL FORTE" | "ATENÇÃO" | "SEM SINAL";
+    let statusClass = "";
+    let needleColor = "#eab308"; // yellow default
+    
+    if (cleanValue < 60) {
+      status = "SINAL FORTE";
+      statusClass = "bg-red-50 text-red-600 border-red-200";
+      needleColor = "#de392a"; // brand red
+    } else if (cleanValue < 85) {
+      status = "ATENÇÃO";
+      statusClass = "bg-amber-50 text-amber-700 border-amber-200";
+      needleColor = "#d97706"; // gold/yellow
+    } else {
+      status = "SEM SINAL";
+      statusClass = "bg-green-50 text-green-700 border-green-200";
+      needleColor = "#10b981"; // green
+    }
 
-    // Angle: 0% -> 0deg (left), 50% -> 90deg (top), 100% -> 180deg (right)
-    const angle = (cleanValue / 100) * 180;
+    // Segment active states
+    const isSeg1Active = cleanValue < 60;
+    const isSeg2Active = cleanValue >= 60 && cleanValue < 85;
+    const isSeg3Active = cleanValue >= 85;
 
-    // Trigger math coordinates relative to LEFT horizontal axis:
-    // X = cx - r * cos(theta)
-    // Y = cy - r * sin(theta)
-    const getCoordinates = (percent: number, r: number) => {
-      const theta = (percent / 100) * 180;
-      const rad = (theta * Math.PI) / 180;
-      const x = cx - r * Math.cos(rad);
-      const y = cy - r * Math.sin(rad);
-      return { x, y };
+    // Segment colors (Active vs Faded)
+    const seg1Color = isSeg1Active ? "#de392a" : "#fee2e2";
+    const seg2Color = isSeg2Active ? "#d97706" : "#fef3c7";
+    const seg3Color = isSeg3Active ? "#10b981" : "#d1fae5";
+
+    // Dial math
+    const cx = 60;
+    const cy = 65;
+    const radius = 45;
+    const strokeWidth = 8;
+    
+    // Rotation of needle
+    const rotation = -120 + (cleanValue / 100) * 240;
+
+    // Formatted value as 0,XXX
+    const decimalValue = (cleanValue / 100).toFixed(3).replace(".", ",");
+
+    const polarToCartesian = (centerX: number, centerY: number, radius: number, angleInDegrees: number) => {
+      const angleInRadians = ((angleInDegrees - 90) * Math.PI) / 180.0;
+      return {
+        x: centerX + radius * Math.cos(angleInRadians),
+        y: centerY + radius * Math.sin(angleInRadians)
+      };
+    };
+
+    const describeArc = (x: number, y: number, radius: number, startAngle: number, endAngle: number) => {
+      const start = polarToCartesian(x, y, radius, endAngle);
+      const end = polarToCartesian(x, y, radius, startAngle);
+      const largeArcFlag = endAngle - startAngle <= 180 ? "0" : "1";
+      return [
+        "M", start.x, start.y, 
+        "A", radius, radius, 0, largeArcFlag, 0, end.x, end.y
+      ].join(" ");
     };
 
     return (
-      <div className="flex flex-col items-center justify-center p-6 bg-card rounded-xl border border-border shadow-sm hover:shadow-md transition-all">
-        <div className="relative w-40 h-28 flex items-end justify-center overflow-hidden">
-          <svg className="w-40 h-40 absolute -bottom-10" viewBox="0 0 120 120">
-            {/* Background Arc */}
-            <path
-              d="M 18,60 A 42,42 0 0,1 102,60"
-              fill="none"
-              stroke="#f1f5f9"
-              strokeWidth={strokeWidth}
-              strokeLinecap="round"
-            />
-            
-            {/* Active Arc */}
-            <path
-              d="M 18,60 A 42,42 0 0,1 102,60"
-              fill="none"
-              stroke={color}
-              strokeWidth={strokeWidth}
-              strokeLinecap="round"
-              strokeDasharray={circumference}
-              strokeDashoffset={strokeDashoffset}
-              className="transition-all duration-1000 ease-out"
-            />
+      <Card className="flex flex-col items-center p-6 bg-white border border-slate-100 shadow-sm rounded-2xl hover:shadow-md transition-all text-center">
+        <div className="space-y-1 mb-4">
+          <h2 className="text-xl font-bold text-slate-800 tracking-tight">{title}</h2>
+          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{subtitle}</p>
+        </div>
 
-            {/* Scale Ticks */}
-            {[0, 20, 40, 60, 80, 100].map((tick) => {
-              const { x: x1, y: y1 } = getCoordinates(tick, radius + 2);
-              const { x: x2, y: y2 } = getCoordinates(tick, radius + 5);
+        <div className="relative w-48 h-32 flex items-end justify-center overflow-hidden mb-2">
+          <svg className="w-48 h-48 absolute -bottom-16" viewBox="0 0 120 120">
+            {/* Glow filters for active segments */}
+            <defs>
+              <filter id="glow-red" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="3" result="blur" />
+                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+              </filter>
+              <filter id="glow-yellow" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="3" result="blur" />
+                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+              </filter>
+              <filter id="glow-green" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="3" result="blur" />
+                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+              </filter>
+            </defs>
+
+            {/* Scale Ticks (Background ticks) */}
+            {[-120, -90, -60, -30, 0, 30, 60, 90, 120].map((angle) => {
+              const rad = ((angle - 90) * Math.PI) / 180;
+              const x1 = cx + (radius - 4) * Math.cos(rad);
+              const y1 = cy + (radius - 4) * Math.sin(rad);
+              const x2 = cx + (radius - 1) * Math.cos(rad);
+              const y2 = cy + (radius - 1) * Math.sin(rad);
               return (
                 <line
-                  key={tick}
+                  key={angle}
                   x1={x1}
                   y1={y1}
                   x2={x2}
                   y2={y2}
                   stroke="#cbd5e1"
-                  strokeWidth="1.5"
+                  strokeWidth="1.2"
                 />
               );
             })}
 
-            {/* Pointer / Needle */}
-            <g transform={`rotate(${angle}, ${cx}, ${cy})`}>
-              <polygon
-                points="60,58.5 60,61.5 22,60"
-                fill="#f59e0b"
-                className="transition-transform duration-1000 ease-out"
+            {/* Segment 1 (Low: 0% to 60%) — Arc: -120deg to +22deg */}
+            {isSeg1Active && (
+              <path
+                d={describeArc(cx, cy, radius, -120, 22)}
+                fill="none"
+                stroke={seg1Color}
+                strokeWidth={strokeWidth + 2}
+                strokeLinecap="round"
+                opacity="0.15"
+                filter="url(#glow-red)"
               />
-              <circle cx="60" cy="60" r="4.5" fill="#f59e0b" stroke="#ffffff" strokeWidth="1.5" />
+            )}
+            <path
+              d={describeArc(cx, cy, radius, -120, 22)}
+              fill="none"
+              stroke={seg1Color}
+              strokeWidth={strokeWidth}
+              strokeLinecap="round"
+            />
+
+            {/* Segment 2 (Medium: 60% to 85%) — Arc: +26deg to +82deg */}
+            {isSeg2Active && (
+              <path
+                d={describeArc(cx, cy, radius, 26, 82)}
+                fill="none"
+                stroke={seg2Color}
+                strokeWidth={strokeWidth + 2}
+                strokeLinecap="round"
+                opacity="0.15"
+                filter="url(#glow-yellow)"
+              />
+            )}
+            <path
+              d={describeArc(cx, cy, radius, 26, 82)}
+              fill="none"
+              stroke={seg2Color}
+              strokeWidth={strokeWidth}
+              strokeLinecap="round"
+            />
+
+            {/* Segment 3 (High: 85% to 100%) — Arc: +86deg to +120deg */}
+            {isSeg3Active && (
+              <path
+                d={describeArc(cx, cy, radius, 86, 120)}
+                fill="none"
+                stroke={seg3Color}
+                strokeWidth={strokeWidth + 2}
+                strokeLinecap="round"
+                opacity="0.15"
+                filter="url(#glow-green)"
+              />
+            )}
+            <path
+              d={describeArc(cx, cy, radius, 86, 120)}
+              fill="none"
+              stroke={seg3Color}
+              strokeWidth={strokeWidth}
+              strokeLinecap="round"
+            />
+
+            {/* Pointer / Needle */}
+            <g transform={`rotate(${rotation}, ${cx}, ${cy})`}>
+              <line
+                x1={cx}
+                y1={cy}
+                x2={cx}
+                y2={cy - radius + 5}
+                stroke={needleColor}
+                strokeWidth="2.5"
+                strokeLinecap="round"
+              />
+              <circle cx={cx} cy={cy} r="4" fill="#ffffff" stroke={needleColor} strokeWidth="1.5" />
+              <circle cx={cx} cy={cy} r="1.5" fill={needleColor} />
             </g>
           </svg>
-          <div className="z-10 flex flex-col items-center pb-1">
-            <span className="text-3xl font-extrabold tracking-tight">{Math.round(cleanValue)}%</span>
-            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{label}</span>
+          
+          <div className="z-10 flex flex-col items-center pb-2">
+            <span className="text-3xl font-extrabold tracking-tight text-slate-800">{decimalValue}</span>
+            <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">DISPARATE IMPACT</span>
           </div>
         </div>
-        {subtitle && <p className="text-xs text-muted-foreground text-center mt-3 font-medium">{subtitle}</p>}
-      </div>
+
+        <div className="mt-2 mb-3">
+          <span className={`px-4 py-1 text-[9px] font-black uppercase tracking-widest rounded-full border ${statusClass}`}>
+            {status}
+          </span>
+        </div>
+        <p className="text-[11px] text-slate-500 leading-relaxed max-w-xs">{description}</p>
+      </Card>
     );
   };
 
@@ -724,21 +837,21 @@ export default function BiDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <GaugeSpeedometer
           value={generalMetrics.engagementRate}
-          label="Engajamento Alto"
-          color="#10b981"
-          subtitle="Proporção de alunos ativos com mais de 80% de presença nas aulas."
+          title="Engajamento"
+          subtitle="PRESENÇA DE ALUNOS"
+          description="Proporção de alunos ativos com mais de 80% de presença nas aulas."
         />
         <GaugeSpeedometer
           value={generalMetrics.avgAdimplencia}
-          label="Adimplência Histórica"
-          color="#2563eb"
-          subtitle="Taxa de pagamento de faturas geradas ao longo da história do aluno."
+          title="Adimplência"
+          subtitle="PAGAMENTOS EM DIA"
+          description="Taxa de pagamento de faturas geradas ao longo da história do aluno."
         />
         <GaugeSpeedometer
           value={Math.min(100, generalMetrics.avgAttendance * 1.1)}
-          label="Saúde de Retenção"
-          color="#eab308"
-          subtitle="Estimativa de retenção de alunos para os próximos 3 meses com base no engajamento recente."
+          title="Fidelidade"
+          subtitle="PROJEÇÃO DE RETENÇÃO"
+          description="Estimativa de retenção de alunos para os próximos 3 meses com base no engajamento recente."
         />
       </div>
 
