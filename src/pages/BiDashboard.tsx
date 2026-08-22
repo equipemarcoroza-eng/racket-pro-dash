@@ -525,12 +525,12 @@ export default function BiDashboard() {
     const cleanValue = Math.min(100, Math.max(0, value));
     
     // Status and colors based on value
-    let status: "SINAL FORTE" | "ATENÇÃO" | "SEM SINAL";
+    let status: "CRÍTICO" | "ATENÇÃO" | "EXCELENTE";
     let statusClass = "";
     let needleColor = "#eab308"; // yellow default
     
     if (cleanValue < 60) {
-      status = "SINAL FORTE";
+      status = "CRÍTICO";
       statusClass = "bg-red-50 text-red-600 border-red-200";
       needleColor = "#de392a"; // brand red
     } else if (cleanValue < 85) {
@@ -538,7 +538,7 @@ export default function BiDashboard() {
       statusClass = "bg-amber-50 text-amber-700 border-amber-200";
       needleColor = "#d97706"; // gold/yellow
     } else {
-      status = "SEM SINAL";
+      status = "EXCELENTE";
       statusClass = "bg-green-50 text-green-700 border-green-200";
       needleColor = "#10b981"; // green
     }
