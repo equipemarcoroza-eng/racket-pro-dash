@@ -233,23 +233,29 @@ const Tests = () => {
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
+      <Card className="bg-gradient-to-br from-[#0f1236] via-[#1c2394] to-[#de392a] text-white border-none shadow-lg relative overflow-hidden">
+        <div className="absolute top-0 right-0 h-32 w-32 rounded-full bg-white/10 blur-xl pointer-events-none" />
+        <CardHeader className="flex flex-row items-center justify-between relative z-10">
           <div>
-            <p className="text-sm text-primary font-medium">Desempenho</p>
-            <CardTitle className="text-2xl font-bold tracking-tight">Avaliação de Provas Técnicas</CardTitle>
+            <p className="text-xs font-bold uppercase tracking-wider text-white/80">Desempenho</p>
+            <CardTitle className="text-2xl font-black text-white mt-1">Avaliação de Provas Técnicas</CardTitle>
           </div>
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
-              <Label className="text-xs font-bold uppercase text-muted-foreground">Data da Prova:</Label>
+              <Label className="text-xs font-bold uppercase text-white/80">Data da Prova:</Label>
               <Input 
                 type="date" 
                 value={selectedDate} 
                 onChange={(e) => setSelectedDate(e.target.value)} 
-                className="w-40 h-9"
+                className="w-40 h-9 bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-white/40 [color-scheme:dark]"
               />
             </div>
-            <Button variant="outline" size="sm" onClick={() => setShowActivityModal(true)} className="gap-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => setShowActivityModal(true)} 
+              className="gap-2 bg-white/20 hover:bg-white/30 text-white border border-white/20 backdrop-blur-md font-semibold"
+            >
               <Plus className="h-4 w-4" /> Gestão de Atividades
             </Button>
           </div>

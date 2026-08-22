@@ -615,18 +615,19 @@ export default function BiDashboard() {
   return (
     <div className="space-y-6">
       {/* Título Principal */}
-      <Card className="border-l-4 border-l-primary shadow-sm">
-        <CardHeader>
+      <Card className="bg-gradient-to-br from-[#0f1236] via-[#1c2394] to-[#de392a] text-white border-none shadow-lg relative overflow-hidden">
+        <div className="absolute top-0 right-0 h-32 w-32 rounded-full bg-white/10 blur-xl pointer-events-none" />
+        <CardHeader className="relative z-10">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <p className="text-sm text-primary font-semibold tracking-wider uppercase">Business Intelligence Avançado</p>
-              <CardTitle className="text-3xl font-black mt-1">Dashboard de Inteligência Comportamental</CardTitle>
-              <p className="text-sm text-muted-foreground mt-1.5">
+              <p className="text-xs font-bold uppercase tracking-wider text-white/80">Business Intelligence Avançado</p>
+              <CardTitle className="text-3xl font-black text-white mt-1">Dashboard de Inteligência Comportamental</CardTitle>
+              <p className="text-xs text-white/70 mt-1.5">
                 Análise aprofundada de comportamento, correlações de grupo, fidelidade e tendências de alunos ativos.
               </p>
             </div>
-            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 text-primary text-xs font-bold rounded-lg border border-primary/20">
-              <Sparkles className="w-4 h-4 animate-pulse" />
+            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 text-white text-xs font-bold rounded-lg border border-white/20 backdrop-blur-md">
+              <Sparkles className="w-4 h-4 animate-pulse text-white" />
               BI Ativo com Varredura Histórica
             </div>
           </div>

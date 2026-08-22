@@ -282,44 +282,52 @@ const FinancialProjection = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <p className="text-sm text-primary font-medium">Financeiro</p>
-          <h1 className="text-2xl font-bold tracking-tight">Projeção Financeira</h1>
-          <p className="text-xs text-muted-foreground mt-1">Simulação de crescimento baseada no mês atual.</p>
-        </div>
-        <div className="flex flex-wrap items-end gap-3">
-          <div className="w-48">
-            <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1 mb-1 block">Período</label>
-            <Select value={period} onValueChange={setPeriod}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {periods.map((p) => (
-                  <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+      <Card className="bg-gradient-to-br from-[#0f1236] via-[#1c2394] to-[#de392a] text-white border-none shadow-lg relative overflow-hidden">
+        <div className="absolute top-0 right-0 h-32 w-32 rounded-full bg-white/10 blur-xl pointer-events-none" />
+        <CardContent className="p-6 relative z-10">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wider text-white/80">Financeiro</p>
+              <h1 className="text-2xl font-black text-white mt-1">Projeção Financeira</h1>
+              <p className="text-xs text-white/70 mt-1">Simulação de crescimento baseada no mês atual.</p>
+            </div>
+            <div className="flex flex-wrap items-end gap-3">
+              <div className="w-48">
+                <label className="text-[10px] font-bold uppercase text-white/80 ml-1 mb-1 block">Período</label>
+                <Select value={period} onValueChange={setPeriod}>
+                  <SelectTrigger className="bg-white/10 border-white/20 text-white focus:ring-white/40 focus:border-white/40">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {periods.map((p) => (
+                      <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="w-48">
+                <label className="text-[10px] font-bold uppercase text-white/80 ml-1 mb-1 block">Crescimento Mensal</label>
+                <Select value={growthRate} onValueChange={setGrowthRate}>
+                  <SelectTrigger className="bg-white/10 border-white/20 text-white focus:ring-white/40 focus:border-white/40">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {growthRates.map((r) => (
+                      <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button 
+                onClick={handleExportPDF} 
+                className="flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white border border-white/20 backdrop-blur-md font-semibold"
+              >
+                <FileText className="h-4 w-4" /> Exportar Relatório PDF
+              </Button>
+            </div>
           </div>
-          <div className="w-48">
-            <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1 mb-1 block">Crescimento Mensal</label>
-            <Select value={growthRate} onValueChange={setGrowthRate}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {growthRates.map((r) => (
-                  <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <Button onClick={handleExportPDF} className="flex items-center gap-2">
-            <FileText className="h-4 w-4" /> Exportar Relatório PDF
-          </Button>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="bg-primary/5 border-primary/20">

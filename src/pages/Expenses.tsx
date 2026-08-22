@@ -263,18 +263,36 @@ const Expenses = () => {
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
+      <Card className="bg-gradient-to-br from-[#0f1236] via-[#1c2394] to-[#de392a] text-white border-none shadow-lg relative overflow-hidden">
+        <div className="absolute top-0 right-0 h-32 w-32 rounded-full bg-white/10 blur-xl pointer-events-none" />
+        <CardHeader className="flex flex-row items-center justify-between relative z-10">
           <div>
-            <CardTitle className="text-2xl">Contas a Pagar</CardTitle>
-            <p className="text-sm text-muted-foreground">Controle de custos operacionais e pagamentos a terceiros.</p>
+            <p className="text-xs font-bold uppercase tracking-wider text-white/80">Financeiro</p>
+            <CardTitle className="text-2xl font-black text-white mt-1">Contas a Pagar</CardTitle>
+            <p className="text-xs text-white/70 mt-1">Controle de custos operacionais e pagamentos a terceiros.</p>
           </div>
-          <Button onClick={() => setShowExpenseForm(true)}>Nova Despesa</Button>
+          <Button 
+            onClick={() => setShowExpenseForm(true)}
+            className="bg-white/20 hover:bg-white/30 text-white border border-white/20 backdrop-blur-md font-semibold"
+          >
+            Nova Despesa
+          </Button>
         </CardHeader>
-        <CardContent>
+        <CardContent className="relative z-10">
           <div className="flex gap-2 flex-wrap">
             {categories.map((c) => (
-              <Button key={c.id} variant={catFilter === c.categoria ? "default" : "outline"} size="sm" onClick={() => setCatFilter(catFilter === c.categoria ? null : c.categoria)}>{c.categoria}</Button>
+              <Button 
+                key={c.id} 
+                variant={catFilter === c.categoria ? "default" : "outline"} 
+                size="sm" 
+                onClick={() => setCatFilter(catFilter === c.categoria ? null : c.categoria)}
+                className={catFilter === c.categoria
+                  ? "bg-white text-[#1c2394] hover:bg-white/90 border-none font-bold shadow-sm"
+                  : "bg-white/10 text-white hover:bg-white/20 border-white/20"
+                }
+              >
+                {c.categoria}
+              </Button>
             ))}
           </div>
         </CardContent>

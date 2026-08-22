@@ -110,14 +110,15 @@ const Birthdays = () => {
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
+      <Card className="bg-gradient-to-br from-[#0f1236] via-[#1c2394] to-[#de392a] text-white border-none shadow-lg relative overflow-hidden">
+        <div className="absolute top-0 right-0 h-32 w-32 rounded-full bg-white/10 blur-xl pointer-events-none" />
+        <CardHeader className="flex flex-row items-center justify-between relative z-10">
           <div>
-            <p className="text-sm text-primary font-medium flex items-center gap-2">
-              <Cake className="h-4 w-4" /> Relatórios
+            <p className="text-xs font-bold uppercase tracking-wider text-white/80 flex items-center gap-2">
+              <Cake className="h-3.5 w-3.5" /> Relatórios
             </p>
-            <CardTitle className="text-2xl">Aniversariantes do Mês</CardTitle>
-            <p className="text-sm text-muted-foreground">Veja os alunos que fazem aniversário no mês selecionado.</p>
+            <CardTitle className="text-2xl font-black text-white mt-1">Aniversariantes do Mês</CardTitle>
+            <p className="text-xs text-white/70 mt-1">Veja os alunos que fazem aniversário no mês selecionado.</p>
           </div>
         </CardHeader>
       </Card>

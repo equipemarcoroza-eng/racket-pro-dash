@@ -145,19 +145,25 @@ const AttendanceControl = () => {
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
+      <Card className="bg-gradient-to-br from-[#0f1236] via-[#1c2394] to-[#de392a] text-white border-none shadow-lg relative overflow-hidden">
+        <div className="absolute top-0 right-0 h-32 w-32 rounded-full bg-white/10 blur-xl pointer-events-none" />
+        <CardHeader className="flex flex-row items-center justify-between relative z-10">
           <div>
-            <p className="text-sm text-primary font-medium">Controle</p>
-            <CardTitle className="text-2xl">Controle de Presença</CardTitle>
+            <p className="text-xs font-bold uppercase tracking-wider text-white/80">Controle</p>
+            <CardTitle className="text-2xl font-black text-white mt-1">Controle de Presença</CardTitle>
           </div>
           <div className="flex items-center gap-2">
-            <Label>Data:</Label>
-            <Input type="date" value={selectedDate} onChange={(e) => { setSelectedDate(e.target.value); setPresencas({}); }} className="w-44" />
+            <Label className="text-white font-semibold">Data:</Label>
+            <Input 
+              type="date" 
+              value={selectedDate} 
+              onChange={(e) => { setSelectedDate(e.target.value); setPresencas({}); }} 
+              className="w-44 bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-white/40 focus:ring-white/40 [color-scheme:dark]" 
+            />
           </div>
         </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">
+        <CardContent className="relative z-10">
+          <p className="text-xs text-white/70">
             {diaLabel ? `Mostrando turmas de ${diaLabel} (${format(new Date(selectedDate + "T12:00:00"), "dd/MM/yyyy")})` : "Selecione uma data"}
           </p>
         </CardContent>

@@ -369,17 +369,35 @@ const Revenue = () => {
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
+      <Card className="bg-gradient-to-br from-[#0f1236] via-[#1c2394] to-[#de392a] text-white border-none shadow-lg relative overflow-hidden">
+        <div className="absolute top-0 right-0 h-32 w-32 rounded-full bg-white/10 blur-xl pointer-events-none" />
+        <CardHeader className="flex flex-row items-center justify-between relative z-10">
           <div>
-            <p className="text-sm text-primary font-medium">Financeiro</p>
-            <CardTitle className="text-2xl">Contas a Receber</CardTitle>
-            <p className="text-sm text-muted-foreground">Gestão de cobranças, planos e vencimentos de mensalidades, trimestrais e anuais.</p>
+            <p className="text-xs font-bold uppercase tracking-wider text-white/80">Financeiro</p>
+            <CardTitle className="text-2xl font-black text-white mt-1">Contas a Receber</CardTitle>
+            <p className="text-xs text-white/70 mt-1">Gestão de cobranças, planos e vencimentos de mensalidades, trimestrais e anuais.</p>
           </div>
           <div className="flex gap-2">
-            <Button variant="secondary" onClick={gerarParcelas}>Gerar Parcelas do Mês</Button>
-            <Button variant="outline" onClick={() => setShowAvulso(true)}>Gerar Recebível Avulso</Button>
-            <Button onClick={() => setShowRecebimento(true)}>Registrar Recebimento Mitigado</Button>
+            <Button 
+              variant="secondary" 
+              onClick={gerarParcelas}
+              className="bg-white text-[#1c2394] hover:bg-white/90 font-bold border-none"
+            >
+              Gerar Parcelas do Mês
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => setShowAvulso(true)}
+              className="bg-white/20 hover:bg-white/30 text-white border border-white/20 backdrop-blur-md font-semibold"
+            >
+              Gerar Recebível Avulso
+            </Button>
+            <Button 
+              onClick={() => setShowRecebimento(true)}
+              className="bg-white/20 hover:bg-white/30 text-white border border-white/20 backdrop-blur-md font-semibold"
+            >
+              Registrar Recebimento Mitigado
+            </Button>
           </div>
         </CardHeader>
       </Card>

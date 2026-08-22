@@ -147,14 +147,20 @@ const Dashboard = () => {
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
+      <Card className="bg-gradient-to-br from-[#0f1236] via-[#1c2394] to-[#de392a] text-white border-none shadow-lg relative overflow-hidden">
+        <div className="absolute top-0 right-0 h-32 w-32 rounded-full bg-white/10 blur-xl pointer-events-none" />
+        <CardHeader className="flex flex-row items-center justify-between relative z-10">
           <div>
-            <p className="text-sm text-primary font-medium">Painel</p>
-            <CardTitle className="text-2xl">Dashboard Operacional</CardTitle>
-            <p className="text-sm text-muted-foreground mt-1">Visualização rápida de indicadores de desempenho, ocupação e financeiro.</p>
+            <p className="text-xs font-bold uppercase tracking-wider text-white/80">Painel</p>
+            <CardTitle className="text-2xl font-black text-white mt-1">Dashboard Operacional</CardTitle>
+            <p className="text-xs text-white/70 mt-1">Visualização rápida de indicadores de desempenho, ocupação e financeiro.</p>
           </div>
-          <Button onClick={() => window.location.reload()}>Atualizar</Button>
+          <Button 
+            onClick={() => window.location.reload()}
+            className="bg-white/20 hover:bg-white/30 text-white border border-white/20 backdrop-blur-md font-semibold"
+          >
+            Atualizar
+          </Button>
         </CardHeader>
       </Card>
 

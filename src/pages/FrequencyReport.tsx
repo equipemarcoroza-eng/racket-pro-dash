@@ -169,35 +169,38 @@ const FrequencyReport = () => {
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <p className="text-sm text-primary font-medium">Consulta</p>
-          <CardTitle className="text-2xl">Frequência dos Alunos</CardTitle>
+      <Card className="bg-gradient-to-br from-[#0f1236] via-[#1c2394] to-[#de392a] text-white border-none shadow-lg relative overflow-hidden">
+        <div className="absolute top-0 right-0 h-32 w-32 rounded-full bg-white/10 blur-xl pointer-events-none" />
+        <CardHeader className="relative z-10">
+          <p className="text-xs font-bold uppercase tracking-wider text-white/80">Consulta</p>
+          <CardTitle className="text-2xl font-black text-white mt-1">Frequência dos Alunos</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="relative z-10">
           <div className="flex flex-wrap gap-4 items-end">
             <div>
-              <Label>Período Inicial</Label>
+              <Label className="text-white/80">Período Inicial</Label>
               <Input
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="w-44"
+                className="w-44 bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-white/40 focus:ring-white/40 [color-scheme:dark]"
               />
             </div>
             <div>
-              <Label>Período Final</Label>
+              <Label className="text-white/80">Período Final</Label>
               <Input
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
-                className="w-44"
+                className="w-44 bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-white/40 focus:ring-white/40 [color-scheme:dark]"
               />
             </div>
             <div>
-              <Label>Aluno</Label>
+              <Label className="text-white/80">Aluno</Label>
               <Select value={selectedAlunoId} onValueChange={setSelectedAlunoId}>
-                <SelectTrigger className="w-56"><SelectValue placeholder="Selecione um aluno" /></SelectTrigger>
+                <SelectTrigger className="w-56 bg-white/10 border-white/20 text-white focus:ring-white/40 focus:border-white/40">
+                  <SelectValue placeholder="Selecione um aluno" />
+                </SelectTrigger>
                 <SelectContent>
                   {activeStudents.map((s) => <SelectItem key={s.id} value={s.id}>{s.nome}</SelectItem>)}
                 </SelectContent>

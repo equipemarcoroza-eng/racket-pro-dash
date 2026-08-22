@@ -35,11 +35,12 @@ const PlansManage = () => {
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <p className="text-sm text-primary font-medium">Gestão de Planos</p>
-          <CardTitle className="text-2xl">Gestão de Planos</CardTitle>
-          <p className="text-sm text-muted-foreground">Permitir a criação, consulta, edição e exclusão de planos e pacotes da escola de esportes.</p>
+      <Card className="bg-gradient-to-br from-[#0f1236] via-[#1c2394] to-[#de392a] text-white border-none shadow-lg relative overflow-hidden">
+        <div className="absolute top-0 right-0 h-32 w-32 rounded-full bg-white/10 blur-xl pointer-events-none" />
+        <CardHeader className="relative z-10">
+          <p className="text-xs font-bold uppercase tracking-wider text-white/80">Gestão de Planos</p>
+          <CardTitle className="text-2xl font-black text-white mt-1">Gestão de Planos</CardTitle>
+          <p className="text-xs text-white/70 mt-1">Permitir a criação, consulta, edição e exclusão de planos e pacotes da escola de esportes.</p>
         </CardHeader>
       </Card>
 

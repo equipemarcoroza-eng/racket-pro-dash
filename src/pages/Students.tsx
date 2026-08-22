@@ -466,10 +466,19 @@ const Students = () => {
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-2xl">Gestão de Alunos</CardTitle>
-          <Button onClick={openNew}>Novo Aluno</Button>
+      <Card className="bg-gradient-to-br from-[#0f1236] via-[#1c2394] to-[#de392a] text-white border-none shadow-lg relative overflow-hidden">
+        <div className="absolute top-0 right-0 h-32 w-32 rounded-full bg-white/10 blur-xl pointer-events-none" />
+        <CardHeader className="flex flex-row items-center justify-between relative z-10">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wider text-white/80">Alunos</p>
+            <CardTitle className="text-2xl font-black text-white mt-1">Gestão de Alunos</CardTitle>
+          </div>
+          <Button 
+            onClick={openNew}
+            className="bg-white/20 hover:bg-white/30 text-white border border-white/20 backdrop-blur-md font-semibold"
+          >
+            Novo Aluno
+          </Button>
         </CardHeader>
       </Card>
 

@@ -295,32 +295,33 @@ const LessonPlan = () => {
   return (
     <div className="space-y-6">
       {/* Seção 1: Seleção de Semana e Botão Cadastrar Aulas */}
-      <Card>
-        <CardHeader>
+      <Card className="bg-gradient-to-br from-[#0f1236] via-[#1c2394] to-[#de392a] text-white border-none shadow-lg relative overflow-hidden">
+        <div className="absolute top-0 right-0 h-32 w-32 rounded-full bg-white/10 blur-xl pointer-events-none" />
+        <CardHeader className="relative z-10">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <p className="text-sm text-primary font-medium">Plano de Aulas</p>
-              <CardTitle className="text-2xl font-bold tracking-tight">Gestão de Planos Semanais</CardTitle>
+              <p className="text-xs font-bold uppercase tracking-wider text-white/80">Plano de Aulas</p>
+              <CardTitle className="text-2xl font-black text-white mt-1">Gestão de Planos Semanais</CardTitle>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <div className="flex items-center gap-1 bg-secondary/50 rounded-md p-1 mr-2">
-                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handlePrevWeek}><ChevronLeft className="h-4 w-4" /></Button>
-                <span className="text-xs font-bold min-w-[120px] text-center">
+              <div className="flex items-center gap-1 bg-white/15 rounded-md p-1 mr-2">
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-white hover:bg-white/20 hover:text-white" onClick={handlePrevWeek}><ChevronLeft className="h-4 w-4" /></Button>
+                <span className="text-xs font-bold min-w-[120px] text-center text-white">
                   {format(weekStart, "dd/MM")} a {format(addDays(weekStart, 4), "dd/MM")}
                 </span>
-                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleNextWeek}><ChevronRight className="h-4 w-4" /></Button>
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-white hover:bg-white/20 hover:text-white" onClick={handleNextWeek}><ChevronRight className="h-4 w-4" /></Button>
               </div>
               <Button 
                 variant="default" 
                 onClick={() => setShowPrintModal(true)} 
-                className="flex gap-2 shadow-sm font-semibold"
+                className="flex gap-2 shadow-sm font-semibold bg-white text-[#1c2394] hover:bg-white/90 border-none"
               >
                 <Printer className="h-4 w-4" /> Imprimir Plano (PDF)
               </Button>
               <Button 
                 variant="outline" 
                 onClick={() => setShowAulasModal(true)} 
-                className="flex gap-2"
+                className="flex gap-2 bg-white/20 hover:bg-white/30 text-white border border-white/20 backdrop-blur-md font-semibold"
               >
                 <Plus className="h-4 w-4" /> Cadastrar Aulas
               </Button>

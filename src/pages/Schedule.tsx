@@ -97,15 +97,24 @@ const Schedule = () => {
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
+      <Card className="bg-gradient-to-br from-[#0f1236] via-[#1c2394] to-[#de392a] text-white border-none shadow-lg relative overflow-hidden">
+        <div className="absolute top-0 right-0 h-32 w-32 rounded-full bg-white/10 blur-xl pointer-events-none" />
+        <CardHeader className="flex flex-row items-center justify-between relative z-10">
           <div>
-            <p className="text-sm text-primary font-medium">Agenda</p>
-            <CardTitle className="text-2xl">Gestão de Turmas e Agenda</CardTitle>
+            <p className="text-xs font-bold uppercase tracking-wider text-white/80">Agenda</p>
+            <CardTitle className="text-2xl font-black text-white mt-1">Gestão de Turmas e Agenda</CardTitle>
           </div>
           <div className="flex gap-2 items-center">
-            <Input placeholder="Buscar quadra ou turma" className="w-48" />
-            <Button onClick={() => openNewSlot()}>Nova Turma</Button>
+            <Input 
+              placeholder="Buscar quadra ou turma" 
+              className="w-48 bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-white/40 focus:ring-white/40" 
+            />
+            <Button 
+              onClick={() => openNewSlot()}
+              className="bg-white/20 hover:bg-white/30 text-white border border-white/20 backdrop-blur-md font-semibold"
+            >
+              Nova Turma
+            </Button>
           </div>
         </CardHeader>
       </Card>
