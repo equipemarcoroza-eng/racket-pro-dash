@@ -515,14 +515,12 @@ export default function BiDashboard() {
 
   const GaugeSpeedometer = ({
     value,
-    title,
+    label,
     subtitle,
-    description,
   }: {
     value: number;
-    title: string;
-    subtitle: string;
-    description: string;
+    label: string;
+    subtitle?: string;
   }) => {
     const cleanValue = Math.min(100, Math.max(0, value));
     
@@ -564,9 +562,6 @@ export default function BiDashboard() {
     // Rotation of needle
     const rotation = -120 + (cleanValue / 100) * 240;
 
-    // Formatted value as 0,XXX
-    const decimalValue = (cleanValue / 100).toFixed(3).replace(".", ",");
-
     const polarToCartesian = (centerX: number, centerY: number, radius: number, angleInDegrees: number) => {
       const angleInRadians = ((angleInDegrees - 90) * Math.PI) / 180.0;
       return {
@@ -587,11 +582,6 @@ export default function BiDashboard() {
 
     return (
       <Card className="flex flex-col items-center p-6 bg-white border border-slate-100 shadow-sm rounded-2xl hover:shadow-md transition-all text-center">
-        <div className="space-y-1 mb-4">
-          <h2 className="text-xl font-bold text-slate-800 tracking-tight">{title}</h2>
-          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{subtitle}</p>
-        </div>
-
         <div className="relative w-48 h-32 flex items-end justify-center overflow-hidden mb-2">
           <svg className="w-48 h-48 absolute -bottom-16" viewBox="0 0 120 120">
             {/* Glow filters for active segments */}
@@ -707,8 +697,8 @@ export default function BiDashboard() {
           </svg>
           
           <div className="z-10 flex flex-col items-center pb-2">
-            <span className="text-3xl font-extrabold tracking-tight text-slate-800">{decimalValue}</span>
-            <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">DISPARATE IMPACT</span>
+            <span className="text-3xl font-extrabold tracking-tight text-slate-800">{Math.round(cleanValue)}%</span>
+            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{label}</span>
           </div>
         </div>
 
@@ -717,7 +707,7 @@ export default function BiDashboard() {
             {status}
           </span>
         </div>
-        <p className="text-[11px] text-slate-500 leading-relaxed max-w-xs">{description}</p>
+        {subtitle && <p className="text-[11px] text-slate-500 leading-relaxed max-w-xs">{subtitle}</p>}
       </Card>
     );
   };
@@ -837,21 +827,18 @@ export default function BiDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <GaugeSpeedometer
           value={generalMetrics.engagementRate}
-          title="Engajamento"
-          subtitle="PRESENÇA DE ALUNOS"
-          description="Proporção de alunos ativos com mais de 80% de presença nas aulas."
+          label="Engajamento Alto"
+          subtitle="Proporção de alunos ativos com mais de 80% de presença nas aulas."
         />
         <GaugeSpeedometer
           value={generalMetrics.avgAdimplencia}
-          title="Adimplência"
-          subtitle="PAGAMENTOS EM DIA"
-          description="Taxa de pagamento de faturas geradas ao longo da história do aluno."
+          label="Adimplência Histórica"
+          subtitle="Taxa de pagamento de faturas geradas ao longo da história do aluno."
         />
         <GaugeSpeedometer
           value={Math.min(100, generalMetrics.avgAttendance * 1.1)}
-          title="Fidelidade"
-          subtitle="PROJEÇÃO DE RETENÇÃO"
-          description="Estimativa de retenção de alunos para os próximos 3 meses com base no engajamento recente."
+          label="Saúde de Retenção"
+          subtitle="Estimativa de retenção de alunos para os próximos 3 meses com base no engajamento recente."
         />
       </div>
 
