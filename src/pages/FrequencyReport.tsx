@@ -10,6 +10,8 @@ import { Input } from "@/components/ui/input";
 import { useAppContext, toIsoDate } from "@/contexts/AppContext";
 import type { AttendanceLog, ClassSlot } from "@/data/mockData";
 import { toast } from "sonner";
+import { Printer } from "lucide-react";
+import logo from "@/assets/logo.png";
 
 const diasMap: Record<string, number> = { "Dom": 0, "Seg": 1, "Ter": 2, "Qua": 3, "Qui": 4, "Sex": 5, "Sáb": 6 };
 
@@ -167,13 +169,120 @@ const FrequencyReport = () => {
     return `${d}/${m}/${y}`;
   };
 
+  const handleExportPDF = async () => {
+    if (!selectedAlunoId) return;
+    const student = students.find((s) => s.id === selectedAlunoId);
+    if (!student) return;
+
+    try {
+      const { jsPDF } = await import("jspdf");
+      const autoTable = (await import("jspdf-autotable")).default;
+      const doc = new jsPDF();
+
+      // Logo
+      try {
+        doc.addImage(logo, "PNG", 85, 10, 40, 40);
+      } catch (e) {
+        console.error("Erro ao carregar o logotipo", e);
+      }
+
+      doc.setFontSize(22);
+      doc.setTextColor(20, 40, 100);
+      doc.text("Relatório de Frequência", 105, 58, { align: "center" });
+
+      doc.setFontSize(12);
+      doc.setTextColor(0, 0, 0);
+      doc.text(`Aluno: ${student.nome}`, 20, 68);
+      
+      const periodStartFormatted = formatDate(startDate);
+      const periodEndFormatted = formatDate(endDate);
+      doc.text(`Período: ${periodStartFormatted} a ${periodEndFormatted}`, 20, 74);
+
+      // Metrics block
+      doc.setFontSize(10);
+      doc.text(`Total de Aulas: ${totalAulas}`, 20, 84);
+      doc.text(`Presenças: ${presencas}`, 65, 84);
+      doc.text(`Faltas: ${faltas}`, 110, 84);
+      doc.text(`Frequência: ${percentual}%`, 150, 84);
+
+      doc.setDrawColor(200, 200, 200);
+      doc.line(20, 89, 190, 89);
+
+      // Prepare table data
+      const tableData = reportRows.map((row) => {
+        let statusText = row.status;
+        if (row.status === "Falta") {
+          statusText = "Ausente";
+        }
+        if (row.dataRealizacao) {
+          statusText += ` (${formatDate(row.dataRealizacao)})`;
+        }
+
+        let motivoText = "—";
+        if (row.status === "Cancelado") {
+          motivoText = row.motivoCancelamento || "—";
+        }
+
+        return [
+          formatDate(row.data),
+          row.turmaLabel,
+          row.horario,
+          row.quadra,
+          statusText,
+          motivoText
+        ];
+      });
+
+      autoTable(doc, {
+        startY: 94,
+        head: [["Data", "Turma", "Horário", "Quadra", "Status", "Motivo"]],
+        body: tableData,
+        theme: 'striped',
+        headStyles: { fillColor: [20, 40, 100] },
+        styles: { fontSize: 9 },
+        columnStyles: {
+          0: { cellWidth: 25 },
+          1: { cellWidth: 25 },
+          2: { cellWidth: 20 },
+          3: { cellWidth: 30 },
+          4: { cellWidth: 35 },
+          5: { cellWidth: 'auto' }
+        }
+      });
+
+      // Footer
+      const nowStr = new Date().toLocaleDateString('pt-BR');
+      const timeStr = new Date().toLocaleTimeString('pt-BR');
+      doc.setFontSize(9);
+      doc.setTextColor(150, 150, 150);
+      doc.text(`Gerado em: ${nowStr} às ${timeStr}`, 105, 285, { align: "center" });
+
+      const safeStudentName = student.nome.toLowerCase().replace(/\s+/g, '-');
+      doc.save(`frequencia-${safeStudentName}-${Date.now()}.pdf`);
+      toast.success("Relatório de frequência exportado com sucesso!");
+    } catch (err) {
+      console.error("Falha ao gerar PDF", err);
+      toast.error("Erro ao gerar o relatório em PDF");
+    }
+  };
+
   return (
     <div className="space-y-6">
       <Card className="bg-gradient-to-br from-[#0f1236] via-[#1c2394] to-[#de392a] text-white border-none shadow-lg relative overflow-hidden">
         <div className="absolute top-0 right-0 h-32 w-32 rounded-full bg-white/10 blur-xl pointer-events-none" />
-        <CardHeader className="relative z-10">
-          <p className="text-xs font-bold uppercase tracking-wider text-white/80">Consulta</p>
-          <CardTitle className="text-2xl font-black text-white mt-1">Frequência dos Alunos</CardTitle>
+        <CardHeader className="flex flex-row items-center justify-between relative z-10">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wider text-white/80">Consulta</p>
+            <CardTitle className="text-2xl font-black text-white mt-1">Frequência dos Alunos</CardTitle>
+          </div>
+          {selectedAlunoId && (
+            <Button
+              onClick={handleExportPDF}
+              className="bg-white text-[#1c2394] hover:bg-white/90 font-bold transition-all flex items-center gap-2"
+            >
+              <Printer className="h-4 w-4" /> Exportar PDF
+            </Button>
+          )}
         </CardHeader>
         <CardContent className="relative z-10">
           <div className="flex flex-wrap gap-4 items-end">
