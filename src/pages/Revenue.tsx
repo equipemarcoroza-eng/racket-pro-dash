@@ -15,7 +15,7 @@ import logo from "@/assets/logo.png";
 
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartTooltip, ResponsiveContainer,
-  LineChart, Line, Cell, Legend
+  AreaChart, Area, Cell, Legend
 } from "recharts";
 
 const Revenue = () => {
@@ -549,7 +549,14 @@ const Revenue = () => {
               </div>
               <div className="flex-1 w-full min-h-0 pt-2">
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={historicoFaturamento6Meses} margin={{ top: 10, right: 15, left: -10, bottom: 0 }}>
+                  <AreaChart data={historicoFaturamento6Meses} margin={{ top: 10, right: 15, left: -10, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="gradientFaturamento" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#2563eb" stopOpacity={0.35} />
+                        <stop offset="60%" stopColor="#3b82f6" stopOpacity={0.08} />
+                        <stop offset="100%" stopColor="#3b82f6" stopOpacity={0.0} />
+                      </linearGradient>
+                    </defs>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
                     <XAxis 
                       dataKey="mes" 
@@ -564,21 +571,23 @@ const Revenue = () => {
                       tickFormatter={(val) => `R$ ${val >= 1000 ? (val / 1000).toFixed(0) + 'k' : val}`} 
                     />
                     <RechartTooltip
-                      cursor={{ stroke: 'rgba(0,0,0,0.1)', strokeWidth: 1, strokeDasharray: '3 3' }}
+                      cursor={{ stroke: 'rgba(37, 99, 235, 0.2)', strokeWidth: 1.5, strokeDasharray: '3 3' }}
                       formatter={(value: number) => [`R$ ${value.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`, "Faturamento"]}
                       contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
                       labelStyle={{ fontWeight: 'bold', marginBottom: '4px' }}
                     />
-                    <Line 
+                    <Area 
                       type="monotone" 
                       dataKey="Faturamento" 
                       name="Faturamento" 
                       stroke="#2563eb" 
                       strokeWidth={3} 
+                      fillOpacity={1}
+                      fill="url(#gradientFaturamento)"
                       dot={{ r: 4, fill: '#2563eb', strokeWidth: 2, stroke: '#fff' }}
-                      activeDot={{ r: 6, strokeWidth: 0, fill: '#1d4ed8' }} 
+                      activeDot={{ r: 6, strokeWidth: 2, stroke: '#fff', fill: '#1d4ed8' }} 
                     />
-                  </LineChart>
+                  </AreaChart>
                 </ResponsiveContainer>
               </div>
             </div>
