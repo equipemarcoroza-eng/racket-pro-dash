@@ -210,7 +210,7 @@ const FrequencyReport = () => {
 
       // Prepare table data
       const tableData = reportRows.map((row) => {
-        let statusText = row.status;
+        let statusText: string = row.status;
         if (row.status === "Falta") {
           statusText = "Ausente";
         }
