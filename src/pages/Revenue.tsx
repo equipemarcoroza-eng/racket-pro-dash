@@ -15,7 +15,7 @@ import logo from "@/assets/logo.png";
 
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartTooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, Legend
+  LineChart, Line, Cell, Legend
 } from "recharts";
 
 const Revenue = () => {
@@ -341,6 +341,42 @@ const Revenue = () => {
     { name: "A Receber", valor: totalAReceberMes, color: "#f59e0b" }
   ];
 
+  // Histórico de Faturamento dos 6 Meses Anteriores (relativo ao mês selecionado)
+  const historicoFaturamento6Meses = useMemo(() => {
+    const list = [];
+    const curM = Number(selectedMonth);
+    const curY = Number(selectedYear);
+
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(curY, curM - 1 - i, 1);
+      const mStr = String(d.getMonth() + 1).padStart(2, "0");
+      const yStr = String(d.getFullYear());
+      
+      const rawMonthName = d.toLocaleString("pt-BR", { month: "short" }).replace(".", "");
+      const monthLabel = `${rawMonthName.charAt(0).toUpperCase() + rawMonthName.slice(1)}/${String(yStr).slice(-2)}`;
+
+      const faturado = receitas
+        .filter(r => {
+          const parts = r.vencimento.split("/");
+          if (parts.length < 3) return false;
+          const [_, mes, ano] = parts;
+          if (mes !== mStr || ano !== yStr) return false;
+          const student = students.find(s => s.id === r.alunoId || s.nome === r.aluno);
+          return student && ["Ativo", "Passado", "Extras", "Inativo"].includes(student.status);
+        })
+        .filter(r => r.status !== "Isento")
+        .reduce((acc, r) => acc + r.valor, 0);
+
+      list.push({
+        mes: monthLabel,
+        Faturamento: faturado,
+        mesAno: `${mStr}/${yStr}`,
+      });
+    }
+
+    return list;
+  }, [receitas, students, selectedMonth, selectedYear]);
+
   // Processamento de subtotais detalhados por dia do mês corrente
   const subtotaisPorDia = receitasMes.reduce((acc, curr) => {
     const data = curr.vencimento;
@@ -501,34 +537,50 @@ const Revenue = () => {
               </ResponsiveContainer>
             </div>
 
-            <div className="h-[320px] border rounded-xl p-5 bg-card shadow-sm">
-              <p className="text-sm font-bold text-muted-foreground mb-6 flex items-center gap-2">
-                <span className="w-2 h-2 bg-primary rounded-full"></span>
-                Composição de Receita ({selectedMonth}/{selectedYear})
-              </p>
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={chartData}
-                    cx="50%"
-                    cy="45%"
-                    innerRadius={70}
-                    outerRadius={95}
-                    paddingAngle={8}
-                    dataKey="valor"
-                    stroke="none"
-                  >
-                    {chartData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <RechartTooltip
-                    formatter={(value: number) => [`R$ ${value.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`, "Valor"]}
-                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
-                  />
-                  <Legend iconType="circle" verticalAlign="bottom" wrapperStyle={{ paddingTop: '20px' }} />
-                </PieChart>
-              </ResponsiveContainer>
+            <div className="h-[320px] border rounded-xl p-5 bg-card shadow-sm flex flex-col justify-between">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-sm font-bold text-muted-foreground flex items-center gap-2">
+                  <span className="w-2 h-2 bg-blue-600 rounded-full"></span>
+                  Faturamento dos 6 Meses Anteriores
+                </p>
+                <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-md">
+                  Histórico
+                </span>
+              </div>
+              <div className="flex-1 w-full min-h-0 pt-2">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={historicoFaturamento6Meses} margin={{ top: 10, right: 15, left: -10, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                    <XAxis 
+                      dataKey="mes" 
+                      axisLine={false} 
+                      tickLine={false} 
+                      tick={{ fontSize: 11, fill: '#888' }} 
+                    />
+                    <YAxis 
+                      axisLine={false} 
+                      tickLine={false} 
+                      tick={{ fontSize: 10, fill: '#888' }} 
+                      tickFormatter={(val) => `R$ ${val >= 1000 ? (val / 1000).toFixed(0) + 'k' : val}`} 
+                    />
+                    <RechartTooltip
+                      cursor={{ stroke: 'rgba(0,0,0,0.1)', strokeWidth: 1, strokeDasharray: '3 3' }}
+                      formatter={(value: number) => [`R$ ${value.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`, "Faturamento"]}
+                      contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
+                      labelStyle={{ fontWeight: 'bold', marginBottom: '4px' }}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="Faturamento" 
+                      name="Faturamento" 
+                      stroke="#2563eb" 
+                      strokeWidth={3} 
+                      dot={{ r: 4, fill: '#2563eb', strokeWidth: 2, stroke: '#fff' }}
+                      activeDot={{ r: 6, strokeWidth: 0, fill: '#1d4ed8' }} 
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
             </div>
           </div>
 
