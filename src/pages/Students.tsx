@@ -212,10 +212,6 @@ const Students = () => {
     .filter(s => s.monthsDecimal < 3)
     .sort((a, b) => b.monthsDecimal - a.monthsDecimal);
 
-  const top10ActiveStudents = [...studentsWithMonths]
-    .sort((a, b) => b.monthsDecimal - a.monthsDecimal)
-    .slice(0, 10);
-
   const averageMonths = activeStudents.length > 0
     ? studentsWithMonths.reduce((acc, curr) => acc + curr.monthsDecimal, 0) / activeStudents.length
     : 0;
@@ -663,175 +659,171 @@ const Students = () => {
                 <p className="text-muted-foreground italic">Nenhum aluno ativo cadastrado para exibir o ranking.</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
-                {/* 3 Tabelas por Tempo de Permanência */}
-                <div className="xl:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {/* Tabela 1: Veteranos (> 12 meses) */}
-                  <Card className="border border-green-200 dark:border-green-900/50 bg-green-50/20 dark:bg-green-950/10 shadow-sm flex flex-col">
-                    <CardHeader className="p-3.5 pb-2.5 border-b border-green-200/60 dark:border-green-900/40">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-1.5 min-w-0">
-                          <span className="p-1 rounded-md bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300">
-                            <Award className="w-3.5 h-3.5" />
-                          </span>
-                          <div>
-                            <CardTitle className="text-xs font-bold text-foreground">Veteranos</CardTitle>
-                            <p className="text-[10px] text-muted-foreground">&gt; 12 meses de casa</p>
-                          </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* Tabela 1: Veteranos (> 12 meses) */}
+                <Card className="border border-green-200 dark:border-green-900/50 bg-green-50/20 dark:bg-green-950/10 shadow-sm flex flex-col">
+                  <CardHeader className="p-4 pb-3 border-b border-green-200/60 dark:border-green-900/40">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="p-1.5 rounded-lg bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300">
+                          <Award className="w-4 h-4" />
+                        </span>
+                        <div>
+                          <CardTitle className="text-sm font-bold text-foreground">Veteranos</CardTitle>
+                          <p className="text-[11px] text-muted-foreground">&gt; 12 meses de casa</p>
                         </div>
-                        <Badge className="bg-green-600 hover:bg-green-700 text-white font-bold text-[10px] px-2 py-0.5">
-                          {veteranosStudents.length} {veteranosStudents.length === 1 ? 'aluno' : 'alunos'}
-                        </Badge>
                       </div>
-                    </CardHeader>
-                    <CardContent className="p-0 flex-1">
-                      <div className="max-h-[380px] overflow-y-auto divide-y divide-border/60">
-                        {veteranosStudents.length === 0 ? (
-                          <div className="p-4 text-center text-xs text-muted-foreground italic">
-                            Nenhum veterano cadastrado.
-                          </div>
-                        ) : (
-                          veteranosStudents.map((s) => (
-                            <div key={s.id} className="p-2.5 px-3 flex items-center justify-between hover:bg-muted/30 transition-colors">
-                              <div className="flex flex-col min-w-0 pr-2">
-                                <span className="font-semibold text-xs text-foreground truncate">{s.nome}</span>
-                                <span className="text-[10px] text-muted-foreground">
-                                  Entrada: {formatEntryDate(s.dataEntrada)}
+                      <Badge className="bg-green-600 hover:bg-green-700 text-white font-bold text-[11px] px-2.5 py-0.5">
+                        {veteranosStudents.length} {veteranosStudents.length === 1 ? 'aluno' : 'alunos'}
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-0 flex-1">
+                    <div className="max-h-[420px] overflow-y-auto divide-y divide-border/60">
+                      {veteranosStudents.length === 0 ? (
+                        <div className="p-6 text-center text-xs text-muted-foreground italic">
+                          Nenhum veterano cadastrado.
+                        </div>
+                      ) : (
+                        veteranosStudents.map((s, index) => {
+                          const rankColors = [
+                            "bg-amber-500 text-amber-950", // 1st
+                            "bg-slate-300 text-slate-900",   // 2nd
+                            "bg-amber-700 text-amber-50",    // 3rd
+                          ];
+                          return (
+                            <div key={s.id} className="p-3 px-3.5 flex items-center justify-between hover:bg-muted/30 transition-colors">
+                              <div className="flex items-center gap-2.5 min-w-0 pr-2">
+                                <span className={`flex items-center justify-center w-5 h-5 rounded-full font-bold text-[10px] shrink-0 ${index < 3 ? rankColors[index] : 'bg-muted text-muted-foreground'}`}>
+                                  {index + 1}º
                                 </span>
+                                <div className="flex flex-col min-w-0">
+                                  <span className="font-semibold text-xs text-foreground truncate">{s.nome}</span>
+                                  <span className="text-[10px] text-muted-foreground">
+                                    Entrada: {formatEntryDate(s.dataEntrada)}
+                                  </span>
+                                </div>
                               </div>
                               <Badge variant="outline" className="font-bold text-[10px] text-green-700 dark:text-green-300 border-green-300 dark:border-green-800 bg-green-50 dark:bg-green-950/40 shrink-0">
                                 {s.months} {s.months === 1 ? 'mês' : 'meses'}
                               </Badge>
                             </div>
-                          ))
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
+                          );
+                        })
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
 
-                  {/* Tabela 2: Intermediários (3 a 12 meses) */}
-                  <Card className="border border-blue-200 dark:border-blue-900/50 bg-blue-50/20 dark:bg-blue-950/10 shadow-sm flex flex-col">
-                    <CardHeader className="p-3.5 pb-2.5 border-b border-blue-200/60 dark:border-blue-900/40">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-1.5 min-w-0">
-                          <span className="p-1 rounded-md bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300">
-                            <Clock className="w-3.5 h-3.5" />
-                          </span>
-                          <div>
-                            <CardTitle className="text-xs font-bold text-foreground">Intermediários</CardTitle>
-                            <p className="text-[10px] text-muted-foreground">3 a 12 meses de casa</p>
-                          </div>
+                {/* Tabela 2: Intermediários (3 a 12 meses) */}
+                <Card className="border border-blue-200 dark:border-blue-900/50 bg-blue-50/20 dark:bg-blue-950/10 shadow-sm flex flex-col">
+                  <CardHeader className="p-4 pb-3 border-b border-blue-200/60 dark:border-blue-900/40">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="p-1.5 rounded-lg bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300">
+                          <Clock className="w-4 h-4" />
+                        </span>
+                        <div>
+                          <CardTitle className="text-sm font-bold text-foreground">Intermediários</CardTitle>
+                          <p className="text-[11px] text-muted-foreground">3 a 12 meses de casa</p>
                         </div>
-                        <Badge className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-[10px] px-2 py-0.5">
-                          {intermediariosStudents.length} {intermediariosStudents.length === 1 ? 'aluno' : 'alunos'}
-                        </Badge>
                       </div>
-                    </CardHeader>
-                    <CardContent className="p-0 flex-1">
-                      <div className="max-h-[380px] overflow-y-auto divide-y divide-border/60">
-                        {intermediariosStudents.length === 0 ? (
-                          <div className="p-4 text-center text-xs text-muted-foreground italic">
-                            Nenhum intermediário cadastrado.
-                          </div>
-                        ) : (
-                          intermediariosStudents.map((s) => (
-                            <div key={s.id} className="p-2.5 px-3 flex items-center justify-between hover:bg-muted/30 transition-colors">
-                              <div className="flex flex-col min-w-0 pr-2">
-                                <span className="font-semibold text-xs text-foreground truncate">{s.nome}</span>
-                                <span className="text-[10px] text-muted-foreground">
-                                  Entrada: {formatEntryDate(s.dataEntrada)}
+                      <Badge className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-[11px] px-2.5 py-0.5">
+                        {intermediariosStudents.length} {intermediariosStudents.length === 1 ? 'aluno' : 'alunos'}
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-0 flex-1">
+                    <div className="max-h-[420px] overflow-y-auto divide-y divide-border/60">
+                      {intermediariosStudents.length === 0 ? (
+                        <div className="p-6 text-center text-xs text-muted-foreground italic">
+                          Nenhum intermediário cadastrado.
+                        </div>
+                      ) : (
+                        intermediariosStudents.map((s, index) => {
+                          const rankColors = [
+                            "bg-amber-500 text-amber-950", // 1st
+                            "bg-slate-300 text-slate-900",   // 2nd
+                            "bg-amber-700 text-amber-50",    // 3rd
+                          ];
+                          return (
+                            <div key={s.id} className="p-3 px-3.5 flex items-center justify-between hover:bg-muted/30 transition-colors">
+                              <div className="flex items-center gap-2.5 min-w-0 pr-2">
+                                <span className={`flex items-center justify-center w-5 h-5 rounded-full font-bold text-[10px] shrink-0 ${index < 3 ? rankColors[index] : 'bg-muted text-muted-foreground'}`}>
+                                  {index + 1}º
                                 </span>
+                                <div className="flex flex-col min-w-0">
+                                  <span className="font-semibold text-xs text-foreground truncate">{s.nome}</span>
+                                  <span className="text-[10px] text-muted-foreground">
+                                    Entrada: {formatEntryDate(s.dataEntrada)}
+                                  </span>
+                                </div>
                               </div>
                               <Badge variant="outline" className="font-bold text-[10px] text-blue-700 dark:text-blue-300 border-blue-300 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/40 shrink-0">
                                 {s.months} {s.months === 1 ? 'mês' : 'meses'}
                               </Badge>
                             </div>
-                          ))
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
+                          );
+                        })
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
 
-                  {/* Tabela 3: Iniciantes (< 3 meses) */}
-                  <Card className="border border-amber-200 dark:border-amber-900/50 bg-amber-50/20 dark:bg-amber-950/10 shadow-sm flex flex-col">
-                    <CardHeader className="p-3.5 pb-2.5 border-b border-amber-200/60 dark:border-amber-900/40">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-1.5 min-w-0">
-                          <span className="p-1 rounded-md bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300">
-                            <Sparkles className="w-3.5 h-3.5" />
-                          </span>
-                          <div>
-                            <CardTitle className="text-xs font-bold text-foreground">Iniciantes</CardTitle>
-                            <p className="text-[10px] text-muted-foreground">&lt; 3 meses (Adaptação)</p>
-                          </div>
+                {/* Tabela 3: Iniciantes (< 3 meses) */}
+                <Card className="border border-amber-200 dark:border-amber-900/50 bg-amber-50/20 dark:bg-amber-950/10 shadow-sm flex flex-col">
+                  <CardHeader className="p-4 pb-3 border-b border-amber-200/60 dark:border-amber-900/40">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="p-1.5 rounded-lg bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300">
+                          <Sparkles className="w-4 h-4" />
+                        </span>
+                        <div>
+                          <CardTitle className="text-sm font-bold text-foreground">Iniciantes</CardTitle>
+                          <p className="text-[11px] text-muted-foreground">&lt; 3 meses (Adaptação)</p>
                         </div>
-                        <Badge className="bg-amber-600 hover:bg-amber-700 text-white font-bold text-[10px] px-2 py-0.5">
-                          {iniciantesStudents.length} {iniciantesStudents.length === 1 ? 'aluno' : 'alunos'}
-                        </Badge>
                       </div>
-                    </CardHeader>
-                    <CardContent className="p-0 flex-1">
-                      <div className="max-h-[380px] overflow-y-auto divide-y divide-border/60">
-                        {iniciantesStudents.length === 0 ? (
-                          <div className="p-4 text-center text-xs text-muted-foreground italic">
-                            Nenhum iniciante cadastrado.
-                          </div>
-                        ) : (
-                          iniciantesStudents.map((s) => (
-                            <div key={s.id} className="p-2.5 px-3 flex items-center justify-between hover:bg-muted/30 transition-colors">
-                              <div className="flex flex-col min-w-0 pr-2">
-                                <span className="font-semibold text-xs text-foreground truncate">{s.nome}</span>
-                                <span className="text-[10px] text-muted-foreground">
-                                  Entrada: {formatEntryDate(s.dataEntrada)}
+                      <Badge className="bg-amber-600 hover:bg-amber-700 text-white font-bold text-[11px] px-2.5 py-0.5">
+                        {iniciantesStudents.length} {iniciantesStudents.length === 1 ? 'aluno' : 'alunos'}
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-0 flex-1">
+                    <div className="max-h-[420px] overflow-y-auto divide-y divide-border/60">
+                      {iniciantesStudents.length === 0 ? (
+                        <div className="p-6 text-center text-xs text-muted-foreground italic">
+                          Nenhum iniciante cadastrado.
+                        </div>
+                      ) : (
+                        iniciantesStudents.map((s, index) => {
+                          const rankColors = [
+                            "bg-amber-500 text-amber-950", // 1st
+                            "bg-slate-300 text-slate-900",   // 2nd
+                            "bg-amber-700 text-amber-50",    // 3rd
+                          ];
+                          return (
+                            <div key={s.id} className="p-3 px-3.5 flex items-center justify-between hover:bg-muted/30 transition-colors">
+                              <div className="flex items-center gap-2.5 min-w-0 pr-2">
+                                <span className={`flex items-center justify-center w-5 h-5 rounded-full font-bold text-[10px] shrink-0 ${index < 3 ? rankColors[index] : 'bg-muted text-muted-foreground'}`}>
+                                  {index + 1}º
                                 </span>
+                                <div className="flex flex-col min-w-0">
+                                  <span className="font-semibold text-xs text-foreground truncate">{s.nome}</span>
+                                  <span className="text-[10px] text-muted-foreground">
+                                    Entrada: {formatEntryDate(s.dataEntrada)}
+                                  </span>
+                                </div>
                               </div>
                               <Badge variant="outline" className="font-bold text-[10px] text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/40 shrink-0">
                                 {s.months} {s.months === 1 ? 'mês' : 'meses'}
                               </Badge>
                             </div>
-                          ))
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-
-                {/* TOP 10 Alunos */}
-                <div className="xl:col-span-1">
-                  <div className="p-3.5 rounded-xl border border-border bg-card shadow-sm h-full flex flex-col">
-                    <p className="text-xs font-bold text-foreground mb-3 flex items-center gap-2">
-                      <span className="w-2 h-2 bg-primary rounded-full"></span>
-                      TOP 10 Alunos com Maior Tempo de Casa
-                    </p>
-                    <div className="space-y-2 max-h-[380px] overflow-y-auto pr-1 flex-1">
-                      {top10ActiveStudents.map((s, index) => {
-                        const colors = [
-                          "bg-yellow-500 text-yellow-950", // 1st
-                          "bg-slate-300 text-slate-900",   // 2nd
-                          "bg-amber-600 text-amber-50",    // 3rd
-                        ];
-                        return (
-                          <div key={s.id} className="flex items-center justify-between py-2 px-2.5 rounded-xl border border-border bg-muted/20 hover:bg-muted/40 shadow-xs transition-all duration-200">
-                            <div className="flex items-center gap-2 min-w-0">
-                              <span className={`flex items-center justify-center w-5 h-5 rounded-full font-bold text-[10px] shrink-0 ${colors[index] || 'bg-muted text-muted-foreground'}`}>
-                                {index + 1}º
-                              </span>
-                              <div className="flex flex-col min-w-0">
-                                <span className="font-semibold text-xs truncate">{s.nome}</span>
-                                <span className="text-[9px] text-muted-foreground">
-                                  Entrada: {formatEntryDate(s.dataEntrada)}
-                                </span>
-                              </div>
-                            </div>
-                            <Badge variant="secondary" className="font-bold text-[10px] px-2 py-0.5 shrink-0 ml-1.5">
-                              {s.months} {s.months === 1 ? 'mês' : 'meses'}
-                            </Badge>
-                          </div>
-                        );
-                      })}
+                          );
+                        })
+                      )}
                     </div>
-                  </div>
-                </div>
+                  </CardContent>
+                </Card>
               </div>
             )}
           </div>
