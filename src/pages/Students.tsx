@@ -20,6 +20,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import type { Student } from "@/data/mockData";
+import { useAppContext, calculateAge, getCategoryFromBirthDate } from "@/contexts/AppContext";
 import { toast } from "sonner";
 import { Printer, Trash2, Award, Clock, Sparkles } from "lucide-react";
 import logo from "@/assets/logo.png";
