@@ -8,7 +8,6 @@ import {
   LogOut,
   ClipboardCheck,
   BarChart3,
-  Cake,
   TrendingUp,
   TrendingDown,
   DollarSign,
@@ -25,7 +24,6 @@ import { cn } from "@/lib/utils";
 const navItems = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/students", label: "Alunos", icon: Users },
-  { to: "/birthdays", label: "Aniversariantes", icon: Cake },
   { to: "/schedule", label: "Agenda", icon: Calendar },
   { to: "/plans/manage", label: "Planos", icon: ClipboardList },
   { to: "/classes", label: "Controle de Turmas", icon: Users },

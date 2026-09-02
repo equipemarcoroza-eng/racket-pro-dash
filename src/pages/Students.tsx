@@ -139,6 +139,7 @@ const Students = () => {
 
   const birthdayStudents = students
     .filter((s) => {
+      if (s.status !== "Ativo") return false;
       if (!s.dataNascimento) return false;
       const parts = s.dataNascimento.split("-");
       return parts.length >= 2 && parts[1] === selectedBirthdayMonth;
@@ -641,12 +642,6 @@ const Students = () => {
                           <span className="font-medium">{age} anos</span>
                           <span>•</span>
                           <span className="font-medium truncate">{s.categoria}</span>
-                          {s.status !== "Ativo" && (
-                            <>
-                              <span>•</span>
-                              <span className="text-muted-foreground/80 font-normal">({s.status})</span>
-                            </>
-                          )}
                         </div>
                       </div>
                     </div>
