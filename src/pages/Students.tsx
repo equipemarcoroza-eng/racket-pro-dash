@@ -1,5 +1,5 @@
-// Gestão de Alunos - Fix para visibilidade de dados históricos
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,9 +22,23 @@ import { Textarea } from "@/components/ui/textarea";
 import type { Student } from "@/data/mockData";
 import { useAppContext, calculateAge, getCategoryFromBirthDate } from "@/contexts/AppContext";
 import { toast } from "sonner";
-import { Printer, Trash2, Award, Clock, Sparkles } from "lucide-react";
+import { Printer, Trash2, Award, Clock, Sparkles, Cake, PartyPopper, ArrowRight, MessageCircle } from "lucide-react";
 import logo from "@/assets/logo.png";
 
+const months = [
+  { value: "01", label: "Janeiro" },
+  { value: "02", label: "Fevereiro" },
+  { value: "03", label: "Março" },
+  { value: "04", label: "Abril" },
+  { value: "05", label: "Maio" },
+  { value: "06", label: "Junho" },
+  { value: "07", label: "Julho" },
+  { value: "08", label: "Agosto" },
+  { value: "09", label: "Setembro" },
+  { value: "10", label: "Outubro" },
+  { value: "11", label: "Novembro" },
+  { value: "12", label: "Dezembro" },
+];
 
 const categorias = ["Infantil", "Juvenil", "Adulto"] as const;
 const statuses = ["Ativo", "Inativo", "Em análise", "Passado", "Extras"] as const;
@@ -116,6 +130,40 @@ const Students = () => {
     const now = new Date();
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
   });
+
+  const navigate = useNavigate();
+  const today = new Date();
+  const currentMonthValue = String(today.getMonth() + 1).padStart(2, "0");
+  const currentDayStr = String(today.getDate()).padStart(2, "0");
+  const [selectedBirthdayMonth, setSelectedBirthdayMonth] = useState<string>(currentMonthValue);
+
+  const birthdayStudents = students
+    .filter((s) => {
+      if (!s.dataNascimento) return false;
+      const parts = s.dataNascimento.split("-");
+      return parts.length >= 2 && parts[1] === selectedBirthdayMonth;
+    })
+    .sort((a, b) => {
+      const dayA = parseInt(a.dataNascimento.split("-")[2]) || 0;
+      const dayB = parseInt(b.dataNascimento.split("-")[2]) || 0;
+      return dayA - dayB;
+    });
+
+  const selectedMonthObj = months.find((m) => m.value === selectedBirthdayMonth) || months[today.getMonth()];
+
+  const handleCongratulateWhatsApp = (s: Student) => {
+    const phone = s.whatsappAluno || s.whatsappResponsavel || "";
+    const cleanPhone = phone.replace(/\D/g, "");
+    const firstName = s.nome.split(" ")[0];
+    const msg = encodeURIComponent(
+      `Olá ${firstName}! A Equipe Marco Roza te deseja um Feliz Aniversário! 🎂🎾 Desejamos muita saúde, felicidade e grandes vitórias nas quadras! 🚀🎉`
+    );
+    if (cleanPhone) {
+      window.open(`https://wa.me/55${cleanPhone}?text=${msg}`, "_blank");
+    } else {
+      toast.info(`Aluno(a) ${s.nome} não possui WhatsApp cadastrado.`);
+    }
+  };
 
   // Estados para os novos relatórios financeiros e de frequência
   const [reportStudent, setReportStudent] = useState<Student | null>(null);
@@ -481,6 +529,145 @@ const Students = () => {
             Novo Aluno
           </Button>
         </CardHeader>
+      </Card>
+
+      {/* Sticker / Ticker de Aniversariantes do Mês */}
+      <Card className="border border-amber-200/80 dark:border-amber-900/50 bg-gradient-to-r from-amber-500/10 via-rose-500/5 to-primary/10 shadow-sm overflow-hidden relative">
+        <div className="p-4 sm:p-5">
+          {/* Barra Superior do Sticker */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-amber-200/60 dark:border-amber-900/40">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center ring-1 ring-amber-500/30 shadow-inner shrink-0">
+                <Cake className="w-5 h-5 animate-bounce" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h3 className="font-extrabold text-foreground text-base tracking-tight flex items-center gap-1.5">
+                    Aniversariantes do Mês
+                  </h3>
+                  <Badge className="bg-amber-500 hover:bg-amber-600 text-amber-950 font-black text-[11px] px-2.5 py-0.5 shadow-sm">
+                    {selectedMonthObj.label} ({birthdayStudents.length})
+                  </Badge>
+                </div>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Acompanhe e parabenize os alunos que celebram mais um ano de vida neste mês.
+                </p>
+              </div>
+            </div>
+
+            {/* Ações / Seletor de Mês */}
+            <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
+              <Select value={selectedBirthdayMonth} onValueChange={setSelectedBirthdayMonth}>
+                <SelectTrigger className="h-8 text-xs w-[130px] bg-background/80 border-amber-200 dark:border-amber-900/50">
+                  <SelectValue placeholder="Mês" />
+                </SelectTrigger>
+                <SelectContent>
+                  {months.map((m) => (
+                    <SelectItem key={m.value} value={m.value} className="text-xs">
+                      {m.label} {m.value === currentMonthValue ? "• Atual" : ""}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate("/birthdays")}
+                className="h-8 text-xs font-semibold gap-1.5 border-amber-300 dark:border-amber-800 hover:bg-amber-100/50 dark:hover:bg-amber-950/40 text-amber-900 dark:text-amber-200"
+              >
+                <span>Ver Todos</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Button>
+            </div>
+          </div>
+
+          {/* Lista de Stickers dos Alunos */}
+          {birthdayStudents.length === 0 ? (
+            <div className="py-5 px-4 text-center flex flex-col items-center justify-center">
+              <p className="text-xs text-muted-foreground italic flex items-center gap-1.5">
+                <PartyPopper className="w-4 h-4 text-amber-500/70" />
+                Nenhum aniversariante cadastrado para o mês de {selectedMonthObj.label}.
+              </p>
+              {selectedBirthdayMonth !== currentMonthValue && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSelectedBirthdayMonth(currentMonthValue)}
+                  className="text-xs text-primary font-semibold mt-1 h-7"
+                >
+                  Voltar para o mês atual
+                </Button>
+              )}
+            </div>
+          ) : (
+            <div className="pt-3.5 flex items-center gap-3 overflow-x-auto pb-1 scrollbar-thin">
+              {birthdayStudents.map((s) => {
+                const day = s.dataNascimento?.split("-")[2] || "--";
+                const isToday = day === currentDayStr && selectedBirthdayMonth === currentMonthValue;
+                const age = calculateAge(s.dataNascimento);
+                const hasPhone = !!(s.whatsappAluno || s.whatsappResponsavel);
+
+                return (
+                  <div
+                    key={s.id}
+                    className={`shrink-0 flex items-center justify-between gap-3 p-2.5 px-3.5 rounded-xl border transition-all duration-200 min-w-[260px] max-w-[320px] ${
+                      isToday
+                        ? "bg-gradient-to-r from-amber-500/20 via-rose-500/20 to-amber-500/10 border-amber-400 shadow-md ring-2 ring-amber-400/50"
+                        : "bg-background/90 hover:bg-background border-border/80 hover:border-amber-300 hover:shadow-sm"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div
+                        className={`flex flex-col items-center justify-center px-2 py-1 rounded-lg font-black text-xs shrink-0 ${
+                          isToday
+                            ? "bg-amber-500 text-amber-950 shadow-sm animate-pulse"
+                            : "bg-primary/10 text-primary"
+                        }`}
+                      >
+                        <span className="text-[9px] uppercase font-bold leading-none">Dia</span>
+                        <span className="text-sm font-black leading-tight">{day}</span>
+                      </div>
+                      <div className="flex flex-col min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-bold text-xs text-foreground truncate">{s.nome}</span>
+                          {isToday && (
+                            <Badge className="bg-rose-500 hover:bg-rose-600 text-white text-[9px] font-black px-1.5 py-0 leading-none h-4">
+                              🎉 HOJE!
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground mt-0.5">
+                          <span className="font-medium">{age} anos</span>
+                          <span>•</span>
+                          <span className="font-medium truncate">{s.categoria}</span>
+                          {s.status !== "Ativo" && (
+                            <>
+                              <span>•</span>
+                              <span className="text-muted-foreground/80 font-normal">({s.status})</span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {hasPhone && (
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        title="Enviar felicitações no WhatsApp"
+                        onClick={() => handleCongratulateWhatsApp(s)}
+                        className="h-8 w-8 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 rounded-lg shrink-0"
+                      >
+                        <MessageCircle className="w-4 h-4" />
+                      </Button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
       </Card>
 
       <Card>
