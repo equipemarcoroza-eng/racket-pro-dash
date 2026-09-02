@@ -12,11 +12,22 @@ import { useAppContext } from "@/contexts/AppContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import logo from "@/assets/logo.png";
+import {
+  CalendarClock,
+  MessageCircle,
+  AlertCircle,
+  CheckCircle2,
+  Clock,
+  PhoneOff,
+  ArrowDownCircle,
+} from "lucide-react";
 
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartTooltip, ResponsiveContainer,
   AreaChart, Area, Cell, Legend
 } from "recharts";
+
+const monthsShort = ["JAN", "FEV", "MAR", "ABR", "MAI", "JUN", "JUL", "AGO", "SET", "OUT", "NOV", "DEZ"];
 
 const Revenue = () => {
   const { students, revenues: receitas, setRevenues: setReceitas, plans: mockPlans } = useAppContext();
@@ -27,6 +38,7 @@ const Revenue = () => {
   const [showAvulso, setShowAvulso] = useState(false);
   const [recebimentoForm, setRecebimentoForm] = useState({ aluno: "", valor: "", plano: "Mensalidade" });
   const [avulsoForm, setAvulsoForm] = useState({ aluno: "", alunoId: "", valor: "", plano: "Uniformes", vencimento: new Date().toISOString().split("T")[0] });
+  const [openStickerFilter, setOpenStickerFilter] = useState<"mes" | "todos" | "atrasadas">("mes");
 
   const now = new Date();
   const [selectedMonth, setSelectedMonth] = useState(() => {
@@ -43,6 +55,39 @@ const Revenue = () => {
   const parseDate = (dateStr: string) => {
     const [d, m, y] = dateStr.split("/").map(Number);
     return new Date(y, m - 1, d);
+  };
+
+  const handleSendWhatsAppReminder = (r: RevenueType) => {
+    const student = students.find((s) => s.id === r.alunoId || s.nome === r.aluno);
+    const phone = student?.whatsappAluno || student?.whatsappResponsavel || "";
+    const cleanPhone = phone.replace(/\D/g, "");
+
+    if (!cleanPhone) {
+      toast.error(`Nenhum WhatsApp cadastrado para o aluno ${r.aluno}.`);
+      return;
+    }
+
+    const firstName = r.aluno.split(" ")[0];
+    const valorFmt = r.valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+    const [dia, mes, ano] = r.vencimento.split("/").map(Number);
+    const dueDate = new Date(ano, mes - 1, dia);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    dueDate.setHours(0, 0, 0, 0);
+    const diffDays = Math.round((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+
+    let mensagem = "";
+    if (diffDays < 0 || r.status === "Em atraso") {
+      mensagem = `Olá, ${firstName}! Tudo bem? 🎾\n\nAqui é da Equipe Marco Roza. Identificamos que a parcela de *${r.plano}* no valor de *${valorFmt}*, com vencimento em *${r.vencimento}*, consta em aberto no sistema.\n\nCaso já tenha efetuado o pagamento, por favor desconsidere ou nos envie o comprovante para darmos baixa. Se precisar da chave PIX ou dados para pagamento, estamos à disposição! 🚀`;
+    } else if (diffDays === 0) {
+      mensagem = `Olá, ${firstName}! Tudo bem? 🎾\n\nAqui é da Equipe Marco Roza. Passando para lembrar que sua parcela de *${r.plano}* no valor de *${valorFmt}* vence *hoje* (*${r.vencimento}*).\n\nQualquer dúvida ou se já realizou o pagamento, nos avise! Muito obrigado! 🚀`;
+    } else {
+      mensagem = `Olá, ${firstName}! Tudo bem? 🎾\n\nAqui é da Equipe Marco Roza. Lembramos que sua parcela de *${r.plano}* no valor de *${valorFmt}* tem vencimento próximo, em *${r.vencimento}*.\n\nQualquer dúvida estamos à disposição. Bons treinos! 🚀`;
+    }
+
+    const finalPhone = cleanPhone.length <= 11 ? `55${cleanPhone}` : cleanPhone;
+    window.open(`https://wa.me/${finalPhone}?text=${encodeURIComponent(mensagem)}`, "_blank");
   };
 
   // Extrair todos os meses/anos disponíveis que possuem registros
@@ -403,6 +448,51 @@ const Revenue = () => {
   const totalPlanos = receitas.filter(r => r.plano !== "Taxa de Matrícula").reduce((a, b) => a + b.valor, 0);
   const totalIsentos = receitas.filter(r => r.status === "Isento").reduce((a, b) => a + b.valor, 0);
 
+  // Parcelas em aberto para o Sticker (ordenadas por data de vencimento)
+  const openRevenuesList = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    return receitas
+      .filter((r) => {
+        // Apenas parcelas com status em aberto
+        if (r.status !== "Gerada" && r.status !== "Em atraso") return false;
+
+        // Alunos elegíveis
+        const student = students.find((s) => s.id === r.alunoId || s.nome === r.aluno);
+        if (!student || !["Ativo", "Passado", "Extras", "Inativo"].includes(student.status)) {
+          return false;
+        }
+
+        if (openStickerFilter === "mes") {
+          const parts = r.vencimento.split("/");
+          if (parts.length === 3) {
+            return parts[1] === selectedMonth && parts[2] === selectedYear;
+          }
+          return false;
+        }
+
+        if (openStickerFilter === "atrasadas") {
+          const [d, m, y] = r.vencimento.split("/").map(Number);
+          const dueDate = new Date(y, m - 1, d);
+          dueDate.setHours(0, 0, 0, 0);
+          return r.status === "Em atraso" || dueDate.getTime() < today.getTime();
+        }
+
+        return true; // "todos"
+      })
+      .sort((a, b) => {
+        const dateA = parseDate(a.vencimento).getTime();
+        const dateB = parseDate(b.vencimento).getTime();
+        if (dateA !== dateB) return dateA - dateB;
+        return a.aluno.localeCompare(b.aluno);
+      });
+  }, [receitas, students, openStickerFilter, selectedMonth, selectedYear]);
+
+  const totalOpenAmount = useMemo(() => {
+    return openRevenuesList.reduce((acc, r) => acc + r.valor, 0);
+  }, [openRevenuesList]);
+
   return (
     <div className="space-y-6">
       <Card className="bg-gradient-to-br from-[#0f1236] via-[#1c2394] to-[#de392a] text-white border-none shadow-lg relative overflow-hidden">
@@ -436,6 +526,176 @@ const Revenue = () => {
             </Button>
           </div>
         </CardHeader>
+      </Card>
+
+      {/* Sticker / Ticker de Parcelas em Aberto por Ordem de Vencimento */}
+      <Card className="border border-orange-200/80 dark:border-orange-900/50 bg-gradient-to-r from-orange-500/10 via-amber-500/5 to-primary/10 shadow-sm overflow-hidden relative">
+        <div className="p-4 sm:p-5">
+          {/* Barra Superior do Sticker */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-orange-200/60 dark:border-orange-900/40">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-xl bg-orange-500/20 text-orange-600 dark:text-orange-400 flex items-center justify-center ring-1 ring-orange-500/30 shadow-inner shrink-0">
+                <CalendarClock className="w-5 h-5 animate-pulse" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h3 className="font-extrabold text-foreground text-base tracking-tight flex items-center gap-1.5">
+                    Parcelas em Aberto
+                  </h3>
+                  <Badge className="bg-orange-500 hover:bg-orange-600 text-white font-black text-[11px] px-2.5 py-0.5 shadow-sm">
+                    {openRevenuesList.length} {openRevenuesList.length === 1 ? "parcela" : "parcelas"} • {totalOpenAmount.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                  </Badge>
+                </div>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Cobranças organizadas por ordem de vencimento com aviso rápido via WhatsApp.
+                </p>
+              </div>
+            </div>
+
+            {/* Ações / Seletor de visualização e atalho para a tabela */}
+            <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
+              <Select value={openStickerFilter} onValueChange={(v: "mes" | "todos" | "atrasadas") => setOpenStickerFilter(v)}>
+                <SelectTrigger className="h-8 text-xs w-[170px] bg-background/80 border-orange-200 dark:border-orange-900/50">
+                  <SelectValue placeholder="Visualização" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="mes" className="text-xs">Mês ({selectedMonth}/{selectedYear})</SelectItem>
+                  <SelectItem value="todos" className="text-xs">Todas em Aberto</SelectItem>
+                  <SelectItem value="atrasadas" className="text-xs">Apenas Em Atraso</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const el = document.getElementById("lista-receitas-card");
+                  el?.scrollIntoView({ behavior: "smooth" });
+                }}
+                className="h-8 text-xs font-semibold gap-1.5 border-orange-300 dark:border-orange-800 hover:bg-orange-100/50 dark:hover:bg-orange-950/40 text-orange-900 dark:text-orange-200"
+              >
+                <span>Ver Tabela</span>
+                <ArrowDownCircle className="w-3.5 h-3.5" />
+              </Button>
+            </div>
+          </div>
+
+          {/* Lista de Stickers das Parcelas em Aberto */}
+          {openRevenuesList.length === 0 ? (
+            <div className="py-5 px-4 text-center flex flex-col items-center justify-center">
+              <p className="text-xs text-muted-foreground italic flex items-center gap-1.5">
+                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                Nenhuma parcela em aberto encontrada para o filtro selecionado. Tudo em dia!
+              </p>
+              {openStickerFilter !== "mes" && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setOpenStickerFilter("mes")}
+                  className="text-xs text-primary font-semibold mt-1 h-7"
+                >
+                  Voltar para o mês ({selectedMonth}/{selectedYear})
+                </Button>
+              )}
+            </div>
+          ) : (
+            <div className="pt-3.5 flex items-center gap-3 overflow-x-auto pb-1 scrollbar-thin">
+              {openRevenuesList.map((r) => {
+                const [dia, mes, ano] = r.vencimento.split("/");
+                const dueDate = new Date(Number(ano), Number(mes) - 1, Number(dia));
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                dueDate.setHours(0, 0, 0, 0);
+                const diffDays = Math.round((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+                const isExpired = diffDays < 0 || r.status === "Em atraso";
+                const isToday = diffDays === 0;
+
+                const student = students.find((s) => s.id === r.alunoId || s.nome === r.aluno);
+                const hasPhone = !!(student?.whatsappAluno || student?.whatsappResponsavel);
+
+                return (
+                  <div
+                    key={r.id}
+                    className={`shrink-0 flex items-center justify-between gap-3 p-2.5 px-3.5 rounded-xl border transition-all duration-200 min-w-[280px] max-w-[340px] ${
+                      isToday
+                        ? "bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-amber-500/10 border-amber-400 shadow-md ring-2 ring-amber-400/50"
+                        : isExpired
+                        ? "bg-rose-500/10 hover:bg-rose-500/15 border-rose-300 dark:border-rose-900/60 shadow-sm"
+                        : "bg-background/90 hover:bg-background border-border/80 hover:border-orange-300 hover:shadow-sm"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div
+                        className={`flex flex-col items-center justify-center px-2 py-1 rounded-lg font-black text-xs shrink-0 ${
+                          isToday
+                            ? "bg-amber-500 text-amber-950 shadow-sm animate-pulse"
+                            : isExpired
+                            ? "bg-rose-500/20 text-rose-700 dark:text-rose-300 border border-rose-300/40"
+                            : "bg-primary/10 text-primary"
+                        }`}
+                      >
+                        <span className="text-[9px] uppercase font-bold leading-none">
+                          {monthsShort[Number(mes) - 1] || "VENC"}
+                        </span>
+                        <span className="text-sm font-black leading-tight">{dia}</span>
+                      </div>
+
+                      <div className="flex flex-col min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-bold text-xs text-foreground truncate max-w-[130px]" title={r.aluno}>
+                            {r.aluno}
+                          </span>
+                          {isToday && (
+                            <Badge className="bg-amber-500 hover:bg-amber-600 text-amber-950 text-[9px] font-black px-1.5 py-0 leading-none h-4">
+                              HOJE!
+                            </Badge>
+                          )}
+                          {!isToday && isExpired && (
+                            <Badge variant="destructive" className="text-[9px] font-black px-1.5 py-0 leading-none h-4">
+                              {diffDays < 0 ? `${Math.abs(diffDays)}d atraso` : "Em atraso"}
+                            </Badge>
+                          )}
+                          {!isToday && !isExpired && (
+                            <span className="text-[9px] font-semibold text-muted-foreground bg-muted/60 px-1 rounded">
+                              em {diffDays}d
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground mt-0.5">
+                          <span className="font-bold text-foreground font-mono">
+                            R$ {r.valor.toFixed(2).replace(".", ",")}
+                          </span>
+                          <span>•</span>
+                          <span className="font-medium truncate max-w-[85px]" title={r.plano}>{r.plano}</span>
+                          {student?.status && student.status !== "Ativo" && (
+                            <span className="text-[9px] text-muted-foreground">({student.status})</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Botão WhatsApp */}
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      title={hasPhone ? "Enviar cobrança/lembrete no WhatsApp" : "Aluno sem WhatsApp cadastrado"}
+                      disabled={!hasPhone}
+                      onClick={() => handleSendWhatsAppReminder(r)}
+                      className={`h-8 w-8 rounded-lg shrink-0 ${
+                        hasPhone
+                          ? "text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 cursor-pointer"
+                          : "text-muted-foreground opacity-30 cursor-not-allowed"
+                      }`}
+                    >
+                      {hasPhone ? <MessageCircle className="w-4 h-4" /> : <PhoneOff className="w-4 h-4" />}
+                    </Button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
       </Card>
 
       {/* 2. Resumo (Visão Geral) */}
@@ -631,7 +891,7 @@ const Revenue = () => {
       </Card>
 
       {/* 3. Lista de Receitas */}
-      <Card>
+      <Card id="lista-receitas-card">
         <CardContent className="pt-6">
           <div className="flex items-center justify-between mb-4">
             <div>
