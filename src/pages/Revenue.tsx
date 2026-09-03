@@ -59,15 +59,23 @@ const Revenue = () => {
 
   const handleSendWhatsAppReminder = (r: RevenueType) => {
     const student = students.find((s) => s.id === r.alunoId || s.nome === r.aluno);
-    const phone = student?.whatsappAluno || student?.whatsappResponsavel || "";
+    const isMinor = student?.categoria === "Infantil" || student?.categoria === "Juvenil";
+
+    // Quando for Categoria Infantil ou Juvenil, o WhatsApp a ser direcionado é o do Responsável. Adulto segue WhatsApp do Aluno.
+    const phone = isMinor
+      ? (student?.whatsappResponsavel || student?.whatsappAluno || "")
+      : (student?.whatsappAluno || student?.whatsappResponsavel || "");
     const cleanPhone = phone.replace(/\D/g, "");
 
     if (!cleanPhone) {
-      toast.error(`Nenhum WhatsApp cadastrado para o aluno ${r.aluno}.`);
+      if (isMinor) {
+        toast.error(`Nenhum WhatsApp de responsável cadastrado para o aluno ${r.aluno}.`);
+      } else {
+        toast.error(`Nenhum WhatsApp cadastrado para o aluno ${r.aluno}.`);
+      }
       return;
     }
 
-    const firstName = r.aluno.split(" ")[0];
     const valorFmt = r.valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
     const [dia, mes, ano] = r.vencimento.split("/").map(Number);
@@ -77,13 +85,30 @@ const Revenue = () => {
     dueDate.setHours(0, 0, 0, 0);
     const diffDays = Math.round((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
+    // Determina se a mensagem é endereçada ao responsável (Infantil/Juvenil) ou diretamente ao aluno (Adulto)
+    const isSendingToResponsavel = isMinor && !!student?.whatsappResponsavel;
+    const responsavelName = student?.responsavel ? student.responsavel.trim().split(" ")[0] : "";
+    const firstName = r.aluno.split(" ")[0];
+
     let mensagem = "";
-    if (diffDays < 0 || r.status === "Em atraso") {
-      mensagem = `Olá, ${firstName}! Tudo bem? 🎾\n\nAqui é da Equipe Marco Roza. Identificamos que a parcela de *${r.plano}* no valor de *${valorFmt}*, com vencimento em *${r.vencimento}*, consta em aberto no sistema.\n\nCaso já tenha efetuado o pagamento, por favor desconsidere ou nos envie o comprovante para darmos baixa. Se precisar da chave PIX ou dados para pagamento, estamos à disposição! 🚀`;
-    } else if (diffDays === 0) {
-      mensagem = `Olá, ${firstName}! Tudo bem? 🎾\n\nAqui é da Equipe Marco Roza. Passando para lembrar que sua parcela de *${r.plano}* no valor de *${valorFmt}* vence *hoje* (*${r.vencimento}*).\n\nQualquer dúvida ou se já realizou o pagamento, nos avise! Muito obrigado! 🚀`;
+    if (isSendingToResponsavel) {
+      const saudacao = responsavelName ? `Olá, ${responsavelName}! Tudo bem? 🎾` : `Olá! Tudo bem? 🎾`;
+      if (diffDays < 0 || r.status === "Em atraso") {
+        mensagem = `${saudacao}\n\nAqui é da Equipe Marco Roza. Identificamos que a parcela de *${r.plano}* do(a) atleta *${r.aluno}* no valor de *${valorFmt}*, com vencimento em *${r.vencimento}*, consta em aberto no sistema.\n\nCaso já tenha efetuado o pagamento, por favor desconsidere ou nos envie o comprovante para darmos baixa. Se precisar da chave PIX ou dados para pagamento, estamos à disposição! 🚀`;
+      } else if (diffDays === 0) {
+        mensagem = `${saudacao}\n\nAqui é da Equipe Marco Roza. Passando para lembrar que a parcela de *${r.plano}* do(a) atleta *${r.aluno}* no valor de *${valorFmt}* vence *hoje* (*${r.vencimento}*).\n\nQualquer dúvida ou se já realizou o pagamento, nos avise! Muito obrigado! 🚀`;
+      } else {
+        mensagem = `${saudacao}\n\nAqui é da Equipe Marco Roza. Lembramos que a parcela de *${r.plano}* do(a) atleta *${r.aluno}* no valor de *${valorFmt}* tem vencimento próximo, em *${r.vencimento}*.\n\nQualquer dúvida estamos à disposição. Bons treinos! 🚀`;
+      }
     } else {
-      mensagem = `Olá, ${firstName}! Tudo bem? 🎾\n\nAqui é da Equipe Marco Roza. Lembramos que sua parcela de *${r.plano}* no valor de *${valorFmt}* tem vencimento próximo, em *${r.vencimento}*.\n\nQualquer dúvida estamos à disposição. Bons treinos! 🚀`;
+      const saudacao = `Olá, ${firstName}! Tudo bem? 🎾`;
+      if (diffDays < 0 || r.status === "Em atraso") {
+        mensagem = `${saudacao}\n\nAqui é da Equipe Marco Roza. Identificamos que a parcela de *${r.plano}* no valor de *${valorFmt}*, com vencimento em *${r.vencimento}*, consta em aberto no sistema.\n\nCaso já tenha efetuado o pagamento, por favor desconsidere ou nos envie o comprovante para darmos baixa. Se precisar da chave PIX ou dados para pagamento, estamos à disposição! 🚀`;
+      } else if (diffDays === 0) {
+        mensagem = `${saudacao}\n\nAqui é da Equipe Marco Roza. Passando para lembrar que sua parcela de *${r.plano}* no valor de *${valorFmt}* vence *hoje* (*${r.vencimento}*).\n\nQualquer dúvida ou se já realizou o pagamento, nos avise! Muito obrigado! 🚀`;
+      } else {
+        mensagem = `${saudacao}\n\nAqui é da Equipe Marco Roza. Lembramos que sua parcela de *${r.plano}* no valor de *${valorFmt}* tem vencimento próximo, em *${r.vencimento}*.\n\nQualquer dúvida estamos à disposição. Bons treinos! 🚀`;
+      }
     }
 
     const finalPhone = cleanPhone.length <= 11 ? `55${cleanPhone}` : cleanPhone;
@@ -611,7 +636,12 @@ const Revenue = () => {
                 const isToday = diffDays === 0;
 
                 const student = students.find((s) => s.id === r.alunoId || s.nome === r.aluno);
-                const hasPhone = !!(student?.whatsappAluno || student?.whatsappResponsavel);
+                const isMinor = student?.categoria === "Infantil" || student?.categoria === "Juvenil";
+                const phone = isMinor
+                  ? (student?.whatsappResponsavel || student?.whatsappAluno || "")
+                  : (student?.whatsappAluno || student?.whatsappResponsavel || "");
+                const hasPhone = !!phone;
+                const isSendingToResponsavel = isMinor && !!student?.whatsappResponsavel;
 
                 return (
                   <div
@@ -667,7 +697,19 @@ const Revenue = () => {
                             R$ {r.valor.toFixed(2).replace(".", ",")}
                           </span>
                           <span>•</span>
-                          <span className="font-medium truncate max-w-[85px]" title={r.plano}>{r.plano}</span>
+                          <span className="font-medium truncate max-w-[75px]" title={r.plano}>{r.plano}</span>
+                          {student?.categoria && (
+                            <span
+                              className={`text-[9px] font-bold px-1 rounded border ${
+                                isMinor
+                                  ? "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-300/50"
+                                  : "bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-300/50"
+                              }`}
+                              title={`Categoria: ${student.categoria}`}
+                            >
+                              {student.categoria}
+                            </span>
+                          )}
                           {student?.status && student.status !== "Ativo" && (
                             <span className="text-[9px] text-muted-foreground">({student.status})</span>
                           )}
@@ -679,7 +721,15 @@ const Revenue = () => {
                     <Button
                       size="icon"
                       variant="ghost"
-                      title={hasPhone ? "Enviar cobrança/lembrete no WhatsApp" : "Aluno sem WhatsApp cadastrado"}
+                      title={
+                        hasPhone
+                          ? isSendingToResponsavel
+                            ? `Enviar WhatsApp para o Responsável (${student?.responsavel ? student.responsavel + " - " : ""}${phone})`
+                            : `Enviar WhatsApp para o Aluno (${phone})`
+                          : isMinor
+                          ? "Responsável sem WhatsApp cadastrado"
+                          : "Aluno sem WhatsApp cadastrado"
+                      }
                       disabled={!hasPhone}
                       onClick={() => handleSendWhatsAppReminder(r)}
                       className={`h-8 w-8 rounded-lg shrink-0 ${
