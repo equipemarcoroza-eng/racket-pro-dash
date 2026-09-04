@@ -332,7 +332,20 @@ export default function BiHistory() {
     });
 
     const tenureMedioMeses = countedStudents > 0 ? sumTenure / countedStudents : 8.5;
-    const ltvEstimado = ticketMedioGeral * tenureMedioMeses;
+
+    // LTV Real Arrecadado por Aluno (soma de faturas pagas dividida pela base)
+    const activeStudents = students.filter((s) => s.status === "Ativo");
+    const baseToCalc = activeStudents.length > 0 ? activeStudents : students;
+    let sumRealLtv = 0;
+    baseToCalc.forEach((s) => {
+      const paidByStudent = revenues
+        .filter((r) => (r.alunoId === s.id || r.aluno.trim().toLowerCase() === s.nome.trim().toLowerCase()) && r.status === "Pago")
+        .reduce((sum, r) => sum + r.valor, 0);
+      sumRealLtv += paidByStudent;
+    });
+    const ltvReal = baseToCalc.length > 0 && sumRealLtv > 0 ? sumRealLtv / baseToCalc.length : 0;
+    // Se houver histórico de pagamentos no banco, usa o real; caso contrário, usa o ticket médio ponderado
+    const ltvEstimado = ltvReal > 0 ? ltvReal : ticketMedioGeral * Math.min(tenureMedioMeses, 12);
 
     return {
       totalAlunosAtual,
@@ -348,7 +361,7 @@ export default function BiHistory() {
       tenureMedioMeses,
       margemMedia,
     };
-  }, [historicalSeries, students]);
+  }, [historicalSeries, students, revenues]);
 
   // --- EXPORTAR RELATÓRIO EXECUTIVO EM PDF ---
   const handleExportPDF = async () => {
@@ -589,14 +602,17 @@ export default function BiHistory() {
           <Card className="border-l-4 border-l-blue-600 shadow-sm hover:shadow-md transition">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-muted-foreground uppercase">MRR Recorrente</span>
+                <span className="text-xs font-bold text-foreground uppercase tracking-tight">MRR (Faturamento da Escola)</span>
                 <DollarSign className="w-4 h-4 text-blue-600" />
               </div>
               <div className="flex items-baseline gap-2 mt-2">
                 <span className="text-2xl font-black text-foreground">{formatCurrency(consolidatedKpis.mrrAtual)}</span>
+                <Badge className="ml-auto bg-blue-500/10 text-blue-700 dark:text-blue-300 font-bold border-none text-[9px]">
+                  Global da Escola
+                </Badge>
               </div>
-              <p className="text-[11px] text-muted-foreground mt-2">
-                Melhor mês histórico: <strong className="text-foreground">{consolidatedKpis.melhorMesReceita.mes}</strong> ({formatCurrency(consolidatedKpis.melhorMesReceita.valor)}).
+              <p className="text-[11px] text-muted-foreground mt-2 leading-tight">
+                Receita recorrente mensal somando <strong>todos os {consolidatedKpis.totalAlunosAtual} alunos ativos</strong> (não é o valor por aluno).
               </p>
             </CardContent>
           </Card>
@@ -605,14 +621,17 @@ export default function BiHistory() {
           <Card className="border-l-4 border-l-emerald-600 shadow-sm hover:shadow-md transition">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-muted-foreground uppercase">LTV Médio do Aluno</span>
+                <span className="text-xs font-bold text-foreground uppercase tracking-tight">LTV Médio (Histórico do Aluno)</span>
                 <Award className="w-4 h-4 text-emerald-600" />
               </div>
               <div className="flex items-baseline gap-2 mt-2">
                 <span className="text-2xl font-black text-foreground">{formatCurrency(consolidatedKpis.ltvEstimado)}</span>
+                <Badge className="ml-auto bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-bold border-none text-[9px]">
+                  Acumulado de Vida
+                </Badge>
               </div>
-              <p className="text-[11px] text-muted-foreground mt-2">
-                Permanência média de <strong className="text-foreground">{consolidatedKpis.tenureMedioMeses.toFixed(1)} meses</strong> por praticante.
+              <p className="text-[11px] text-muted-foreground mt-2 leading-tight">
+                Total médio acumulado que 1 aluno paga durante <strong>toda sua permanência</strong> (~{consolidatedKpis.tenureMedioMeses.toFixed(1)} meses).
               </p>
             </CardContent>
           </Card>
@@ -621,7 +640,7 @@ export default function BiHistory() {
           <Card className="border-l-4 border-l-amber-500 shadow-sm hover:shadow-md transition">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-muted-foreground uppercase">Ticket Médio / Aluno</span>
+                <span className="text-xs font-bold text-foreground uppercase tracking-tight">Mensalidade Média (Individual)</span>
                 <Activity className="w-4 h-4 text-amber-500" />
               </div>
               <div className="flex items-baseline gap-2 mt-2">
@@ -630,8 +649,8 @@ export default function BiHistory() {
                   Inadim: {consolidatedKpis.taxaInadimplenciaMedia.toFixed(1)}%
                 </Badge>
               </div>
-              <p className="text-[11px] text-muted-foreground mt-2">
-                Margem operacional média estimada em <strong className="text-foreground">{consolidatedKpis.margemMedia > 0 ? consolidatedKpis.margemMedia.toFixed(0) : "45"}%</strong>.
+              <p className="text-[11px] text-muted-foreground mt-2 leading-tight">
+                Valor médio pago <strong>por aluno a cada mês</strong>. Margem operacional média em <strong className="text-foreground">{consolidatedKpis.margemMedia > 0 ? consolidatedKpis.margemMedia.toFixed(0) : "45"}%</strong>.
               </p>
             </CardContent>
           </Card>
