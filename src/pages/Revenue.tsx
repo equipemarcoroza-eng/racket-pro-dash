@@ -94,20 +94,20 @@ const Revenue = () => {
     if (isSendingToResponsavel) {
       const saudacao = responsavelName ? `Olá, ${responsavelName}! Tudo bem? 🎾` : `Olá! Tudo bem? 🎾`;
       if (diffDays < 0 || r.status === "Em atraso") {
-        mensagem = `${saudacao}\n\nAqui é da Equipe Marco Roza. Identificamos que a parcela de *${r.plano}* do(a) atleta *${r.aluno}* no valor de *${valorFmt}*, com vencimento em *${r.vencimento}*, consta em aberto no sistema.\n\nCaso já tenha efetuado o pagamento, por favor desconsidere ou nos envie o comprovante para darmos baixa. Se precisar da chave PIX ou dados para pagamento, estamos à disposição! 🚀`;
+        mensagem = `${saudacao}\n\nAqui é da Equipe Marco Roza.\n\nIdentificamos que a mensalidade de *${r.plano}* do(a) atleta *${r.aluno}* no valor de *${valorFmt}*, com vencimento em *${r.vencimento}*, consta em aberto no sistema.\n\nCaso já tenha efetuado o pagamento, por favor desconsidere ou nos envie o comprovante. Se precisar da chave PIX ou dados para pagamento, estamos à disposição!\n\nBons treinos! 🚀`;
       } else if (diffDays === 0) {
-        mensagem = `${saudacao}\n\nAqui é da Equipe Marco Roza. Passando para lembrar que a parcela de *${r.plano}* do(a) atleta *${r.aluno}* no valor de *${valorFmt}* vence *hoje* (*${r.vencimento}*).\n\nQualquer dúvida ou se já realizou o pagamento, nos avise! Muito obrigado! 🚀`;
+        mensagem = `${saudacao}\n\nAqui é da Equipe Marco Roza.\n\nAvisamos que a mensalidade de *${r.plano}* do(a) atleta *${r.aluno}* no valor de *${valorFmt}* está vencendo hoje, em *${r.vencimento}*.\n\nQualquer dúvida estamos à disposição.\n\nBons treinos! 🚀`;
       } else {
-        mensagem = `${saudacao}\n\nAqui é da Equipe Marco Roza. Lembramos que a parcela de *${r.plano}* do(a) atleta *${r.aluno}* no valor de *${valorFmt}* tem vencimento próximo, em *${r.vencimento}*.\n\nQualquer dúvida estamos à disposição. Bons treinos! 🚀`;
+        mensagem = `${saudacao}\n\nAqui é da Equipe Marco Roza.\n\nLembramos que a mensalidade de *${r.plano}* do(a) atleta *${r.aluno}* no valor de *${valorFmt}* tem vencimento próximo, em *${r.vencimento}*.\n\nQualquer dúvida estamos à disposição.\n\nBons treinos! 🚀`;
       }
     } else {
       const saudacao = `Olá, ${firstName}! Tudo bem? 🎾`;
       if (diffDays < 0 || r.status === "Em atraso") {
-        mensagem = `${saudacao}\n\nAqui é da Equipe Marco Roza. Identificamos que a parcela de *${r.plano}* no valor de *${valorFmt}*, com vencimento em *${r.vencimento}*, consta em aberto no sistema.\n\nCaso já tenha efetuado o pagamento, por favor desconsidere ou nos envie o comprovante para darmos baixa. Se precisar da chave PIX ou dados para pagamento, estamos à disposição! 🚀`;
+        mensagem = `${saudacao}\n\nAqui é da Equipe Marco Roza.\n\nIdentificamos que sua mensalidade de *${r.plano}* no valor de *${valorFmt}*, com vencimento em *${r.vencimento}*, consta em aberto no sistema.\n\nCaso já tenha efetuado o pagamento, por favor desconsidere ou nos envie o comprovante. Se precisar da chave PIX ou dados para pagamento, estamos à disposição!\n\nBons treinos! 🚀`;
       } else if (diffDays === 0) {
-        mensagem = `${saudacao}\n\nAqui é da Equipe Marco Roza. Passando para lembrar que sua parcela de *${r.plano}* no valor de *${valorFmt}* vence *hoje* (*${r.vencimento}*).\n\nQualquer dúvida ou se já realizou o pagamento, nos avise! Muito obrigado! 🚀`;
+        mensagem = `${saudacao}\n\nAqui é da Equipe Marco Roza.\n\nAvisamos que sua mensalidade de *${r.plano}* no valor de *${valorFmt}* está vencendo hoje, em *${r.vencimento}*.\n\nQualquer dúvida estamos à disposição.\n\nBons treinos! 🚀`;
       } else {
-        mensagem = `${saudacao}\n\nAqui é da Equipe Marco Roza. Lembramos que sua parcela de *${r.plano}* no valor de *${valorFmt}* tem vencimento próximo, em *${r.vencimento}*.\n\nQualquer dúvida estamos à disposição. Bons treinos! 🚀`;
+        mensagem = `${saudacao}\n\nAqui é da Equipe Marco Roza.\n\nLembramos que sua mensalidade de *${r.plano}* no valor de *${valorFmt}* tem vencimento próximo, em *${r.vencimento}*.\n\nQualquer dúvida estamos à disposição.\n\nBons treinos! 🚀`;
       }
     }
 
