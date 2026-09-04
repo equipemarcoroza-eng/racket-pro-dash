@@ -20,6 +20,7 @@ import FinancialProjection from "./pages/FinancialProjection";
 import LessonPlan from "./pages/LessonPlan";
 import Tests from "./pages/Tests";
 import BiDashboard from "./pages/BiDashboard";
+import BiHistory from "./pages/BiHistory";
 import AppLayout from "./components/AppLayout";
 import NotFound from "./pages/NotFound";
 import { AppProvider } from "@/contexts/AppContext";
@@ -55,6 +56,7 @@ const App = () => (
                 <Route path="/finance/cash-flow" element={<CashFlow />} />
                 <Route path="/finance/projection" element={<FinancialProjection />} />
                 <Route path="/bi-dashboard" element={<BiDashboard />} />
+                <Route path="/bi-history" element={<BiHistory />} />
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>

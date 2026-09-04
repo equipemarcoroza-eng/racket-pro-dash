@@ -14,6 +14,7 @@ import {
   ChevronLeft,
   ChevronRight,
   PieChart,
+  LineChart,
 } from "lucide-react";
 import logo from "@/assets/logo.png";
 import { Helmet } from "react-helmet-async";
@@ -36,6 +37,7 @@ const navItems = [
   { to: "/finance/cash-flow", label: "Fluxo de Caixa", icon: DollarSign },
   { to: "/finance/projection", label: "Projeção Financeira", icon: BarChart3 },
   { to: "/bi-dashboard", label: "Análise de BI", icon: PieChart },
+  { to: "/bi-history", label: "BI Evolução Histórica", icon: LineChart },
 ];
 
 const AppLayout = () => {
