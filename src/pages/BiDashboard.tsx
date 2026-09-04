@@ -72,6 +72,11 @@ export default function BiDashboard() {
   const [activeTab, setActiveTab] = useState("overview");
   const [activeStoryChapter, setActiveStoryChapter] = useState(1);
 
+  const scrollToSection = (sectionId: string) => {
+    const el = document.getElementById(sectionId);
+    el?.scrollIntoView({ behavior: "smooth" });
+  };
+
   // --- FUNÇÕES AUXILIARES DE PARSE E CÁLCULO ---
   const parseDate = (dStr: string) => {
     if (!dStr) return null;
@@ -784,14 +789,14 @@ export default function BiDashboard() {
             {/* Quick Actions para Storytelling e Orientações Executivas */}
             <div className="flex flex-wrap items-center gap-2">
               <button
-                onClick={() => setActiveTab("storytelling")}
+                onClick={() => scrollToSection("secao-storytelling")}
                 className="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 text-white font-bold text-xs rounded-xl backdrop-blur-md transition-all border border-white/30 shadow-sm cursor-pointer"
               >
                 <BookOpen className="w-4 h-4 text-amber-300" />
-                <span>Ler Storytelling</span>
+                <span>Ver Storytelling</span>
               </button>
               <button
-                onClick={() => setActiveTab("executive")}
+                onClick={() => scrollToSection("secao-orientacoes-executivas")}
                 className="flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs rounded-xl transition-all shadow-md cursor-pointer"
               >
                 <Target className="w-4 h-4 text-white" />
@@ -914,14 +919,6 @@ export default function BiDashboard() {
             <TabsTrigger value="overview" className="rounded-lg text-xs font-semibold data-[state=active]:bg-card data-[state=active]:shadow-sm">
               Visão Geral & Vieses
             </TabsTrigger>
-            <TabsTrigger value="storytelling" className="rounded-lg text-xs font-bold text-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <BookOpen className="w-3.5 h-3.5 mr-1.5" />
-              Storytelling dos Dados
-            </TabsTrigger>
-            <TabsTrigger value="executive" className="rounded-lg text-xs font-bold text-emerald-600 dark:text-emerald-400 data-[state=active]:bg-emerald-600 data-[state=active]:text-white">
-              <Target className="w-3.5 h-3.5 mr-1.5" />
-              Orientações Executivas
-            </TabsTrigger>
             <TabsTrigger value="gender" className="rounded-lg text-xs font-semibold data-[state=active]:bg-card data-[state=active]:shadow-sm">
               Gênero
             </TabsTrigger>
@@ -1037,14 +1034,14 @@ export default function BiDashboard() {
                 </div>
                 <div className="flex flex-wrap gap-3 shrink-0">
                   <button
-                    onClick={() => setActiveTab("storytelling")}
+                    onClick={() => scrollToSection("secao-storytelling")}
                     className="px-4 py-2.5 bg-white text-slate-950 hover:bg-slate-100 font-bold text-xs rounded-lg transition-colors flex items-center gap-2 cursor-pointer shadow"
                   >
                     <BookOpen className="w-4 h-4 text-primary" />
                     Ver Storytelling
                   </button>
                   <button
-                    onClick={() => setActiveTab("executive")}
+                    onClick={() => scrollToSection("secao-orientacoes-executivas")}
                     className="px-4 py-2.5 bg-emerald-500 text-white hover:bg-emerald-600 font-bold text-xs rounded-lg transition-colors flex items-center gap-2 cursor-pointer shadow"
                   >
                     <Target className="w-4 h-4 text-white" />
@@ -1057,9 +1054,278 @@ export default function BiDashboard() {
         </TabsContent>
 
         {/* ========================================================================= */}
-        {/* TAB 2: STORYTELLING DOS DADOS (NARRATIVA EXECUTIVA COMPLETA)              */}
+        {/* TAB 4: ANÁLISE POR GÊNERO                                                */}
         {/* ========================================================================= */}
-        <TabsContent value="storytelling" className="space-y-6">
+        <TabsContent value="gender">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Desempenho e Engajamento por Gênero</CardTitle>
+              <p className="text-xs text-muted-foreground">Comparativo de tempo de casa (Tenure), faturamento médio (LTV) e presença entre gêneros.</p>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="h-[250px]">
+                  <p className="text-xs font-bold text-muted-foreground mb-2 text-center">Frequência Média de Presença (%)</p>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={genderData}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                      <XAxis dataKey="name" />
+                      <YAxis domain={[0, 100]} />
+                      <Tooltip formatter={(val) => [`${val}%`, "Presença"]} />
+                      <Bar dataKey="attendance" fill="#8884d8">
+                        {genderData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+
+                <div className="h-[250px]">
+                  <p className="text-xs font-bold text-muted-foreground mb-2 text-center">LTV Médio Histórico (R$)</p>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={genderData}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                      <XAxis dataKey="name" />
+                      <YAxis />
+                      <Tooltip formatter={(val) => [`R$ ${val}`, "LTV"]} />
+                      <Bar dataKey="ltv" fill="#82ca9d">
+                        {genderData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* ========================================================================= */}
+        {/* TAB 5: ANÁLISE POR FAIXA ETÁRIA                                          */}
+        {/* ========================================================================= */}
+        <TabsContent value="age">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Indicadores por Faixa Etária</CardTitle>
+              <p className="text-xs text-muted-foreground">Visão de volume de alunos, adimplência e presença por faixas etárias.</p>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="h-[280px]">
+                  <p className="text-xs font-bold text-muted-foreground mb-2">Comportamento Geral (Presença x Adimplência %)</p>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={ageGroupData}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                      <XAxis dataKey="name" />
+                      <YAxis domain={[0, 100]} />
+                      <Tooltip />
+                      <Legend />
+                      <Bar dataKey="attendance" name="Presença (%)" fill="#10b981" />
+                      <Bar dataKey="adimplencia" name="Adimplência (%)" fill="#3b82f6" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+
+                <div className="h-[280px]">
+                  <p className="text-xs font-bold text-muted-foreground mb-2">LTV Médio por Segmento Etário (R$)</p>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={ageGroupData}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                      <XAxis dataKey="name" />
+                      <YAxis />
+                      <Tooltip formatter={(val) => [`R$ ${val}`, "LTV"]} />
+                      <Bar dataKey="ltv" name="LTV Médio (R$)" fill="#f59e0b" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* ========================================================================= */}
+        {/* TAB 6: ANÁLISE POR FREQUÊNCIA CONTRATADA                                 */}
+        {/* ========================================================================= */}
+        <TabsContent value="plans">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Comportamento de Acordo com Frequência de Aulas Contratadas</CardTitle>
+              <p className="text-xs text-muted-foreground">Avaliação de adesão e gasto total médio baseado no plano semanal contratado.</p>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="h-[280px]">
+                  <p className="text-xs font-bold text-muted-foreground mb-2">Presença Real de Acordo com Plano Contratado (%)</p>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={planFrequencyData}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                      <XAxis dataKey="name" />
+                      <YAxis domain={[0, 100]} />
+                      <Tooltip formatter={(val) => [`${val}%`, "Presença Real"]} />
+                      <Bar dataKey="attendance" fill="#8b5cf6" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+
+                <div className="h-[280px]">
+                  <p className="text-xs font-bold text-muted-foreground mb-2">LTV Médio por Plano Contratado (R$)</p>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={planFrequencyData}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                      <XAxis dataKey="name" />
+                      <YAxis />
+                      <Tooltip formatter={(val) => [`R$ ${val}`, "LTV Médio"]} />
+                      <Bar dataKey="ltv" fill="#ec4899" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* ========================================================================= */}
+        {/* TAB 7: ANÁLISE POR TEMPO DE CASA                                         */}
+        {/* ========================================================================= */}
+        <TabsContent value="tenure">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Análise de Tempo de Permanência (Tenure)</CardTitle>
+              <p className="text-xs text-muted-foreground">Comparação de alunos novos, em fase de adaptação, e alunos veteranos fidelizados.</p>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="h-[280px]">
+                  <p className="text-xs font-bold text-muted-foreground mb-2">Evolução do Engajamento / Presença (%)</p>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={tenureBracketsData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="name" />
+                      <YAxis domain={[50, 100]} />
+                      <Tooltip formatter={(val) => [`${val}%`, "Presença Média"]} />
+                      <Line type="monotone" dataKey="attendance" stroke="#ef4444" strokeWidth={3} activeDot={{ r: 8 }} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+
+                <div className="h-[280px]">
+                  <p className="text-xs font-bold text-muted-foreground mb-2">Evolução da Adimplência Histórica por Estágio (%)</p>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={tenureBracketsData}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                      <XAxis dataKey="name" />
+                      <YAxis domain={[0, 100]} />
+                      <Tooltip formatter={(val) => [`${val}%`, "Adimplência"]} />
+                      <Bar dataKey="adimplencia" fill="#06b6d4" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+
+      {/* Perfis Comportamentais (Personas) */}
+      <Card className="border border-border">
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Users className="w-5 h-5 text-primary" />
+            <CardTitle className="text-lg font-bold">Os 3 Perfis Comportamentais Mais Comuns de Alunos</CardTitle>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Modelados empiricamente a partir dos padrões de frequência contratada, faixas etárias, sexo e constância financeira da base de dados.
+          </p>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Persona 1: Daniela (Mulher Adulta) */}
+            <div className="p-5 rounded-xl border border-border bg-card hover:bg-muted/10 transition-colors flex flex-col items-center text-center space-y-4 shadow-sm">
+              <SVGAvatar type="woman" />
+              <div>
+                <h4 className="font-bold text-base text-foreground">{personaNames.woman.name} (Mulher Adulta)</h4>
+                <p className="text-[10px] font-bold text-teal-600 uppercase tracking-widest mt-0.5">Perfil: Foco Social & Saúde</p>
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Praticante assídua, motivada pela socialização pós-jogo e condicionamento físico. Apresenta a maior adimplência histórica e menor taxa de cancelamentos por motivos climáticos.
+              </p>
+              <div className="w-full pt-3 border-t border-border flex justify-around text-center">
+                <div>
+                  <span className="text-xs font-black block">~85%</span>
+                  <span className="text-[8px] text-muted-foreground uppercase font-semibold">Presença</span>
+                </div>
+                <div>
+                  <span className="text-xs font-black block">12+ meses</span>
+                  <span className="text-[8px] text-muted-foreground uppercase font-semibold">Retenção</span>
+                </div>
+                <div>
+                  <span className="text-xs font-black block text-teal-600">Alto</span>
+                  <span className="text-[8px] text-muted-foreground uppercase font-semibold">LTV Histórico</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Persona 2: Sub16 (Jovem Atleta) */}
+            <div className="p-5 rounded-xl border border-border bg-card hover:bg-muted/10 transition-colors flex flex-col items-center text-center space-y-4 shadow-sm">
+              <SVGAvatar type="teen" />
+              <div>
+                <h4 className="font-bold text-base text-foreground">{personaNames.teen.name} (Jovem Atleta)</h4>
+                <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mt-0.5">Perfil: Foco Competitivo</p>
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Foco no ranking, adora participar de torneios e miniligas. Possui frequência excelente, com pequenas oscilações em períodos de exames escolares. Prefere treinar 2x a 3x por semana.
+              </p>
+              <div className="w-full pt-3 border-t border-border flex justify-around text-center">
+                <div>
+                  <span className="text-xs font-black block">~90%</span>
+                  <span className="text-[8px] text-muted-foreground uppercase font-semibold">Presença</span>
+                </div>
+                <div>
+                  <span className="text-xs font-black block">6-12 meses</span>
+                  <span className="text-[8px] text-muted-foreground uppercase font-semibold">Retenção</span>
+                </div>
+                <div>
+                  <span className="text-xs font-black block text-blue-600">Médio</span>
+                  <span className="text-[8px] text-muted-foreground uppercase font-semibold">LTV Histórico</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Persona 3: Júlia (Aluna Infantil) */}
+            <div className="p-5 rounded-xl border border-border bg-card hover:bg-muted/10 transition-colors flex flex-col items-center text-center space-y-4 shadow-sm">
+              <SVGAvatar type="child" />
+              <div>
+                <h4 className="font-bold text-base text-foreground">{personaNames.child.name} ({personaNames.child.sexo === "M" ? "Aluno Infantil" : "Aluna Infantil"})</h4>
+                <p className="text-[10px] font-bold text-pink-600 uppercase tracking-widest mt-0.5">Perfil: Formação & Lazer</p>
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Iniciada no esporte por incentivo dos pais. A frequência é quase de 100%, garantida pelo compromisso dos responsáveis. Foco em brincadeiras cooperativas e avaliações do Beach Tennis.
+              </p>
+              <div className="w-full pt-3 border-t border-border flex justify-around text-center">
+                <div>
+                  <span className="text-xs font-black block">~95%</span>
+                  <span className="text-[8px] text-muted-foreground uppercase font-semibold">Presença</span>
+                </div>
+                <div>
+                  <span className="text-xs font-black block">12+ meses</span>
+                  <span className="text-[8px] text-muted-foreground uppercase font-semibold">Retenção</span>
+                </div>
+                <div>
+                  <span className="text-xs font-black block text-pink-600">Constante</span>
+                  <span className="text-[8px] text-muted-foreground uppercase font-semibold">LTV Histórico</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* ========================================================================= */}
+      {/* SEÇÃO ABERTA: STORYTELLING DOS DADOS (NARRATIVA EXECUTIVA)               */}
+      {/* ========================================================================= */}
+      <section id="secao-storytelling" className="space-y-6 scroll-mt-6">
           {/* Header do Storytelling */}
           <Card className="border-primary/20 bg-gradient-to-r from-blue-950/10 via-indigo-950/5 to-transparent">
             <CardHeader>
@@ -1164,7 +1430,7 @@ export default function BiDashboard() {
                   Pronto para agir sobre os insights da história? Consulte o plano tático completo na aba de orientações executivas.
                 </p>
                 <button
-                  onClick={() => setActiveTab("executive")}
+                  onClick={() => scrollToSection("secao-orientacoes-executivas")}
                   className="mt-3 w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
                 >
                   <span>Ver Orientações Executivas</span>
@@ -1512,7 +1778,7 @@ export default function BiDashboard() {
                         <p className="text-xs text-emerald-100 mt-0.5">Acesse o plano tático executivo com cronograma, responsáveis e metas.</p>
                       </div>
                       <button
-                        onClick={() => setActiveTab("executive")}
+                        onClick={() => scrollToSection("secao-orientacoes-executivas")}
                         className="px-5 py-2.5 bg-white text-emerald-950 font-bold text-xs rounded-xl hover:bg-emerald-50 transition-all shadow-md shrink-0 cursor-pointer"
                       >
                         Abrir Orientações Executivas
@@ -1532,12 +1798,12 @@ export default function BiDashboard() {
               )}
             </div>
           </div>
-        </TabsContent>
+      </section>
 
-        {/* ========================================================================= */}
-        {/* TAB 3: ORIENTAÇÕES EXECUTIVAS & PLANO DE AÇÃO ESTRATÉGICO                */}
-        {/* ========================================================================= */}
-        <TabsContent value="executive" className="space-y-6">
+      {/* ========================================================================= */}
+      {/* SEÇÃO ABERTA: ORIENTAÇÕES EXECUTIVAS & PLANO DE AÇÃO ESTRATÉGICO         */}
+      {/* ========================================================================= */}
+      <section id="secao-orientacoes-executivas" className="space-y-6 scroll-mt-6">
           {/* Header Executivo */}
           <Card className="border-emerald-500/20 bg-gradient-to-r from-emerald-950/10 via-teal-950/5 to-transparent">
             <CardHeader>
@@ -1812,276 +2078,8 @@ export default function BiDashboard() {
               </div>
             </CardContent>
           </Card>
-        </TabsContent>
+      </section>
 
-        {/* ========================================================================= */}
-        {/* TAB 4: ANÁLISE POR GÊNERO                                                */}
-        {/* ========================================================================= */}
-        <TabsContent value="gender">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Desempenho e Engajamento por Gênero</CardTitle>
-              <p className="text-xs text-muted-foreground">Comparativo de tempo de casa (Tenure), faturamento médio (LTV) e presença entre gêneros.</p>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="h-[250px]">
-                  <p className="text-xs font-bold text-muted-foreground mb-2 text-center">Frequência Média de Presença (%)</p>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={genderData}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                      <XAxis dataKey="name" />
-                      <YAxis domain={[0, 100]} />
-                      <Tooltip formatter={(val) => [`${val}%`, "Presença"]} />
-                      <Bar dataKey="attendance" fill="#8884d8">
-                        {genderData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-
-                <div className="h-[250px]">
-                  <p className="text-xs font-bold text-muted-foreground mb-2 text-center">LTV Médio Histórico (R$)</p>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={genderData}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                      <XAxis dataKey="name" />
-                      <YAxis />
-                      <Tooltip formatter={(val) => [`R$ ${val}`, "LTV"]} />
-                      <Bar dataKey="ltv" fill="#82ca9d">
-                        {genderData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* ========================================================================= */}
-        {/* TAB 5: ANÁLISE POR FAIXA ETÁRIA                                          */}
-        {/* ========================================================================= */}
-        <TabsContent value="age">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Indicadores por Faixa Etária</CardTitle>
-              <p className="text-xs text-muted-foreground">Visão de volume de alunos, adimplência e presença por faixas etárias.</p>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div className="h-[280px]">
-                  <p className="text-xs font-bold text-muted-foreground mb-2">Comportamento Geral (Presença x Adimplência %)</p>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={ageGroupData}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                      <XAxis dataKey="name" />
-                      <YAxis domain={[0, 100]} />
-                      <Tooltip />
-                      <Legend />
-                      <Bar dataKey="attendance" name="Presença (%)" fill="#10b981" />
-                      <Bar dataKey="adimplencia" name="Adimplência (%)" fill="#3b82f6" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-
-                <div className="h-[280px]">
-                  <p className="text-xs font-bold text-muted-foreground mb-2">LTV Médio por Segmento Etário (R$)</p>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={ageGroupData}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                      <XAxis dataKey="name" />
-                      <YAxis />
-                      <Tooltip formatter={(val) => [`R$ ${val}`, "LTV"]} />
-                      <Bar dataKey="ltv" name="LTV Médio (R$)" fill="#f59e0b" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* ========================================================================= */}
-        {/* TAB 6: ANÁLISE POR FREQUÊNCIA CONTRATADA                                 */}
-        {/* ========================================================================= */}
-        <TabsContent value="plans">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Comportamento de Acordo com Frequência de Aulas Contratadas</CardTitle>
-              <p className="text-xs text-muted-foreground">Avaliação de adesão e gasto total médio baseado no plano semanal contratado.</p>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div className="h-[280px]">
-                  <p className="text-xs font-bold text-muted-foreground mb-2">Presença Real de Acordo com Plano Contratado (%)</p>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={planFrequencyData}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                      <XAxis dataKey="name" />
-                      <YAxis domain={[0, 100]} />
-                      <Tooltip formatter={(val) => [`${val}%`, "Presença Real"]} />
-                      <Bar dataKey="attendance" fill="#8b5cf6" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-
-                <div className="h-[280px]">
-                  <p className="text-xs font-bold text-muted-foreground mb-2">LTV Médio por Plano Contratado (R$)</p>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={planFrequencyData}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                      <XAxis dataKey="name" />
-                      <YAxis />
-                      <Tooltip formatter={(val) => [`R$ ${val}`, "LTV Médio"]} />
-                      <Bar dataKey="ltv" fill="#ec4899" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* ========================================================================= */}
-        {/* TAB 7: ANÁLISE POR TEMPO DE CASA                                         */}
-        {/* ========================================================================= */}
-        <TabsContent value="tenure">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Análise de Tempo de Permanência (Tenure)</CardTitle>
-              <p className="text-xs text-muted-foreground">Comparação de alunos novos, em fase de adaptação, e alunos veteranos fidelizados.</p>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div className="h-[280px]">
-                  <p className="text-xs font-bold text-muted-foreground mb-2">Evolução do Engajamento / Presença (%)</p>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={tenureBracketsData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="name" />
-                      <YAxis domain={[50, 100]} />
-                      <Tooltip formatter={(val) => [`${val}%`, "Presença Média"]} />
-                      <Line type="monotone" dataKey="attendance" stroke="#ef4444" strokeWidth={3} activeDot={{ r: 8 }} />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
-
-                <div className="h-[280px]">
-                  <p className="text-xs font-bold text-muted-foreground mb-2">Evolução da Adimplência Histórica por Estágio (%)</p>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={tenureBracketsData}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                      <XAxis dataKey="name" />
-                      <YAxis domain={[0, 100]} />
-                      <Tooltip formatter={(val) => [`${val}%`, "Adimplência"]} />
-                      <Bar dataKey="adimplencia" fill="#06b6d4" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
-
-      {/* Perfis Comportamentais (Personas) */}
-      <Card className="border border-border">
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <Users className="w-5 h-5 text-primary" />
-            <CardTitle className="text-lg font-bold">Os 3 Perfis Comportamentais Mais Comuns de Alunos</CardTitle>
-          </div>
-          <p className="text-xs text-muted-foreground">
-            Modelados empiricamente a partir dos padrões de frequência contratada, faixas etárias, sexo e constância financeira da base de dados.
-          </p>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Persona 1: Daniela (Mulher Adulta) */}
-            <div className="p-5 rounded-xl border border-border bg-card hover:bg-muted/10 transition-colors flex flex-col items-center text-center space-y-4 shadow-sm">
-              <SVGAvatar type="woman" />
-              <div>
-                <h4 className="font-bold text-base text-foreground">{personaNames.woman.name} (Mulher Adulta)</h4>
-                <p className="text-[10px] font-bold text-teal-600 uppercase tracking-widest mt-0.5">Perfil: Foco Social & Saúde</p>
-              </div>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                Praticante assídua, motivada pela socialização pós-jogo e condicionamento físico. Apresenta a maior adimplência histórica e menor taxa de cancelamentos por motivos climáticos.
-              </p>
-              <div className="w-full pt-3 border-t border-border flex justify-around text-center">
-                <div>
-                  <span className="text-xs font-black block">~85%</span>
-                  <span className="text-[8px] text-muted-foreground uppercase font-semibold">Presença</span>
-                </div>
-                <div>
-                  <span className="text-xs font-black block">12+ meses</span>
-                  <span className="text-[8px] text-muted-foreground uppercase font-semibold">Retenção</span>
-                </div>
-                <div>
-                  <span className="text-xs font-black block text-teal-600">Alto</span>
-                  <span className="text-[8px] text-muted-foreground uppercase font-semibold">LTV Histórico</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Persona 2: Sub16 (Jovem Atleta) */}
-            <div className="p-5 rounded-xl border border-border bg-card hover:bg-muted/10 transition-colors flex flex-col items-center text-center space-y-4 shadow-sm">
-              <SVGAvatar type="teen" />
-              <div>
-                <h4 className="font-bold text-base text-foreground">{personaNames.teen.name} (Jovem Atleta)</h4>
-                <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mt-0.5">Perfil: Foco Competitivo</p>
-              </div>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                Foco no ranking, adora participar de torneios e miniligas. Possui frequência excelente, com pequenas oscilações em períodos de exames escolares. Prefere treinar 2x a 3x por semana.
-              </p>
-              <div className="w-full pt-3 border-t border-border flex justify-around text-center">
-                <div>
-                  <span className="text-xs font-black block">~90%</span>
-                  <span className="text-[8px] text-muted-foreground uppercase font-semibold">Presença</span>
-                </div>
-                <div>
-                  <span className="text-xs font-black block">6-12 meses</span>
-                  <span className="text-[8px] text-muted-foreground uppercase font-semibold">Retenção</span>
-                </div>
-                <div>
-                  <span className="text-xs font-black block text-blue-600">Médio</span>
-                  <span className="text-[8px] text-muted-foreground uppercase font-semibold">LTV Histórico</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Persona 3: Júlia (Aluna Infantil) */}
-            <div className="p-5 rounded-xl border border-border bg-card hover:bg-muted/10 transition-colors flex flex-col items-center text-center space-y-4 shadow-sm">
-              <SVGAvatar type="child" />
-              <div>
-                <h4 className="font-bold text-base text-foreground">{personaNames.child.name} ({personaNames.child.sexo === "M" ? "Aluno Infantil" : "Aluna Infantil"})</h4>
-                <p className="text-[10px] font-bold text-pink-600 uppercase tracking-widest mt-0.5">Perfil: Formação & Lazer</p>
-              </div>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                Iniciada no esporte por incentivo dos pais. A frequência é quase de 100%, garantida pelo compromisso dos responsáveis. Foco em brincadeiras cooperativas e avaliações do Beach Tennis.
-              </p>
-              <div className="w-full pt-3 border-t border-border flex justify-around text-center">
-                <div>
-                  <span className="text-xs font-black block">~95%</span>
-                  <span className="text-[8px] text-muted-foreground uppercase font-semibold">Presença</span>
-                </div>
-                <div>
-                  <span className="text-xs font-black block">12+ meses</span>
-                  <span className="text-[8px] text-muted-foreground uppercase font-semibold">Retenção</span>
-                </div>
-                <div>
-                  <span className="text-xs font-black block text-pink-600">Constante</span>
-                  <span className="text-[8px] text-muted-foreground uppercase font-semibold">LTV Histórico</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }
