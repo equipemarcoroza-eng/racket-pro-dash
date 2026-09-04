@@ -148,47 +148,6 @@ export default function BiHistory() {
       const startOfMonth = new Date(mObj.year, mObj.month, 1, 0, 0, 0);
       const endOfMonth = new Date(mObj.year, mObj.month + 1, 0, 23, 59, 59);
 
-      // --- ALUNOS NO MÊS ---
-      // 1. Alunos ativos acumulados até o final do mês
-      const activeStudentsInMonth = students.filter((s) => {
-        const entryDate = parseIsoOrBr(s.dataEntrada);
-        if (!entryDate || isNaN(entryDate.getTime())) return false;
-        // Já havia entrado até o final do mês
-        if (entryDate > endOfMonth) return false;
-        // Para histórico: se estiver ativo atualmente ou teve mensalidade no período
-        return s.status === "Ativo" || s.status === "Passado" || s.status === "Extras";
-      });
-
-      const totalAlunosAtivos = activeStudentsInMonth.filter((s) => s.status === "Ativo").length;
-      
-      // 2. Novos alunos que entraram EXATAMENTE neste mês
-      const novosAlunos = students.filter((s) => {
-        const entryDate = parseIsoOrBr(s.dataEntrada);
-        if (!entryDate || isNaN(entryDate.getTime())) return false;
-        return entryDate >= startOfMonth && entryDate <= endOfMonth;
-      }).length;
-
-      // 3. Evasão / Churn estimado do mês
-      const evadidosMes = students.filter((s) => {
-        if (s.status !== "Inativo" && s.status !== "Passado") return false;
-        const entryDate = parseIsoOrBr(s.dataEntrada);
-        // Aproximação: se entrou há mais tempo e ficou inativo
-        return entryDate && entryDate < startOfMonth;
-      }).length > 0 && idx % 3 === 0 ? 1 : 0; // Estimativa ponderada baseada no status
-
-      // Segmentação por categoria no mês
-      const infantilCount = activeStudentsInMonth.filter((s) => s.categoria === "Infantil" && s.status === "Ativo").length;
-      const juvenilCount = activeStudentsInMonth.filter((s) => s.categoria === "Juvenil" && s.status === "Ativo").length;
-      const adultoCount = activeStudentsInMonth.filter((s) => (s.categoria === "Adulto" || !s.categoria) && s.status === "Ativo").length;
-
-      // Segmentação por sexo
-      const mascCount = activeStudentsInMonth.filter((s) => s.sexo === "M" && s.status === "Ativo").length;
-      const femCount = activeStudentsInMonth.filter((s) => s.sexo === "F" && s.status === "Ativo").length;
-
-      // --- FINANCEIRO NO MÊS ---
-      const monthMonthStr = String(mObj.month + 1).padStart(2, "0");
-      const monthYearStr = String(mObj.year);
-
       // Receitas cuja data de vencimento cai neste mês
       const monthRevenues = revenues.filter((r) => {
         const parts = r.vencimento.split("/");
@@ -226,8 +185,54 @@ export default function BiHistory() {
 
       const despesasTotal = monthExpenses.reduce((sum, p) => sum + p.valor, 0);
 
-      // Ticket Médio
-      const ticketMedio = totalAlunosAtivos > 0 ? receitaPrevista / totalAlunosAtivos : 0;
+      // Faturas válidas de mensalidade no mês
+      const validMonthInvoices = monthRevenues.filter((r) => r.status !== "Isento" && r.valor > 0);
+
+      // --- ALUNOS NO MÊS ---
+      // Alunos ativos no mês: quem tem cobrança no mês OU quem já havia entrado até o mês
+      const studentsWithInvoiceThisMonth = new Set(
+        monthRevenues.map((r) => r.alunoId || r.aluno.trim().toLowerCase())
+      );
+
+      const activeStudentsInMonth = students.filter((s) => {
+        const hasInvoice = studentsWithInvoiceThisMonth.has(s.id) || studentsWithInvoiceThisMonth.has(s.nome.trim().toLowerCase());
+        if (hasInvoice) return true;
+        const entryDate = parseIsoOrBr(s.dataEntrada);
+        if (!entryDate || isNaN(entryDate.getTime())) return false;
+        if (entryDate > endOfMonth) return false;
+        return s.status === "Ativo" || s.status === "Passado" || s.status === "Extras";
+      });
+
+      const totalAlunosAtivos = Math.max(validMonthInvoices.length, activeStudentsInMonth.filter((s) => s.status === "Ativo").length);
+      
+      // Novos alunos que entraram EXATAMENTE neste mês
+      const novosAlunos = students.filter((s) => {
+        const entryDate = parseIsoOrBr(s.dataEntrada);
+        if (!entryDate || isNaN(entryDate.getTime())) return false;
+        return entryDate >= startOfMonth && entryDate <= endOfMonth;
+      }).length;
+
+      // Evasão / Churn estimado do mês
+      const evadidosMes = students.filter((s) => {
+        if (s.status !== "Inativo" && s.status !== "Passado") return false;
+        const entryDate = parseIsoOrBr(s.dataEntrada);
+        return entryDate && entryDate < startOfMonth;
+      }).length > 0 && idx % 3 === 0 ? 1 : 0;
+
+      // Segmentação por categoria no mês
+      const infantilCount = activeStudentsInMonth.filter((s) => s.categoria === "Infantil" && s.status === "Ativo").length;
+      const juvenilCount = activeStudentsInMonth.filter((s) => s.categoria === "Juvenil" && s.status === "Ativo").length;
+      const adultoCount = activeStudentsInMonth.filter((s) => (s.categoria === "Adulto" || !s.categoria) && s.status === "Ativo").length;
+
+      // Segmentação por sexo
+      const mascCount = activeStudentsInMonth.filter((s) => s.sexo === "M" && s.status === "Ativo").length;
+      const femCount = activeStudentsInMonth.filter((s) => s.sexo === "F" && s.status === "Ativo").length;
+
+      // Ticket Médio de Mensalidade: média real por fatura do mês (ou média dos planos caso o mês não tenha fatura)
+      const avgPlansPrice = plans.length > 0 ? plans.reduce((s, p) => s + p.valor, 0) / plans.length : 220;
+      const ticketMedio = validMonthInvoices.length > 0
+        ? validMonthInvoices.reduce((sum, r) => sum + r.valor, 0) / validMonthInvoices.length
+        : avgPlansPrice;
 
       // Inadimplência (% em atraso sobre faturamento)
       const taxaInadimplencia = receitaPrevista > 0 ? (receitaAtraso / receitaPrevista) * 100 : 0;
@@ -313,7 +318,13 @@ export default function BiHistory() {
       }
     });
 
-    const ticketMedioGeral = validTicketMonths > 0 ? sumTicket / validTicketMonths : 220;
+    // Ticket Médio Geral: média de todas as faturas válidas do sistema
+    const allValidInvoices = revenues.filter((r) => r.status !== "Isento" && r.valor > 0);
+    const avgPlansPrice = plans.length > 0 ? plans.reduce((s, p) => s + p.valor, 0) / plans.length : 220;
+    const ticketMedioGeral = allValidInvoices.length > 0
+      ? allValidInvoices.reduce((sum, r) => sum + r.valor, 0) / allValidInvoices.length
+      : avgPlansPrice;
+
     const taxaInadimplenciaMedia = sumInadimplencia / historicalSeries.length;
     const margemMedia = sumMargem / historicalSeries.length;
     const lucroTotalAcumulado = sumReceita - sumDespesa;
