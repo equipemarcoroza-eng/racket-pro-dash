@@ -147,6 +147,8 @@ export default function BiHistory() {
     return filteredMonths.map((mObj, idx) => {
       const startOfMonth = new Date(mObj.year, mObj.month, 1, 0, 0, 0);
       const endOfMonth = new Date(mObj.year, mObj.month + 1, 0, 23, 59, 59);
+      const monthMonthStr = String(mObj.month + 1).padStart(2, "0");
+      const monthYearStr = String(mObj.year);
 
       // Receitas cuja data de vencimento cai neste mês
       const monthRevenues = revenues.filter((r) => {
