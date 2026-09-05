@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -55,6 +55,7 @@ import {
   Sparkles,
   HelpCircle,
   Gauge,
+  Trophy,
 } from "lucide-react";
 import logo from "@/assets/logo.png";
 import { toast } from "sonner";
@@ -434,12 +435,36 @@ export default function BiHistory() {
       const resultadoLiquido = receitaPaga - despesasTotal;
       const margemOperacional = receitaPaga > 0 ? (resultadoLiquido / receitaPaga) * 100 : 0;
 
+      // Alunos em Turmas no mês (vagas ocupadas na grade: 1x=1, 2x=2, 3x=3)
+      const monthTurmasCount = activeStudentsInMonth.reduce((acc, st) => {
+        const enrolledCount = (enrollments || []).filter((e) => e.alunoId === st.id).length;
+        const stPlan = plans.find((p) => p.id === st.planoId);
+        let planFreq = 1;
+        if (stPlan?.frequencia) {
+          if (stPlan.frequencia.includes("1x")) planFreq = 1;
+          else if (stPlan.frequencia.includes("2x")) planFreq = 2;
+          else if (stPlan.frequencia.includes("3x")) planFreq = 3;
+          else if (stPlan.frequencia.includes("Diário") || stPlan.frequencia.includes("4x") || stPlan.frequencia.includes("5x")) planFreq = 4;
+        } else if (stPlan?.nome) {
+          if (stPlan.nome.includes("1x")) planFreq = 1;
+          else if (stPlan.nome.includes("2x")) planFreq = 2;
+          else if (stPlan.nome.includes("3x")) planFreq = 3;
+        }
+        return acc + Math.max(1, enrolledCount, planFreq);
+      }, 0);
+
+      const baseAlunosCount = totalAlunosAtivos || Math.max(1, activeStudentsInMonth.length);
+      const alunosEmTurmas = monthTurmasCount > 0 
+        ? monthTurmasCount 
+        : Math.round(baseAlunosCount * 1.27);
+
       return {
         key: mObj.key,
         label: mObj.label,
         year: mObj.year,
         month: mObj.month + 1,
-        totalAlunos: totalAlunosAtivos || Math.max(1, activeStudentsInMonth.length),
+        totalAlunos: baseAlunosCount,
+        alunosEmTurmas,
         novosAlunos,
         evadidosMes,
         taxaChurn,
@@ -460,7 +485,7 @@ export default function BiHistory() {
         taxaInadimplencia,
       };
     });
-  }, [students, revenues, scheduledPayments, selectedPeriod]);
+  }, [students, revenues, scheduledPayments, plans, enrollments, selectedPeriod]);
 
   // --- PRINCIPAIS KPIS CONSOLIDADOS DO PERÍODO SELECIONADO ---
   const consolidatedKpis = useMemo(() => {
@@ -627,6 +652,26 @@ export default function BiHistory() {
     };
   }, [historicalSeries, students, revenues, plans, enrollments]);
 
+  // Top 3 meses de maior faturamento histórico
+  const top3Faturamento = useMemo(() => {
+    if (!historicalSeries || historicalSeries.length === 0) return [];
+    return [...historicalSeries]
+      .filter((m) => m.receitaPrevista > 0 || m.receitaPaga > 0)
+      .sort((a, b) => (b.receitaPrevista || b.receitaPaga) - (a.receitaPrevista || a.receitaPaga))
+      .slice(0, 3);
+  }, [historicalSeries]);
+
+  const [activeTopIndex, setActiveTopIndex] = useState(0);
+  const [isStickerPaused, setIsStickerPaused] = useState(false);
+
+  useEffect(() => {
+    if (isStickerPaused || top3Faturamento.length <= 1) return;
+    const interval = setInterval(() => {
+      setActiveTopIndex((prev) => (prev + 1) % top3Faturamento.length);
+    }, 3800);
+    return () => clearInterval(interval);
+  }, [isStickerPaused, top3Faturamento.length]);
+
   // --- EXPORTAR RELATÓRIO EXECUTIVO EM PDF ---
   const handleExportPDF = async () => {
     try {
@@ -694,20 +739,19 @@ export default function BiHistory() {
       const seriesTable = historicalSeries.map((s) => [
         s.label,
         `${s.totalAlunos} alunos`,
+        `${s.alunosEmTurmas} vagas`,
         `+${s.novosAlunos}`,
+        s.evadidosMes > 0 ? `-${s.evadidosMes}` : "0",
         formatCurrency(s.receitaPrevista),
-        formatCurrency(s.receitaPaga),
-        formatCurrency(s.receitaAtraso),
-        `${s.taxaInadimplencia.toFixed(1)}%`,
         formatCurrency(s.ticketMedio),
       ]);
 
       autoTable(doc, {
         startY: nextY + 4,
-        head: [["Mês", "Alunos", "Entradas", "Faturamento", "Recebido", "Atraso", "Inadimpl.", "Ticket Médio"]],
+        head: [["Mês", "Alunos Ativos", "Alunos em Turmas", "Novas Entradas", "Churn", "Faturamento", "Ticket Médio"]],
         body: seriesTable,
         theme: "striped",
-        headStyles: { fillColor: [222, 57, 42] },
+        headStyles: { fillColor: [28, 35, 148] },
         styles: { fontSize: 8 },
       });
 
@@ -821,6 +865,136 @@ export default function BiHistory() {
           </button>
         </div>
       </Card>
+
+      {/* ========================================================================= */}
+      {/* STICKER ROTATIVO: TOP 3 MESES DE MAIOR FATURAMENTO HISTÓRICO              */}
+      {/* ========================================================================= */}
+      {top3Faturamento.length > 0 && (
+        <Card 
+          onMouseEnter={() => setIsStickerPaused(true)}
+          onMouseLeave={() => setIsStickerPaused(false)}
+          className="border border-amber-300/80 dark:border-amber-900/50 bg-gradient-to-r from-amber-500/10 via-rose-500/5 to-primary/10 shadow-sm overflow-hidden relative transition-all"
+        >
+          <div className="p-4 sm:p-5">
+            {/* Top Bar do Sticker */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-amber-200/60 dark:border-amber-900/40">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center ring-1 ring-amber-500/30 shadow-inner shrink-0">
+                  <Trophy className="w-5 h-5 text-amber-600 animate-bounce" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="font-extrabold text-foreground text-base tracking-tight flex items-center gap-1.5">
+                      Recordes de Faturamento da Escola
+                    </h3>
+                    <Badge className="bg-amber-500 hover:bg-amber-600 text-amber-950 font-black text-[10px] px-2.5 py-0.5 shadow-sm uppercase tracking-wider flex items-center gap-1">
+                      <Sparkles className="w-3 h-3" />
+                      Top 3 Meses Históricos
+                    </Badge>
+                    <span className="text-[10px] text-muted-foreground hidden md:inline-flex items-center gap-1">
+                      <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-ping mr-0.5" />
+                      Rodando automaticamente ({activeTopIndex + 1}/3) • Pause com o cursor
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Meses com os maiores picos de arrecadação da trajetória da Equipe Marco Roza.
+                  </p>
+                </div>
+              </div>
+
+              {/* Controles de Navegação e Seletor do Top 3 */}
+              <div className="flex items-center gap-1.5 shrink-0 self-end sm:self-auto">
+                {top3Faturamento.map((m, idx) => {
+                  const medals = ["🥇 1º", "🥈 2º", "🥉 3º"];
+                  const isActive = idx === activeTopIndex;
+                  return (
+                    <button
+                      key={m.key}
+                      onClick={() => setActiveTopIndex(idx)}
+                      className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 cursor-pointer ${
+                        isActive
+                          ? "bg-amber-500 text-amber-950 shadow-sm ring-1 ring-amber-400 scale-105"
+                          : "bg-background/80 hover:bg-background text-muted-foreground border border-border/80"
+                      }`}
+                    >
+                      <span>{medals[idx]}</span>
+                      <span className="hidden sm:inline">{m.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Destaque Rotativo do Mês Top Atual & Cards do Pódio */}
+            <div className="pt-3.5 grid grid-cols-1 md:grid-cols-3 gap-3">
+              {top3Faturamento.map((m, idx) => {
+                const isActive = idx === activeTopIndex;
+                const medals = ["🥇", "🥈", "🥉"];
+                const titles = ["1º Lugar • Recorde Histórico", "2º Lugar • Vice-Campeão", "3º Lugar • Alta Arrecadação"];
+                const borderColors = [
+                  "border-amber-400 dark:border-amber-600 bg-gradient-to-br from-amber-500/15 via-background to-amber-500/5 ring-2 ring-amber-400/40",
+                  "border-slate-300 dark:border-slate-700 bg-gradient-to-br from-slate-200/40 dark:from-slate-800/40 via-background to-slate-200/10",
+                  "border-orange-300 dark:border-orange-800 bg-gradient-to-br from-orange-500/10 via-background to-orange-500/5",
+                ];
+
+                return (
+                  <div
+                    key={m.key}
+                    onClick={() => setActiveTopIndex(idx)}
+                    className={`p-3.5 rounded-xl border transition-all duration-300 cursor-pointer relative ${
+                      isActive
+                        ? `${borderColors[idx]} shadow-md scale-[1.02]`
+                        : "bg-card/70 border-border/70 hover:border-amber-300/60 opacity-80 hover:opacity-100"
+                    }`}
+                  >
+                    {isActive && (
+                      <div className="absolute top-2 right-2 flex items-center gap-1">
+                        <Badge className="bg-amber-500 text-amber-950 text-[9px] font-black uppercase px-1.5 py-0">
+                          Em Foco
+                        </Badge>
+                      </div>
+                    )}
+                    
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-xl shrink-0">{medals[idx]}</span>
+                      <div>
+                        <div className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground">
+                          {titles[idx]}
+                        </div>
+                        <h4 className="text-sm font-black text-foreground capitalize">
+                          {m.label}
+                        </h4>
+                      </div>
+                    </div>
+
+                    <div className="mt-1 flex items-baseline justify-between">
+                      <div>
+                        <span className="text-[10px] text-muted-foreground block">Faturamento</span>
+                        <span className="text-base font-black text-foreground">
+                          {formatCurrency(m.receitaPrevista || m.receitaPaga)}
+                        </span>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-[10px] text-muted-foreground block">Ticket Médio</span>
+                        <span className="text-xs font-bold text-foreground">
+                          {formatCurrency(m.ticketMedio)}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="mt-2.5 pt-2 border-t border-border/60 flex items-center justify-between text-[11px] text-muted-foreground">
+                      <span>👥 <strong>{m.totalAlunos}</strong> alunos ativos</span>
+                      <span className="text-purple-700 dark:text-purple-300 font-semibold">
+                        🎾 <strong>{m.alunosEmTurmas}</strong> em turmas
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </Card>
+      )}
 
       {/* ========================================================================= */}
       {/* SEÇÃO 1: SCORECARDS DE KPIS EXECUTIVOS                                    */}
@@ -1373,36 +1547,35 @@ export default function BiHistory() {
                   <tr className="border-b bg-muted/50 text-muted-foreground font-semibold">
                     <th className="py-2.5 px-4">Mês/Ano</th>
                     <th className="py-2.5 px-3">Alunos Ativos</th>
+                    <th className="py-2.5 px-3">Alunos em Turmas</th>
                     <th className="py-2.5 px-3">Novas Entradas</th>
+                    <th className="py-2.5 px-3">Churn</th>
                     <th className="py-2.5 px-3">Faturamento</th>
-                    <th className="py-2.5 px-3">Recebido</th>
-                    <th className="py-2.5 px-3">Em Atraso</th>
-                    <th className="py-2.5 px-3">Inadimplência</th>
                     <th className="py-2.5 px-3">Ticket Médio</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">
                   {historicalSeries.map((m) => (
                     <tr key={m.key} className="hover:bg-muted/30 transition">
-                      <td className="py-2 px-4 font-bold text-foreground">{m.label}</td>
-                      <td className="py-2 px-3 font-medium">{m.totalAlunos}</td>
-                      <td className="py-2 px-3 text-emerald-600 font-bold">+{m.novosAlunos}</td>
-                      <td className="py-2 px-3 font-semibold">{formatCurrency(m.receitaPrevista)}</td>
-                      <td className="py-2 px-3 text-emerald-600 font-semibold">{formatCurrency(m.receitaPaga)}</td>
-                      <td className="py-2 px-3 text-rose-500 font-medium">{formatCurrency(m.receitaAtraso)}</td>
-                      <td className="py-2 px-3">
-                        <Badge
-                          variant="outline"
-                          className={`text-[10px] px-1.5 py-0 ${
-                            m.taxaInadimplencia > 8
-                              ? "border-rose-400 text-rose-600 bg-rose-50 dark:bg-rose-950/20"
-                              : "border-emerald-300 text-emerald-600 bg-emerald-50 dark:bg-emerald-950/20"
-                          }`}
-                        >
-                          {m.taxaInadimplencia.toFixed(1)}%
-                        </Badge>
+                      <td className="py-2.5 px-4 font-bold text-foreground">{m.label}</td>
+                      <td className="py-2.5 px-3 font-semibold text-foreground">{m.totalAlunos}</td>
+                      <td className="py-2.5 px-3">
+                        <span className="font-bold text-purple-700 dark:text-purple-300 bg-purple-500/10 px-2 py-0.5 rounded text-[11px]">
+                          {m.alunosEmTurmas} vagas
+                        </span>
                       </td>
-                      <td className="py-2 px-3 font-mono text-muted-foreground">{formatCurrency(m.ticketMedio)}</td>
+                      <td className="py-2.5 px-3 text-emerald-600 font-bold">+{m.novosAlunos}</td>
+                      <td className="py-2.5 px-3">
+                        {m.evadidosMes > 0 ? (
+                          <span className="text-rose-600 dark:text-rose-400 font-bold bg-rose-500/10 px-2 py-0.5 rounded text-[11px]">
+                            -{m.evadidosMes}
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground font-medium">0</span>
+                        )}
+                      </td>
+                      <td className="py-2.5 px-3 font-bold text-foreground">{formatCurrency(m.receitaPrevista)}</td>
+                      <td className="py-2.5 px-3 font-mono text-muted-foreground">{formatCurrency(m.ticketMedio)}</td>
                     </tr>
                   ))}
                 </tbody>
