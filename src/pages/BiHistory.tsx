@@ -93,6 +93,16 @@ export default function BiHistory() {
     return null;
   };
 
+  const calculateTenure = (entryDateStr: string) => {
+    if (!entryDateStr) return 0;
+    const entryDate = parseIsoOrBr(entryDateStr);
+    if (!entryDate || isNaN(entryDate.getTime())) return 0;
+    const now = new Date();
+    const diffTime = now.getTime() - entryDate.getTime();
+    const diffDays = diffTime / (1000 * 60 * 60 * 24);
+    return Math.max(0, diffDays / 30.4375);
+  };
+
   const formatCurrency = (val: number) => {
     return val.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
   };
@@ -485,11 +495,36 @@ export default function BiHistory() {
     const mrrAtual = lastMonth.receitaPrevista;
     const mrrMedioPeriodo = historicalSeries.length > 0 ? sumReceitaPrevista / historicalSeries.length : mrrAtual;
 
-    // Ticket Médio de mensalidade no período selecionado (média real das faturas dos meses do período):
-    const validTicketMonths = historicalSeries.filter((m) => m.ticketMedio > 0);
-    const ticketMedioGeral = validTicketMonths.length > 0
-      ? validTicketMonths.reduce((s, m) => s + m.ticketMedio, 0) / validTicketMonths.length
-      : 220;
+    // 1. Alunos Ativos Atuais e LTV Real por Aluno (100% Unificado com o BI de Inteligência Comportamental)
+    const activeStudents = students.filter((s) => s.status === "Ativo");
+    const totalAlunosAtivos = activeStudents.length || totalAlunosAtual || 1;
+
+    // Faturamento acumulado pago por cada aluno ativo desde a origem
+    const studentLtvList = activeStudents.map((st) => {
+      const stRevenues = revenues.filter(
+        (r) => r.alunoId === st.id || r.aluno.trim().toLowerCase() === st.nome.trim().toLowerCase()
+      );
+      return stRevenues
+        .filter((r) => r.status === "Pago")
+        .reduce((sum, r) => sum + r.valor, 0);
+    });
+
+    const ltvEstimado = totalAlunosAtivos > 0
+      ? studentLtvList.reduce((a, b) => a + b, 0) / totalAlunosAtivos
+      : 2561;
+
+    // Tempo médio de casa / permanência (Tenure real em meses)
+    const tenureList = activeStudents.map((st) => calculateTenure(st.dataEntrada));
+    const tenureMedioMeses = totalAlunosAtivos > 0
+      ? tenureList.reduce((a, b) => a + b, 0) / totalAlunosAtivos
+      : 11.7;
+
+    // Ticket Médio de mensalidade individual:
+    // Ponderação: Faturamento mensal atual (MRR) dividido pela base atual de alunos
+    const avgPlansPrice = plans.length > 0 ? plans.reduce((s, p) => s + p.valor, 0) / plans.length : 220;
+    const ticketMedioGeral = totalAlunosAtual > 0 
+      ? mrrAtual / totalAlunosAtual 
+      : (tenureMedioMeses > 0 ? ltvEstimado / tenureMedioMeses : avgPlansPrice);
 
     const taxaInadimplenciaMedia = historicalSeries.length > 0 ? sumInadimplencia / historicalSeries.length : 0;
     const adimplenciaMedia = Math.min(100, Math.max(0, 100 - taxaInadimplenciaMedia));
@@ -502,12 +537,6 @@ export default function BiHistory() {
       Math.max(0, 100 - (sumEvadidos / (totalAlunosAtual || 1)) * 100)
     );
 
-    // LTV no período: faturamento médio arrecadado por aluno
-    const ltvEstimado = totalAlunosAtual > 0 
-      ? sumReceitaPaga / totalAlunosAtual 
-      : ticketMedioGeral * Math.min(historicalSeries.length, 12);
-
-    const tenureMedioMeses = Math.min(historicalSeries.length, 14);
     const mediaAlunosPeriodo = historicalSeries.length > 0
       ? historicalSeries.reduce((s, m) => s + m.totalAlunos, 0) / historicalSeries.length
       : totalAlunosAtual;
@@ -533,7 +562,7 @@ export default function BiHistory() {
       tenureMedioMeses,
       margemMedia,
     };
-  }, [historicalSeries]);
+  }, [historicalSeries, students, revenues, plans]);
 
   // --- EXPORTAR RELATÓRIO EXECUTIVO EM PDF ---
   const handleExportPDF = async () => {
@@ -770,49 +799,49 @@ export default function BiHistory() {
             </CardContent>
           </Card>
 
-          {/* KPI 2: Faturamento Total do Período & MRR Médio */}
+          {/* KPI 2: Faturamento Total da Escola no Período */}
           <Card className="border-l-4 border-l-blue-600 shadow-sm hover:shadow-md transition">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-foreground uppercase tracking-tight">Faturamento do Período</span>
+                <span className="text-xs font-bold text-foreground uppercase tracking-tight">Faturamento da Escola (Período)</span>
                 <DollarSign className="w-4 h-4 text-blue-600" />
               </div>
               <div className="flex items-baseline gap-2 mt-2">
                 <span className="text-2xl font-black text-foreground">{formatCurrency(consolidatedKpis.receitaTotalAcumulada)}</span>
                 <Badge className="ml-auto bg-blue-500/10 text-blue-700 dark:text-blue-300 font-bold border-none text-[9px]">
-                  {formatCurrency(consolidatedKpis.mrrMedioPeriodo)}/mês
+                  Média: {formatCurrency(consolidatedKpis.mrrMedioPeriodo)}/mês
                 </Badge>
               </div>
               <p className="text-[11px] text-muted-foreground mt-2 leading-tight">
-                Receita realizada no período ({historicalSeries.length} meses). Média mensal de <strong>{formatCurrency(consolidatedKpis.mrrMedioPeriodo)}</strong>.
+                Soma global de todas as cobranças da escola no período selecionado ({historicalSeries.length} meses).
               </p>
             </CardContent>
           </Card>
 
-          {/* KPI 3: LTV Médio & Resultado Acumulado */}
+          {/* KPI 3: LTV Médio (Histórico) */}
           <Card className="border-l-4 border-l-emerald-600 shadow-sm hover:shadow-md transition">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-foreground uppercase tracking-tight">LTV Médio do Aluno</span>
+                <span className="text-xs font-bold text-foreground uppercase tracking-tight">LTV Médio (Histórico)</span>
                 <Award className="w-4 h-4 text-emerald-600" />
               </div>
               <div className="flex items-baseline gap-2 mt-2">
                 <span className="text-2xl font-black text-foreground">{formatCurrency(consolidatedKpis.ltvEstimado)}</span>
                 <Badge className="ml-auto bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-bold border-none text-[9px]">
-                  ~{consolidatedKpis.tenureMedioMeses.toFixed(0)}m retenção
+                  ~{consolidatedKpis.tenureMedioMeses.toFixed(1)} meses
                 </Badge>
               </div>
               <p className="text-[11px] text-muted-foreground mt-2 leading-tight">
-                Valor médio acumulado gerado por aluno no período. Lucro líquido: <strong>{formatCurrency(consolidatedKpis.lucroTotalAcumulado)}</strong>.
+                Soma de faturas pagas desde a origem por aluno ativo. Permanência média de <strong>{consolidatedKpis.tenureMedioMeses.toFixed(1)} meses</strong>.
               </p>
             </CardContent>
           </Card>
 
-          {/* KPI 4: Ticket Médio & Inadimplência */}
+          {/* KPI 4: Mensalidade Média (Individual) */}
           <Card className="border-l-4 border-l-amber-500 shadow-sm hover:shadow-md transition">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-foreground uppercase tracking-tight">Mensalidade Média (Ticket)</span>
+                <span className="text-xs font-bold text-foreground uppercase tracking-tight">Mensalidade Média (Individual)</span>
                 <Activity className="w-4 h-4 text-amber-500" />
               </div>
               <div className="flex items-baseline gap-2 mt-2">
@@ -822,7 +851,7 @@ export default function BiHistory() {
                 </Badge>
               </div>
               <p className="text-[11px] text-muted-foreground mt-2 leading-tight">
-                Ticket médio por fatura. Adimplência média de <strong className="text-foreground">{consolidatedKpis.adimplenciaMedia.toFixed(1)}%</strong> e margem de <strong className="text-foreground">{consolidatedKpis.margemMedia.toFixed(0)}%</strong>.
+                Valor médio por aluno/mês (MRR atual / {consolidatedKpis.totalAlunosAtual} alunos). Margem operacional média em <strong className="text-foreground">{consolidatedKpis.margemMedia.toFixed(0)}%</strong>.
               </p>
             </CardContent>
           </Card>
