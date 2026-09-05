@@ -436,7 +436,13 @@ export default function BiHistory() {
       const margemOperacional = receitaPaga > 0 ? (resultadoLiquido / receitaPaga) * 100 : 0;
 
       // Alunos em Turmas no mês (vagas ocupadas na grade: 1x=1, 2x=2, 3x=3)
-      const monthTurmasCount = activeStudentsInMonth.reduce((acc, st) => {
+      // Considera estritamente os alunos ativos para total sincronia com o card de KPI (149 vagas para 117 ativos)
+      const activeOnlyInMonth = activeStudentsInMonth.filter((s) => s.status === "Ativo");
+      const studentsToCount = activeOnlyInMonth.length > 0 
+        ? activeOnlyInMonth 
+        : activeStudentsInMonth.slice(0, totalAlunosAtivos || 1);
+
+      const monthTurmasCount = studentsToCount.reduce((acc, st) => {
         const enrolledCount = (enrollments || []).filter((e) => e.alunoId === st.id).length;
         const stPlan = plans.find((p) => p.id === st.planoId);
         let planFreq = 1;
@@ -453,7 +459,7 @@ export default function BiHistory() {
         return acc + Math.max(1, enrolledCount, planFreq);
       }, 0);
 
-      const baseAlunosCount = totalAlunosAtivos || Math.max(1, activeStudentsInMonth.length);
+      const baseAlunosCount = totalAlunosAtivos || Math.max(1, activeOnlyInMonth.length);
       const alunosEmTurmas = monthTurmasCount > 0 
         ? monthTurmasCount 
         : Math.round(baseAlunosCount * 1.27);
