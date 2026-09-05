@@ -681,7 +681,9 @@ const Students = () => {
                 {categorias.map((c) => (
                   <div key={c} className="flex flex-col items-center gap-1">
                     <Button variant={catFilter === c ? "default" : "outline"} size="sm" onClick={() => setCatFilter(catFilter === c ? null : c)}>{c}</Button>
-                    <span className="text-[10px] text-muted-foreground font-bold">{students.filter(s => s.categoria === c).length} alunos</span>
+                    <span className="text-[10px] text-muted-foreground font-bold">
+                      {students.filter(s => s.status === "Ativo" && s.categoria === c).length} alunos
+                    </span>
                   </div>
                 ))}
               </div>
@@ -703,7 +705,9 @@ const Students = () => {
                 {(["M", "F"] as const).map((s) => (
                   <div key={s} className="flex flex-col items-center gap-1">
                     <Button variant={sexoFilter === s ? "default" : "outline"} size="sm" onClick={() => setSexoFilter(sexoFilter === s ? null : s)}>{s === "M" ? "Masculino" : "Feminino"}</Button>
-                    <span className="text-[10px] text-muted-foreground font-bold">{students.filter(st => st.sexo === s).length} alunos</span>
+                    <span className="text-[10px] text-muted-foreground font-bold">
+                      {students.filter(st => st.status === "Ativo" && st.sexo === s).length} alunos
+                    </span>
                   </div>
                 ))}
               </div>
