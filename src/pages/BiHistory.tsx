@@ -60,7 +60,7 @@ import logo from "@/assets/logo.png";
 import { toast } from "sonner";
 
 export default function BiHistory() {
-  const { students, revenues, scheduledPayments, plans } = useAppContext();
+  const { students, revenues, scheduledPayments, plans, enrollments } = useAppContext();
   const [selectedPeriod, setSelectedPeriod] = useState<"all" | "12m" | "24m" | "2026">("all");
   const [activeStoryChapter, setActiveStoryChapter] = useState(1);
   const [activeViewTab, setActiveViewTab] = useState("students");
@@ -485,6 +485,11 @@ export default function BiHistory() {
         tenureMedioMeses: 0,
         margemMedia: 0,
         mediaAlunosPeriodo: 0,
+        totalAlunosEmTurmas: 0,
+        mediaTurmasPorAluno: 1,
+        alunos1Turma: 0,
+        alunos2Turmas: 0,
+        alunos3Turmas: 0,
       };
     }
 
@@ -545,6 +550,33 @@ export default function BiHistory() {
       ? tenureList.reduce((a, b) => a + b, 0) / totalAlunosAtivos
       : 11.7;
 
+    // 2. Alunos em Turmas (Vagas em Quadra / Headcount Multiplicado por Frequência)
+    // Contabiliza cada aluno conforme as turmas/frequências: 1x = 1, 2x = 2, 3x = 3
+    const studentTurmasData = activeStudents.map((st) => {
+      const enrolledCount = (enrollments || []).filter((e) => e.alunoId === st.id).length;
+      const stPlan = plans.find((p) => p.id === st.planoId);
+      let planFreq = 1;
+      if (stPlan?.frequencia) {
+        if (stPlan.frequencia.includes("1x")) planFreq = 1;
+        else if (stPlan.frequencia.includes("2x")) planFreq = 2;
+        else if (stPlan.frequencia.includes("3x")) planFreq = 3;
+        else if (stPlan.frequencia.includes("Diário") || stPlan.frequencia.includes("4x") || stPlan.frequencia.includes("5x")) planFreq = 4;
+      } else if (stPlan?.nome) {
+        if (stPlan.nome.includes("1x")) planFreq = 1;
+        else if (stPlan.nome.includes("2x")) planFreq = 2;
+        else if (stPlan.nome.includes("3x")) planFreq = 3;
+      }
+
+      return Math.max(1, enrolledCount, planFreq);
+    });
+
+    const alunos1Turma = studentTurmasData.filter((cnt) => cnt === 1).length;
+    const alunos2Turmas = studentTurmasData.filter((cnt) => cnt === 2).length;
+    const alunos3Turmas = studentTurmasData.filter((cnt) => cnt >= 3).length;
+
+    const totalAlunosEmTurmas = studentTurmasData.reduce((sum, cnt) => sum + cnt, 0);
+    const mediaTurmasPorAluno = totalAlunosAtivos > 0 ? totalAlunosEmTurmas / totalAlunosAtivos : 1;
+
     // Ticket Médio de mensalidade individual:
     // Ponderação: Faturamento mensal atual (MRR) dividido pela base atual de alunos
     const avgPlansPrice = plans.length > 0 ? plans.reduce((s, p) => s + p.valor, 0) / plans.length : 220;
@@ -587,8 +619,13 @@ export default function BiHistory() {
       ltvEstimado,
       tenureMedioMeses,
       margemMedia,
+      totalAlunosEmTurmas,
+      mediaTurmasPorAluno,
+      alunos1Turma,
+      alunos2Turmas,
+      alunos3Turmas,
     };
-  }, [historicalSeries, students, revenues, plans]);
+  }, [historicalSeries, students, revenues, plans, enrollments]);
 
   // --- EXPORTAR RELATÓRIO EXECUTIVO EM PDF ---
   const handleExportPDF = async () => {
@@ -628,7 +665,8 @@ export default function BiHistory() {
       doc.text("1. Principais Indicadores Estratégicos (KPIs)", 14, 44);
 
       const kpisTable = [
-        ["Base Atual de Alunos", `${consolidatedKpis.totalAlunosAtual} alunos`],
+        ["Base Atual de Alunos", `${consolidatedKpis.totalAlunosAtual} atletas únicos`],
+        ["Alunos em Turmas (Vagas em Quadra)", `${consolidatedKpis.totalAlunosEmTurmas} vagas (${consolidatedKpis.mediaTurmasPorAluno.toFixed(2)}x/atleta)`],
         ["Crescimento Acumulado", `${consolidatedKpis.crescimentoAlunosPerc > 0 ? "+" : ""}${consolidatedKpis.crescimentoAlunosPerc.toFixed(1)}%`],
         ["MRR Recorrente Vigente", formatCurrency(consolidatedKpis.mrrAtual)],
         ["Ticket Médio por Aluno", formatCurrency(consolidatedKpis.ticketMedioGeral)],
@@ -803,33 +841,53 @@ export default function BiHistory() {
           </Badge>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* KPI 1: Base de Alunos no Período */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          {/* KPI 1: Base de Alunos no Período (Únicos) */}
           <Card className="border-l-4 border-l-primary shadow-sm hover:shadow-md transition">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-muted-foreground uppercase">Base de Alunos (Período)</span>
+                <span className="text-xs font-semibold text-muted-foreground uppercase">Base de Alunos (Únicos)</span>
                 <Users className="w-4 h-4 text-primary" />
               </div>
               <div className="flex items-baseline gap-2 mt-2">
                 <span className="text-2xl font-black text-foreground">{consolidatedKpis.totalAlunosAtual}</span>
-                <span className="text-xs text-muted-foreground">alunos</span>
+                <span className="text-xs text-muted-foreground">atletas</span>
                 <Badge className="ml-auto bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold border-none text-[10px]">
                   {consolidatedKpis.crescimentoAlunosPerc >= 0 ? "+" : ""}
                   {consolidatedKpis.crescimentoAlunosPerc.toFixed(0)}%
                 </Badge>
               </div>
               <p className="text-[11px] text-muted-foreground mt-2 leading-tight">
-                Evolução de <strong>{consolidatedKpis.totalAlunosInicio}</strong> para <strong>{consolidatedKpis.totalAlunosAtual}</strong> alunos ({consolidatedKpis.saldoNovosPeriodo > 0 ? `+${consolidatedKpis.saldoNovosPeriodo}` : consolidatedKpis.saldoNovosPeriodo} novas matrículas no período).
+                Pessoas físicas matriculadas. De <strong>{consolidatedKpis.totalAlunosInicio}</strong> para <strong>{consolidatedKpis.totalAlunosAtual}</strong> no período ({consolidatedKpis.saldoNovosPeriodo > 0 ? `+${consolidatedKpis.saldoNovosPeriodo}` : consolidatedKpis.saldoNovosPeriodo} novos).
               </p>
             </CardContent>
           </Card>
 
-          {/* KPI 2: Faturamento Total da Escola no Período */}
+          {/* KPI 2: Alunos em Turmas (Vagas Ocupadas em Quadra) */}
+          <Card className="border-l-4 border-l-purple-600 shadow-sm hover:shadow-md transition">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-foreground uppercase tracking-tight">Alunos em Turmas</span>
+                <Layers className="w-4 h-4 text-purple-600" />
+              </div>
+              <div className="flex items-baseline gap-2 mt-2">
+                <span className="text-2xl font-black text-purple-600 dark:text-purple-400">{consolidatedKpis.totalAlunosEmTurmas}</span>
+                <span className="text-xs text-muted-foreground">vagas</span>
+                <Badge className="ml-auto bg-purple-500/10 text-purple-700 dark:text-purple-300 font-bold border-none text-[9px]">
+                  {consolidatedKpis.mediaTurmasPorAluno.toFixed(2)}x/atleta
+                </Badge>
+              </div>
+              <p className="text-[11px] text-muted-foreground mt-2 leading-tight">
+                Vagas ocupadas na grade: <strong>{consolidatedKpis.alunos1Turma}</strong> (1 turma) + <strong>{consolidatedKpis.alunos2Turmas}</strong> (2x) + <strong>{consolidatedKpis.alunos3Turmas}</strong> (3x+).
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* KPI 3: Faturamento Total da Escola no Período */}
           <Card className="border-l-4 border-l-blue-600 shadow-sm hover:shadow-md transition">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-foreground uppercase tracking-tight">Faturamento da Escola (Período)</span>
+                <span className="text-xs font-bold text-foreground uppercase tracking-tight">Faturamento da Escola</span>
                 <DollarSign className="w-4 h-4 text-blue-600" />
               </div>
               <div className="flex items-baseline gap-2 mt-2">
@@ -844,7 +902,7 @@ export default function BiHistory() {
             </CardContent>
           </Card>
 
-          {/* KPI 3: LTV Médio (Histórico) */}
+          {/* KPI 4: LTV Médio (Histórico) */}
           <Card className="border-l-4 border-l-emerald-600 shadow-sm hover:shadow-md transition">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
@@ -863,11 +921,11 @@ export default function BiHistory() {
             </CardContent>
           </Card>
 
-          {/* KPI 4: Mensalidade Média (Individual) */}
+          {/* KPI 5: Mensalidade Média (Individual) */}
           <Card className="border-l-4 border-l-amber-500 shadow-sm hover:shadow-md transition">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-foreground uppercase tracking-tight">Mensalidade Média (Individual)</span>
+                <span className="text-xs font-bold text-foreground uppercase tracking-tight">Mensalidade Média</span>
                 <Activity className="w-4 h-4 text-amber-500" />
               </div>
               <div className="flex items-baseline gap-2 mt-2">
@@ -1057,6 +1115,46 @@ export default function BiHistory() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Painel Operacional: Alunos Únicos vs Alunos em Turmas (Capacidade e Vagas em Quadra) */}
+        <Card className="bg-gradient-to-r from-primary/5 via-purple-500/10 to-transparent border border-purple-500/20 shadow-sm">
+          <CardContent className="p-5">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+              <div className="space-y-1.5 max-w-2xl">
+                <div className="flex items-center gap-2">
+                  <Badge className="bg-purple-600 text-white font-bold text-[10px]">Métrica Operacional de Quadra</Badge>
+                  <h3 className="text-base font-black text-foreground flex items-center gap-1.5">
+                    <Layers className="w-4 h-4 text-purple-600" />
+                    Atletas Únicos vs. Alunos em Turmas (Multiplicador de Capacidade)
+                  </h3>
+                </div>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Quando um aluno treina 2x ou 3x por semana, ele ocupa múltiplos slots de grade horária. Por isso, a escola possui 
+                  <strong className="text-foreground"> {consolidatedKpis.totalAlunosAtual} atletas únicos matriculados</strong>, mas administra na prática 
+                  <strong className="text-purple-600 dark:text-purple-400 font-bold"> {consolidatedKpis.totalAlunosEmTurmas} alunos em turmas</strong> (vagas ocupadas), representando um multiplicador operacional de <strong className="text-foreground">{consolidatedKpis.mediaTurmasPorAluno.toFixed(2)} turmas por atleta</strong>.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-3 gap-3 shrink-0">
+                <div className="bg-card border border-border/80 p-3 rounded-xl text-center shadow-sm">
+                  <span className="text-[10px] uppercase font-bold text-muted-foreground block">1 Turma (1x/sem)</span>
+                  <span className="text-xl font-black text-foreground">{consolidatedKpis.alunos1Turma}</span>
+                  <span className="text-[10px] text-muted-foreground block">= {consolidatedKpis.alunos1Turma} vaga(s)</span>
+                </div>
+                <div className="bg-card border border-purple-500/30 bg-purple-500/5 p-3 rounded-xl text-center shadow-sm">
+                  <span className="text-[10px] uppercase font-bold text-purple-700 dark:text-purple-300 block">2 Turmas (2x/sem)</span>
+                  <span className="text-xl font-black text-purple-700 dark:text-purple-300">{consolidatedKpis.alunos2Turmas}</span>
+                  <span className="text-[10px] text-purple-600/80 dark:text-purple-400 block">= {consolidatedKpis.alunos2Turmas * 2} vagas</span>
+                </div>
+                <div className="bg-card border border-blue-500/30 bg-blue-500/5 p-3 rounded-xl text-center shadow-sm">
+                  <span className="text-[10px] uppercase font-bold text-blue-700 dark:text-blue-300 block">3x+ na Semana</span>
+                  <span className="text-xl font-black text-blue-700 dark:text-blue-300">{consolidatedKpis.alunos3Turmas}</span>
+                  <span className="text-[10px] text-blue-600/80 dark:text-blue-400 block">= {consolidatedKpis.alunos3Turmas * 3} vagas</span>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Segmentações da Base: Categoria & Gênero */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

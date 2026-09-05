@@ -196,6 +196,8 @@ export default function BiDashboard() {
         freq1xCount: 0,
         freq2xCount: 0,
         freq3xCount: 0,
+        totalAlunosEmTurmas: 0,
+        mediaTurmasPorAluno: 1,
         maleCount: 0,
         femaleCount: 0,
       };
@@ -238,11 +240,19 @@ export default function BiDashboard() {
     const freq2xCount = biData.filter((s) => s.planoFrequencia === 2).length;
     const freq3xCount = biData.filter((s) => s.planoFrequencia >= 3).length;
 
+    // Alunos em Turmas (Vagas ocupadas na grade: 1x = 1, 2x = 2, 3x = 3)
+    const totalAlunosEmTurmas = (freq1xCount * 1) + (freq2xCount * 2) + biData
+      .filter((s) => s.planoFrequencia >= 3)
+      .reduce((sum, s) => sum + s.planoFrequencia, 0);
+    const mediaTurmasPorAluno = totalAlunos > 0 ? totalAlunosEmTurmas / totalAlunos : 1;
+
     const maleCount = biData.filter((s) => s.sexo === "M").length;
     const femaleCount = biData.filter((s) => s.sexo === "F").length;
 
     return {
       totalAlunos,
+      totalAlunosEmTurmas,
+      mediaTurmasPorAluno,
       avgLtv: sumLtv / totalAlunos,
       avgTenure: sumTenure / totalAlunos,
       avgAge: sumAge / totalAlunos,
@@ -808,7 +818,7 @@ export default function BiDashboard() {
       </Card>
 
       {/* KPI Cards de BI */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <Card className="bg-card hover:shadow-md transition-shadow border-primary/20">
           <CardContent className="pt-6">
             <div className="flex justify-between items-start">
@@ -864,6 +874,25 @@ export default function BiDashboard() {
             <div className="mt-4 flex items-center text-xs text-muted-foreground font-medium">
               <TrendingUp className="w-3.5 h-3.5 text-green-500 mr-1" />
               <span>Aulas marcadas como presentes</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-card hover:shadow-md transition-shadow border-purple-500/20">
+          <CardContent className="pt-6">
+            <div className="flex justify-between items-start">
+              <div>
+                <p className="text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-wider">Alunos em Turmas</p>
+                <h3 className="text-2xl font-black mt-2 text-purple-700 dark:text-purple-300">
+                  {generalMetrics.totalAlunosEmTurmas} <span className="text-sm font-semibold text-muted-foreground">vagas</span>
+                </h3>
+              </div>
+              <div className="p-2 bg-purple-100 dark:bg-purple-950/50 rounded-lg text-purple-600 dark:text-purple-400">
+                <Layers className="w-5 h-5" />
+              </div>
+            </div>
+            <div className="mt-4 flex items-center text-xs text-muted-foreground font-medium">
+              <span>{generalMetrics.mediaTurmasPorAluno.toFixed(2)}x turmas por aluno ativo</span>
             </div>
           </CardContent>
         </Card>
