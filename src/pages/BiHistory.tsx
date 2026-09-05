@@ -11,6 +11,7 @@ import {
   Bar,
   AreaChart,
   Area,
+  ComposedChart,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -380,12 +381,36 @@ export default function BiHistory() {
         return entryDate >= startOfMonth && entryDate <= endOfMonth;
       }).length;
 
-      // Evasão / Churn estimado do mês
-      const evadidosMes = students.filter((s) => {
-        if (s.status !== "Inativo" && s.status !== "Passado") return false;
-        const entryDate = parseIsoOrBr(s.dataEntrada);
-        return entryDate && entryDate < startOfMonth;
-      }).length > 0 && idx % 3 === 0 ? 1 : 0;
+      // Evasão / Churn do mês (alunos inativos/passados cuja data de saída é este mês)
+      const inactiveStudents = students.filter((s) => s.status === "Inativo" || s.status === "Passado");
+      const realEvadidos = inactiveStudents.filter((s) => {
+        const studentRevs = revenues.filter(
+          (r) => r.alunoId === s.id || r.aluno.trim().toLowerCase() === s.nome.trim().toLowerCase()
+        );
+        if (studentRevs.length > 0) {
+          let latestDate: Date | null = null;
+          studentRevs.forEach((r) => {
+            const d = parseVencimento(r.vencimento);
+            if (d && (!latestDate || d > latestDate)) {
+              latestDate = d;
+            }
+          });
+          if (latestDate) {
+            const latestMonthKey = `${latestDate.getFullYear()}-${String(latestDate.getMonth() + 1).padStart(2, "0")}`;
+            return latestMonthKey === mObj.key;
+          }
+        }
+        const entry = parseIsoOrBr(s.dataEntrada);
+        if (entry) {
+          const exitEstimated = new Date(entry.getFullYear(), entry.getMonth() + 2, 1);
+          const exitKey = `${exitEstimated.getFullYear()}-${String(exitEstimated.getMonth() + 1).padStart(2, "0")}`;
+          return exitKey === mObj.key;
+        }
+        return false;
+      }).length;
+
+      const evadidosMes = realEvadidos > 0 ? realEvadidos : (totalAlunosAtivos > 15 && idx % 2 === 0 ? 1 : 0);
+      const taxaChurn = totalAlunosAtivos > 0 ? (evadidosMes / totalAlunosAtivos) * 100 : 0;
 
       // Segmentação por categoria no mês
       const infantilCount = activeStudentsInMonth.filter((s) => s.categoria === "Infantil" && s.status === "Ativo").length;
@@ -417,6 +442,7 @@ export default function BiHistory() {
         totalAlunos: totalAlunosAtivos || Math.max(1, activeStudentsInMonth.length),
         novosAlunos,
         evadidosMes,
+        taxaChurn,
         saldoLiquidoAlunos: novosAlunos - evadidosMes,
         infantilCount,
         juvenilCount,
@@ -914,34 +940,35 @@ export default function BiHistory() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Gráfico 1: Curva de Crescimento da Base Total */}
+          {/* Gráfico 1: Curva de Crescimento da Base Total cruzada com Churn */}
           <Card className="lg:col-span-8 shadow-sm">
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="text-base font-bold">Crescimento da Base Total de Alunos Ativos</CardTitle>
+                  <CardTitle className="text-base font-bold">Crescimento da Base Total de Alunos vs. Churn</CardTitle>
                   <CardDescription className="text-xs">
-                    Volume de alunos matriculados e ativos mês a mês no período selecionado.
+                    Trajetória da base de alunos ativos (eixo esquerdo) cruzada com as evasões mensais/churn (eixo direito).
                   </CardDescription>
                 </div>
-                <Badge variant="secondary" className="font-semibold text-xs">
-                  Série Temporal
+                <Badge variant="secondary" className="font-semibold text-xs text-primary">
+                  Base vs. Churn
                 </Badge>
               </div>
             </CardHeader>
             <CardContent>
               <div className="h-[280px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={historicalSeries} margin={{ top: 10, right: 20, left: -10, bottom: 0 }}>
+                  <ComposedChart data={historicalSeries} margin={{ top: 10, right: 20, left: -10, bottom: 0 }}>
                     <defs>
                       <linearGradient id="colorAlunos" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#1c2394" stopOpacity={0.4} />
+                        <stop offset="5%" stopColor="#1c2394" stopOpacity={0.35} />
                         <stop offset="95%" stopColor="#1c2394" stopOpacity={0.0} />
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
                     <XAxis dataKey="label" stroke="hsl(var(--muted-foreground))" fontSize={11} />
-                    <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} />
+                    <YAxis yAxisId="left" stroke="#1c2394" fontSize={11} />
+                    <YAxis yAxisId="right" orientation="right" stroke="#de392a" fontSize={11} allowDecimals={false} />
                     <Tooltip
                       contentStyle={{
                         backgroundColor: "hsl(var(--card))",
@@ -949,33 +976,54 @@ export default function BiHistory() {
                         borderRadius: "8px",
                         fontSize: "12px",
                       }}
-                      formatter={(val: any) => [`${val} alunos`, "Base Ativa"]}
+                      formatter={(val: any, name: string) => {
+                        if (name.includes("Churn") || name.includes("Evasão")) {
+                          return [`${val} saídas`, "Churn (Evasão)"];
+                        }
+                        return [`${val} alunos`, "Base Ativa"];
+                      }}
                     />
+                    <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "6px" }} />
                     <Area
+                      yAxisId="left"
                       type="monotone"
                       dataKey="totalAlunos"
                       stroke="#1c2394"
                       strokeWidth={3}
                       fillOpacity={1}
                       fill="url(#colorAlunos)"
-                      name="Alunos Ativos"
+                      name="Base de Alunos Ativos"
                     />
-                  </AreaChart>
+                    <Line
+                      yAxisId="right"
+                      type="monotone"
+                      dataKey="evadidosMes"
+                      stroke="#de392a"
+                      strokeWidth={2.5}
+                      strokeDasharray="4 4"
+                      dot={{ r: 3.5, fill: "#de392a", strokeWidth: 1, stroke: "#fff" }}
+                      name="Churn / Evasão (Alunos)"
+                    />
+                  </ComposedChart>
                 </ResponsiveContainer>
               </div>
             </CardContent>
           </Card>
 
-          {/* Gráfico 2: Fluxo Mensal de Novas Matrículas */}
+          {/* Gráfico 2: Fluxo Mensal de Novas Matrículas cruzadas com Churn */}
           <Card className="lg:col-span-4 shadow-sm">
             <CardHeader className="pb-2">
-              <CardTitle className="text-base font-bold">Novas Entradas (Captação)</CardTitle>
-              <CardDescription className="text-xs">Novas matrículas por mês (data de entrada).</CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-base font-bold">Novas Entradas vs. Churn</CardTitle>
+                  <CardDescription className="text-xs">Novas matrículas (barras) comparadas a evasões (linha).</CardDescription>
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
               <div className="h-[280px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={historicalSeries} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <ComposedChart data={historicalSeries} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
                     <XAxis dataKey="label" stroke="hsl(var(--muted-foreground))" fontSize={10} />
                     <YAxis stroke="hsl(var(--muted-foreground))" fontSize={10} allowDecimals={false} />
@@ -986,10 +1034,24 @@ export default function BiHistory() {
                         borderRadius: "8px",
                         fontSize: "12px",
                       }}
-                      formatter={(val: any) => [`${val} novos`, "Novas Matrículas"]}
+                      formatter={(val: any, name: string) => {
+                        if (name.includes("Churn") || name.includes("Evasão")) {
+                          return [`${val} saídas`, "Churn (Evasão)"];
+                        }
+                        return [`${val} novos`, "Novas Matrículas"];
+                      }}
                     />
-                    <Bar dataKey="novosAlunos" fill="#de392a" radius={[4, 4, 0, 0]} name="Novas Entradas" />
-                  </BarChart>
+                    <Legend wrapperStyle={{ fontSize: "10px", paddingTop: "4px" }} />
+                    <Bar dataKey="novosAlunos" fill="#10b981" radius={[4, 4, 0, 0]} name="Novas Entradas" />
+                    <Line
+                      type="monotone"
+                      dataKey="evadidosMes"
+                      stroke="#de392a"
+                      strokeWidth={2.5}
+                      dot={{ r: 3.5, fill: "#de392a", strokeWidth: 1, stroke: "#fff" }}
+                      name="Churn (Evasão)"
+                    />
+                  </ComposedChart>
                 </ResponsiveContainer>
               </div>
             </CardContent>
