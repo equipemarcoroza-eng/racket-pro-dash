@@ -53,6 +53,7 @@ import {
   CheckSquare,
   Sparkles,
   HelpCircle,
+  Gauge,
 } from "lucide-react";
 import logo from "@/assets/logo.png";
 import { toast } from "sonner";
@@ -94,6 +95,161 @@ export default function BiHistory() {
 
   const formatCurrency = (val: number) => {
     return val.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+  };
+
+  // --- GAUGE SPEEDOMETER (VELOCÍMETRO) ---
+  const GaugeSpeedometer = ({
+    value,
+    label,
+    subtitle,
+    warnThreshold = 75,
+    goodThreshold = 90,
+  }: {
+    value: number;
+    label: string;
+    subtitle?: string;
+    warnThreshold?: number;
+    goodThreshold?: number;
+  }) => {
+    const cleanValue = Math.min(100, Math.max(0, value));
+
+    let status: "CRÍTICO" | "ATENÇÃO" | "EXCELENTE";
+    let statusClass = "";
+    let needleColor = "#eab308";
+
+    if (cleanValue < warnThreshold) {
+      status = "CRÍTICO";
+      statusClass = "bg-red-50 text-red-600 border-red-200 dark:bg-red-950/40 dark:text-red-400";
+      needleColor = "#de392a";
+    } else if (cleanValue < goodThreshold) {
+      status = "ATENÇÃO";
+      statusClass = "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-400";
+      needleColor = "#d97706";
+    } else {
+      status = "EXCELENTE";
+      statusClass = "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400";
+      needleColor = "#10b981";
+    }
+
+    const isSeg1Active = cleanValue < warnThreshold;
+    const isSeg2Active = cleanValue >= warnThreshold && cleanValue < goodThreshold;
+    const isSeg3Active = cleanValue >= goodThreshold;
+
+    const seg1Color = isSeg1Active ? "#de392a" : "#fee2e2";
+    const seg2Color = isSeg2Active ? "#d97706" : "#fef3c7";
+    const seg3Color = isSeg3Active ? "#10b981" : "#d1fae5";
+
+    const cx = 60;
+    const cy = 65;
+    const radius = 45;
+    const strokeWidth = 8;
+    const rotation = -120 + (cleanValue / 100) * 240;
+
+    const polarToCartesian = (centerX: number, centerY: number, radius: number, angleInDegrees: number) => {
+      const angleInRadians = ((angleInDegrees - 90) * Math.PI) / 180.0;
+      return {
+        x: centerX + radius * Math.cos(angleInRadians),
+        y: centerY + radius * Math.sin(angleInRadians),
+      };
+    };
+
+    const describeArc = (x: number, y: number, radius: number, startAngle: number, endAngle: number) => {
+      const start = polarToCartesian(x, y, radius, endAngle);
+      const end = polarToCartesian(x, y, radius, startAngle);
+      const largeArcFlag = endAngle - startAngle <= 180 ? "0" : "1";
+      return ["M", start.x, start.y, "A", radius, radius, 0, largeArcFlag, 0, end.x, end.y].join(" ");
+    };
+
+    const safeLabel = label.replace(/\s+/g, "-").toLowerCase();
+
+    return (
+      <Card className="flex flex-col items-center p-5 bg-card border border-border/80 shadow-sm rounded-2xl hover:shadow-md transition-all text-center">
+        <div className="relative w-44 h-28 flex items-end justify-center overflow-hidden mb-1">
+          <svg className="w-44 h-44 absolute -bottom-16" viewBox="0 0 120 120">
+            <defs>
+              <filter id={`glow-red-${safeLabel}`} x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="3" result="blur" />
+                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+              </filter>
+              <filter id={`glow-yellow-${safeLabel}`} x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="3" result="blur" />
+                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+              </filter>
+              <filter id={`glow-green-${safeLabel}`} x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="3" result="blur" />
+                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+              </filter>
+            </defs>
+
+            {[-120, -90, -60, -30, 0, 30, 60, 90, 120].map((angle) => {
+              const rad = ((angle - 90) * Math.PI) / 180;
+              const x1 = cx + (radius - 4) * Math.cos(rad);
+              const y1 = cy + (radius - 4) * Math.sin(rad);
+              const x2 = cx + (radius - 1) * Math.cos(rad);
+              const y2 = cy + (radius - 1) * Math.sin(rad);
+              return <line key={angle} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#cbd5e1" strokeWidth="1.2" />;
+            })}
+
+            {isSeg1Active && (
+              <path
+                d={describeArc(cx, cy, radius, -120, 22)}
+                fill="none"
+                stroke={seg1Color}
+                strokeWidth={strokeWidth + 2}
+                strokeLinecap="round"
+                opacity="0.15"
+                filter={`url(#glow-red-${safeLabel})`}
+              />
+            )}
+            <path d={describeArc(cx, cy, radius, -120, 22)} fill="none" stroke={seg1Color} strokeWidth={strokeWidth} strokeLinecap="round" />
+
+            {isSeg2Active && (
+              <path
+                d={describeArc(cx, cy, radius, 26, 82)}
+                fill="none"
+                stroke={seg2Color}
+                strokeWidth={strokeWidth + 2}
+                strokeLinecap="round"
+                opacity="0.15"
+                filter={`url(#glow-yellow-${safeLabel})`}
+              />
+            )}
+            <path d={describeArc(cx, cy, radius, 26, 82)} fill="none" stroke={seg2Color} strokeWidth={strokeWidth} strokeLinecap="round" />
+
+            {isSeg3Active && (
+              <path
+                d={describeArc(cx, cy, radius, 86, 120)}
+                fill="none"
+                stroke={seg3Color}
+                strokeWidth={strokeWidth + 2}
+                strokeLinecap="round"
+                opacity="0.15"
+                filter={`url(#glow-green-${safeLabel})`}
+              />
+            )}
+            <path d={describeArc(cx, cy, radius, 86, 120)} fill="none" stroke={seg3Color} strokeWidth={strokeWidth} strokeLinecap="round" />
+
+            <g transform={`rotate(${rotation}, ${cx}, ${cy})`}>
+              <line x1={cx} y1={cy} x2={cx} y2={cy - radius + 5} stroke={needleColor} strokeWidth="2.5" strokeLinecap="round" />
+              <circle cx={cx} cy={cy} r="4" fill="#ffffff" stroke={needleColor} strokeWidth="1.5" />
+              <circle cx={cx} cy={cy} r="1.5" fill={needleColor} />
+            </g>
+          </svg>
+
+          <div className="z-10 flex flex-col items-center pb-1">
+            <span className="text-3xl font-extrabold tracking-tight text-foreground">{Math.round(cleanValue)}%</span>
+            <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5">{label}</span>
+          </div>
+        </div>
+
+        <div className="mt-1 mb-2">
+          <span className={`px-3 py-0.5 text-[9px] font-black uppercase tracking-widest rounded-full border ${statusClass}`}>
+            {status}
+          </span>
+        </div>
+        {subtitle && <p className="text-[11px] text-muted-foreground leading-relaxed max-w-xs">{subtitle}</p>}
+      </Card>
+    );
   };
 
   // --- MOTOR DE CÁLCULO DA SÉRIE HISTÓRICA MENSAL ---
@@ -270,22 +426,29 @@ export default function BiHistory() {
     });
   }, [students, revenues, scheduledPayments, selectedPeriod]);
 
-  // --- PRINCIPAIS KPIS CONSOLIDADOS ---
+  // --- PRINCIPAIS KPIS CONSOLIDADOS DO PERÍODO SELECIONADO ---
   const consolidatedKpis = useMemo(() => {
     if (historicalSeries.length === 0) {
       return {
         totalAlunosAtual: 0,
+        totalAlunosInicio: 0,
+        saldoNovosPeriodo: 0,
         crescimentoAlunosPerc: 0,
         mrrAtual: 0,
+        mrrMedioPeriodo: 0,
         melhorMesReceita: { mes: "", valor: 0 },
         receitaTotalAcumulada: 0,
+        receitaPrevistaTotal: 0,
         despesaTotalAcumulada: 0,
         lucroTotalAcumulado: 0,
-        ticketMedioGeral: 0,
+        ticketMedioGeral: 220,
         taxaInadimplenciaMedia: 0,
+        adimplenciaMedia: 100,
+        retencaoMedia: 100,
         ltvEstimado: 0,
         tenureMedioMeses: 0,
         margemMedia: 0,
+        mediaAlunosPeriodo: 0,
       };
     }
 
@@ -293,88 +456,84 @@ export default function BiHistory() {
     const lastMonth = historicalSeries[historicalSeries.length - 1];
 
     const totalAlunosAtual = lastMonth.totalAlunos;
-    const totalAlunosInicio = firstMonth.totalAlunos || 1;
-    const crescimentoAlunosPerc = ((totalAlunosAtual - totalAlunosInicio) / totalAlunosInicio) * 100;
-
-    const mrrAtual = lastMonth.receitaPrevista;
+    const totalAlunosInicio = firstMonth.totalAlunos;
+    const saldoNovosPeriodo = historicalSeries.reduce((s, m) => s + m.novosAlunos, 0);
+    const crescimentoAlunosPerc = totalAlunosInicio > 0 
+      ? ((totalAlunosAtual - totalAlunosInicio) / totalAlunosInicio) * 100 
+      : 0;
 
     let melhorMes = { mes: lastMonth.label, valor: lastMonth.receitaPrevista };
-    let sumReceita = 0;
+    let sumReceitaPrevista = 0;
+    let sumReceitaPaga = 0;
     let sumDespesa = 0;
     let sumInadimplencia = 0;
     let sumMargem = 0;
-    let sumTicket = 0;
-    let validTicketMonths = 0;
+    let sumEvadidos = 0;
 
     historicalSeries.forEach((m) => {
-      sumReceita += m.receitaPaga;
+      sumReceitaPrevista += m.receitaPrevista;
+      sumReceitaPaga += m.receitaPaga;
       sumDespesa += m.despesasTotal;
       sumInadimplencia += m.taxaInadimplencia;
       sumMargem += m.margemOperacional;
-      if (m.ticketMedio > 0) {
-        sumTicket += m.ticketMedio;
-        validTicketMonths++;
-      }
+      sumEvadidos += m.evadidosMes;
       if (m.receitaPrevista > melhorMes.valor) {
         melhorMes = { mes: m.label, valor: m.receitaPrevista };
       }
     });
 
-    // Ticket Médio Geral: média de todas as faturas válidas do sistema
-    const allValidInvoices = revenues.filter((r) => r.status !== "Isento" && r.valor > 0);
-    const avgPlansPrice = plans.length > 0 ? plans.reduce((s, p) => s + p.valor, 0) / plans.length : 220;
-    const ticketMedioGeral = allValidInvoices.length > 0
-      ? allValidInvoices.reduce((sum, r) => sum + r.valor, 0) / allValidInvoices.length
-      : avgPlansPrice;
+    const mrrAtual = lastMonth.receitaPrevista;
+    const mrrMedioPeriodo = historicalSeries.length > 0 ? sumReceitaPrevista / historicalSeries.length : mrrAtual;
 
-    const taxaInadimplenciaMedia = sumInadimplencia / historicalSeries.length;
-    const margemMedia = sumMargem / historicalSeries.length;
-    const lucroTotalAcumulado = sumReceita - sumDespesa;
+    // Ticket Médio de mensalidade no período selecionado (média real das faturas dos meses do período):
+    const validTicketMonths = historicalSeries.filter((m) => m.ticketMedio > 0);
+    const ticketMedioGeral = validTicketMonths.length > 0
+      ? validTicketMonths.reduce((s, m) => s + m.ticketMedio, 0) / validTicketMonths.length
+      : 220;
 
-    // Calcular permanência média real dos alunos
-    let sumTenure = 0;
-    let countedStudents = 0;
-    const now = new Date();
-    students.forEach((s) => {
-      const d = parseIsoOrBr(s.dataEntrada);
-      if (d && !isNaN(d.getTime())) {
-        const diffMonths = (now.getTime() - d.getTime()) / (1000 * 60 * 60 * 24 * 30.4375);
-        sumTenure += Math.max(1, diffMonths);
-        countedStudents++;
-      }
-    });
+    const taxaInadimplenciaMedia = historicalSeries.length > 0 ? sumInadimplencia / historicalSeries.length : 0;
+    const adimplenciaMedia = Math.min(100, Math.max(0, 100 - taxaInadimplenciaMedia));
+    const margemMedia = historicalSeries.length > 0 ? sumMargem / historicalSeries.length : 0;
+    const lucroTotalAcumulado = sumReceitaPaga - sumDespesa;
 
-    const tenureMedioMeses = countedStudents > 0 ? sumTenure / countedStudents : 8.5;
+    // Retenção média da base no período:
+    const retencaoMedia = Math.min(
+      100,
+      Math.max(0, 100 - (sumEvadidos / (totalAlunosAtual || 1)) * 100)
+    );
 
-    // LTV Real Arrecadado por Aluno (soma de faturas pagas dividida pela base)
-    const activeStudents = students.filter((s) => s.status === "Ativo");
-    const baseToCalc = activeStudents.length > 0 ? activeStudents : students;
-    let sumRealLtv = 0;
-    baseToCalc.forEach((s) => {
-      const paidByStudent = revenues
-        .filter((r) => (r.alunoId === s.id || r.aluno.trim().toLowerCase() === s.nome.trim().toLowerCase()) && r.status === "Pago")
-        .reduce((sum, r) => sum + r.valor, 0);
-      sumRealLtv += paidByStudent;
-    });
-    const ltvReal = baseToCalc.length > 0 && sumRealLtv > 0 ? sumRealLtv / baseToCalc.length : 0;
-    // Se houver histórico de pagamentos no banco, usa o real; caso contrário, usa o ticket médio ponderado
-    const ltvEstimado = ltvReal > 0 ? ltvReal : ticketMedioGeral * Math.min(tenureMedioMeses, 12);
+    // LTV no período: faturamento médio arrecadado por aluno
+    const ltvEstimado = totalAlunosAtual > 0 
+      ? sumReceitaPaga / totalAlunosAtual 
+      : ticketMedioGeral * Math.min(historicalSeries.length, 12);
+
+    const tenureMedioMeses = Math.min(historicalSeries.length, 14);
+    const mediaAlunosPeriodo = historicalSeries.length > 0
+      ? historicalSeries.reduce((s, m) => s + m.totalAlunos, 0) / historicalSeries.length
+      : totalAlunosAtual;
 
     return {
       totalAlunosAtual,
+      totalAlunosInicio,
+      saldoNovosPeriodo,
       crescimentoAlunosPerc,
       mrrAtual,
+      mrrMedioPeriodo,
+      mediaAlunosPeriodo,
       melhorMesReceita: melhorMes,
-      receitaTotalAcumulada: sumReceita,
+      receitaTotalAcumulada: sumReceitaPaga,
+      receitaPrevistaTotal: sumReceitaPrevista,
       despesaTotalAcumulada: sumDespesa,
       lucroTotalAcumulado,
       ticketMedioGeral,
       taxaInadimplenciaMedia,
+      adimplenciaMedia,
+      retencaoMedia,
       ltvEstimado,
       tenureMedioMeses,
       margemMedia,
     };
-  }, [historicalSeries, students, revenues]);
+  }, [historicalSeries]);
 
   // --- EXPORTAR RELATÓRIO EXECUTIVO EM PDF ---
   const handleExportPDF = async () => {
@@ -590,61 +749,61 @@ export default function BiHistory() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* KPI 1: Base Ativa */}
+          {/* KPI 1: Base de Alunos no Período */}
           <Card className="border-l-4 border-l-primary shadow-sm hover:shadow-md transition">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-muted-foreground uppercase">Base Ativa Atual</span>
+                <span className="text-xs font-semibold text-muted-foreground uppercase">Base de Alunos (Período)</span>
                 <Users className="w-4 h-4 text-primary" />
               </div>
               <div className="flex items-baseline gap-2 mt-2">
                 <span className="text-2xl font-black text-foreground">{consolidatedKpis.totalAlunosAtual}</span>
                 <span className="text-xs text-muted-foreground">alunos</span>
                 <Badge className="ml-auto bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold border-none text-[10px]">
-                  {consolidatedKpis.crescimentoAlunosPerc > 0 ? "+" : ""}
-                  {consolidatedKpis.crescimentoAlunosPerc.toFixed(0)}% no período
-                </Badge>
-              </div>
-              <p className="text-[11px] text-muted-foreground mt-2">
-                Capacidade instalada saudável com fluxo constante de novas matrículas.
-              </p>
-            </CardContent>
-          </Card>
-
-          {/* KPI 2: MRR Recorrente */}
-          <Card className="border-l-4 border-l-blue-600 shadow-sm hover:shadow-md transition">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-foreground uppercase tracking-tight">MRR (Faturamento da Escola)</span>
-                <DollarSign className="w-4 h-4 text-blue-600" />
-              </div>
-              <div className="flex items-baseline gap-2 mt-2">
-                <span className="text-2xl font-black text-foreground">{formatCurrency(consolidatedKpis.mrrAtual)}</span>
-                <Badge className="ml-auto bg-blue-500/10 text-blue-700 dark:text-blue-300 font-bold border-none text-[9px]">
-                  Global da Escola
+                  {consolidatedKpis.crescimentoAlunosPerc >= 0 ? "+" : ""}
+                  {consolidatedKpis.crescimentoAlunosPerc.toFixed(0)}%
                 </Badge>
               </div>
               <p className="text-[11px] text-muted-foreground mt-2 leading-tight">
-                Receita recorrente mensal somando <strong>todos os {consolidatedKpis.totalAlunosAtual} alunos ativos</strong> (não é o valor por aluno).
+                Evolução de <strong>{consolidatedKpis.totalAlunosInicio}</strong> para <strong>{consolidatedKpis.totalAlunosAtual}</strong> alunos ({consolidatedKpis.saldoNovosPeriodo > 0 ? `+${consolidatedKpis.saldoNovosPeriodo}` : consolidatedKpis.saldoNovosPeriodo} novas matrículas no período).
               </p>
             </CardContent>
           </Card>
 
-          {/* KPI 3: LTV Médio */}
+          {/* KPI 2: Faturamento Total do Período & MRR Médio */}
+          <Card className="border-l-4 border-l-blue-600 shadow-sm hover:shadow-md transition">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-foreground uppercase tracking-tight">Faturamento do Período</span>
+                <DollarSign className="w-4 h-4 text-blue-600" />
+              </div>
+              <div className="flex items-baseline gap-2 mt-2">
+                <span className="text-2xl font-black text-foreground">{formatCurrency(consolidatedKpis.receitaTotalAcumulada)}</span>
+                <Badge className="ml-auto bg-blue-500/10 text-blue-700 dark:text-blue-300 font-bold border-none text-[9px]">
+                  {formatCurrency(consolidatedKpis.mrrMedioPeriodo)}/mês
+                </Badge>
+              </div>
+              <p className="text-[11px] text-muted-foreground mt-2 leading-tight">
+                Receita realizada no período ({historicalSeries.length} meses). Média mensal de <strong>{formatCurrency(consolidatedKpis.mrrMedioPeriodo)}</strong>.
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* KPI 3: LTV Médio & Resultado Acumulado */}
           <Card className="border-l-4 border-l-emerald-600 shadow-sm hover:shadow-md transition">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-foreground uppercase tracking-tight">LTV Médio (Histórico do Aluno)</span>
+                <span className="text-xs font-bold text-foreground uppercase tracking-tight">LTV Médio do Aluno</span>
                 <Award className="w-4 h-4 text-emerald-600" />
               </div>
               <div className="flex items-baseline gap-2 mt-2">
                 <span className="text-2xl font-black text-foreground">{formatCurrency(consolidatedKpis.ltvEstimado)}</span>
                 <Badge className="ml-auto bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-bold border-none text-[9px]">
-                  Acumulado de Vida
+                  ~{consolidatedKpis.tenureMedioMeses.toFixed(0)}m retenção
                 </Badge>
               </div>
               <p className="text-[11px] text-muted-foreground mt-2 leading-tight">
-                Total médio acumulado que 1 aluno paga durante <strong>toda sua permanência</strong> (~{consolidatedKpis.tenureMedioMeses.toFixed(1)} meses).
+                Valor médio acumulado gerado por aluno no período. Lucro líquido: <strong>{formatCurrency(consolidatedKpis.lucroTotalAcumulado)}</strong>.
               </p>
             </CardContent>
           </Card>
@@ -653,7 +812,7 @@ export default function BiHistory() {
           <Card className="border-l-4 border-l-amber-500 shadow-sm hover:shadow-md transition">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-foreground uppercase tracking-tight">Mensalidade Média (Individual)</span>
+                <span className="text-xs font-bold text-foreground uppercase tracking-tight">Mensalidade Média (Ticket)</span>
                 <Activity className="w-4 h-4 text-amber-500" />
               </div>
               <div className="flex items-baseline gap-2 mt-2">
@@ -663,10 +822,49 @@ export default function BiHistory() {
                 </Badge>
               </div>
               <p className="text-[11px] text-muted-foreground mt-2 leading-tight">
-                Valor médio pago <strong>por aluno a cada mês</strong>. Margem operacional média em <strong className="text-foreground">{consolidatedKpis.margemMedia > 0 ? consolidatedKpis.margemMedia.toFixed(0) : "45"}%</strong>.
+                Ticket médio por fatura. Adimplência média de <strong className="text-foreground">{consolidatedKpis.adimplenciaMedia.toFixed(1)}%</strong> e margem de <strong className="text-foreground">{consolidatedKpis.margemMedia.toFixed(0)}%</strong>.
               </p>
             </CardContent>
           </Card>
+        </div>
+
+        {/* VELOCÍMETROS DE PERFORMANCE & SAÚDE OPERACIONAL */}
+        <div className="pt-3 border-t border-border/60">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
+            <div className="flex items-center gap-2">
+              <Gauge className="w-5 h-5 text-primary" />
+              <h3 className="text-sm font-bold text-foreground">
+                Velocímetros de Performance & Saúde Operacional ({historicalSeries.length} Meses)
+              </h3>
+            </div>
+            <span className="text-[11px] text-muted-foreground">
+              Métricas calculadas dinamicamente para o período: Adimplência, Retenção e Eficiência de Caixa.
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <GaugeSpeedometer
+              value={consolidatedKpis.adimplenciaMedia}
+              label="Adimplência"
+              subtitle="Percentual de cobranças recebidas sem atraso no período selecionado."
+              warnThreshold={80}
+              goodThreshold={92}
+            />
+            <GaugeSpeedometer
+              value={consolidatedKpis.retencaoMedia}
+              label="Saúde de Retenção"
+              subtitle="Estabilidade da base de atletas e fidelização ao longo do período."
+              warnThreshold={75}
+              goodThreshold={88}
+            />
+            <GaugeSpeedometer
+              value={Math.max(0, Math.min(100, consolidatedKpis.margemMedia))}
+              label="Margem Operacional"
+              subtitle="Sobra líquida de caixa após dedução de todos os custos e despesas."
+              warnThreshold={30}
+              goodThreshold={50}
+            />
+          </div>
         </div>
       </section>
 
