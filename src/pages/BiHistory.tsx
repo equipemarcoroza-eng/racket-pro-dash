@@ -849,13 +849,17 @@ export default function BiHistory() {
                 <span className="text-xs font-semibold text-muted-foreground uppercase">Base de Alunos (Únicos)</span>
                 <Users className="w-4 h-4 text-primary" />
               </div>
-              <div className="flex items-baseline gap-2 mt-2">
-                <span className="text-2xl font-black text-foreground">{consolidatedKpis.totalAlunosAtual}</span>
-                <span className="text-xs text-muted-foreground">atletas</span>
-                <Badge className="ml-auto bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold border-none text-[10px]">
-                  {consolidatedKpis.crescimentoAlunosPerc >= 0 ? "+" : ""}
-                  {consolidatedKpis.crescimentoAlunosPerc.toFixed(0)}%
-                </Badge>
+              <div className="mt-2">
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-2xl font-black text-foreground">{consolidatedKpis.totalAlunosAtual}</span>
+                  <span className="text-xs text-muted-foreground">atletas</span>
+                </div>
+                <div className="mt-1.5">
+                  <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold border-none text-[10px]">
+                    {consolidatedKpis.crescimentoAlunosPerc >= 0 ? "+" : ""}
+                    {consolidatedKpis.crescimentoAlunosPerc.toFixed(0)}%
+                  </Badge>
+                </div>
               </div>
               <p className="text-[11px] text-muted-foreground mt-2 leading-tight">
                 Pessoas físicas matriculadas. De <strong>{consolidatedKpis.totalAlunosInicio}</strong> para <strong>{consolidatedKpis.totalAlunosAtual}</strong> no período ({consolidatedKpis.saldoNovosPeriodo > 0 ? `+${consolidatedKpis.saldoNovosPeriodo}` : consolidatedKpis.saldoNovosPeriodo} novos).
@@ -870,12 +874,16 @@ export default function BiHistory() {
                 <span className="text-xs font-bold text-foreground uppercase tracking-tight">Alunos em Turmas</span>
                 <Layers className="w-4 h-4 text-purple-600" />
               </div>
-              <div className="flex items-baseline gap-2 mt-2">
-                <span className="text-2xl font-black text-purple-600 dark:text-purple-400">{consolidatedKpis.totalAlunosEmTurmas}</span>
-                <span className="text-xs text-muted-foreground">vagas</span>
-                <Badge className="ml-auto bg-purple-500/10 text-purple-700 dark:text-purple-300 font-bold border-none text-[9px]">
-                  {consolidatedKpis.mediaTurmasPorAluno.toFixed(2)}x/atleta
-                </Badge>
+              <div className="mt-2">
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-2xl font-black text-purple-600 dark:text-purple-400">{consolidatedKpis.totalAlunosEmTurmas}</span>
+                  <span className="text-xs text-muted-foreground">vagas</span>
+                </div>
+                <div className="mt-1.5">
+                  <Badge className="bg-purple-500/10 text-purple-700 dark:text-purple-300 font-bold border-none text-[10px]">
+                    {consolidatedKpis.mediaTurmasPorAluno.toFixed(2)}x/atleta
+                  </Badge>
+                </div>
               </div>
               <p className="text-[11px] text-muted-foreground mt-2 leading-tight">
                 Vagas ocupadas na grade: <strong>{consolidatedKpis.alunos1Turma}</strong> (1 turma) + <strong>{consolidatedKpis.alunos2Turmas}</strong> (2x) + <strong>{consolidatedKpis.alunos3Turmas}</strong> (3x+).
@@ -890,11 +898,15 @@ export default function BiHistory() {
                 <span className="text-xs font-bold text-foreground uppercase tracking-tight">Faturamento da Escola</span>
                 <DollarSign className="w-4 h-4 text-blue-600" />
               </div>
-              <div className="flex items-baseline gap-2 mt-2">
-                <span className="text-2xl font-black text-foreground">{formatCurrency(consolidatedKpis.receitaTotalAcumulada)}</span>
-                <Badge className="ml-auto bg-blue-500/10 text-blue-700 dark:text-blue-300 font-bold border-none text-[9px]">
-                  Média: {formatCurrency(consolidatedKpis.mrrMedioPeriodo)}/mês
-                </Badge>
+              <div className="mt-2">
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-2xl font-black text-foreground">{formatCurrency(consolidatedKpis.receitaTotalAcumulada)}</span>
+                </div>
+                <div className="mt-1.5">
+                  <Badge className="bg-blue-500/10 text-blue-700 dark:text-blue-300 font-bold border-none text-[10px]">
+                    Média: {formatCurrency(consolidatedKpis.mrrMedioPeriodo)}/mês
+                  </Badge>
+                </div>
               </div>
               <p className="text-[11px] text-muted-foreground mt-2 leading-tight">
                 Soma global de todas as cobranças da escola no período selecionado ({historicalSeries.length} meses).
@@ -909,11 +921,15 @@ export default function BiHistory() {
                 <span className="text-xs font-bold text-foreground uppercase tracking-tight">LTV Médio (Histórico)</span>
                 <Award className="w-4 h-4 text-emerald-600" />
               </div>
-              <div className="flex items-baseline gap-2 mt-2">
-                <span className="text-2xl font-black text-foreground">{formatCurrency(consolidatedKpis.ltvEstimado)}</span>
-                <Badge className="ml-auto bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-bold border-none text-[9px]">
-                  ~{consolidatedKpis.tenureMedioMeses.toFixed(1)} meses
-                </Badge>
+              <div className="mt-2">
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-2xl font-black text-foreground">{formatCurrency(consolidatedKpis.ltvEstimado)}</span>
+                </div>
+                <div className="mt-1.5">
+                  <Badge className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-bold border-none text-[10px]">
+                    ~{consolidatedKpis.tenureMedioMeses.toFixed(1)} meses
+                  </Badge>
+                </div>
               </div>
               <p className="text-[11px] text-muted-foreground mt-2 leading-tight">
                 Soma de faturas pagas desde a origem por aluno ativo. Permanência média de <strong>{consolidatedKpis.tenureMedioMeses.toFixed(1)} meses</strong>.
@@ -928,11 +944,15 @@ export default function BiHistory() {
                 <span className="text-xs font-bold text-foreground uppercase tracking-tight">Mensalidade Média</span>
                 <Activity className="w-4 h-4 text-amber-500" />
               </div>
-              <div className="flex items-baseline gap-2 mt-2">
-                <span className="text-2xl font-black text-foreground">{formatCurrency(consolidatedKpis.ticketMedioGeral)}</span>
-                <Badge className="ml-auto bg-blue-500/10 text-blue-600 dark:text-blue-400 font-bold border-none text-[10px]">
-                  Inadim: {consolidatedKpis.taxaInadimplenciaMedia.toFixed(1)}%
-                </Badge>
+              <div className="mt-2">
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-2xl font-black text-foreground">{formatCurrency(consolidatedKpis.ticketMedioGeral)}</span>
+                </div>
+                <div className="mt-1.5">
+                  <Badge className="bg-blue-500/10 text-blue-600 dark:text-blue-400 font-bold border-none text-[10px]">
+                    Inadim: {consolidatedKpis.taxaInadimplenciaMedia.toFixed(1)}%
+                  </Badge>
+                </div>
               </div>
               <p className="text-[11px] text-muted-foreground mt-2 leading-tight">
                 Valor médio por aluno/mês (MRR atual / {consolidatedKpis.totalAlunosAtual} alunos). Margem operacional média em <strong className="text-foreground">{consolidatedKpis.margemMedia.toFixed(0)}%</strong>.
