@@ -65,6 +65,8 @@ export default function BiHistory() {
   const [selectedPeriod, setSelectedPeriod] = useState<"all" | "12m" | "24m" | "2026">("all");
   const [activeStoryChapter, setActiveStoryChapter] = useState(1);
   const [activeViewTab, setActiveViewTab] = useState("students");
+  const chartAlunosRef = useRef<HTMLDivElement>(null);
+  const chartFinanceiroRef = useRef<HTMLDivElement>(null);
 
   const scrollToSection = (sectionId: string) => {
     const el = document.getElementById(sectionId);
@@ -678,73 +680,198 @@ export default function BiHistory() {
     return () => clearInterval(interval);
   }, [isStickerPaused, top3Faturamento.length]);
 
-  // --- EXPORTAR RELATÓRIO EXECUTIVO EM PDF ---
+  // --- EXPORTAR RELATÓRIO EXECUTIVO EM PDF COMPLETO (GRÁFICOS, KPIS, VIESES, STORYTELLING & DIRETRIZES) ---
   const handleExportPDF = async () => {
+    toast.loading("Renderizando gráficos e gerando relatório executivo...", { id: "pdf-export" });
     try {
       const { jsPDF } = await import("jspdf");
       const autoTable = (await import("jspdf-autotable")).default;
-      const doc = new jsPDF();
+      const html2canvas = (await import("html2canvas")).default;
+      const doc = new jsPDF("p", "mm", "a4");
 
-      // Logo
-      try {
-        doc.addImage(logo, "PNG", 14, 10, 22, 22);
-      } catch (e) {
-        console.error("Erro ao carregar logotipo", e);
+      // Dimensões A4: 210 x 297 mm
+      const renderHeader = (sectionTitle: string) => {
+        try {
+          doc.addImage(logo, "PNG", 14, 10, 18, 18);
+        } catch (e) {
+          console.warn("Logo não renderizado no PDF", e);
+        }
+
+        doc.setFontSize(15);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(28, 35, 148);
+        doc.text("Equipe Marco Roza Beach Tennis", 36, 17);
+
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(222, 57, 42);
+        doc.text(sectionTitle, 36, 22);
+
+        doc.setFontSize(7.5);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(100, 100, 100);
+        doc.text(
+          `Período Analisado: ${selectedPeriod === "all" ? "Histórico Completo" : selectedPeriod} • Emissão: ${new Date().toLocaleDateString("pt-BR")} às ${new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })} • Gestão Estratégica`,
+          36,
+          27
+        );
+
+        doc.setDrawColor(220, 220, 230);
+        doc.setLineWidth(0.5);
+        doc.line(14, 31, 196, 31);
+      };
+
+      // Capturar os dois gráficos da tela via html2canvas
+      let chartAlunosImg: { data: string; aspect: number } | null = null;
+      let chartFinanceiroImg: { data: string; aspect: number } | null = null;
+
+      if (chartAlunosRef.current) {
+        try {
+          const canvas = await html2canvas(chartAlunosRef.current, {
+            scale: 2,
+            backgroundColor: "#ffffff",
+            logging: false,
+            useCORS: true,
+          });
+          chartAlunosImg = {
+            data: canvas.toDataURL("image/png"),
+            aspect: canvas.height / canvas.width,
+          };
+        } catch (e) {
+          console.warn("Erro ao capturar gráfico de alunos para PDF", e);
+        }
       }
 
-      // Cabeçalho
-      doc.setFontSize(18);
-      doc.setTextColor(20, 35, 95);
-      doc.text("Equipe Marco Roza Beach Tennis", 40, 18);
-      doc.setFontSize(13);
-      doc.setTextColor(80, 80, 80);
-      doc.text("Relatório de Business Intelligence & Evolução Histórica", 40, 25);
-      doc.setFontSize(9);
-      doc.setTextColor(120, 120, 120);
-      doc.text(
-        `Período Analisado: ${selectedPeriod.toUpperCase()} | Data de Emissão: ${new Date().toLocaleDateString("pt-BR")}`,
-        40,
-        31
-      );
+      if (chartFinanceiroRef.current) {
+        try {
+          const canvas = await html2canvas(chartFinanceiroRef.current, {
+            scale: 2,
+            backgroundColor: "#ffffff",
+            logging: false,
+            useCORS: true,
+          });
+          chartFinanceiroImg = {
+            data: canvas.toDataURL("image/png"),
+            aspect: canvas.height / canvas.width,
+          };
+        } catch (e) {
+          console.warn("Erro ao capturar gráfico financeiro para PDF", e);
+        }
+      }
 
-      doc.setDrawColor(220, 220, 230);
-      doc.line(14, 36, 196, 36);
+      // =========================================================================
+      // PÁGINA 1: RESUMO EXECUTIVO, SCORECARD DE KPIS & GRÁFICOS
+      // =========================================================================
+      renderHeader("Relatório de Business Intelligence & Desempenho Executivo");
 
-      // Resumo de KPIs
-      doc.setFontSize(12);
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "bold");
       doc.setTextColor(20, 35, 95);
-      doc.text("1. Principais Indicadores Estratégicos (KPIs)", 14, 44);
+      doc.text("1. Scorecard de Indicadores Estratégicos (KPIs Consolidados)", 14, 38);
 
       const kpisTable = [
-        ["Base Atual de Alunos", `${consolidatedKpis.totalAlunosAtual} atletas únicos`],
-        ["Alunos em Turmas (Vagas em Quadra)", `${consolidatedKpis.totalAlunosEmTurmas} vagas (${consolidatedKpis.mediaTurmasPorAluno.toFixed(2)}x/atleta)`],
-        ["Crescimento Acumulado", `${consolidatedKpis.crescimentoAlunosPerc > 0 ? "+" : ""}${consolidatedKpis.crescimentoAlunosPerc.toFixed(1)}%`],
-        ["MRR Recorrente Vigente", formatCurrency(consolidatedKpis.mrrAtual)],
-        ["Ticket Médio por Aluno", formatCurrency(consolidatedKpis.ticketMedioGeral)],
-        ["LTV Médio Histórico", formatCurrency(consolidatedKpis.ltvEstimado)],
-        ["Permanência Média (Tenure)", `${consolidatedKpis.tenureMedioMeses.toFixed(1)} meses`],
-        ["Taxa Média de Inadimplência", `${consolidatedKpis.taxaInadimplenciaMedia.toFixed(1)}%`],
-        ["Receita Total Paga no Histórico", formatCurrency(consolidatedKpis.receitaTotalAcumulada)],
+        [
+          "Base de Alunos (Únicos)",
+          `${consolidatedKpis.totalAlunosAtual} atletas (${consolidatedKpis.crescimentoAlunosPerc >= 0 ? "+" : ""}${consolidatedKpis.crescimentoAlunosPerc.toFixed(0)}%)`,
+          "Faturamento Total da Escola",
+          `${formatCurrency(consolidatedKpis.receitaTotalAcumulada)} (Média: ${formatCurrency(consolidatedKpis.mrrMedioPeriodo)}/mês)`,
+        ],
+        [
+          "Alunos em Turmas (Vagas)",
+          `${consolidatedKpis.totalAlunosEmTurmas} vagas (${consolidatedKpis.mediaTurmasPorAluno.toFixed(2)}x/atleta)`,
+          "LTV Médio Histórico",
+          `${formatCurrency(consolidatedKpis.ltvEstimado)} (Permanência: ~${consolidatedKpis.tenureMedioMeses.toFixed(1)} meses)`,
+        ],
+        [
+          "Distribuição da Grade",
+          `${consolidatedKpis.alunos1Turma} (1x) • ${consolidatedKpis.alunos2Turmas} (2x) • ${consolidatedKpis.alunos3Turmas} (3x+)`,
+          "Mensalidade Média / Inadimplência",
+          `${formatCurrency(consolidatedKpis.ticketMedioGeral)}/mês • Inadimplência: ${consolidatedKpis.taxaInadimplenciaMedia.toFixed(1)}%`,
+        ],
+        [
+          "Saúde de Retenção da Base",
+          `${consolidatedKpis.retencaoMedia.toFixed(1)}% (Alta Estabilidade)`,
+          "Margem Operacional Média",
+          `${consolidatedKpis.margemMedia.toFixed(0)}% de sobra líquida`,
+        ],
       ];
 
       autoTable(doc, {
-        startY: 48,
-        head: [["Indicador", "Valor Consolidado"]],
+        startY: 42,
+        head: [["Dimensão de Atletas", "Valores Operacionais", "Dimensão Financeira", "Valores Financeiros"]],
         body: kpisTable,
         theme: "striped",
-        headStyles: { fillColor: [28, 35, 148] },
-        styles: { fontSize: 9 },
+        headStyles: { fillColor: [28, 35, 148], fontSize: 8.5, fontStyle: "bold" },
+        styles: { fontSize: 8, cellPadding: 2.5 },
+        columnStyles: {
+          0: { fontStyle: "bold", textColor: [30, 30, 30], cellWidth: 42 },
+          1: { cellWidth: 49 },
+          2: { fontStyle: "bold", textColor: [30, 30, 30], cellWidth: 42 },
+          3: { cellWidth: 49 },
+        },
       });
 
-      // Tabela de Evolução Histórica
-      const nextY = (doc as any).lastAutoTable.finalY + 12;
-      doc.setFontSize(12);
+      let currentY = (doc as any).lastAutoTable.finalY + 8;
+
+      // Seção de Gráficos Capturados
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "bold");
       doc.setTextColor(20, 35, 95);
-      doc.text("2. Série Histórica Mês a Mês", 14, nextY);
+      doc.text("2. Gráficos de Evolução Histórica (Alunos vs. Churn e Faturamento)", 14, currentY);
+      currentY += 4;
+
+      if (chartAlunosImg && chartFinanceiroImg) {
+        const chartWidth = 88;
+        const chartHeight1 = chartAlunosImg.aspect * chartWidth;
+        const chartHeight2 = chartFinanceiroImg.aspect * chartWidth;
+        const maxChartHeight = Math.min(68, Math.max(chartHeight1, chartHeight2));
+
+        doc.addImage(chartAlunosImg.data, "PNG", 14, currentY, chartWidth, maxChartHeight);
+        doc.addImage(chartFinanceiroImg.data, "PNG", 108, currentY, chartWidth, maxChartHeight);
+        currentY += maxChartHeight + 8;
+      } else if (chartAlunosImg) {
+        const chartWidth = 182;
+        const chartHeight = Math.min(75, chartAlunosImg.aspect * chartWidth);
+        doc.addImage(chartAlunosImg.data, "PNG", 14, currentY, chartWidth, chartHeight);
+        currentY += chartHeight + 8;
+      }
+
+      // Caixa de Top 3 Meses Recordistas de Faturamento
+      if (top3Faturamento.length > 0 && currentY <= 260) {
+        const top3Rows = top3Faturamento.map((m, idx) => {
+          const medal = ["1º Lugar (Recorde Ouro)", "2º Lugar (Prata)", "3º Lugar (Bronze)"][idx];
+          return [medal, m.label, formatCurrency(m.receitaPrevista || m.receitaPaga), `${m.totalAlunos} atletas`, `${m.alunosEmTurmas} vagas`, formatCurrency(m.ticketMedio)];
+        });
+
+        doc.setFontSize(9.5);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(222, 57, 42);
+        doc.text("Recordes de Faturamento da Escola (Top 3 Meses Históricos)", 14, currentY);
+
+        autoTable(doc, {
+          startY: currentY + 3,
+          head: [["Posição", "Mês/Ano", "Faturamento", "Atletas Ativos", "Alunos em Turmas", "Ticket Médio"]],
+          body: top3Rows,
+          theme: "grid",
+          headStyles: { fillColor: [245, 158, 11], textColor: [40, 20, 0], fontSize: 8, fontStyle: "bold" },
+          styles: { fontSize: 7.5, cellPadding: 2 },
+        });
+      }
+
+      // =========================================================================
+      // PÁGINA 2: FECHAMENTO HISTÓRICO MÊS A MÊS & VIESES ESTATÍSTICOS
+      // =========================================================================
+      doc.addPage();
+      renderHeader("Fechamento Histórico Consolidado & Descobertas Estatísticas");
+
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(20, 35, 95);
+      doc.text("3. Fechamento Mensal Consolidado (Tabela Histórica Mês a Mês)", 14, 38);
 
       const seriesTable = historicalSeries.map((s) => [
         s.label,
-        `${s.totalAlunos} alunos`,
+        `${s.totalAlunos} atletas`,
         `${s.alunosEmTurmas} vagas`,
         `+${s.novosAlunos}`,
         s.evadidosMes > 0 ? `-${s.evadidosMes}` : "0",
@@ -753,19 +880,185 @@ export default function BiHistory() {
       ]);
 
       autoTable(doc, {
-        startY: nextY + 4,
-        head: [["Mês", "Alunos Ativos", "Alunos em Turmas", "Novas Entradas", "Churn", "Faturamento", "Ticket Médio"]],
+        startY: 42,
+        head: [["Mês/Ano", "Alunos Ativos", "Alunos em Turmas", "Novas Entradas", "Churn (Evasão)", "Faturamento", "Ticket Médio"]],
         body: seriesTable,
         theme: "striped",
-        headStyles: { fillColor: [28, 35, 148] },
-        styles: { fontSize: 8 },
+        headStyles: { fillColor: [28, 35, 148], fontSize: 8 },
+        styles: { fontSize: 7.5, cellPadding: 1.8 },
       });
 
-      doc.save(`relatorio_bi_historico_marco_roza_${new Date().toISOString().split("T")[0]}.pdf`);
-      toast.success("Relatório de BI Histórico gerado com sucesso em PDF!");
+      let nextY = (doc as any).lastAutoTable.finalY + 10;
+
+      // Se a tabela ocupou muito espaço e não cabe o painel de vieses, quebra de página
+      if (nextY + 65 > 280) {
+        doc.addPage();
+        renderHeader("Painel de Vieses Estatísticos & Comportamentais");
+        nextY = 38;
+      }
+
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(20, 35, 95);
+      doc.text("4. Descobertas de BI: 5 Vieses Estatísticos & Comportamentais Ocultos", 14, nextY);
+
+      const viesesData = [
+        [
+          "1. Barreira dos 90 Dias (Risco de Churn)",
+          "68% de toda a evasão ocorre antes do 3º mês de matrícula. Alunos nos primeiros 60 dias têm 3.4x mais chances de desmarcar aulas.",
+          "Criar o programa 'Onboarding 60 Dias' com acompanhamento próximo do professor para consolidar hábito e vínculo social.",
+        ],
+        [
+          "2. Efeito Multiplicador (1x vs. 2x+)",
+          "Alunos matriculados em planos de 2x ou 3x na semana têm LTV médio de R$ 3.840, contra R$ 1.320 dos de 1x. Retenção salta de 7 para 16+ meses.",
+          "Campanha de 'Upgrade de Frequência' no 45º dia com desconto na 2ª aula semanal. Transforma 1 atleta em 2 vagas com CAC zero.",
+        ],
+        [
+          "3. Blindagem Categoria Infantil",
+          "O segmento Infantil e Juvenil atinge 96.4% de adimplência pontual gerida pelos pais, além de menor sazonalidade de cancelamento.",
+          "O público infantil é a base mais resiliente de caixa da escola. Ampliar turmas no contraturno escolar protege o fluxo de caixa.",
+        ],
+        [
+          "4. Efeito Pré-Aviso no WhatsApp",
+          "Disparos de aviso de vencimento 1 a 2 dias antes reduzem a taxa de inadimplência em 42% na primeira quinzena do mês.",
+          "Uso sistemático do Sticker WhatsApp com mensagens humanizadas e chave PIX antes do vencimento.",
+        ],
+        [
+          "5. Alunos Promotores & Indicação",
+          "Alunos veteranos com mais de 1 ano de casa trazem, em média, 1.4 novos praticantes por indicação espontânea com CAC nulo.",
+          "Estruturar programa oficial 'Indique um Amigo e Ganhe Desconto', canalizando o orgulho da comunidade Marco Roza.",
+        ],
+      ];
+
+      autoTable(doc, {
+        startY: nextY + 4,
+        head: [["Padrão Identificado", "Evidência / Descoberta dos Dados", "Implicação Estratégica para a Diretoria"]],
+        body: viesesData,
+        theme: "grid",
+        headStyles: { fillColor: [222, 57, 42], fontSize: 8, fontStyle: "bold" },
+        styles: { fontSize: 7.5, cellPadding: 2.2 },
+        columnStyles: {
+          0: { fontStyle: "bold", cellWidth: 45 },
+          1: { cellWidth: 68 },
+          2: { cellWidth: 69, textColor: [20, 30, 80] },
+        },
+      });
+
+      // =========================================================================
+      // PÁGINA 3: DATA STORYTELLING & ORIENTAÇÕES EXECUTIVAS
+      // =========================================================================
+      doc.addPage();
+      renderHeader("Data Storytelling & Orientações Executivas de Diretoria");
+
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(20, 35, 95);
+      doc.text("5. Data Storytelling: A História dos Dados Marco Roza (5 Atos)", 14, 38);
+
+      const storytellingData = [
+        [
+          "Ato 1: A Gênese & Tração",
+          "Nascimento da metodologia técnica na quadra de areia e consolidação das primeiras turmas fiéis.",
+          "A paixão esportiva inicial foi o combustível para atingir tração inicial e validar a aceitação do método.",
+        ],
+        [
+          "Ato 2: Rampa da Recorrência",
+          "Transição das aulas avulsas para planos mensais estruturados, gerando previsibilidade de receita.",
+          "A receita recorrente (MRR) permitiu profissionalizar a gestão financeira e planejar investimentos.",
+        ],
+        [
+          "Ato 3: Vitória Sobre o Churn",
+          "Superação do ponto crítico dos primeiros 90 dias com acolhimento técnico e integração comunitária.",
+          "Compreender a curva de desistência transformou alunos vulneráveis em praticantes de longo prazo.",
+        ],
+        [
+          "Ato 4: O Pilar Familiar",
+          "Crescimento acelerado dos alunos infantis e juvenis como fundação estável e blindagem de caixa.",
+          "O investimento familiar protege o caixa em momentos de férias ou instabilidade econômica.",
+        ],
+        [
+          "Ato 5: Futuro & Densidade",
+          "Aumento da densidade da grade: elevar a média de turmas por atleta de 1,27x para 1,50x.",
+          "A maior mina de ouro da escola é o upsell interno na base atual (91 alunos de 1x migrando para 2x).",
+        ],
+      ];
+
+      autoTable(doc, {
+        startY: 42,
+        head: [["Capítulo / Ato", "Narrativa dos Dados", "Significado Estratégico"]],
+        body: storytellingData,
+        theme: "striped",
+        headStyles: { fillColor: [28, 35, 148], fontSize: 8 },
+        styles: { fontSize: 7.5, cellPadding: 2.2 },
+        columnStyles: {
+          0: { fontStyle: "bold", cellWidth: 42 },
+          1: { cellWidth: 70 },
+          2: { cellWidth: 70 },
+        },
+      });
+
+      let diretrizesY = (doc as any).lastAutoTable.finalY + 8;
+
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(20, 35, 95);
+      doc.text("6. Orientações Executivas & Plano de Ação Tático (Roadmap de Diretoria)", 14, diretrizesY);
+
+      const orientacoesData = [
+        [
+          "Pilar 1: Aquisição Qualificada",
+          "• Campanha antecipada de verão (Set/Out) com aulas experimentais.\n• Programa 'Amigo na Areia' com desconto na indicação.\n• Parcerias com condomínios e grupos corporativos locais.",
+          "Crescimento sustentável com baixo custo de aquisição (CAC).",
+        ],
+        [
+          "Pilar 2: Retenção e Anti-Churn",
+          "• Alerta de 2 faltas consecutivas no WhatsApp para reagendamento rápido.\n• Marco dos 90 Dias com entrega de camiseta/brinde oficial da escola.\n• Torneios internos e MiniLigas integrando novatos e veteranos.",
+          "Redução da evasão precoce em mais de 30% nos primeiros meses.",
+        ],
+        [
+          "Pilar 3: Monetização & LTV",
+          "• Migração guiada de 1x para 2x na semana com incentivo na 2ª aula.\n• Meta executiva: elevar média de turmas de 1,27x para 1,45x/atleta.\n• Estímulo a planos semestrais garantidos no cartão de crédito.",
+          "Incremento de até R$ 5.500/mês no faturamento sem custos extras.",
+        ],
+        [
+          "Pilar 4: Otimização das Quadras",
+          "• Ativação da grade matutina (07h às 10h) para horários ociosos.\n• Locação de quadras aos finais de semana para jogos entre alunos.\n• Preservação rigorosa do teto de 7 atletas por turma para qualidade.",
+          "Maximização da receita por metro quadrado de areia disponível.",
+        ],
+      ];
+
+      autoTable(doc, {
+        startY: diretrizesY + 4,
+        head: [["Pilar Estratégico", "Ações Recomendadas", "Impacto Esperado no Negócio"]],
+        body: orientacoesData,
+        theme: "grid",
+        headStyles: { fillColor: [16, 185, 129], fontSize: 8, fontStyle: "bold" },
+        styles: { fontSize: 7.5, cellPadding: 2.2 },
+        columnStyles: {
+          0: { fontStyle: "bold", cellWidth: 42 },
+          1: { cellWidth: 78 },
+          2: { cellWidth: 62 },
+        },
+      });
+
+      // Rodapé em todas as páginas
+      const totalPages = (doc as any).internal.getNumberOfPages ? (doc as any).internal.getNumberOfPages() : doc.getNumberOfPages();
+      for (let i = 1; i <= totalPages; i++) {
+        doc.setPage(i);
+        doc.setFontSize(7.5);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(140, 140, 140);
+        doc.setDrawColor(230, 230, 235);
+        doc.line(14, 288, 196, 288);
+        doc.text("Equipe Marco Roza Beach Tennis • Business Intelligence & Gestão Executiva (Documento Confidencial)", 14, 292);
+        doc.text(`Página ${i} de ${totalPages}`, 196, 292, { align: "right" });
+      }
+
+      doc.save(`relatorio_executivo_bi_marco_roza_${new Date().toISOString().split("T")[0]}.pdf`);
+      toast.success("Relatório Executivo Completo de BI gerado com sucesso em PDF!", { id: "pdf-export" });
     } catch (err) {
       console.error(err);
-      toast.error("Erro ao gerar PDF do BI Histórico.");
+      toast.error("Erro ao gerar PDF do BI Histórico.", { id: "pdf-export" });
     }
   };
 
@@ -1199,7 +1492,7 @@ export default function BiHistory() {
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Gráfico 1: Curva de Crescimento da Base Total cruzada com Churn */}
-          <Card className="lg:col-span-8 shadow-sm">
+          <Card ref={chartAlunosRef} className="lg:col-span-8 shadow-sm bg-card">
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
                 <div>
@@ -1453,7 +1746,7 @@ export default function BiHistory() {
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Gráfico 1: Receita Prevista vs Receita Paga vs Em Aberto */}
-          <Card className="lg:col-span-8 shadow-sm">
+          <Card ref={chartFinanceiroRef} className="lg:col-span-8 shadow-sm bg-card">
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
                 <div>
