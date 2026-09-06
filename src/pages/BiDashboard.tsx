@@ -1,8 +1,9 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
 import {
   BarChart,
   Bar,
@@ -51,7 +52,10 @@ import {
   HeartHandshake,
   BrainCircuit,
   PieChart as PieChartIcon,
+  Download,
 } from "lucide-react";
+import logo from "@/assets/logo.png";
+import { toast } from "sonner";
 
 // Definição dos tipos para os cálculos de BI
 interface StudentMetrics {
@@ -71,6 +75,8 @@ export default function BiDashboard() {
   const { students, revenues, attendanceLogs, plans } = useAppContext();
   const [activeTab, setActiveTab] = useState("overview");
   const [activeStoryChapter, setActiveStoryChapter] = useState(1);
+  const chartGaugesRef = useRef<HTMLDivElement>(null);
+  const chartDemografiaRef = useRef<HTMLDivElement>(null);
 
   const scrollToSection = (sectionId: string) => {
     const el = document.getElementById(sectionId);
@@ -772,6 +778,350 @@ export default function BiDashboard() {
   // Cores do gráfico de rosca (Sexo)
   const COLORS = ["#ec4899", "#2563eb"];
 
+  // --- EXPORTAR RELATÓRIO EXECUTIVO DE BI COMPORTAMENTAL EM PDF ---
+  const handleExportPDF = async () => {
+    toast.loading("Renderizando gráficos e gerando relatório executivo...", { id: "pdf-export-bi" });
+    try {
+      const { jsPDF } = await import("jspdf");
+      const autoTable = (await import("jspdf-autotable")).default;
+      const html2canvas = (await import("html2canvas")).default;
+      const doc = new jsPDF("p", "mm", "a4");
+
+      const renderHeader = (sectionTitle: string) => {
+        try {
+          doc.addImage(logo, "PNG", 14, 10, 18, 18);
+        } catch (e) {
+          console.warn("Logo não renderizado no PDF", e);
+        }
+
+        doc.setFontSize(15);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(28, 35, 148);
+        doc.text("Equipe Marco Roza Beach Tennis", 36, 17);
+
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(222, 57, 42);
+        doc.text(sectionTitle, 36, 22);
+
+        doc.setFontSize(7.5);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(100, 100, 100);
+        doc.text(
+          `BI Comportamental & Estratégia Executiva • Emissão: ${new Date().toLocaleDateString("pt-BR")} às ${new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })} • Gestão Estratégica`,
+          36,
+          27
+        );
+
+        doc.setDrawColor(220, 220, 230);
+        doc.setLineWidth(0.5);
+        doc.line(14, 31, 196, 31);
+      };
+
+      // Capturar os velocímetros via html2canvas
+      let chartGaugesImg: { data: string; aspect: number } | null = null;
+
+      if (chartGaugesRef.current) {
+        try {
+          const canvas = await html2canvas(chartGaugesRef.current, {
+            scale: 2,
+            backgroundColor: "#ffffff",
+            logging: false,
+            useCORS: true,
+          });
+          chartGaugesImg = {
+            data: canvas.toDataURL("image/png"),
+            aspect: canvas.height / canvas.width,
+          };
+        } catch (e) {
+          console.warn("Erro ao capturar velocímetros para PDF", e);
+        }
+      }
+
+      // =========================================================================
+      // PÁGINA 1: RESUMO EXECUTIVO, SCORECARD DE KPIS & VELOCÍMETROS VISUAIS
+      // =========================================================================
+      renderHeader("Relatório de Inteligência Comportamental & Retenção");
+
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(20, 35, 95);
+      doc.text("1. Scorecard de Métricas Comportamentais & Fidelização (KPIs Consolidados)", 14, 38);
+
+      const kpisTable = [
+        [
+          "LTV Médio do Atleta",
+          `R$ ${generalMetrics.avgLtv.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
+          "Presença Média Geral",
+          `${generalMetrics.avgAttendance.toFixed(1)}% das aulas`,
+        ],
+        [
+          "Permanência Média (Tenure)",
+          `${generalMetrics.avgTenure.toFixed(1)} meses ativos`,
+          "Alunos em Turmas (Vagas)",
+          `${generalMetrics.totalAlunosEmTurmas} vagas (${generalMetrics.mediaTurmasPorAluno.toFixed(2)}x/atleta)`,
+        ],
+        [
+          "Perfil Etário Adultos",
+          `${generalMetrics.avgAgeAdults.toFixed(1)} anos em média`,
+          "Perfil Etário Infantil/Juv",
+          `${generalMetrics.avgAgeKids.toFixed(1)} anos em média`,
+        ],
+        [
+          "Taxa de Alta Presença (>80%)",
+          `${generalMetrics.engagementRate.toFixed(0)}% da base ativa`,
+          "Taxa de Adimplência Histórica",
+          `${generalMetrics.avgAdimplencia.toFixed(0)}% pontualidade`,
+        ],
+      ];
+
+      autoTable(doc, {
+        startY: 42,
+        head: [["Métrica de Fidelização", "Valor Apurado", "Métrica Operacional", "Valor Apurado"]],
+        body: kpisTable,
+        theme: "striped",
+        headStyles: { fillColor: [28, 35, 148], fontSize: 8.5, fontStyle: "bold" },
+        styles: { fontSize: 8, cellPadding: 2.5 },
+        columnStyles: {
+          0: { fontStyle: "bold", textColor: [30, 30, 30], cellWidth: 42 },
+          1: { cellWidth: 49 },
+          2: { fontStyle: "bold", textColor: [30, 30, 30], cellWidth: 42 },
+          3: { cellWidth: 49 },
+        },
+      });
+
+      let currentY = (doc as any).lastAutoTable.finalY + 8;
+
+      // Seção dos Velocímetros Capturados
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(20, 35, 95);
+      doc.text("2. Velocímetros de Performance & Saúde Comportamental da Escola", 14, currentY);
+      currentY += 4;
+
+      if (chartGaugesImg) {
+        const gaugesWidth = 182;
+        const gaugesHeight = Math.min(65, chartGaugesImg.aspect * gaugesWidth);
+        doc.addImage(chartGaugesImg.data, "PNG", 14, currentY, gaugesWidth, gaugesHeight);
+        currentY += gaugesHeight + 8;
+      }
+
+      // Tabela de Frequência Contratada (1x vs 2x vs 3x+)
+      doc.setFontSize(9.5);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(222, 57, 42);
+      doc.text("Impacto da Frequência Contratada na Retenção e no LTV", 14, currentY);
+
+      const freqRows = planFrequencyData.map((f) => [
+        f.name,
+        `${f.alunos} atletas`,
+        `${f.attendance}% de presença`,
+        `R$ ${f.ltv.toLocaleString("pt-BR")}`,
+        f.name.includes("1x") ? "Padrão de Entrada (Maior risco de abandono)" : "Alta Fidelização (LTV até 3x superior)",
+      ]);
+
+      autoTable(doc, {
+        startY: currentY + 3,
+        head: [["Plano Contratado", "Alunos", "Presença Média", "LTV Médio", "Comportamento Identificado"]],
+        body: freqRows,
+        theme: "grid",
+        headStyles: { fillColor: [245, 158, 11], textColor: [40, 20, 0], fontSize: 8, fontStyle: "bold" },
+        styles: { fontSize: 7.5, cellPadding: 2 },
+      });
+
+      // =========================================================================
+      // PÁGINA 2: VIESES ESTATÍSTICOS & DEMOGRAFIA DA BASE
+      // =========================================================================
+      doc.addPage();
+      renderHeader("Vieses Comportamentais & Mapeamento Demográfico da Base");
+
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(20, 35, 95);
+      doc.text("3. Motor de Vieses Estatísticos & Padrões Ocultos Identificados", 14, 38);
+
+      const viesesRows = trendsAndBiases.map((b) => [
+        b.title,
+        b.metric,
+        b.desc,
+      ]);
+
+      autoTable(doc, {
+        startY: 42,
+        head: [["Padrão / Viés Estatístico", "Indicador", "Diagnóstico Analítico & Implicação Estratégica"]],
+        body: viesesRows,
+        theme: "grid",
+        headStyles: { fillColor: [222, 57, 42], fontSize: 8, fontStyle: "bold" },
+        styles: { fontSize: 7.5, cellPadding: 2.2 },
+        columnStyles: {
+          0: { fontStyle: "bold", cellWidth: 45 },
+          1: { fontStyle: "bold", textColor: [28, 35, 148], cellWidth: 32 },
+          2: { cellWidth: 105 },
+        },
+      });
+
+      let nextY = (doc as any).lastAutoTable.finalY + 10;
+
+      // Análise por Faixa Etária e Tempo de Casa
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(20, 35, 95);
+      doc.text("4. Segmentação por Faixa Etária e Tempo de Casa (Tenure)", 14, nextY);
+
+      const ageRows = ageGroupData.map((a) => [
+        a.name,
+        `${a.alunos} atletas`,
+        `${a.attendance}%`,
+        `R$ ${a.ltv.toLocaleString("pt-BR")}`,
+        `${a.adimplencia}%`,
+      ]);
+
+      autoTable(doc, {
+        startY: nextY + 4,
+        head: [["Faixa Etária", "Alunos", "Presença Média", "LTV Médio", "Adimplência"]],
+        body: ageRows,
+        theme: "striped",
+        headStyles: { fillColor: [28, 35, 148], fontSize: 8 },
+        styles: { fontSize: 7.5, cellPadding: 2 },
+      });
+
+      let tenureY = (doc as any).lastAutoTable.finalY + 8;
+
+      const tenureRows = tenureBracketsData.map((t) => [
+        t.name,
+        `${t.alunos} atletas`,
+        `${t.attendance}%`,
+        `R$ ${t.ltv.toLocaleString("pt-BR")}`,
+        t.name.includes("< 3m") ? "Zona Crítica de Churn (Requer Onboarding)" : "Fase de Estabilidade e Expansão",
+      ]);
+
+      autoTable(doc, {
+        startY: tenureY + 2,
+        head: [["Tempo de Casa", "Alunos", "Presença Média", "LTV Médio", "Estágio de Fidelização"]],
+        body: tenureRows,
+        theme: "striped",
+        headStyles: { fillColor: [59, 130, 246], fontSize: 8 },
+        styles: { fontSize: 7.5, cellPadding: 2 },
+      });
+
+      // =========================================================================
+      // PÁGINA 3: DATA STORYTELLING & ORIENTAÇÕES EXECUTIVAS
+      // =========================================================================
+      doc.addPage();
+      renderHeader("Data Storytelling & Plano de Ação Tático de Diretoria");
+
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(20, 35, 95);
+      doc.text("5. Data Storytelling: A Jornada do Aluno Marco Roza (5 Capítulos)", 14, 38);
+
+      const storytellingData = [
+        [
+          "Capítulo 1: O Ponto Cego da Evasão",
+          "A barreira crítica dos primeiros 90 dias: onde 68% dos desistentes abandonam a areia.",
+          "O acolhimento e a criação de laços sociais no primeiro mês são mais determinantes para o LTV do que a técnica inicial.",
+        ],
+        [
+          "Capítulo 2: O Poder do Engajamento Inicial",
+          "Alunos com presença superior a 80% nos primeiros 30 dias permanecem 2.8x mais tempo.",
+          "A primeira semana de treino define o ano esportivo do aluno. Monitorar a 1ª ausência é crucial.",
+        ],
+        [
+          "Capítulo 3: A Alavanca da Frequência",
+          "O multiplicador da frequência: alunos de 2x ou 3x na semana têm comprometimento quase 3x maior.",
+          "A maior alavanca de receita da escola é migrar alunos de 1x para 2x na semana com incentivo tarifário.",
+        ],
+        [
+          "Capítulo 4: A Dinâmica Familiar e Kids",
+          "O segmento infantil é a blindagem financeira mais sólida da escola: pais priorizam a rotina dos filhos.",
+          "Famílias matriculadas criam raízes no clube e têm o menor índice de inadimplência da história.",
+        ],
+        [
+          "Capítulo 5: O Plano Tático e LTV Máximo",
+          "Visão integrada de futuro: elevar o multiplicador de vagas de 1,27x para 1,50x/atleta.",
+          "Atingir ocupação máxima de quadra com clientes existentes gera o maior retorno operacional sobre capital.",
+        ],
+      ];
+
+      autoTable(doc, {
+        startY: 42,
+        head: [["Capítulo da Jornada", "Diagnóstico Comportamental", "Diretriz Estratégica"]],
+        body: storytellingData,
+        theme: "striped",
+        headStyles: { fillColor: [28, 35, 148], fontSize: 8 },
+        styles: { fontSize: 7.5, cellPadding: 2.2 },
+        columnStyles: {
+          0: { fontStyle: "bold", cellWidth: 42 },
+          1: { cellWidth: 70 },
+          2: { cellWidth: 70 },
+        },
+      });
+
+      let diretrizesY = (doc as any).lastAutoTable.finalY + 8;
+
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(20, 35, 95);
+      doc.text("6. Orientações Executivas & Plano de Ação Tático (Roadmap de Diretoria)", 14, diretrizesY);
+
+      const orientacoesData = [
+        [
+          "Pilar 1: Retenção & Anti-Churn",
+          "• Protocolo 'Primeiros 60 Dias': contato ativo do coordenador após 30 dias de treino.\n• Alerta de 2 ausências consecutivas com reagendamento amigável via WhatsApp.\n• Kit de Boas-Vindas e camiseta oficial após completar o 3º mês.",
+          "Queda de 35% na evasão precoce.",
+        ],
+        [
+          "Pilar 2: Engajamento & Frequência",
+          "• Gamificação de presença com ranking mensal de assiduidade nas quadras.\n• Avisos prévios no WhatsApp com 2 dias de antecedência para manter rotina.\n• Treinos integrados de sábado para interação entre turmas.",
+          "Aumento da presença média acima de 85%.",
+        ],
+        [
+          "Pilar 3: Monetização & Upsell",
+          "• Campanha 'Upgrade de Frequência' no 45º dia: 2ª aula com valor promocional.\n• Meta executiva: elevar média de turmas de 1,27x para 1,45x turmas/atleta.\n• Parcelamento facilitado no cartão para planos semestrais.",
+          "Incremento de até R$ 5.500/mês sem CAC.",
+        ],
+        [
+          "Pilar 4: Cultura & Comunidade",
+          "• Torneios internos 'Rei e Rainha da Areia' misturando iniciantes e veteranos.\n• Confraternizações trimestrais fortalecendo o senso de comunidade.\n• Programa 'Família na Areia' com condições especiais para pais e filhos.",
+          "Fidelização comunitária e LTV superior a 2 anos.",
+        ],
+      ];
+
+      autoTable(doc, {
+        startY: diretrizesY + 4,
+        head: [["Pilar Estratégico", "Ações Recomendadas", "Impacto Esperado no Negócio"]],
+        body: orientacoesData,
+        theme: "grid",
+        headStyles: { fillColor: [16, 185, 129], fontSize: 8, fontStyle: "bold" },
+        styles: { fontSize: 7.5, cellPadding: 2.2 },
+        columnStyles: {
+          0: { fontStyle: "bold", cellWidth: 42 },
+          1: { cellWidth: 78 },
+          2: { cellWidth: 62 },
+        },
+      });
+
+      // Rodapé em todas as páginas
+      const totalPages = (doc as any).internal.getNumberOfPages ? (doc as any).internal.getNumberOfPages() : doc.getNumberOfPages();
+      for (let i = 1; i <= totalPages; i++) {
+        doc.setPage(i);
+        doc.setFontSize(7.5);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(140, 140, 140);
+        doc.setDrawColor(230, 230, 235);
+        doc.line(14, 288, 196, 288);
+        doc.text("Equipe Marco Roza Beach Tennis • Business Intelligence & Gestão Executiva (Documento Confidencial)", 14, 292);
+        doc.text(`Página ${i} de ${totalPages}`, 196, 292, { align: "right" });
+      }
+
+      doc.save(`relatorio_bi_comportamental_marco_roza_${new Date().toISOString().split("T")[0]}.pdf`);
+      toast.success("Relatório Executivo de BI Comportamental gerado com sucesso em PDF!", { id: "pdf-export-bi" });
+    } catch (err) {
+      console.error(err);
+      toast.error("Erro ao gerar PDF do BI Comportamental.", { id: "pdf-export-bi" });
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Título Principal */}
@@ -796,8 +1146,15 @@ export default function BiDashboard() {
               </p>
             </div>
             
-            {/* Quick Actions para Storytelling e Orientações Executivas */}
+            {/* Quick Actions para Storytelling, Orientações Executivas e Exportação */}
             <div className="flex flex-wrap items-center gap-2">
+              <Button
+                onClick={handleExportPDF}
+                className="bg-white text-[#1c2394] hover:bg-white/90 font-bold text-xs gap-1.5 shadow-md border-none h-9 px-4 rounded-xl cursor-pointer"
+              >
+                <Download className="w-4 h-4" />
+                <span>Exportar PDF</span>
+              </Button>
               <button
                 onClick={() => scrollToSection("secao-storytelling")}
                 className="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 text-white font-bold text-xs rounded-xl backdrop-blur-md transition-all border border-white/30 shadow-sm cursor-pointer"
@@ -923,7 +1280,7 @@ export default function BiDashboard() {
       </div>
 
       {/* Velocímetros (Gauges) */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div ref={chartGaugesRef} className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-card/30 p-2 rounded-2xl">
         <GaugeSpeedometer
           value={generalMetrics.engagementRate}
           label="Engajamento Alto"
@@ -1016,7 +1373,7 @@ export default function BiDashboard() {
             </Card>
 
             {/* Fatores de Decisão */}
-            <Card>
+            <Card ref={chartDemografiaRef}>
               <CardHeader>
                 <CardTitle className="text-lg">Composição dos Alunos Ativos</CardTitle>
                 <p className="text-xs text-muted-foreground">Distribuição demográfica simples.</p>
