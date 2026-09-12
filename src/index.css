@@ -293,3 +293,40 @@
   left: 200%;
 }
 
+/* ========================================================================= */
+/* CILINDROS DE VIDRO COM LÍQUIDO COLORIDO & ONDAS ANIMADAS                 */
+/* ========================================================================= */
+
+@keyframes liquidWaveAnim {
+  0% { transform: translateX(0); }
+  50% { transform: translateX(-24px); }
+  100% { transform: translateX(0); }
+}
+
+.animate-liquid-wave {
+  animation: liquidWaveAnim 3.8s ease-in-out infinite;
+}
+
+@keyframes bubbleRise1 {
+  0% { transform: translateY(15px) scale(0.6); opacity: 0; }
+  25% { opacity: 0.75; }
+  80% { opacity: 0.75; }
+  100% { transform: translateY(-130px) scale(1.15); opacity: 0; }
+}
+
+@keyframes bubbleRise2 {
+  0% { transform: translateY(10px) scale(0.5); opacity: 0; }
+  35% { opacity: 0.85; }
+  85% { opacity: 0.6; }
+  100% { transform: translateY(-150px) scale(1.05); opacity: 0; }
+}
+
+.animate-bubble-1 {
+  animation: bubbleRise1 3.2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-bubble-2 {
+  animation: bubbleRise2 4.1s cubic-bezier(0.4, 0, 0.6, 1) infinite 1.1s;
+}
+
+

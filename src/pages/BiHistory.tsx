@@ -59,6 +59,7 @@ import {
 } from "lucide-react";
 import logo from "@/assets/logo.png";
 import { toast } from "sonner";
+import { GlassLiquidCylinderSection, LiquidCylinderMetric } from "@/components/bi/GlassLiquidCylinderSection";
 
 export default function BiHistory() {
   const { students, revenues, scheduledPayments, plans, enrollments } = useAppContext();
@@ -1062,6 +1063,61 @@ export default function BiHistory() {
     }
   };
 
+  const historyCylinderMetrics: LiquidCylinderMetric[] = [
+    {
+      id: "adimplencia-hist",
+      title: "Adimplência da Série Histórica",
+      subtitle: "Pontualidade consolidada de faturas",
+      percentage: consolidatedKpis.adimplenciaMedia,
+      colorScheme: "emerald",
+      status: {
+        label: consolidatedKpis.adimplenciaMedia >= 90 ? "Nível Seguro" : "Atenção",
+        type: "success",
+      },
+      observation: "Média consistente de pagamentos no prazo ao longo de toda a série histórica. Garante fluxo de caixa sadio e previsibilidade financeira para a equipe.",
+      meta: "Meta da Série: > 90%",
+    },
+    {
+      id: "retencao-hist",
+      title: "Estabilidade de Retenção",
+      subtitle: "Índice de permanência e fidelidade",
+      percentage: consolidatedKpis.retencaoMedia,
+      colorScheme: "cyan",
+      status: {
+        label: "Alta Estabilidade",
+        type: "info",
+      },
+      observation: "Baixa taxa de cancelamento e forte vínculo dos praticantes veteranos com os professores e quadras. Reduz a pressão por novas aquisições.",
+      meta: "Meta: > 80%",
+    },
+    {
+      id: "margem-hist",
+      title: "Margem Operacional Líquida",
+      subtitle: "Sobra média de caixa do negócio",
+      percentage: Math.max(0, Math.min(100, consolidatedKpis.margemMedia)),
+      colorScheme: "amber",
+      status: {
+        label: "Margem Positiva",
+        type: "warning",
+      },
+      observation: "Eficiência financeira após cumprimento de todas as despesas e encargos de quadra. Gera caixa estratégico para torneios, reformas e bônus.",
+      meta: "Margem Ideal: > 40%",
+    },
+    {
+      id: "ocupacao-hist",
+      title: "Multiplicador de Turmas",
+      subtitle: "Vagas por atleta na grade",
+      percentage: Math.min(100, Math.max(20, (consolidatedKpis.mediaTurmasPorAluno / 2) * 100)),
+      colorScheme: "purple",
+      status: {
+        label: `${consolidatedKpis.mediaTurmasPorAluno.toFixed(2)}x por Atleta`,
+        type: "purple",
+      },
+      observation: `São ${consolidatedKpis.totalAlunosEmTurmas} vagas ocupadas por ${consolidatedKpis.totalAlunosAtual} atletas únicos. Esse aproveitamento eleva o faturamento sem inflar o custo fixo de quadras.`,
+      meta: "Meta: > 1.30x",
+    },
+  ];
+
   return (
     <div className="bi-glass-theme space-y-8 pb-16 relative">
       {/* Esferas de luz ambiente para o efeito de copo de vidro */}
@@ -1442,6 +1498,13 @@ export default function BiHistory() {
             </CardContent>
           </Card>
         </div>
+
+        {/* CILINDROS DE VIDRO COM LÍQUIDO COLORIDO & OBSERVAÇÕES PERTINENTES */}
+        <GlassLiquidCylinderSection
+          title="Termômetros de Vidro da Trajetória (Líquido & Performance)"
+          description="Nível dos fluidos operacionais acumulados, percentuais de precisão histórica e diagnósticos analíticos."
+          metrics={historyCylinderMetrics}
+        />
 
         {/* VELOCÍMETROS DE PERFORMANCE & SAÚDE OPERACIONAL */}
         <div className="pt-3 border-t border-border/60">

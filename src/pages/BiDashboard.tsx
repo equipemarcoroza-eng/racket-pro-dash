@@ -56,6 +56,7 @@ import {
 } from "lucide-react";
 import logo from "@/assets/logo.png";
 import { toast } from "sonner";
+import { GlassLiquidCylinderSection, LiquidCylinderMetric } from "@/components/bi/GlassLiquidCylinderSection";
 
 // Definição dos tipos para os cálculos de BI
 interface StudentMetrics {
@@ -1122,6 +1123,61 @@ export default function BiDashboard() {
     }
   };
 
+  const dashboardCylinderMetrics: LiquidCylinderMetric[] = [
+    {
+      id: "presenca",
+      title: "Presença Média em Quadra",
+      subtitle: "Assiduidade consolidada",
+      percentage: generalMetrics.avgAttendance,
+      colorScheme: "emerald",
+      status: {
+        label: generalMetrics.avgAttendance >= 80 ? "Alta Frequência" : "Atenção Tática",
+        type: "success",
+      },
+      observation: "Atletas com frequência superior a 80% apresentam risco de evasão (churn) praticamente nulo. A continuidade dos treinos consolida o vínculo esportivo com a equipe.",
+      meta: "Meta Ideal: > 80%",
+    },
+    {
+      id: "adimplencia",
+      title: "Adimplência Histórica",
+      subtitle: "Pontualidade de pagamentos",
+      percentage: generalMetrics.avgAdimplencia,
+      colorScheme: "cyan",
+      status: {
+        label: generalMetrics.avgAdimplencia >= 90 ? "Nível Seguro" : "Monitorar Cobrança",
+        type: "info",
+      },
+      observation: "Alta pontualidade na liquidação de mensalidades. Revela elevada percepção de valor dos alunos e estabilidade no fluxo de entradas recorrentes.",
+      meta: "Benchmark: > 92%",
+    },
+    {
+      id: "engajamento",
+      title: "Taxa de Engajamento Pleno",
+      subtitle: "Alunos com presença > 80%",
+      percentage: generalMetrics.engagementRate,
+      colorScheme: "purple",
+      status: {
+        label: "Zona de Fidelização",
+        type: "purple",
+      },
+      observation: "Fatia da base com comprometimento semanal rigoroso. Grupo ideal para campanhas de upgrade para 2x/semana, planos semestrais e inscrição em torneios internos.",
+      meta: "Meta da Escola: > 70%",
+    },
+    {
+      id: "retencao",
+      title: "Índice de Retenção & Saúde",
+      subtitle: "Previsibilidade para 90 dias",
+      percentage: Math.min(100, generalMetrics.avgAttendance * 1.08),
+      colorScheme: "amber",
+      status: {
+        label: "Saudável & Estável",
+        type: "warning",
+      },
+      observation: "Tempo médio de permanência (tenure) robusto garante estabilidade de receita e reduz o custo de aquisição (CAC) de novos praticantes de Beach Tennis.",
+      meta: "Projeção: > 85%",
+    },
+  ];
+
   return (
     <div className="bi-glass-theme space-y-6 relative pb-12">
       {/* Esferas de luz ambiente para o efeito de copo de vidro */}
@@ -1288,6 +1344,13 @@ export default function BiDashboard() {
             </CardContent>
           </Card>
         </div>
+
+        {/* CILINDROS DE VIDRO COM LÍQUIDOS COLORIDOS & OBSERVAÇÕES PERTINENTES */}
+        <GlassLiquidCylinderSection
+          title="Termômetros de Vidro Líquido (Nível de Performance)"
+          description="Aferição visual em cilindros graduados com líquido dinâmico, menisco animado e diagnósticos de inteligência comportamental."
+          metrics={dashboardCylinderMetrics}
+        />
 
         {/* Velocímetros (Gauges) com visual Copo de Vidro */}
         <div ref={chartGaugesRef} className="grid grid-cols-1 md:grid-cols-3 gap-6 bi-glass-gauge p-4">
