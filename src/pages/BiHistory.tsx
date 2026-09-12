@@ -1120,15 +1120,7 @@ export default function BiHistory() {
 
   return (
     <div className="bi-glass-theme space-y-8 pb-16 relative">
-      {/* Esferas de luz ambiente para o efeito de copo de vidro */}
-      <div className="bi-glass-ambient-orbs">
-        <div className="bi-orb-1" />
-        <div className="bi-orb-2" />
-        <div className="bi-orb-3" />
-        <div className="bi-orb-4" />
-      </div>
-
-      <div className="relative z-10 space-y-8">
+      <div className="space-y-8">
         {/* ========================================================================= */}
         {/* HEADER HERO PREMIUM - COPO DE VIDRO ESCURO LAPIDADO                       */}
         {/* ========================================================================= */}

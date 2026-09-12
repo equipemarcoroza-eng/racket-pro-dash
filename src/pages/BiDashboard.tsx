@@ -1180,15 +1180,7 @@ export default function BiDashboard() {
 
   return (
     <div className="bi-glass-theme space-y-6 relative pb-12">
-      {/* Esferas de luz ambiente para o efeito de copo de vidro */}
-      <div className="bi-glass-ambient-orbs">
-        <div className="bi-orb-1" />
-        <div className="bi-orb-2" />
-        <div className="bi-orb-3" />
-        <div className="bi-orb-4" />
-      </div>
-
-      <div className="relative z-10 space-y-6">
+      <div className="space-y-6">
         {/* Título Principal - Copo de Vidro Escuro Lapidado */}
         <Card className="bi-glass-hero bi-glass-reflection text-white border-none shadow-xl relative overflow-hidden">
           <div className="absolute top-0 right-0 h-40 w-40 rounded-full bg-white/10 blur-2xl pointer-events-none" />

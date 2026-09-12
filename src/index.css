@@ -62,9 +62,10 @@
 }
 
 /* ========================================================================= */
-/* EFEITO COPO DE VIDRO (GLASSMORPHISM & CRISTAL REFLECTION) PARA BI          */
+/* EFEITO COPO DE VIDRO (GLASSMORPHISM & CRISTAL REFLECTION) GLOBAL          */
 /* ========================================================================= */
 
+.app-glass-theme,
 .bi-glass-theme {
   position: relative;
   isolation: isolate;
@@ -140,9 +141,10 @@
 }
 
 /* Card padrão de vidro (Copo de Vidro Lapidado com Reflexo Superior) */
+.app-glass-theme .bg-card:not(.bi-glass-hero):not(.bi-glass-dark):not(.bi-glass-amber),
 .bi-glass-theme .bg-card:not(.bi-glass-hero):not(.bi-glass-dark):not(.bi-glass-amber),
 .bi-glass-card {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.82) 0%, rgba(255, 255, 255, 0.54) 100%) !important;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.84) 0%, rgba(255, 255, 255, 0.56) 100%) !important;
   backdrop-filter: blur(20px) saturate(180%) !important;
   -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
   border: 1px solid rgba(255, 255, 255, 0.85) !important;
@@ -155,6 +157,7 @@
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
+.app-glass-theme .bg-card:not(.bi-glass-hero):not(.bi-glass-dark):not(.bi-glass-amber):hover,
 .bi-glass-theme .bg-card:not(.bi-glass-hero):not(.bi-glass-dark):not(.bi-glass-amber):hover,
 .bi-glass-card:hover {
   border-color: rgba(255, 255, 255, 1) !important;
@@ -166,6 +169,7 @@
 }
 
 /* Suporte Dark Mode para Card de Vidro */
+.dark .app-glass-theme .bg-card:not(.bi-glass-hero):not(.bi-glass-dark):not(.bi-glass-amber),
 .dark .bi-glass-theme .bg-card:not(.bi-glass-hero):not(.bi-glass-dark):not(.bi-glass-amber),
 .dark .bi-glass-card {
   background: linear-gradient(135deg, rgba(20, 25, 60, 0.78) 0%, rgba(15, 18, 45, 0.58) 100%) !important;
@@ -233,6 +237,7 @@
 }
 
 /* Tabs em barra de vidro lapidado */
+.app-glass-theme .bg-muted,
 .bi-glass-theme .bg-muted {
   background: rgba(255, 255, 255, 0.52) !important;
   backdrop-filter: blur(16px) !important;
@@ -243,6 +248,7 @@
     0 6px 20px -4px rgba(28, 35, 148, 0.06) !important;
 }
 
+.app-glass-theme [data-state="active"],
 .bi-glass-theme [data-state="active"] {
   background: rgba(255, 255, 255, 0.95) !important;
   backdrop-filter: blur(12px) !important;

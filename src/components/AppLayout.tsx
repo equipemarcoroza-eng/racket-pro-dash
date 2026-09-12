@@ -163,8 +163,18 @@ const AppLayout = () => {
           </button>
         </div>
       </aside>
-      <main className="flex-1 overflow-auto p-6 lg:p-8">
-        <Outlet />
+      <main className="flex-1 overflow-auto p-6 lg:p-8 app-glass-theme relative isolation-isolate">
+        {/* Esferas de iluminação ambiental tridimensional para o efeito Glassmorphism */}
+        <div className="bi-glass-ambient-orbs">
+          <div className="bi-orb-1" />
+          <div className="bi-orb-2" />
+          <div className="bi-orb-3" />
+          <div className="bi-orb-4" />
+        </div>
+
+        <div className="relative z-10">
+          <Outlet />
+        </div>
       </main>
     </div>
   );
