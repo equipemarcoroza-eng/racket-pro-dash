@@ -526,26 +526,26 @@ const Revenue = () => {
           <div>
             <p className="text-xs font-bold uppercase tracking-wider text-white/80">Financeiro</p>
             <CardTitle className="text-2xl font-black text-white mt-1">Contas a Receber</CardTitle>
-            <p className="text-xs text-white/70 mt-1">Gestão de cobranças, planos e vencimentos de mensalidades, trimestrais e anuais.</p>
+            <p className="text-xs text-white/80 mt-1">Gestão de cobranças, planos e vencimentos de mensalidades, trimestrais e anuais.</p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <Button 
               variant="secondary" 
               onClick={gerarParcelas}
-              className="bg-white text-[#1c2394] hover:bg-white/90 font-bold border-none"
+              className="bg-white text-[#1c2394] hover:bg-white/90 font-bold border-none shadow-md"
             >
               Gerar Parcelas do Mês
             </Button>
             <Button 
               variant="outline" 
               onClick={() => setShowAvulso(true)}
-              className="bg-white/20 hover:bg-white/30 text-white border border-white/20 backdrop-blur-md font-semibold"
+              className="bg-white/20 hover:bg-white/30 text-white font-bold border border-white/50 backdrop-blur-md shadow-sm drop-shadow-sm"
             >
               Gerar Recebível Avulso
             </Button>
             <Button 
               onClick={() => setShowRecebimento(true)}
-              className="bg-white/20 hover:bg-white/30 text-white border border-white/20 backdrop-blur-md font-semibold"
+              className="bg-white/20 hover:bg-white/30 text-white font-bold border border-white/50 backdrop-blur-md shadow-sm drop-shadow-sm"
             >
               Registrar Recebimento Mitigado
             </Button>
@@ -564,14 +564,14 @@ const Revenue = () => {
               </div>
               <div>
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h3 className="font-extrabold text-foreground text-base tracking-tight flex items-center gap-1.5">
+                  <h3 className="font-black text-slate-900 dark:text-white text-base tracking-tight flex items-center gap-1.5">
                     Parcelas em Aberto
                   </h3>
                   <Badge className="bg-orange-500 hover:bg-orange-600 text-white font-black text-[11px] px-2.5 py-0.5 shadow-sm">
                     {openRevenuesList.length} {openRevenuesList.length === 1 ? "parcela" : "parcelas"} • {totalOpenAmount.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
                   </Badge>
                 </div>
-                <p className="text-xs text-muted-foreground mt-0.5">
+                <p className="text-xs text-slate-700 dark:text-slate-300 font-medium mt-0.5">
                   Cobranças organizadas por ordem de vencimento com aviso rápido via WhatsApp.
                 </p>
               </div>
@@ -580,7 +580,7 @@ const Revenue = () => {
             {/* Ações / Seletor de visualização e atalho para a tabela */}
             <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
               <Select value={openStickerFilter} onValueChange={(v: "mes" | "todos" | "atrasadas") => setOpenStickerFilter(v)}>
-                <SelectTrigger className="h-8 text-xs w-[170px] bg-background/80 border-orange-200 dark:border-orange-900/50">
+                <SelectTrigger className="h-8 text-xs w-[170px] bg-white dark:bg-slate-900 border-orange-200 dark:border-orange-900/50 font-semibold text-slate-800 dark:text-slate-100">
                   <SelectValue placeholder="Visualização" />
                 </SelectTrigger>
                 <SelectContent>
@@ -597,7 +597,7 @@ const Revenue = () => {
                   const el = document.getElementById("lista-receitas-card");
                   el?.scrollIntoView({ behavior: "smooth" });
                 }}
-                className="h-8 text-xs font-semibold gap-1.5 border-orange-300 dark:border-orange-800 hover:bg-orange-100/50 dark:hover:bg-orange-950/40 text-orange-900 dark:text-orange-200"
+                className="h-8 text-xs font-bold gap-1.5 bg-white dark:bg-slate-900 border-orange-300 dark:border-orange-800 hover:bg-orange-100/50 dark:hover:bg-orange-950/40 text-orange-950 dark:text-orange-200 shadow-sm"
               >
                 <span>Ver Tabela</span>
                 <ArrowDownCircle className="w-3.5 h-3.5" />
@@ -605,10 +605,10 @@ const Revenue = () => {
             </div>
           </div>
 
-          {/* Lista de Stickers das Parcelas em Aberto */}
+          {/* Lista de Stickers das Parcelas */}
           {openRevenuesList.length === 0 ? (
             <div className="py-5 px-4 text-center flex flex-col items-center justify-center">
-              <p className="text-xs text-muted-foreground italic flex items-center gap-1.5">
+              <p className="text-xs text-slate-600 dark:text-slate-400 italic flex items-center gap-1.5">
                 <CheckCircle2 className="w-4 h-4 text-emerald-500" />
                 Nenhuma parcela em aberto encontrada para o filtro selecionado. Tudo em dia!
               </p>
@@ -617,7 +617,7 @@ const Revenue = () => {
                   variant="ghost"
                   size="sm"
                   onClick={() => setOpenStickerFilter("mes")}
-                  className="text-xs text-primary font-semibold mt-1 h-7"
+                  className="text-xs text-[#1c2394] font-bold mt-1 h-7"
                 >
                   Voltar para o mês ({selectedMonth}/{selectedYear})
                 </Button>
@@ -648,10 +648,10 @@ const Revenue = () => {
                     key={r.id}
                     className={`shrink-0 flex items-center justify-between gap-3 p-2.5 px-3.5 rounded-xl border transition-all duration-200 min-w-[280px] max-w-[340px] ${
                       isToday
-                        ? "bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-amber-500/10 border-amber-400 shadow-md ring-2 ring-amber-400/50"
+                        ? "bg-amber-50/95 dark:bg-amber-950/40 border-amber-400 shadow-md ring-2 ring-amber-400/50"
                         : isExpired
-                        ? "bg-rose-500/10 hover:bg-rose-500/15 border-rose-300 dark:border-rose-900/60 shadow-sm"
-                        : "bg-background/90 hover:bg-background border-border/80 hover:border-orange-300 hover:shadow-sm"
+                        ? "bg-rose-50/95 dark:bg-rose-950/40 hover:bg-rose-100/80 border-rose-300 dark:border-rose-900/60 shadow-sm"
+                        : "bg-white dark:bg-slate-900/90 hover:bg-slate-50 dark:hover:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm"
                     }`}
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
@@ -660,11 +660,11 @@ const Revenue = () => {
                           isToday
                             ? "bg-amber-500 text-amber-950 shadow-sm animate-pulse"
                             : isExpired
-                            ? "bg-rose-500/20 text-rose-700 dark:text-rose-300 border border-rose-300/40"
-                            : "bg-primary/10 text-primary"
+                            ? "bg-rose-500 text-white shadow-sm"
+                            : "bg-[#1c2394]/15 text-[#1c2394] dark:bg-blue-500/20 dark:text-blue-300"
                         }`}
                       >
-                        <span className="text-[9px] uppercase font-bold leading-none">
+                        <span className="text-[9px] uppercase font-black leading-none">
                           {monthsShort[Number(mes) - 1] || "VENC"}
                         </span>
                         <span className="text-sm font-black leading-tight">{dia}</span>
@@ -672,7 +672,7 @@ const Revenue = () => {
 
                       <div className="flex flex-col min-w-0">
                         <div className="flex items-center gap-1.5">
-                          <span className="font-bold text-xs text-foreground truncate max-w-[130px]" title={r.aluno}>
+                          <span className="font-bold text-xs text-slate-900 dark:text-white truncate max-w-[130px]" title={r.aluno}>
                             {r.aluno}
                           </span>
                           {isToday && (
@@ -686,24 +686,24 @@ const Revenue = () => {
                             </Badge>
                           )}
                           {!isToday && !isExpired && (
-                            <span className="text-[9px] font-semibold text-muted-foreground bg-muted/60 px-1 rounded">
+                            <span className="text-[9px] font-semibold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-1 rounded">
                               em {diffDays}d
                             </span>
                           )}
                         </div>
 
-                        <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground mt-0.5">
-                          <span className="font-bold text-foreground font-mono">
+                        <div className="flex items-center gap-1.5 text-[10px] text-slate-700 dark:text-slate-300 font-semibold mt-0.5">
+                          <span className="font-extrabold text-slate-900 dark:text-white font-mono">
                             R$ {r.valor.toFixed(2).replace(".", ",")}
                           </span>
                           <span>•</span>
-                          <span className="font-medium truncate max-w-[75px]" title={r.plano}>{r.plano}</span>
+                          <span className="font-medium text-slate-600 dark:text-slate-400 truncate max-w-[75px]" title={r.plano}>{r.plano}</span>
                           {student?.categoria && (
                             <span
                               className={`text-[9px] font-bold px-1 rounded border ${
                                 isMinor
-                                  ? "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-300/50"
-                                  : "bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-300/50"
+                                  ? "bg-amber-500/10 text-amber-800 dark:text-amber-300 border-amber-300/50"
+                                  : "bg-blue-500/10 text-blue-800 dark:text-blue-300 border-blue-300/50"
                               }`}
                               title={`Categoria: ${student.categoria}`}
                             >
@@ -711,7 +711,7 @@ const Revenue = () => {
                             </span>
                           )}
                           {student?.status && student.status !== "Ativo" && (
-                            <span className="text-[9px] text-muted-foreground">({student.status})</span>
+                            <span className="text-[9px] text-slate-500">({student.status})</span>
                           )}
                         </div>
                       </div>

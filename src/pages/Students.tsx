@@ -525,7 +525,7 @@ const Students = () => {
           </div>
           <Button 
             onClick={openNew}
-            className="bg-white/20 hover:bg-white/30 text-white border border-white/20 backdrop-blur-md font-semibold"
+            className="bg-white text-[#1c2394] hover:bg-white/90 font-bold shadow-md border-none h-10 px-5 rounded-xl cursor-pointer"
           >
             Novo Aluno
           </Button>
@@ -543,14 +543,14 @@ const Students = () => {
               </div>
               <div>
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h3 className="font-extrabold text-foreground text-base tracking-tight flex items-center gap-1.5">
+                  <h3 className="font-black text-slate-900 dark:text-white text-base tracking-tight flex items-center gap-1.5">
                     Aniversariantes do Mês
                   </h3>
                   <Badge className="bg-amber-500 hover:bg-amber-600 text-amber-950 font-black text-[11px] px-2.5 py-0.5 shadow-sm">
                     {selectedMonthObj.label} ({birthdayStudents.length})
                   </Badge>
                 </div>
-                <p className="text-xs text-muted-foreground mt-0.5">
+                <p className="text-xs text-slate-700 dark:text-slate-300 font-medium mt-0.5">
                   Acompanhe e parabenize os alunos que celebram mais um ano de vida neste mês.
                 </p>
               </div>
@@ -559,7 +559,7 @@ const Students = () => {
             {/* Ações / Seletor de Mês */}
             <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
               <Select value={selectedBirthdayMonth} onValueChange={setSelectedBirthdayMonth}>
-                <SelectTrigger className="h-8 text-xs w-[130px] bg-background/80 border-amber-200 dark:border-amber-900/50">
+                <SelectTrigger className="h-8 text-xs w-[130px] bg-white dark:bg-slate-900 border-amber-200 dark:border-amber-900/50 font-semibold text-slate-800 dark:text-slate-100">
                   <SelectValue placeholder="Mês" />
                 </SelectTrigger>
                 <SelectContent>
@@ -575,7 +575,7 @@ const Students = () => {
                 variant="outline"
                 size="sm"
                 onClick={() => navigate("/birthdays")}
-                className="h-8 text-xs font-semibold gap-1.5 border-amber-300 dark:border-amber-800 hover:bg-amber-100/50 dark:hover:bg-amber-950/40 text-amber-900 dark:text-amber-200"
+                className="h-8 text-xs font-bold gap-1.5 bg-white dark:bg-slate-900 border-amber-300 dark:border-amber-800 hover:bg-amber-100/50 dark:hover:bg-amber-950/40 text-amber-950 dark:text-amber-200 shadow-sm"
               >
                 <span>Ver Todos</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -586,7 +586,7 @@ const Students = () => {
           {/* Lista de Stickers dos Alunos */}
           {birthdayStudents.length === 0 ? (
             <div className="py-5 px-4 text-center flex flex-col items-center justify-center">
-              <p className="text-xs text-muted-foreground italic flex items-center gap-1.5">
+              <p className="text-xs text-slate-600 dark:text-slate-400 italic flex items-center gap-1.5">
                 <PartyPopper className="w-4 h-4 text-amber-500/70" />
                 Nenhum aniversariante cadastrado para o mês de {selectedMonthObj.label}.
               </p>
@@ -595,7 +595,7 @@ const Students = () => {
                   variant="ghost"
                   size="sm"
                   onClick={() => setSelectedBirthdayMonth(currentMonthValue)}
-                  className="text-xs text-primary font-semibold mt-1 h-7"
+                  className="text-xs text-[#1c2394] font-bold mt-1 h-7"
                 >
                   Voltar para o mês atual
                 </Button>
@@ -614,8 +614,8 @@ const Students = () => {
                     key={s.id}
                     className={`shrink-0 flex items-center justify-between gap-3 p-2.5 px-3.5 rounded-xl border transition-all duration-200 min-w-[260px] max-w-[320px] ${
                       isToday
-                        ? "bg-gradient-to-r from-amber-500/20 via-rose-500/20 to-amber-500/10 border-amber-400 shadow-md ring-2 ring-amber-400/50"
-                        : "bg-background/90 hover:bg-background border-border/80 hover:border-amber-300 hover:shadow-sm"
+                        ? "bg-amber-50/95 dark:bg-amber-950/40 border-amber-400 shadow-md ring-2 ring-amber-400/50"
+                        : "bg-white dark:bg-slate-900/90 hover:bg-slate-50 dark:hover:bg-slate-900 border-slate-200/90 dark:border-slate-800 shadow-sm"
                     }`}
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
@@ -623,25 +623,25 @@ const Students = () => {
                         className={`flex flex-col items-center justify-center px-2 py-1 rounded-lg font-black text-xs shrink-0 ${
                           isToday
                             ? "bg-amber-500 text-amber-950 shadow-sm animate-pulse"
-                            : "bg-primary/10 text-primary"
+                            : "bg-[#1c2394]/15 text-[#1c2394] dark:bg-blue-500/20 dark:text-blue-300"
                         }`}
                       >
-                        <span className="text-[9px] uppercase font-bold leading-none">Dia</span>
+                        <span className="text-[9px] uppercase font-black leading-none">Dia</span>
                         <span className="text-sm font-black leading-tight">{day}</span>
                       </div>
                       <div className="flex flex-col min-w-0">
                         <div className="flex items-center gap-1.5">
-                          <span className="font-bold text-xs text-foreground truncate">{s.nome}</span>
+                          <span className="font-bold text-xs text-slate-900 dark:text-white truncate">{s.nome}</span>
                           {isToday && (
                             <Badge className="bg-rose-500 hover:bg-rose-600 text-white text-[9px] font-black px-1.5 py-0 leading-none h-4">
                               🎉 HOJE!
                             </Badge>
                           )}
                         </div>
-                        <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground mt-0.5">
-                          <span className="font-medium">{age} anos</span>
+                        <div className="flex items-center gap-1.5 text-[10px] text-slate-600 dark:text-slate-400 font-semibold mt-0.5">
+                          <span>{age} anos</span>
                           <span>•</span>
-                          <span className="font-medium truncate">{s.categoria}</span>
+                          <span className="truncate">{s.categoria}</span>
                         </div>
                       </div>
                     </div>

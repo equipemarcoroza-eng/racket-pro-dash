@@ -237,24 +237,23 @@ const Tests = () => {
         <div className="absolute top-0 right-0 h-32 w-32 rounded-full bg-white/10 blur-xl pointer-events-none" />
         <CardHeader className="flex flex-row items-center justify-between relative z-10">
           <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-white/80">Desempenho</p>
+            <p className="text-xs font-bold uppercase tracking-wider text-white/90">Desempenho</p>
             <CardTitle className="text-2xl font-black text-white mt-1">Avaliação de Provas Técnicas</CardTitle>
           </div>
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
-              <Label className="text-xs font-bold uppercase text-white/80">Data da Prova:</Label>
+              <Label className="text-xs font-bold uppercase text-white tracking-wide">Data da Prova:</Label>
               <Input 
                 type="date" 
                 value={selectedDate} 
                 onChange={(e) => setSelectedDate(e.target.value)} 
-                className="w-40 h-9 bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-white/40 [color-scheme:dark]"
+                className="w-40 h-9 bg-white/20 border-white/40 text-white font-bold placeholder:text-white/70 focus:border-white [color-scheme:dark]"
               />
             </div>
             <Button 
-              variant="outline" 
               size="sm" 
               onClick={() => setShowActivityModal(true)} 
-              className="gap-2 bg-white/20 hover:bg-white/30 text-white border border-white/20 backdrop-blur-md font-semibold"
+              className="gap-2 bg-white text-[#1c2394] hover:bg-white/90 font-bold shadow-md border-none h-9 px-4 rounded-xl cursor-pointer"
             >
               <Plus className="h-4 w-4" /> Gestão de Atividades
             </Button>
@@ -264,15 +263,15 @@ const Tests = () => {
 
       {slotsWithAttendance.length === 0 ? (
         <div className="space-y-6">
-          <Card>
+          <Card className="border border-amber-200/80 shadow-sm bg-white/90 dark:bg-slate-900/90">
             <CardContent className="pt-10 pb-10 text-center">
               <div className="flex flex-col items-center gap-3">
-                <div className="p-3 bg-yellow-50 rounded-full">
-                  <ClipboardCheck className="h-8 w-8 text-yellow-600" />
+                <div className="p-3 bg-amber-500/15 text-amber-600 rounded-full ring-1 ring-amber-500/25">
+                  <ClipboardCheck className="h-8 w-8" />
                 </div>
-                <p className="text-lg font-semibold text-muted-foreground">Nenhuma presença registrada para esta data.</p>
-                <p className="text-sm text-muted-foreground max-w-sm">Você precisa primeiro realizar o <b>Controle de Presença</b> nas turmas antes de aplicar uma prova.</p>
-                <Button variant="default" className="mt-2 bg-yellow-600 hover:bg-yellow-700" onClick={() => navigate("/attendance")}>
+                <p className="text-lg font-black text-slate-900 dark:text-white">Nenhuma presença registrada para esta data.</p>
+                <p className="text-sm text-slate-700 dark:text-slate-300 font-medium max-w-sm">Você precisa primeiro realizar o <b className="text-slate-900 dark:text-white font-black">Controle de Presença</b> nas turmas antes de aplicar uma prova.</p>
+                <Button variant="default" className="mt-2 bg-amber-600 hover:bg-amber-700 text-white font-bold shadow-md h-10 px-5 rounded-xl" onClick={() => navigate("/attendance")}>
                   Registrar as Presenças desta Data
                 </Button>
               </div>
@@ -283,43 +282,43 @@ const Tests = () => {
           <div className="space-y-6">
             <div className="flex items-center gap-2">
               <BarChart3 className="h-5 w-5 text-primary" />
-              <h3 className="text-lg font-semibold tracking-tight">Painel de Provas Aplicadas</h3>
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">Painel de Provas Aplicadas</h3>
             </div>
 
             {/* Grid de Métricas Rápidas */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20 shadow-sm">
+              <Card className="bg-white/95 dark:bg-slate-900/90 border border-blue-200/80 dark:border-blue-900/40 shadow-sm">
                 <CardContent className="p-4 flex items-center gap-4">
-                  <div className="p-3 bg-primary/10 rounded-xl text-primary">
+                  <div className="p-3 bg-blue-500/10 rounded-xl text-[#1c2394] dark:text-blue-400">
                     <Calendar className="h-6 w-6" />
                   </div>
                   <div>
-                    <p className="text-xs font-semibold text-muted-foreground uppercase">Provas Aplicadas</p>
-                    <p className="text-2xl font-bold text-primary">{miniDashboardStats.totalTests}</p>
+                    <p className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Provas Aplicadas</p>
+                    <p className="text-3xl font-black text-[#1c2394] dark:text-blue-400">{miniDashboardStats.totalTests}</p>
                   </div>
                 </CardContent>
               </Card>
 
-              <Card className="bg-gradient-to-br from-green-50/50 to-green-100/20 border-green-200/50 shadow-sm">
+              <Card className="bg-white/95 dark:bg-slate-900/90 border border-emerald-200/80 dark:border-emerald-900/40 shadow-sm">
                 <CardContent className="p-4 flex items-center gap-4">
-                  <div className="p-3 bg-green-500/10 rounded-xl text-green-600">
+                  <div className="p-3 bg-emerald-500/10 rounded-xl text-emerald-600 dark:text-emerald-400">
                     <Users className="h-6 w-6" />
                   </div>
                   <div>
-                    <p className="text-xs font-semibold text-muted-foreground uppercase">Alunos Avaliados</p>
-                    <p className="text-2xl font-bold text-green-700">{miniDashboardStats.uniqueStudents}</p>
+                    <p className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Alunos Avaliados</p>
+                    <p className="text-3xl font-black text-emerald-700 dark:text-emerald-400">{miniDashboardStats.uniqueStudents}</p>
                   </div>
                 </CardContent>
               </Card>
 
-              <Card className="bg-gradient-to-br from-yellow-50/50 to-yellow-100/20 border-yellow-200/50 shadow-sm">
+              <Card className="bg-white/95 dark:bg-slate-900/90 border border-amber-200/80 dark:border-amber-900/40 shadow-sm">
                 <CardContent className="p-4 flex items-center gap-4">
-                  <div className="p-3 bg-yellow-500/10 rounded-xl text-yellow-600">
+                  <div className="p-3 bg-amber-500/10 rounded-xl text-amber-600 dark:text-amber-400">
                     <Award className="h-6 w-6" />
                   </div>
                   <div>
-                    <p className="text-xs font-semibold text-muted-foreground uppercase">Média Geral de Acertos</p>
-                    <p className="text-2xl font-bold text-yellow-700">{miniDashboardStats.mediaGeral.toFixed(1)}%</p>
+                    <p className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Média Geral de Acertos</p>
+                    <p className="text-3xl font-black text-amber-600 dark:text-amber-400">{miniDashboardStats.mediaGeral.toFixed(1)}%</p>
                   </div>
                 </CardContent>
               </Card>

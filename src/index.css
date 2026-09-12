@@ -140,26 +140,26 @@
   100% { transform: translateY(-20px) scale(0.94); }
 }
 
-/* Card padrão de vidro claro (Copo de Vidro Lapidado com Reflexo Superior) */
-.app-glass-theme .bg-card:not(.text-white):not([class*="from-"]):not([class*="bg-gradient"]):not(.bi-glass-hero):not(.bi-glass-dark):not(.bi-glass-amber),
-.bi-glass-theme .bg-card:not(.text-white):not([class*="from-"]):not([class*="bg-gradient"]):not(.bi-glass-hero):not(.bi-glass-dark):not(.bi-glass-amber),
+/* Card padrão de vidro claro (Copo de Vidro Lapidado com Alta Nitidez e Contraste) */
+.app-glass-theme .bg-card:not([class*="from-[#0f1236]"]):not(.bi-glass-hero):not(.bi-glass-dark):not(.bi-glass-amber),
+.bi-glass-theme .bg-card:not([class*="from-[#0f1236]"]):not(.bi-glass-hero):not(.bi-glass-dark):not(.bi-glass-amber),
 .bi-glass-card {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.84) 0%, rgba(255, 255, 255, 0.56) 100%) !important;
-  color: var(--card-foreground) !important;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.90) 0%, rgba(255, 255, 255, 0.70) 100%) !important;
+  color: #0f1236 !important;
   backdrop-filter: blur(20px) saturate(180%) !important;
   -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.85) !important;
+  border: 1px solid rgba(255, 255, 255, 0.9) !important;
   box-shadow: 
     inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.95),
     inset 0 -1px 1px 0 rgba(0, 0, 0, 0.03),
-    0 12px 32px -6px rgba(28, 35, 148, 0.08),
-    0 4px 12px -2px rgba(0, 0, 0, 0.03) !important;
+    0 10px 28px -5px rgba(28, 35, 148, 0.07),
+    0 4px 10px -2px rgba(0, 0, 0, 0.03) !important;
   border-radius: 1.25rem !important;
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
-.app-glass-theme .bg-card:not(.text-white):not([class*="from-"]):not([class*="bg-gradient"]):not(.bi-glass-hero):not(.bi-glass-dark):not(.bi-glass-amber):hover,
-.bi-glass-theme .bg-card:not(.text-white):not([class*="from-"]):not([class*="bg-gradient"]):not(.bi-glass-hero):not(.bi-glass-dark):not(.bi-glass-amber):hover,
+.app-glass-theme .bg-card:not([class*="from-[#0f1236]"]):not(.bi-glass-hero):not(.bi-glass-dark):not(.bi-glass-amber):hover,
+.bi-glass-theme .bg-card:not([class*="from-[#0f1236]"]):not(.bi-glass-hero):not(.bi-glass-dark):not(.bi-glass-amber):hover,
 .bi-glass-card:hover {
   border-color: rgba(255, 255, 255, 1) !important;
   box-shadow: 
@@ -169,9 +169,31 @@
   transform: translateY(-2px);
 }
 
+/* Tipografia de Alta Nitidez e Contraste em Cards de Conteúdo */
+.app-glass-theme .bg-card:not([class*="from-[#0f1236]"]):not(.bi-glass-hero) h1,
+.app-glass-theme .bg-card:not([class*="from-[#0f1236]"]):not(.bi-glass-hero) h2,
+.app-glass-theme .bg-card:not([class*="from-[#0f1236]"]):not(.bi-glass-hero) h3,
+.app-glass-theme .bg-card:not([class*="from-[#0f1236]"]):not(.bi-glass-hero) h4 {
+  color: #0f1236 !important;
+}
+
+.app-glass-theme .bg-card:not([class*="from-[#0f1236]"]):not(.bi-glass-hero) .text-muted-foreground {
+  color: #475569 !important;
+  font-weight: 500;
+}
+
+.app-glass-theme .bg-card:not([class*="from-[#0f1236]"]):not(.bi-glass-hero) table th {
+  color: #0f1236 !important;
+  font-weight: 700 !important;
+}
+
+.app-glass-theme .bg-card:not([class*="from-[#0f1236]"]):not(.bi-glass-hero) table td {
+  color: #1e293b !important;
+}
+
 /* Suporte Dark Mode para Card de Vidro */
-.dark .app-glass-theme .bg-card:not(.text-white):not([class*="from-"]):not([class*="bg-gradient"]):not(.bi-glass-hero):not(.bi-glass-dark):not(.bi-glass-amber),
-.dark .bi-glass-theme .bg-card:not(.text-white):not([class*="from-"]):not([class*="bg-gradient"]):not(.bi-glass-hero):not(.bi-glass-dark):not(.bi-glass-amber),
+.dark .app-glass-theme .bg-card:not([class*="from-[#0f1236]"]):not(.bi-glass-hero):not(.bi-glass-dark):not(.bi-glass-amber),
+.dark .bi-glass-theme .bg-card:not([class*="from-[#0f1236]"]):not(.bi-glass-hero):not(.bi-glass-dark):not(.bi-glass-amber),
 .dark .bi-glass-card {
   background: linear-gradient(135deg, rgba(20, 25, 60, 0.78) 0%, rgba(15, 18, 45, 0.58) 100%) !important;
   border-color: rgba(255, 255, 255, 0.16) !important;
@@ -181,14 +203,10 @@
 }
 
 /* Cards de Cabeçalho / Hero Escuro em Vidro Lapidado (Dark Sapphire Glass) */
-.app-glass-theme .bg-card.text-white,
-.app-glass-theme .bg-card[class*="from-"],
-.app-glass-theme .bg-card[class*="bg-gradient"],
-.bi-glass-theme .bg-card.text-white,
-.bi-glass-theme .bg-card[class*="from-"],
-.bi-glass-theme .bg-card[class*="bg-gradient"],
+.app-glass-theme .bg-card[class*="from-[#0f1236]"],
+.bi-glass-theme .bg-card[class*="from-[#0f1236]"],
 .bi-glass-hero {
-  background: linear-gradient(135deg, rgba(15, 18, 54, 0.92) 0%, rgba(28, 35, 148, 0.86) 52%, rgba(222, 57, 42, 0.82) 100%) !important;
+  background: linear-gradient(135deg, rgba(15, 18, 54, 0.94) 0%, rgba(28, 35, 148, 0.88) 52%, rgba(222, 57, 42, 0.84) 100%) !important;
   color: #ffffff !important;
   backdrop-filter: blur(24px) saturate(200%) !important;
   -webkit-backdrop-filter: blur(24px) saturate(200%) !important;
@@ -202,11 +220,22 @@
   overflow: hidden;
 }
 
+/* Tipografia Nítida e de Alto Contraste no Cabeçalho */
+.app-glass-theme .bg-card[class*="from-[#0f1236]"] h1,
+.app-glass-theme .bg-card[class*="from-[#0f1236]"] h2,
+.app-glass-theme .bg-card[class*="from-[#0f1236]"] h3,
+.app-glass-theme .bg-card[class*="from-[#0f1236]"] .text-white {
+  color: #ffffff !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4) !important;
+}
+
+.app-glass-theme .bg-card[class*="from-[#0f1236]"] p {
+  color: rgba(255, 255, 255, 0.92) !important;
+}
+
 /* Brilho da borda superior de vidro no Hero (Specular Sheen Rim) */
-.app-glass-theme .bg-card.text-white::before,
-.app-glass-theme .bg-card[class*="from-"]::before,
-.bi-glass-theme .bg-card.text-white::before,
-.bi-glass-theme .bg-card[class*="from-"]::before,
+.app-glass-theme .bg-card[class*="from-[#0f1236]"]::before,
+.bi-glass-theme .bg-card[class*="from-[#0f1236]"]::before,
 .bi-glass-hero::before {
   content: '';
   position: absolute;
