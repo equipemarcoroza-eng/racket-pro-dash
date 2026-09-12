@@ -588,194 +588,6 @@ export default function BiDashboard() {
     );
   };
 
-  const GaugeSpeedometer = ({
-    value,
-    label,
-    subtitle,
-  }: {
-    value: number;
-    label: string;
-    subtitle?: string;
-  }) => {
-    const cleanValue = Math.min(100, Math.max(0, value));
-    
-    // Status and colors based on value
-    let status: "CRÍTICO" | "ATENÇÃO" | "EXCELENTE";
-    let statusClass = "";
-    let needleColor = "#eab308";
-    
-    if (cleanValue < 60) {
-      status = "CRÍTICO";
-      statusClass = "bg-red-50 text-red-600 border-red-200";
-      needleColor = "#de392a";
-    } else if (cleanValue < 85) {
-      status = "ATENÇÃO";
-      statusClass = "bg-amber-50 text-amber-700 border-amber-200";
-      needleColor = "#d97706";
-    } else {
-      status = "EXCELENTE";
-      statusClass = "bg-green-50 text-green-700 border-green-200";
-      needleColor = "#10b981";
-    }
-
-    const isSeg1Active = cleanValue < 60;
-    const isSeg2Active = cleanValue >= 60 && cleanValue < 85;
-    const isSeg3Active = cleanValue >= 85;
-
-    const seg1Color = isSeg1Active ? "#de392a" : "#fee2e2";
-    const seg2Color = isSeg2Active ? "#d97706" : "#fef3c7";
-    const seg3Color = isSeg3Active ? "#10b981" : "#d1fae5";
-
-    const cx = 60;
-    const cy = 65;
-    const radius = 45;
-    const strokeWidth = 8;
-    const rotation = -120 + (cleanValue / 100) * 240;
-
-    const polarToCartesian = (centerX: number, centerY: number, radius: number, angleInDegrees: number) => {
-      const angleInRadians = ((angleInDegrees - 90) * Math.PI) / 180.0;
-      return {
-        x: centerX + radius * Math.cos(angleInRadians),
-        y: centerY + radius * Math.sin(angleInRadians)
-      };
-    };
-
-    const describeArc = (x: number, y: number, radius: number, startAngle: number, endAngle: number) => {
-      const start = polarToCartesian(x, y, radius, endAngle);
-      const end = polarToCartesian(x, y, radius, startAngle);
-      const largeArcFlag = endAngle - startAngle <= 180 ? "0" : "1";
-      return [
-        "M", start.x, start.y, 
-        "A", radius, radius, 0, largeArcFlag, 0, end.x, end.y
-      ].join(" ");
-    };
-
-    return (
-      <Card className="flex flex-col items-center p-6 bg-card border border-border shadow-sm rounded-2xl hover:shadow-md transition-all text-center">
-        <div className="relative w-48 h-32 flex items-end justify-center overflow-hidden mb-2">
-          <svg className="w-48 h-48 absolute -bottom-16" viewBox="0 0 120 120">
-            <defs>
-              <filter id="glow-red" x="-20%" y="-20%" width="140%" height="140%">
-                <feGaussianBlur stdDeviation="3" result="blur" />
-                <feComposite in="SourceGraphic" in2="blur" operator="over" />
-              </filter>
-              <filter id="glow-yellow" x="-20%" y="-20%" width="140%" height="140%">
-                <feGaussianBlur stdDeviation="3" result="blur" />
-                <feComposite in="SourceGraphic" in2="blur" operator="over" />
-              </filter>
-              <filter id="glow-green" x="-20%" y="-20%" width="140%" height="140%">
-                <feGaussianBlur stdDeviation="3" result="blur" />
-                <feComposite in="SourceGraphic" in2="blur" operator="over" />
-              </filter>
-            </defs>
-
-            {[-120, -90, -60, -30, 0, 30, 60, 90, 120].map((angle) => {
-              const rad = ((angle - 90) * Math.PI) / 180;
-              const x1 = cx + (radius - 4) * Math.cos(rad);
-              const y1 = cy + (radius - 4) * Math.sin(rad);
-              const x2 = cx + (radius - 1) * Math.cos(rad);
-              const y2 = cy + (radius - 1) * Math.sin(rad);
-              return (
-                <line
-                  key={angle}
-                  x1={x1}
-                  y1={y1}
-                  x2={x2}
-                  y2={y2}
-                  stroke="#cbd5e1"
-                  strokeWidth="1.2"
-                />
-              );
-            })}
-
-            {isSeg1Active && (
-              <path
-                d={describeArc(cx, cy, radius, -120, 22)}
-                fill="none"
-                stroke={seg1Color}
-                strokeWidth={strokeWidth + 2}
-                strokeLinecap="round"
-                opacity="0.15"
-                filter="url(#glow-red)"
-              />
-            )}
-            <path
-              d={describeArc(cx, cy, radius, -120, 22)}
-              fill="none"
-              stroke={seg1Color}
-              strokeWidth={strokeWidth}
-              strokeLinecap="round"
-            />
-
-            {isSeg2Active && (
-              <path
-                d={describeArc(cx, cy, radius, 26, 82)}
-                fill="none"
-                stroke={seg2Color}
-                strokeWidth={strokeWidth + 2}
-                strokeLinecap="round"
-                opacity="0.15"
-                filter="url(#glow-yellow)"
-              />
-            )}
-            <path
-              d={describeArc(cx, cy, radius, 26, 82)}
-              fill="none"
-              stroke={seg2Color}
-              strokeWidth={strokeWidth}
-              strokeLinecap="round"
-            />
-
-            {isSeg3Active && (
-              <path
-                d={describeArc(cx, cy, radius, 86, 120)}
-                fill="none"
-                stroke={seg3Color}
-                strokeWidth={strokeWidth + 2}
-                strokeLinecap="round"
-                opacity="0.15"
-                filter="url(#glow-green)"
-              />
-            )}
-            <path
-              d={describeArc(cx, cy, radius, 86, 120)}
-              fill="none"
-              stroke={seg3Color}
-              strokeWidth={strokeWidth}
-              strokeLinecap="round"
-            />
-
-            <g transform={`rotate(${rotation}, ${cx}, ${cy})`}>
-              <line
-                x1={cx}
-                y1={cy}
-                x2={cx}
-                y2={cy - radius + 5}
-                stroke={needleColor}
-                strokeWidth="2.5"
-                strokeLinecap="round"
-              />
-              <circle cx={cx} cy={cy} r="4" fill="#ffffff" stroke={needleColor} strokeWidth="1.5" />
-              <circle cx={cx} cy={cy} r="1.5" fill={needleColor} />
-            </g>
-          </svg>
-          
-          <div className="z-10 flex flex-col items-center pb-2">
-            <span className="text-3xl font-extrabold tracking-tight text-foreground">{Math.round(cleanValue)}%</span>
-            <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5">{label}</span>
-          </div>
-        </div>
-
-        <div className="mt-2 mb-3">
-          <span className={`px-4 py-1 text-[9px] font-black uppercase tracking-widest rounded-full border ${statusClass}`}>
-            {status}
-          </span>
-        </div>
-        {subtitle && <p className="text-[11px] text-muted-foreground leading-relaxed max-w-xs">{subtitle}</p>}
-      </Card>
-    );
-  };
-
   // Cores do gráfico de rosca (Sexo)
   const COLORS = ["#ec4899", "#2563eb"];
 
@@ -893,11 +705,11 @@ export default function BiDashboard() {
 
       let currentY = (doc as any).lastAutoTable.finalY + 8;
 
-      // Seção dos Velocímetros Capturados
+      // Seção dos Termômetros / Cilindros Capturados
       doc.setFontSize(11);
       doc.setFont("helvetica", "bold");
       doc.setTextColor(20, 35, 95);
-      doc.text("2. Velocímetros de Performance & Saúde Comportamental da Escola", 14, currentY);
+      doc.text("2. Termômetros de Precisão & Saúde Comportamental da Escola (Fluidos de Nível)", 14, currentY);
       currentY += 4;
 
       if (chartGaugesImg) {
@@ -1338,28 +1150,11 @@ export default function BiDashboard() {
         </div>
 
         {/* CILINDROS DE VIDRO COM LÍQUIDOS COLORIDOS & OBSERVAÇÕES PERTINENTES */}
-        <GlassLiquidCylinderSection
-          title="Termômetros de Vidro Líquido (Nível de Performance)"
-          description="Aferição visual em cilindros graduados com líquido dinâmico, menisco animado e diagnósticos de inteligência comportamental."
-          metrics={dashboardCylinderMetrics}
-        />
-
-        {/* Velocímetros (Gauges) com visual Copo de Vidro */}
-        <div ref={chartGaugesRef} className="grid grid-cols-1 md:grid-cols-3 gap-6 bi-glass-gauge p-4">
-          <GaugeSpeedometer
-            value={generalMetrics.engagementRate}
-            label="Engajamento Alto"
-            subtitle="Proporção de alunos ativos com mais de 80% de presença nas aulas."
-          />
-          <GaugeSpeedometer
-            value={generalMetrics.avgAdimplencia}
-            label="Adimplência Histórica"
-            subtitle="Taxa de pagamento de faturas geradas ao longo da história do aluno."
-          />
-          <GaugeSpeedometer
-            value={Math.min(100, generalMetrics.avgAttendance * 1.1)}
-            label="Saúde de Retenção"
-            subtitle="Estimativa de retenção de alunos para os próximos 3 meses com base no engajamento recente."
+        <div ref={chartGaugesRef}>
+          <GlassLiquidCylinderSection
+            title="Termômetros de Vidro Líquido (Nível de Performance)"
+            description="Aferição visual em cilindros graduados com líquido dinâmico, menisco animado e diagnósticos de inteligência comportamental."
+            metrics={dashboardCylinderMetrics}
           />
         </div>
 
