@@ -60,3 +60,236 @@
     @apply bg-background text-foreground font-sans;
   }
 }
+
+/* ========================================================================= */
+/* EFEITO COPO DE VIDRO (GLASSMORPHISM & CRISTAL REFLECTION) PARA BI          */
+/* ========================================================================= */
+
+.bi-glass-theme {
+  position: relative;
+  isolation: isolate;
+}
+
+/* Esferas de iluminação ambiental flutuantes (profundidade tridimensional atrás do vidro) */
+.bi-glass-ambient-orbs {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.bi-orb-1 {
+  position: absolute;
+  top: -40px;
+  left: 8%;
+  width: 480px;
+  height: 480px;
+  background: radial-gradient(circle, rgba(28, 35, 148, 0.22) 0%, rgba(28, 35, 148, 0.05) 60%, transparent 80%);
+  filter: blur(65px);
+  border-radius: 9999px;
+  animation: biFloat 16s ease-in-out infinite alternate;
+}
+
+.bi-orb-2 {
+  position: absolute;
+  top: 28%;
+  right: 4%;
+  width: 520px;
+  height: 520px;
+  background: radial-gradient(circle, rgba(222, 57, 42, 0.18) 0%, rgba(222, 57, 42, 0.04) 60%, transparent 80%);
+  filter: blur(70px);
+  border-radius: 9999px;
+  animation: biFloatRev 20s ease-in-out infinite alternate;
+}
+
+.bi-orb-3 {
+  position: absolute;
+  top: 60%;
+  left: 12%;
+  width: 580px;
+  height: 580px;
+  background: radial-gradient(circle, rgba(14, 165, 233, 0.16) 0%, rgba(14, 165, 233, 0.03) 65%, transparent 85%);
+  filter: blur(80px);
+  border-radius: 9999px;
+  animation: biFloat 24s ease-in-out infinite alternate;
+}
+
+.bi-orb-4 {
+  position: absolute;
+  bottom: 4%;
+  right: 10%;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(245, 158, 11, 0.14) 0%, rgba(245, 158, 11, 0.02) 60%, transparent 80%);
+  filter: blur(70px);
+  border-radius: 9999px;
+  animation: biFloatRev 18s ease-in-out infinite alternate;
+}
+
+@keyframes biFloat {
+  0% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-30px) scale(1.06); }
+  100% { transform: translateY(25px) scale(0.96); }
+}
+
+@keyframes biFloatRev {
+  0% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(35px) scale(1.05); }
+  100% { transform: translateY(-20px) scale(0.94); }
+}
+
+/* Card padrão de vidro (Copo de Vidro Lapidado com Reflexo Superior) */
+.bi-glass-theme .bg-card:not(.bi-glass-hero):not(.bi-glass-dark):not(.bi-glass-amber),
+.bi-glass-card {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.82) 0%, rgba(255, 255, 255, 0.54) 100%) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.85) !important;
+  box-shadow: 
+    inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.95),
+    inset 0 -1px 1px 0 rgba(0, 0, 0, 0.03),
+    0 12px 32px -6px rgba(28, 35, 148, 0.08),
+    0 4px 12px -2px rgba(0, 0, 0, 0.03) !important;
+  border-radius: 1.25rem !important;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.bi-glass-theme .bg-card:not(.bi-glass-hero):not(.bi-glass-dark):not(.bi-glass-amber):hover,
+.bi-glass-card:hover {
+  border-color: rgba(255, 255, 255, 1) !important;
+  box-shadow: 
+    inset 0 2px 2px 0 rgba(255, 255, 255, 1),
+    0 18px 40px -8px rgba(28, 35, 148, 0.14),
+    0 6px 16px -3px rgba(0, 0, 0, 0.04) !important;
+  transform: translateY(-2px);
+}
+
+/* Suporte Dark Mode para Card de Vidro */
+.dark .bi-glass-theme .bg-card:not(.bi-glass-hero):not(.bi-glass-dark):not(.bi-glass-amber),
+.dark .bi-glass-card {
+  background: linear-gradient(135deg, rgba(20, 25, 60, 0.78) 0%, rgba(15, 18, 45, 0.58) 100%) !important;
+  border-color: rgba(255, 255, 255, 0.16) !important;
+  box-shadow: 
+    inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.28),
+    0 14px 34px -6px rgba(0, 0, 0, 0.45) !important;
+}
+
+/* Card Hero de Vidro Escuro Refletivo (Dark Sapphire Glass) */
+.bi-glass-hero {
+  background: linear-gradient(135deg, rgba(15, 18, 54, 0.90) 0%, rgba(28, 35, 148, 0.84) 52%, rgba(222, 57, 42, 0.80) 100%) !important;
+  backdrop-filter: blur(24px) saturate(200%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(200%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.35) !important;
+  box-shadow: 
+    inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.55),
+    inset 0 -1.5px 2px 0 rgba(0, 0, 0, 0.25),
+    0 24px 48px -12px rgba(15, 18, 54, 0.45) !important;
+  border-radius: 1.5rem !important;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Brilho da borda superior de vidro (Specular Sheen Rim) */
+.bi-glass-hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0) 100%);
+  pointer-events: none;
+  border-radius: 1.5rem 1.5rem 0 0;
+}
+
+/* Card Ambar/Gold para Top 3 e Recordes Históricos */
+.bi-glass-amber {
+  background: linear-gradient(135deg, rgba(254, 243, 199, 0.85) 0%, rgba(255, 251, 235, 0.60) 100%) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(245, 158, 11, 0.4) !important;
+  box-shadow: 
+    inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.95),
+    0 12px 30px -6px rgba(217, 119, 6, 0.12) !important;
+  border-radius: 1.25rem !important;
+}
+
+/* Pílula / Botão de Vidro Translúcido */
+.bi-glass-pill {
+  background: rgba(255, 255, 255, 0.22) !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.45) !important;
+  box-shadow: inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.6) !important;
+  transition: all 0.2s ease !important;
+}
+
+.bi-glass-pill:hover {
+  background: rgba(255, 255, 255, 0.34) !important;
+  border-color: rgba(255, 255, 255, 0.75) !important;
+  box-shadow: inset 0 1px 2px 0 rgba(255, 255, 255, 0.8), 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+  transform: translateY(-1px);
+}
+
+/* Tabs em barra de vidro lapidado */
+.bi-glass-theme .bg-muted {
+  background: rgba(255, 255, 255, 0.52) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.75) !important;
+  box-shadow: 
+    inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.9),
+    0 6px 20px -4px rgba(28, 35, 148, 0.06) !important;
+}
+
+.bi-glass-theme [data-state="active"] {
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(255, 255, 255, 1) !important;
+  box-shadow: 
+    inset 0 1px 1px 0 rgba(255, 255, 255, 1),
+    0 4px 14px -2px rgba(28, 35, 148, 0.12) !important;
+  color: #1c2394 !important;
+}
+
+/* Velocímetros / Gauges de vidro */
+.bi-glass-gauge {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.55) 100%) !important;
+  backdrop-filter: blur(18px) !important;
+  -webkit-backdrop-filter: blur(18px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.85) !important;
+  box-shadow: 
+    inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.95),
+    0 10px 28px -4px rgba(28, 35, 148, 0.08) !important;
+  border-radius: 1.25rem !important;
+}
+
+/* Efeito de Reflexo de Luz Especular (Glass Sheen Beam) */
+.bi-glass-reflection {
+  position: relative;
+  overflow: hidden;
+}
+
+.bi-glass-reflection::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -120%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.3) 50%,
+    transparent 100%
+  );
+  transform: skewX(-25deg);
+  pointer-events: none;
+  transition: left 0.85s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.bi-glass-reflection:hover::after {
+  left: 200%;
+}
+

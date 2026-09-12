@@ -1123,186 +1123,196 @@ export default function BiDashboard() {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Título Principal */}
-      <Card className="bg-gradient-to-br from-[#0f1236] via-[#1c2394] to-[#de392a] text-white border-none shadow-lg relative overflow-hidden">
-        <div className="absolute top-0 right-0 h-32 w-32 rounded-full bg-white/10 blur-xl pointer-events-none" />
-        <CardHeader className="relative z-10">
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-white/80 bg-white/10 px-2.5 py-0.5 rounded-full">
-                  Business Intelligence & Storytelling
-                </span>
-                <span className="text-xs font-semibold text-emerald-300 flex items-center gap-1">
-                  <Sparkles className="w-3.5 h-3.5 animate-pulse" /> Inteligência Ativa
-                </span>
-              </div>
-              <CardTitle className="text-2xl md:text-3xl font-black text-white mt-1.5">
-                Painel de Inteligência Comportamental & Estratégia Executiva
-              </CardTitle>
-              <p className="text-xs md:text-sm text-white/80 mt-1 max-w-2xl">
-                Diagnóstico aprofundado de dados históricos, jornada de retenção do aluno, storytelling de crescimento e plano tático de ação para a diretoria da Equipe Marco Roza.
-              </p>
-            </div>
-            
-            {/* Quick Actions para Storytelling, Orientações Executivas e Exportação */}
-            <div className="flex flex-wrap items-center gap-2">
-              <Button
-                onClick={handleExportPDF}
-                className="bg-white text-[#1c2394] hover:bg-white/90 font-bold text-xs gap-1.5 shadow-md border-none h-9 px-4 rounded-xl cursor-pointer"
-              >
-                <Download className="w-4 h-4" />
-                <span>Exportar PDF</span>
-              </Button>
-              <button
-                onClick={() => scrollToSection("secao-storytelling")}
-                className="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 text-white font-bold text-xs rounded-xl backdrop-blur-md transition-all border border-white/30 shadow-sm cursor-pointer"
-              >
-                <BookOpen className="w-4 h-4 text-amber-300" />
-                <span>Ver Storytelling</span>
-              </button>
-              <button
-                onClick={() => scrollToSection("secao-orientacoes-executivas")}
-                className="flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs rounded-xl transition-all shadow-md cursor-pointer"
-              >
-                <Target className="w-4 h-4 text-white" />
-                <span>Orientações Executivas</span>
-              </button>
-            </div>
-          </div>
-        </CardHeader>
-      </Card>
+    <div className="bi-glass-theme space-y-6 relative pb-12">
+      {/* Esferas de luz ambiente para o efeito de copo de vidro */}
+      <div className="bi-glass-ambient-orbs">
+        <div className="bi-orb-1" />
+        <div className="bi-orb-2" />
+        <div className="bi-orb-3" />
+        <div className="bi-orb-4" />
+      </div>
 
-      {/* KPI Cards de BI */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        <Card className="bg-card hover:shadow-md transition-shadow border-primary/20">
-          <CardContent className="pt-6">
-            <div className="flex justify-between items-start">
+      <div className="relative z-10 space-y-6">
+        {/* Título Principal - Copo de Vidro Escuro Lapidado */}
+        <Card className="bi-glass-hero bi-glass-reflection text-white border-none shadow-xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 h-40 w-40 rounded-full bg-white/10 blur-2xl pointer-events-none" />
+          <div className="absolute -bottom-10 left-1/4 h-36 w-36 rounded-full bg-cyan-400/15 blur-2xl pointer-events-none" />
+          <CardHeader className="relative z-10">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
               <div>
-                <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">LTV Médio (Histórico)</p>
-                <h3 className="text-2xl font-black mt-2 text-primary">
-                  R$ {generalMetrics.avgLtv.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                </h3>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold uppercase tracking-wider text-white/90 bi-glass-pill px-3 py-1 rounded-full shadow-sm">
+                    Business Intelligence & Storytelling
+                  </span>
+                  <span className="text-xs font-semibold text-emerald-300 flex items-center gap-1">
+                    <Sparkles className="w-3.5 h-3.5 animate-pulse" /> Inteligência Ativa
+                  </span>
+                </div>
+                <CardTitle className="text-2xl md:text-3xl font-black text-white mt-2 tracking-tight">
+                  Painel de Inteligência Comportamental & Estratégia Executiva
+                </CardTitle>
+                <p className="text-xs md:text-sm text-white/80 mt-1 max-w-2xl leading-relaxed">
+                  Diagnóstico aprofundado de dados históricos, jornada de retenção do aluno, storytelling de crescimento e plano tático de ação para a diretoria da Equipe Marco Roza.
+                </p>
               </div>
-              <div className="p-2 bg-primary/10 rounded-lg text-primary">
-                <DollarSign className="w-5 h-5" />
+              
+              {/* Quick Actions com botões translúcidos de vidro */}
+              <div className="flex flex-wrap items-center gap-2">
+                <Button
+                  onClick={handleExportPDF}
+                  className="bg-white text-[#1c2394] hover:bg-white/90 font-bold text-xs gap-1.5 shadow-lg border-none h-9 px-4 rounded-xl cursor-pointer hover:scale-105 transition-transform"
+                >
+                  <Download className="w-4 h-4" />
+                  <span>Exportar PDF</span>
+                </Button>
+                <button
+                  onClick={() => scrollToSection("secao-storytelling")}
+                  className="flex items-center gap-2 px-4 py-2 bi-glass-pill text-white font-bold text-xs rounded-xl transition-all cursor-pointer hover:scale-105"
+                >
+                  <BookOpen className="w-4 h-4 text-amber-300" />
+                  <span>Ver Storytelling</span>
+                </button>
+                <button
+                  onClick={() => scrollToSection("secao-orientacoes-executivas")}
+                  className="flex items-center gap-2 px-4 py-2 bg-emerald-500/90 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition-all shadow-md cursor-pointer hover:scale-105 backdrop-blur-sm border border-emerald-400/40"
+                >
+                  <Target className="w-4 h-4 text-white" />
+                  <span>Orientações Executivas</span>
+                </button>
               </div>
             </div>
-            <div className="mt-4 flex items-center text-xs text-muted-foreground font-medium">
-              <TrendingUp className="w-3.5 h-3.5 text-green-500 mr-1" />
-              <span>Soma de faturas pagas desde a origem</span>
-            </div>
-          </CardContent>
+          </CardHeader>
         </Card>
 
-        <Card className="bg-card hover:shadow-md transition-shadow">
-          <CardContent className="pt-6">
-            <div className="flex justify-between items-start">
-              <div>
-                <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Permanência (Tenure)</p>
-                <h3 className="text-2xl font-black mt-2">
-                  {generalMetrics.avgTenure.toFixed(1)} <span className="text-sm font-semibold text-muted-foreground">meses</span>
-                </h3>
-              </div>
-              <div className="p-2 bg-blue-100 dark:bg-blue-950/50 rounded-lg text-blue-600 dark:text-blue-400">
-                <Calendar className="w-5 h-5" />
-              </div>
-            </div>
-            <div className="mt-4 flex items-center text-xs text-muted-foreground font-medium">
-              <span>Média de meses ativos no sistema</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-card hover:shadow-md transition-shadow">
-          <CardContent className="pt-6">
-            <div className="flex justify-between items-start">
-              <div>
-                <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Presença Média Geral</p>
-                <h3 className="text-2xl font-black mt-2 text-green-600">
-                  {generalMetrics.avgAttendance.toFixed(1)}%
-                </h3>
-              </div>
-              <div className="p-2 bg-green-100 dark:bg-green-950/50 rounded-lg text-green-600 dark:text-green-400">
-                <Activity className="w-5 h-5" />
-              </div>
-            </div>
-            <div className="mt-4 flex items-center text-xs text-muted-foreground font-medium">
-              <TrendingUp className="w-3.5 h-3.5 text-green-500 mr-1" />
-              <span>Aulas marcadas como presentes</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-card hover:shadow-md transition-shadow border-purple-500/20">
-          <CardContent className="pt-6">
-            <div className="flex justify-between items-start">
-              <div>
-                <p className="text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-wider">Alunos em Turmas</p>
-                <h3 className="text-2xl font-black mt-2 text-purple-700 dark:text-purple-300">
-                  {generalMetrics.totalAlunosEmTurmas} <span className="text-sm font-semibold text-muted-foreground">vagas</span>
-                </h3>
-              </div>
-              <div className="p-2 bg-purple-100 dark:bg-purple-950/50 rounded-lg text-purple-600 dark:text-purple-400">
-                <Layers className="w-5 h-5" />
-              </div>
-            </div>
-            <div className="mt-4 flex items-center text-xs text-muted-foreground font-medium">
-              <span>{generalMetrics.mediaTurmasPorAluno.toFixed(2)}x turmas por aluno ativo</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-card hover:shadow-md transition-shadow">
-          <CardContent className="pt-6">
-            <div className="flex justify-between items-start">
-              <div>
-                <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Idade Média</p>
-                <div className="mt-2 space-y-1">
-                  <h3 className="text-base font-black text-foreground">
-                    {generalMetrics.avgAgeAdults.toFixed(1)} <span className="text-xs font-semibold text-muted-foreground">anos (Adultos)</span>
-                  </h3>
-                  <h3 className="text-base font-black text-foreground">
-                    {generalMetrics.avgAgeKids.toFixed(1)} <span className="text-xs font-semibold text-muted-foreground">anos (Infantil/Juv)</span>
+        {/* KPI Cards de BI - Efeito Copo de Vidro */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <Card className="bi-glass-reflection cursor-pointer">
+            <CardContent className="pt-6">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">LTV Médio (Histórico)</p>
+                  <h3 className="text-2xl font-black mt-2 text-primary">
+                    R$ {generalMetrics.avgLtv.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                   </h3>
                 </div>
+                <div className="p-2.5 bg-primary/10 rounded-xl text-primary bi-glass-pill">
+                  <DollarSign className="w-5 h-5" />
+                </div>
               </div>
-              <div className="p-2 bg-orange-100 dark:bg-orange-950/50 rounded-lg text-orange-600 dark:text-orange-400">
-                <Users className="w-5 h-5" />
+              <div className="mt-4 flex items-center text-xs text-muted-foreground font-medium">
+                <TrendingUp className="w-3.5 h-3.5 text-green-500 mr-1" />
+                <span>Soma de faturas pagas desde a origem</span>
               </div>
-            </div>
-            <div className="mt-3 flex items-center text-xs text-muted-foreground font-medium">
-              <span>Mapeamento etário dos ativos</span>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            </CardContent>
+          </Card>
 
-      {/* Velocímetros (Gauges) */}
-      <div ref={chartGaugesRef} className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-card/30 p-2 rounded-2xl">
-        <GaugeSpeedometer
-          value={generalMetrics.engagementRate}
-          label="Engajamento Alto"
-          subtitle="Proporção de alunos ativos com mais de 80% de presença nas aulas."
-        />
-        <GaugeSpeedometer
-          value={generalMetrics.avgAdimplencia}
-          label="Adimplência Histórica"
-          subtitle="Taxa de pagamento de faturas geradas ao longo da história do aluno."
-        />
-        <GaugeSpeedometer
-          value={Math.min(100, generalMetrics.avgAttendance * 1.1)}
-          label="Saúde de Retenção"
-          subtitle="Estimativa de retenção de alunos para os próximos 3 meses com base no engajamento recente."
-        />
-      </div>
+          <Card className="bi-glass-reflection cursor-pointer">
+            <CardContent className="pt-6">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Permanência (Tenure)</p>
+                  <h3 className="text-2xl font-black mt-2">
+                    {generalMetrics.avgTenure.toFixed(1)} <span className="text-sm font-semibold text-muted-foreground">meses</span>
+                  </h3>
+                </div>
+                <div className="p-2.5 bg-blue-500/10 rounded-xl text-blue-600 dark:text-blue-400 bi-glass-pill">
+                  <Calendar className="w-5 h-5" />
+                </div>
+              </div>
+              <div className="mt-4 flex items-center text-xs text-muted-foreground font-medium">
+                <span>Média de meses ativos no sistema</span>
+              </div>
+            </CardContent>
+          </Card>
 
-      {/* Abas e Análise de Segmentos */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-6">
-        <div className="flex items-center justify-between overflow-x-auto pb-2">
-          <TabsList className="bg-muted p-1 rounded-xl flex-wrap h-auto gap-1">
-            <TabsTrigger value="overview" className="rounded-lg text-xs font-semibold data-[state=active]:bg-card data-[state=active]:shadow-sm">
+          <Card className="bi-glass-reflection cursor-pointer">
+            <CardContent className="pt-6">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Presença Média Geral</p>
+                  <h3 className="text-2xl font-black mt-2 text-green-600">
+                    {generalMetrics.avgAttendance.toFixed(1)}%
+                  </h3>
+                </div>
+                <div className="p-2.5 bg-green-500/10 rounded-xl text-green-600 dark:text-green-400 bi-glass-pill">
+                  <Activity className="w-5 h-5" />
+                </div>
+              </div>
+              <div className="mt-4 flex items-center text-xs text-muted-foreground font-medium">
+                <TrendingUp className="w-3.5 h-3.5 text-green-500 mr-1" />
+                <span>Aulas marcadas como presentes</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bi-glass-reflection cursor-pointer">
+            <CardContent className="pt-6">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-wider">Alunos em Turmas</p>
+                  <h3 className="text-2xl font-black mt-2 text-purple-700 dark:text-purple-300">
+                    {generalMetrics.totalAlunosEmTurmas} <span className="text-sm font-semibold text-muted-foreground">vagas</span>
+                  </h3>
+                </div>
+                <div className="p-2.5 bg-purple-500/10 rounded-xl text-purple-600 dark:text-purple-400 bi-glass-pill">
+                  <Layers className="w-5 h-5" />
+                </div>
+              </div>
+              <div className="mt-4 flex items-center text-xs text-muted-foreground font-medium">
+                <span>{generalMetrics.mediaTurmasPorAluno.toFixed(2)}x turmas por aluno ativo</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bi-glass-reflection cursor-pointer">
+            <CardContent className="pt-6">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Idade Média</p>
+                  <div className="mt-2 space-y-1">
+                    <h3 className="text-base font-black text-foreground">
+                      {generalMetrics.avgAgeAdults.toFixed(1)} <span className="text-xs font-semibold text-muted-foreground">anos (Adultos)</span>
+                    </h3>
+                    <h3 className="text-base font-black text-foreground">
+                      {generalMetrics.avgAgeKids.toFixed(1)} <span className="text-xs font-semibold text-muted-foreground">anos (Infantil/Juv)</span>
+                    </h3>
+                  </div>
+                </div>
+                <div className="p-2.5 bg-orange-500/10 rounded-xl text-orange-600 dark:text-orange-400 bi-glass-pill">
+                  <Users className="w-5 h-5" />
+                </div>
+              </div>
+              <div className="mt-3 flex items-center text-xs text-muted-foreground font-medium">
+                <span>Mapeamento etário dos ativos</span>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Velocímetros (Gauges) com visual Copo de Vidro */}
+        <div ref={chartGaugesRef} className="grid grid-cols-1 md:grid-cols-3 gap-6 bi-glass-gauge p-4">
+          <GaugeSpeedometer
+            value={generalMetrics.engagementRate}
+            label="Engajamento Alto"
+            subtitle="Proporção de alunos ativos com mais de 80% de presença nas aulas."
+          />
+          <GaugeSpeedometer
+            value={generalMetrics.avgAdimplencia}
+            label="Adimplência Histórica"
+            subtitle="Taxa de pagamento de faturas geradas ao longo da história do aluno."
+          />
+          <GaugeSpeedometer
+            value={Math.min(100, generalMetrics.avgAttendance * 1.1)}
+            label="Saúde de Retenção"
+            subtitle="Estimativa de retenção de alunos para os próximos 3 meses com base no engajamento recente."
+          />
+        </div>
+
+        {/* Abas e Análise de Segmentos */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-6">
+          <div className="flex items-center justify-between overflow-x-auto pb-2">
+            <TabsList className="bg-muted p-1.5 rounded-2xl flex-wrap h-auto gap-1">
+              <TabsTrigger value="overview" className="rounded-xl text-xs font-semibold data-[state=active]:bg-card data-[state=active]:shadow-sm">
               Visão Geral & Vieses
             </TabsTrigger>
             <TabsTrigger value="gender" className="rounded-lg text-xs font-semibold data-[state=active]:bg-card data-[state=active]:shadow-sm">
@@ -2465,7 +2475,7 @@ export default function BiDashboard() {
             </CardContent>
           </Card>
       </section>
-
+      </div>
     </div>
   );
 }
