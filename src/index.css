@@ -140,11 +140,12 @@
   100% { transform: translateY(-20px) scale(0.94); }
 }
 
-/* Card padrão de vidro (Copo de Vidro Lapidado com Reflexo Superior) */
-.app-glass-theme .bg-card:not(.bi-glass-hero):not(.bi-glass-dark):not(.bi-glass-amber),
-.bi-glass-theme .bg-card:not(.bi-glass-hero):not(.bi-glass-dark):not(.bi-glass-amber),
+/* Card padrão de vidro claro (Copo de Vidro Lapidado com Reflexo Superior) */
+.app-glass-theme .bg-card:not(.text-white):not([class*="from-"]):not([class*="bg-gradient"]):not(.bi-glass-hero):not(.bi-glass-dark):not(.bi-glass-amber),
+.bi-glass-theme .bg-card:not(.text-white):not([class*="from-"]):not([class*="bg-gradient"]):not(.bi-glass-hero):not(.bi-glass-dark):not(.bi-glass-amber),
 .bi-glass-card {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.84) 0%, rgba(255, 255, 255, 0.56) 100%) !important;
+  color: var(--card-foreground) !important;
   backdrop-filter: blur(20px) saturate(180%) !important;
   -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
   border: 1px solid rgba(255, 255, 255, 0.85) !important;
@@ -157,8 +158,8 @@
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
-.app-glass-theme .bg-card:not(.bi-glass-hero):not(.bi-glass-dark):not(.bi-glass-amber):hover,
-.bi-glass-theme .bg-card:not(.bi-glass-hero):not(.bi-glass-dark):not(.bi-glass-amber):hover,
+.app-glass-theme .bg-card:not(.text-white):not([class*="from-"]):not([class*="bg-gradient"]):not(.bi-glass-hero):not(.bi-glass-dark):not(.bi-glass-amber):hover,
+.bi-glass-theme .bg-card:not(.text-white):not([class*="from-"]):not([class*="bg-gradient"]):not(.bi-glass-hero):not(.bi-glass-dark):not(.bi-glass-amber):hover,
 .bi-glass-card:hover {
   border-color: rgba(255, 255, 255, 1) !important;
   box-shadow: 
@@ -169,8 +170,8 @@
 }
 
 /* Suporte Dark Mode para Card de Vidro */
-.dark .app-glass-theme .bg-card:not(.bi-glass-hero):not(.bi-glass-dark):not(.bi-glass-amber),
-.dark .bi-glass-theme .bg-card:not(.bi-glass-hero):not(.bi-glass-dark):not(.bi-glass-amber),
+.dark .app-glass-theme .bg-card:not(.text-white):not([class*="from-"]):not([class*="bg-gradient"]):not(.bi-glass-hero):not(.bi-glass-dark):not(.bi-glass-amber),
+.dark .bi-glass-theme .bg-card:not(.text-white):not([class*="from-"]):not([class*="bg-gradient"]):not(.bi-glass-hero):not(.bi-glass-dark):not(.bi-glass-amber),
 .dark .bi-glass-card {
   background: linear-gradient(135deg, rgba(20, 25, 60, 0.78) 0%, rgba(15, 18, 45, 0.58) 100%) !important;
   border-color: rgba(255, 255, 255, 0.16) !important;
@@ -179,9 +180,16 @@
     0 14px 34px -6px rgba(0, 0, 0, 0.45) !important;
 }
 
-/* Card Hero de Vidro Escuro Refletivo (Dark Sapphire Glass) */
+/* Cards de Cabeçalho / Hero Escuro em Vidro Lapidado (Dark Sapphire Glass) */
+.app-glass-theme .bg-card.text-white,
+.app-glass-theme .bg-card[class*="from-"],
+.app-glass-theme .bg-card[class*="bg-gradient"],
+.bi-glass-theme .bg-card.text-white,
+.bi-glass-theme .bg-card[class*="from-"],
+.bi-glass-theme .bg-card[class*="bg-gradient"],
 .bi-glass-hero {
-  background: linear-gradient(135deg, rgba(15, 18, 54, 0.90) 0%, rgba(28, 35, 148, 0.84) 52%, rgba(222, 57, 42, 0.80) 100%) !important;
+  background: linear-gradient(135deg, rgba(15, 18, 54, 0.92) 0%, rgba(28, 35, 148, 0.86) 52%, rgba(222, 57, 42, 0.82) 100%) !important;
+  color: #ffffff !important;
   backdrop-filter: blur(24px) saturate(200%) !important;
   -webkit-backdrop-filter: blur(24px) saturate(200%) !important;
   border: 1px solid rgba(255, 255, 255, 0.35) !important;
@@ -194,7 +202,11 @@
   overflow: hidden;
 }
 
-/* Brilho da borda superior de vidro (Specular Sheen Rim) */
+/* Brilho da borda superior de vidro no Hero (Specular Sheen Rim) */
+.app-glass-theme .bg-card.text-white::before,
+.app-glass-theme .bg-card[class*="from-"]::before,
+.bi-glass-theme .bg-card.text-white::before,
+.bi-glass-theme .bg-card[class*="from-"]::before,
 .bi-glass-hero::before {
   content: '';
   position: absolute;
