@@ -30,6 +30,30 @@ const Tests = () => {
   const [showTestModal, setShowTestModal] = useState(false);
   const [showActivityModal, setShowActivityModal] = useState(false);
 
+  // Função auxiliar para calcular o percentual de acerto de forma segura e realista.
+  // Se em uma prova os acertos ultrapassarem os lançamentos base cadastrados (ex.: prova aplicada com 20 bolas para atividade com base de 10),
+  // o total de lançamentos se ajusta proporcionalmente para múltiplos da base (rodadas) ou para o maior acerto registrado,
+  // garantindo que o aproveitamento nunca ultrapasse 100%.
+  const calculateSafePercentage = (
+    acertos: number,
+    baseLancamentos: number,
+    maxAcertosInActivity?: number
+  ): number => {
+    if (!baseLancamentos || baseLancamentos <= 0) return 0;
+    
+    const highest = Math.max(acertos, maxAcertosInActivity || 0);
+    let effectiveLancamentos = baseLancamentos;
+
+    if (highest > baseLancamentos) {
+      const rodadas = Math.ceil(highest / baseLancamentos);
+      effectiveLancamentos = rodadas * baseLancamentos;
+    }
+
+    if (effectiveLancamentos <= 0) return 0;
+    const pct = (acertos / effectiveLancamentos) * 100;
+    return Math.min(100, Math.max(0, pct));
+  };
+
   // Calculando estatísticas do mini-dashboard
   const miniDashboardStats = useMemo(() => {
     const totalTests = tests.length;
@@ -40,10 +64,24 @@ const Tests = () => {
     // Média geral de acertos de todas as provas
     let totalPercentual = 0;
     let countResults = 0;
+
+    // Mapeia o maior acerto registrado por teste e atividade
+    const maxAcertosPerTestActivity = new Map<string, number>();
+    testResults.forEach(tr => {
+      const key = `${tr.testId}_${tr.atividadeId}`;
+      const currentMax = maxAcertosPerTestActivity.get(key) || 0;
+      if (tr.acertos > currentMax) {
+        maxAcertosPerTestActivity.set(key, tr.acertos);
+      }
+    });
+
     testResults.forEach(tr => {
       const act = activities.find(a => a.id === tr.atividadeId);
       if (act && act.quantidadeLancamentos > 0) {
-        totalPercentual += (tr.acertos / act.quantidadeLancamentos) * 100;
+        const key = `${tr.testId}_${tr.atividadeId}`;
+        const maxAcertos = maxAcertosPerTestActivity.get(key) || 0;
+        const pct = calculateSafePercentage(tr.acertos, act.quantidadeLancamentos, maxAcertos);
+        totalPercentual += pct;
         countResults++;
       }
     });
@@ -67,10 +105,22 @@ const Tests = () => {
         
         let testTotalPercentual = 0;
         let testCountResults = 0;
+
+        // Pré-calcula o maior acerto de cada atividade nesta prova específica
+        const maxAcertosMap = new Map<string, number>();
+        testRes.forEach(tr => {
+          const currentMax = maxAcertosMap.get(tr.atividadeId) || 0;
+          if (tr.acertos > currentMax) {
+            maxAcertosMap.set(tr.atividadeId, tr.acertos);
+          }
+        });
+
         testRes.forEach(tr => {
           const act = activities.find(a => a.id === tr.atividadeId);
           if (act && act.quantidadeLancamentos > 0) {
-            testTotalPercentual += (tr.acertos / act.quantidadeLancamentos) * 100;
+            const maxAcertos = maxAcertosMap.get(tr.atividadeId) || 0;
+            const pct = calculateSafePercentage(tr.acertos, act.quantidadeLancamentos, maxAcertos);
+            testTotalPercentual += pct;
             testCountResults++;
           }
         });
@@ -549,10 +599,21 @@ const Tests = () => {
                       <TableHead className="w-48 sticky left-0 bg-muted/50">Aluno</TableHead>
                       {selectedAtividadesIds.map(actId => {
                         const act = activities.find(a => a.id === actId);
+                        const maxAcertos = Math.max(
+                          ...Object.values(tempResults).map(res => res?.[actId] || 0),
+                          0
+                        );
+                        const baseLanc = act?.quantidadeLancamentos || 10;
+                        const effectiveLanc = maxAcertos > baseLanc
+                          ? Math.ceil(maxAcertos / baseLanc) * baseLanc
+                          : baseLanc;
+
                         return (
                           <TableHead key={actId} className="text-center min-w-[120px]">
                             {act?.nome}
-                            <div className="text-[10px] opacity-60 font-normal">Lanç.: {act?.quantidadeLancamentos}</div>
+                            <div className="text-[10px] opacity-60 font-normal">
+                              Lanç.: {effectiveLanc} {effectiveLanc > baseLanc ? `(${effectiveLanc / baseLanc}x${baseLanc})` : ""}
+                            </div>
                           </TableHead>
                         );
                       })}
@@ -568,9 +629,18 @@ const Tests = () => {
                           {selectedAtividadesIds.map(actId => {
                             const act = activities.find(a => a.id === actId)!;
                             const acertos = tempResults[aluno.id]?.[actId] || 0;
-                            const percentual = act.quantidadeLancamentos > 0 ? (acertos / act.quantidadeLancamentos) * 100 : 0;
+                            const maxAcertos = Math.max(
+                              ...Object.values(tempResults).map(res => res?.[actId] || 0),
+                              0
+                            );
+                            const percentual = calculateSafePercentage(acertos, act.quantidadeLancamentos, maxAcertos);
                             totalPercentual += percentual;
-                            
+
+                            const baseLanc = act?.quantidadeLancamentos || 10;
+                            const effectiveLanc = maxAcertos > baseLanc
+                              ? Math.ceil(maxAcertos / baseLanc) * baseLanc
+                              : baseLanc;
+
                             return (
                               <TableCell key={actId}>
                                 <div className="flex flex-col items-center gap-1">
@@ -579,7 +649,7 @@ const Tests = () => {
                                       type="number" 
                                       className="w-16 h-8 text-center text-xs" 
                                       min={0}
-                                      max={act.quantidadeLancamentos}
+                                      max={effectiveLanc}
                                       value={acertos}
                                       onChange={(e) => handleResultChange(aluno.id, actId, e.target.value)}
                                     />
@@ -590,7 +660,7 @@ const Tests = () => {
                             );
                           })}
                           <TableCell className="text-center font-black bg-primary/5">
-                            {(totalPercentual / selectedAtividadesIds.length).toFixed(2)}%
+                            {(totalPercentual / (selectedAtividadesIds.length || 1)).toFixed(1)}%
                           </TableCell>
                         </TableRow>
                       );
