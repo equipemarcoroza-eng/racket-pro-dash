@@ -78,7 +78,7 @@ const AppLayout = () => {
       </Helmet>
       <aside
         className={cn(
-          "relative bg-sidebar text-sidebar-foreground flex flex-col shrink-0 transition-all duration-300",
+          "sticky top-0 h-screen bg-sidebar text-sidebar-foreground flex flex-col shrink-0 transition-all duration-300 z-40",
           isCollapsed ? "w-16" : "w-64"
         )}
       >
@@ -163,7 +163,7 @@ const AppLayout = () => {
           </button>
         </div>
       </aside>
-      <main className="flex-1 overflow-auto p-6 lg:p-8 app-glass-theme relative isolation-isolate">
+      <main className="flex-1 min-w-0 overflow-auto p-6 lg:p-8 app-glass-theme relative isolation-isolate">
         {/* Esferas de iluminação ambiental tridimensional para o efeito Glassmorphism */}
         <div className="bi-glass-ambient-orbs">
           <div className="bi-orb-1" />
