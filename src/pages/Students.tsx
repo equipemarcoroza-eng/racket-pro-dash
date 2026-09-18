@@ -834,7 +834,7 @@ const Students = () => {
               <div className="bg-primary/5 border border-primary/10 rounded-xl px-4 py-2.5 flex flex-col sm:items-end justify-center shrink-0">
                 <span className="text-[10px] uppercase font-bold text-primary tracking-wider">Tempo Médio de Permanência</span>
                 <span className="text-lg font-black text-primary mt-1">
-                  {averageMonths.toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })} {averageMonths === 1 ? 'mês' : 'meses'}
+                  {Math.round(averageMonths)} {Math.round(averageMonths) === 1 ? 'mês' : 'meses'}
                 </span>
               </div>
             </div>

@@ -670,7 +670,7 @@ export default function BiDashboard() {
         ],
         [
           "Permanência Média (Tenure)",
-          `${generalMetrics.avgTenure.toFixed(1)} meses ativos`,
+          `${Math.round(generalMetrics.avgTenure)} meses ativos`,
           "Alunos em Turmas (Vagas)",
           `${generalMetrics.totalAlunosEmTurmas} vagas (${generalMetrics.mediaTurmasPorAluno.toFixed(2)}x/atleta)`,
         ],
@@ -1072,7 +1072,7 @@ export default function BiDashboard() {
                 <div>
                   <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Permanência (Tenure)</p>
                   <h3 className="text-2xl font-black mt-2">
-                    {generalMetrics.avgTenure.toFixed(1)} <span className="text-sm font-semibold text-muted-foreground">meses</span>
+                    {Math.round(generalMetrics.avgTenure)} <span className="text-sm font-semibold text-muted-foreground">{Math.round(generalMetrics.avgTenure) === 1 ? 'mês' : 'meses'}</span>
                   </h3>
                 </div>
                 <div className="p-2.5 bg-blue-500/10 rounded-xl text-blue-600 dark:text-blue-400 bi-glass-pill">

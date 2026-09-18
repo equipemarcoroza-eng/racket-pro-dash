@@ -625,7 +625,7 @@ export default function BiHistory() {
           "Alunos em Turmas (Vagas)",
           `${consolidatedKpis.totalAlunosEmTurmas} vagas (${consolidatedKpis.mediaTurmasPorAluno.toFixed(2)}x/atleta)`,
           "LTV Médio Histórico",
-          `${formatCurrency(consolidatedKpis.ltvEstimado)} (Permanência: ~${consolidatedKpis.tenureMedioMeses.toFixed(1)} meses)`,
+          `${formatCurrency(consolidatedKpis.ltvEstimado)} (Permanência: ~${Math.round(consolidatedKpis.tenureMedioMeses)} meses)`,
         ],
         [
           "Distribuição da Grade",
@@ -1301,12 +1301,12 @@ export default function BiHistory() {
                 </div>
                 <div className="mt-1.5">
                   <Badge className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-bold border-none text-[10px]">
-                    ~{consolidatedKpis.tenureMedioMeses.toFixed(1)} meses
+                    ~{Math.round(consolidatedKpis.tenureMedioMeses)} meses
                   </Badge>
                 </div>
               </div>
               <p className="text-[11px] text-muted-foreground mt-2 leading-tight">
-                Soma de faturas pagas desde a origem por aluno ativo. Permanência média de <strong>{consolidatedKpis.tenureMedioMeses.toFixed(1)} meses</strong>.
+                Soma de faturas pagas desde a origem por aluno ativo. Permanência média de <strong>{Math.round(consolidatedKpis.tenureMedioMeses)} meses</strong>.
               </p>
             </CardContent>
           </Card>
@@ -2099,7 +2099,7 @@ export default function BiHistory() {
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2">
                       <div className="bg-muted/50 p-3 rounded-lg">
                         <span className="text-[10px] uppercase font-bold text-muted-foreground">Permanência Média</span>
-                        <p className="text-base font-black text-foreground mt-0.5">{consolidatedKpis.tenureMedioMeses.toFixed(1)} meses</p>
+                        <p className="text-base font-black text-foreground mt-0.5">{Math.round(consolidatedKpis.tenureMedioMeses)} meses</p>
                       </div>
                       <div className="bg-muted/50 p-3 rounded-lg">
                         <span className="text-[10px] uppercase font-bold text-muted-foreground">Frequência Semanal Crítica</span>
