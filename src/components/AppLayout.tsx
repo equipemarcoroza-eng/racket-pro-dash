@@ -1,11 +1,10 @@
 import { useState } from "react";
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { NavLink, Outlet } from "react-router-dom";
 import {
   LayoutDashboard,
   Users,
   Calendar,
   ClipboardList,
-  LogOut,
   ClipboardCheck,
   BarChart3,
   TrendingUp,
@@ -19,7 +18,6 @@ import {
 import logo from "@/assets/logo.png";
 import { Helmet } from "react-helmet-async";
 import { useLocation } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -41,11 +39,9 @@ const navItems = [
 ];
 
 const AppLayout = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   const pageLabel =
     navItems.find((i) => location.pathname.startsWith(i.to))?.label ?? "Painel";
-  const { signOut } = useAuth();
   const [isCollapsed, setIsCollapsed] = useState(() => {
     if (typeof window !== "undefined") {
       return localStorage.getItem("racket_sidebar_collapsed") === "true";
@@ -59,11 +55,6 @@ const AppLayout = () => {
       localStorage.setItem("racket_sidebar_collapsed", String(next));
       return next;
     });
-  };
-
-  const handleLogout = async () => {
-    await signOut();
-    navigate("/", { replace: true });
   };
 
   return (
@@ -97,8 +88,8 @@ const AppLayout = () => {
 
         <div
           className={cn(
-            "p-6 border-b border-sidebar-border transition-all duration-300",
-            isCollapsed ? "px-2 py-4 flex justify-center" : "p-6"
+            "p-4 border-b border-sidebar-border transition-all duration-300",
+            isCollapsed ? "px-2 py-3.5 flex justify-center" : "px-4 py-3.5"
           )}
         >
           <div className="flex items-center gap-3">
@@ -118,15 +109,15 @@ const AppLayout = () => {
           </div>
         </div>
 
-        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+        <nav className="flex-1 px-3 py-2 space-y-0.5 overflow-y-auto no-scrollbar">
           {navItems.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
               className={({ isActive }) =>
                 cn(
-                  "flex items-center gap-3 py-2.5 rounded-md text-sm font-medium transition-colors",
-                  isCollapsed ? "justify-center px-0 h-10 w-10 mx-auto" : "px-3",
+                  "flex items-center gap-3 py-2 rounded-md text-sm font-medium transition-colors",
+                  isCollapsed ? "justify-center px-0 h-9 w-9 mx-auto" : "px-3",
                   isActive
                     ? "bg-sidebar-accent text-sidebar-accent-foreground"
                     : "hover:bg-sidebar-accent/50 text-sidebar-foreground/80"
@@ -143,25 +134,6 @@ const AppLayout = () => {
             </NavLink>
           ))}
         </nav>
-
-        <div
-          className={cn(
-            "p-4 border-t border-sidebar-border transition-all duration-300",
-            isCollapsed ? "px-2" : "p-4"
-          )}
-        >
-          <button
-            onClick={handleLogout}
-            className={cn(
-              "flex items-center gap-3 py-2.5 rounded-md text-sm font-medium hover:bg-sidebar-accent/50 text-sidebar-foreground/80 transition-colors",
-              isCollapsed ? "justify-center w-10 h-10 mx-auto px-0" : "w-full px-3"
-            )}
-            title={isCollapsed ? "Sair" : undefined}
-          >
-            <LogOut className="h-4 w-4 shrink-0" />
-            {!isCollapsed && <span>Sair</span>}
-          </button>
-        </div>
       </aside>
       <main className="flex-1 min-w-0 overflow-auto p-6 lg:p-8 app-glass-theme relative isolation-isolate">
         {/* Esferas de iluminação ambiental tridimensional para o efeito Glassmorphism */}
