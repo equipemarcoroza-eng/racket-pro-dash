@@ -676,9 +676,9 @@ export default function BiDashboard() {
         ],
         [
           "Perfil Etário Adultos",
-          `${generalMetrics.avgAgeAdults.toFixed(1)} anos em média`,
+          `${Math.round(generalMetrics.avgAgeAdults)} anos em média`,
           "Perfil Etário Infantil/Juv",
-          `${generalMetrics.avgAgeKids.toFixed(1)} anos em média`,
+          `${Math.round(generalMetrics.avgAgeKids)} anos em média`,
         ],
         [
           "Taxa de Alta Presença (>80%)",
@@ -1131,10 +1131,10 @@ export default function BiDashboard() {
                   <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Idade Média</p>
                   <div className="mt-2 space-y-1">
                     <h3 className="text-base font-black text-foreground">
-                      {generalMetrics.avgAgeAdults.toFixed(1)} <span className="text-xs font-semibold text-muted-foreground">anos (Adultos)</span>
+                      {Math.round(generalMetrics.avgAgeAdults)} <span className="text-xs font-semibold text-muted-foreground">anos (Adultos)</span>
                     </h3>
                     <h3 className="text-base font-black text-foreground">
-                      {generalMetrics.avgAgeKids.toFixed(1)} <span className="text-xs font-semibold text-muted-foreground">anos (Infantil/Juv)</span>
+                      {Math.round(generalMetrics.avgAgeKids)} <span className="text-xs font-semibold text-muted-foreground">anos (Infantil/Juv)</span>
                     </h3>
                   </div>
                 </div>
@@ -1713,8 +1713,8 @@ export default function BiDashboard() {
                       </div>
                       <div className="p-3.5 bg-muted/40 rounded-xl border border-border">
                         <span className="text-[10px] font-bold text-muted-foreground uppercase">Idade Média</span>
-                        <h4 className="text-xl font-black text-foreground mt-0.5">{generalMetrics.avgAgeAdults.toFixed(1)} anos</h4>
-                        <p className="text-[11px] text-muted-foreground mt-1">Adultos ({generalMetrics.avgAgeKids.toFixed(1)} anos em Crianças)</p>
+                        <h4 className="text-xl font-black text-foreground mt-0.5">{Math.round(generalMetrics.avgAgeAdults)} anos</h4>
+                        <p className="text-[11px] text-muted-foreground mt-1">Adultos ({Math.round(generalMetrics.avgAgeKids)} anos em Crianças)</p>
                       </div>
                       <div className="p-3.5 bg-muted/40 rounded-xl border border-border">
                         <span className="text-[10px] font-bold text-muted-foreground uppercase">Presença Global</span>
