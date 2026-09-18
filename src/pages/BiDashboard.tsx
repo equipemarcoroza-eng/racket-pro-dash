@@ -506,6 +506,39 @@ export default function BiDashboard() {
     const teenStudents = biData.filter((s) => s.idade > 12 && s.idade <= 18);
     const kidStudents = biData.filter((s) => s.idade <= 12);
 
+    const formatNameWithSurname = (fullName: string) => {
+      if (!fullName) return "";
+      const parts = fullName.trim().split(/\s+/).filter(Boolean);
+      if (parts.length <= 1) {
+        return parts[0].charAt(0).toUpperCase() + parts[0].slice(1).toLowerCase();
+      }
+
+      const prepositions = new Set(["de", "da", "do", "das", "dos", "e"]);
+      const capitalizeWord = (w: string) => {
+        const lower = w.toLowerCase();
+        if (prepositions.has(lower)) return lower;
+        return lower.charAt(0).toUpperCase() + lower.slice(1);
+      };
+
+      // 2 palavras: "Julia Santos" -> "Julia Santos"
+      if (parts.length === 2) {
+        return `${capitalizeWord(parts[0])} ${capitalizeWord(parts[1])}`;
+      }
+
+      // Se a última parte tiver preposição antes: ex. "Camila Rocha da Silva" -> "Camila da Silva"
+      if (parts.length >= 3 && prepositions.has(parts[parts.length - 2].toLowerCase())) {
+        return `${capitalizeWord(parts[0])} ${parts[parts.length - 2].toLowerCase()} ${capitalizeWord(parts[parts.length - 1])}`;
+      }
+
+      // Se a segunda parte for preposição: ex. "Camila da Silva"
+      if (prepositions.has(parts[1].toLowerCase())) {
+        return `${capitalizeWord(parts[0])} ${parts[1].toLowerCase()} ${capitalizeWord(parts[2])}`;
+      }
+
+      // Mais de 2 palavras: primeiro nome + sobrenome final da família
+      return `${capitalizeWord(parts[0])} ${capitalizeWord(parts[parts.length - 1])}`;
+    };
+
     const getMostCommonData = (list: typeof biData, fallbackName: string, fallbackGender: "M" | "F") => {
       if (list.length === 0) return { name: fallbackName, sexo: fallbackGender };
       const counts: Record<string, { count: number; sexo: "M" | "F" }> = {};
@@ -519,7 +552,7 @@ export default function BiDashboard() {
           counts[capitalized].count++;
         }
       });
-      let bestName = fallbackName;
+      let bestName = "";
       let bestGender = fallbackGender;
       let max = 0;
       Object.entries(counts).forEach(([name, data]) => {
@@ -529,13 +562,32 @@ export default function BiDashboard() {
           bestGender = data.sexo;
         }
       });
-      return { name: bestName, sexo: bestGender };
+
+      if (!bestName) return { name: fallbackName, sexo: fallbackGender };
+
+      const studentsWithBestName = list.filter((s) => {
+        const first = s.nome.trim().split(/\s+/)[0];
+        return first && first.toLowerCase() === bestName.toLowerCase();
+      });
+
+      const representative =
+        studentsWithBestName.find((s) => s.nome.trim().split(/\s+/).filter(Boolean).length > 1) ||
+        studentsWithBestName[0];
+
+      if (representative) {
+        return {
+          name: formatNameWithSurname(representative.nome) || fallbackName,
+          sexo: representative.sexo || bestGender,
+        };
+      }
+
+      return { name: fallbackName, sexo: bestGender };
     };
 
     return {
-      woman: getMostCommonData(adultWomen, "Daniela", "F"),
-      teen: getMostCommonData(teenStudents, "Lucas", "M"),
-      child: getMostCommonData(kidStudents, "Júlia", "F"),
+      woman: getMostCommonData(adultWomen, "Daniela Silva", "F"),
+      teen: getMostCommonData(teenStudents, "Lucas Santos", "M"),
+      child: getMostCommonData(kidStudents, "Júlia Lima", "F"),
     };
   }, [biData]);
 
