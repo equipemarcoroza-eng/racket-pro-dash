@@ -51,7 +51,7 @@ const ResetPassword = () => {
       return;
     }
     toast.success("Senha redefinida com sucesso!");
-    navigate("/dashboard", { replace: true });
+    navigate("/bi-history", { replace: true });
   };
 
   return (

@@ -24,7 +24,7 @@ const Login = () => {
   const [resetSubmitting, setResetSubmitting] = useState(false);
 
   useEffect(() => {
-    if (!loading && user) navigate("/dashboard", { replace: true });
+    if (!loading && user) navigate("/bi-history", { replace: true });
   }, [user, loading, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -37,7 +37,7 @@ const Login = () => {
       return;
     }
     toast.success("Bem-vindo!");
-    navigate("/dashboard", { replace: true });
+    navigate("/bi-history", { replace: true });
   };
 
   const handleForgot = async (e: React.FormEvent) => {

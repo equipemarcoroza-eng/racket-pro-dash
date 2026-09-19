@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { NavLink, Outlet } from "react-router-dom";
 import {
-  LayoutDashboard,
   Users,
   Calendar,
   ClipboardList,
@@ -21,7 +20,8 @@ import { useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/bi-history", label: "BI Financeiro", icon: LineChart },
+  { to: "/bi-dashboard", label: "BI Comportamental", icon: PieChart },
   { to: "/students", label: "Alunos", icon: Users },
   { to: "/schedule", label: "Agenda", icon: Calendar },
   { to: "/plans/manage", label: "Planos", icon: ClipboardList },
@@ -34,8 +34,6 @@ const navItems = [
   { to: "/finance/expenses", label: "Contas a Pagar", icon: TrendingDown },
   { to: "/finance/cash-flow", label: "Fluxo de Caixa", icon: DollarSign },
   { to: "/finance/projection", label: "Projeção Financeira", icon: BarChart3 },
-  { to: "/bi-dashboard", label: "Análise de BI", icon: PieChart },
-  { to: "/bi-history", label: "BI Evolução Histórica", icon: LineChart },
 ];
 
 const AppLayout = () => {
