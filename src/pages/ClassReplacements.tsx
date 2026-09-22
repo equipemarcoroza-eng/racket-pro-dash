@@ -964,7 +964,7 @@ const ClassReplacements = () => {
                                             onClick={() => handleOpenRegisterReplacement(item)}
                                           >
                                             <RotateCcw className="h-3 w-3" />
-                                            Marcar Reposta
+                                            Agendar
                                           </Button>
                                         )}
                                       </div>
@@ -1122,7 +1122,7 @@ const ClassReplacements = () => {
                                   onClick={() => handleOpenRegisterReplacement(item)}
                                 >
                                   <RotateCcw className="h-3 w-3" />
-                                  Marcar Reposta
+                                  Agendar
                                 </Button>
                               )}
                             </TableCell>
@@ -1147,7 +1147,7 @@ const ClassReplacements = () => {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <RotateCcw className="h-5 w-5 text-purple-600" />
-              Registrar Reposição de Aula
+              Agendar Reposição de Aula
             </DialogTitle>
           </DialogHeader>
 
@@ -1165,7 +1165,7 @@ const ClassReplacements = () => {
             </div>
 
             <div>
-              <Label className="text-xs font-semibold">Data da Reposição Realizada / Agendada:</Label>
+              <Label className="text-xs font-semibold">Data da Reposição:</Label>
               <Input
                 type="date"
                 value={replacementDate}
@@ -1198,7 +1198,7 @@ const ClassReplacements = () => {
               className="bg-purple-600 hover:bg-purple-700 text-white"
               onClick={handleConfirmReplacement}
             >
-              Confirmar Reposição
+              Confirmar Agendamento
             </Button>
           </DialogFooter>
         </DialogContent>
