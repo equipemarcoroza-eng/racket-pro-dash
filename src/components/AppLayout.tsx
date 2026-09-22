@@ -13,6 +13,7 @@ import {
   ChevronRight,
   PieChart,
   LineChart,
+  RotateCcw,
 } from "lucide-react";
 import logo from "@/assets/logo.png";
 import { Helmet } from "react-helmet-async";
@@ -28,6 +29,7 @@ const navItems = [
   { to: "/classes", label: "Controle de Turmas", icon: Users },
   { to: "/attendance", label: "Controle de Presença", icon: ClipboardCheck },
   { to: "/frequency", label: "Frequência", icon: BarChart3 },
+  { to: "/class-replacements", label: "Reposição de Aulas", icon: RotateCcw },
   { to: "/lesson-plan", label: "Plano de Aulas", icon: ClipboardList },
   { to: "/tests", label: "Provas", icon: ClipboardCheck },
   { to: "/finance/revenue", label: "Contas a Receber", icon: TrendingUp },

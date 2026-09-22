@@ -11,6 +11,7 @@ import Schedule from "./pages/Schedule";
 import ClassManagement from "./pages/ClassManagement";
 import AttendanceControl from "./pages/AttendanceControl";
 import FrequencyReport from "./pages/FrequencyReport";
+import ClassReplacements from "./pages/ClassReplacements";
 import Revenue from "./pages/Revenue";
 import Expenses from "./pages/Expenses";
 import CashFlow from "./pages/CashFlow";
@@ -48,6 +49,9 @@ const App = () => (
                 <Route path="/classes" element={<ClassManagement />} />
                 <Route path="/attendance" element={<AttendanceControl />} />
                 <Route path="/frequency" element={<FrequencyReport />} />
+                <Route path="/class-replacements" element={<ClassReplacements />} />
+                <Route path="/replacement-classes" element={<Navigate to="/class-replacements" replace />} />
+                <Route path="/reposicao-aulas" element={<Navigate to="/class-replacements" replace />} />
                 <Route path="/lesson-plan" element={<LessonPlan />} />
                 <Route path="/tests" element={<Tests />} />
                 <Route path="/finance/revenue" element={<Revenue />} />
