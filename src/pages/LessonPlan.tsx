@@ -15,7 +15,7 @@ import { Search, Plus, Edit, Trash2, ChevronLeft, ChevronRight, Printer } from "
 import logo from "@/assets/logo.png";
 import { CLASS_LIMIT, type LessonType, type LessonPlan as LessonPlanType } from "@/data/mockData";
 
-const dias = ["Seg", "Ter", "Qua", "Qui", "Sex"];
+const dias = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 const horarios = [
   "07:00", "08:00", "09:00", "10:00", "11:00", "12:00", "13:00", 
   "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00"
@@ -307,7 +307,7 @@ const LessonPlan = () => {
               <div className="flex items-center gap-1 bg-white/15 rounded-md p-1 mr-2">
                 <Button variant="ghost" size="icon" className="h-8 w-8 text-white hover:bg-white/20 hover:text-white" onClick={handlePrevWeek}><ChevronLeft className="h-4 w-4" /></Button>
                 <span className="text-xs font-bold min-w-[120px] text-center text-white">
-                  {format(weekStart, "dd/MM")} a {format(addDays(weekStart, 4), "dd/MM")}
+                  {format(weekStart, "dd/MM")} a {format(addDays(weekStart, dias.length - 1), "dd/MM")}
                 </span>
                 <Button variant="ghost" size="icon" className="h-8 w-8 text-white hover:bg-white/20 hover:text-white" onClick={handleNextWeek}><ChevronRight className="h-4 w-4" /></Button>
               </div>
