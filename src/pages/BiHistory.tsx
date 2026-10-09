@@ -1215,17 +1215,17 @@ export default function BiHistory() {
           </Badge>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5 sm:gap-4">
           {/* KPI 1: Base de Alunos no Período (Únicos) */}
           <Card className="border-l-4 border-l-primary shadow-sm hover:shadow-md transition">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-muted-foreground uppercase">Base de Alunos (Únicos)</span>
-                <Users className="w-4 h-4 text-primary" />
+            <CardContent className="p-3.5 sm:p-4">
+              <div className="flex items-center justify-between gap-1">
+                <span className="text-[11px] sm:text-xs font-semibold text-muted-foreground uppercase tracking-tight">Base de Alunos (Únicos)</span>
+                <Users className="w-4 h-4 text-primary shrink-0" />
               </div>
               <div className="mt-2">
                 <div className="flex items-baseline gap-1.5">
-                  <span className="text-2xl font-black text-foreground">{consolidatedKpis.totalAlunosAtual}</span>
+                  <span className="text-lg xl:text-xl font-bold tracking-tight text-foreground">{consolidatedKpis.totalAlunosAtual}</span>
                   <span className="text-xs text-muted-foreground">atletas</span>
                 </div>
                 <div className="mt-1.5">
@@ -1243,14 +1243,14 @@ export default function BiHistory() {
 
           {/* KPI 2: Alunos em Turmas (Vagas Ocupadas em Quadra) */}
           <Card className="border-l-4 border-l-purple-600 shadow-sm hover:shadow-md transition">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-foreground uppercase tracking-tight">Alunos em Turmas</span>
-                <Layers className="w-4 h-4 text-purple-600" />
+            <CardContent className="p-3.5 sm:p-4">
+              <div className="flex items-center justify-between gap-1">
+                <span className="text-[11px] sm:text-xs font-bold text-foreground uppercase tracking-tight">Alunos em Turmas</span>
+                <Layers className="w-4 h-4 text-purple-600 shrink-0" />
               </div>
               <div className="mt-2">
                 <div className="flex items-baseline gap-1.5">
-                  <span className="text-2xl font-black text-purple-600 dark:text-purple-400">{consolidatedKpis.totalAlunosEmTurmas}</span>
+                  <span className="text-lg xl:text-xl font-bold tracking-tight text-purple-600 dark:text-purple-400">{consolidatedKpis.totalAlunosEmTurmas}</span>
                   <span className="text-xs text-muted-foreground">vagas</span>
                 </div>
                 <div className="mt-1.5">
@@ -1267,14 +1267,14 @@ export default function BiHistory() {
 
           {/* KPI 3: Faturamento Total da Escola no Período */}
           <Card className="border-l-4 border-l-blue-600 shadow-sm hover:shadow-md transition">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-foreground uppercase tracking-tight">Faturamento da Escola</span>
-                <DollarSign className="w-4 h-4 text-blue-600" />
+            <CardContent className="p-3.5 sm:p-4">
+              <div className="flex items-center justify-between gap-1">
+                <span className="text-[11px] sm:text-xs font-bold text-foreground uppercase tracking-tight">Faturamento da Escola</span>
+                <DollarSign className="w-4 h-4 text-blue-600 shrink-0" />
               </div>
               <div className="mt-2">
                 <div className="flex items-baseline gap-1.5">
-                  <span className="text-2xl font-black text-foreground">{formatCurrency(consolidatedKpis.receitaTotalAcumulada)}</span>
+                  <span className="text-lg xl:text-xl font-bold tracking-tight text-foreground">{formatCurrency(consolidatedKpis.receitaTotalAcumulada)}</span>
                 </div>
                 <div className="mt-1.5">
                   <Badge className="bg-blue-500/10 text-blue-700 dark:text-blue-300 font-bold border-none text-[10px]">
@@ -1290,14 +1290,14 @@ export default function BiHistory() {
 
           {/* KPI 4: LTV Médio (Histórico) */}
           <Card className="border-l-4 border-l-emerald-600 shadow-sm hover:shadow-md transition">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-foreground uppercase tracking-tight">LTV Médio (Histórico)</span>
-                <Award className="w-4 h-4 text-emerald-600" />
+            <CardContent className="p-3.5 sm:p-4">
+              <div className="flex items-center justify-between gap-1">
+                <span className="text-[11px] sm:text-xs font-bold text-foreground uppercase tracking-tight">LTV Médio (Histórico)</span>
+                <Award className="w-4 h-4 text-emerald-600 shrink-0" />
               </div>
               <div className="mt-2">
                 <div className="flex items-baseline gap-1.5">
-                  <span className="text-2xl font-black text-foreground">{formatCurrency(consolidatedKpis.ltvEstimado)}</span>
+                  <span className="text-lg xl:text-xl font-bold tracking-tight text-foreground">{formatCurrency(consolidatedKpis.ltvEstimado)}</span>
                 </div>
                 <div className="mt-1.5">
                   <Badge className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-bold border-none text-[10px]">
@@ -1313,14 +1313,14 @@ export default function BiHistory() {
 
           {/* KPI 5: Mensalidade Média (Individual) */}
           <Card className="border-l-4 border-l-amber-500 shadow-sm hover:shadow-md transition">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-foreground uppercase tracking-tight">Mensalidade Média</span>
-                <Activity className="w-4 h-4 text-amber-500" />
+            <CardContent className="p-3.5 sm:p-4">
+              <div className="flex items-center justify-between gap-1">
+                <span className="text-[11px] sm:text-xs font-bold text-foreground uppercase tracking-tight">Mensalidade Média</span>
+                <Activity className="w-4 h-4 text-amber-500 shrink-0" />
               </div>
               <div className="mt-2">
                 <div className="flex items-baseline gap-1.5">
-                  <span className="text-2xl font-black text-foreground">{formatCurrency(consolidatedKpis.ticketMedioGeral)}</span>
+                  <span className="text-lg xl:text-xl font-bold tracking-tight text-foreground">{formatCurrency(consolidatedKpis.ticketMedioGeral)}</span>
                 </div>
                 <div className="mt-1.5">
                   <Badge className="bg-blue-500/10 text-blue-600 dark:text-blue-400 font-bold border-none text-[10px]">

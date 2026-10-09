@@ -1097,37 +1097,37 @@ export default function BiDashboard() {
         </Card>
 
         {/* KPI Cards de BI - Efeito Copo de Vidro */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5 sm:gap-4">
           <Card className="bi-glass-reflection cursor-pointer">
-            <CardContent className="pt-6">
+            <CardContent className="p-4 pt-6">
               <div className="flex justify-between items-start">
                 <div>
                   <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">LTV Médio (Histórico)</p>
-                  <h3 className="text-2xl font-black mt-2 text-primary">
+                  <h3 className="text-xl xl:text-2xl font-black mt-2 text-primary tracking-tight">
                     R$ {generalMetrics.avgLtv.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                   </h3>
                 </div>
-                <div className="p-2.5 bg-primary/10 rounded-xl text-primary bi-glass-pill">
+                <div className="p-2.5 bg-primary/10 rounded-xl text-primary bi-glass-pill shrink-0">
                   <DollarSign className="w-5 h-5" />
                 </div>
               </div>
               <div className="mt-4 flex items-center text-xs text-muted-foreground font-medium">
-                <TrendingUp className="w-3.5 h-3.5 text-green-500 mr-1" />
+                <TrendingUp className="w-3.5 h-3.5 text-green-500 mr-1 shrink-0" />
                 <span>Soma de faturas pagas desde a origem</span>
               </div>
             </CardContent>
           </Card>
 
           <Card className="bi-glass-reflection cursor-pointer">
-            <CardContent className="pt-6">
+            <CardContent className="p-4 pt-6">
               <div className="flex justify-between items-start">
                 <div>
                   <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Permanência (Tenure)</p>
-                  <h3 className="text-2xl font-black mt-2">
+                  <h3 className="text-xl xl:text-2xl font-black mt-2 tracking-tight">
                     {Math.round(generalMetrics.avgTenure)} <span className="text-sm font-semibold text-muted-foreground">{Math.round(generalMetrics.avgTenure) === 1 ? 'mês' : 'meses'}</span>
                   </h3>
                 </div>
-                <div className="p-2.5 bg-blue-500/10 rounded-xl text-blue-600 dark:text-blue-400 bi-glass-pill">
+                <div className="p-2.5 bg-blue-500/10 rounded-xl text-blue-600 dark:text-blue-400 bi-glass-pill shrink-0">
                   <Calendar className="w-5 h-5" />
                 </div>
               </div>
@@ -1138,35 +1138,35 @@ export default function BiDashboard() {
           </Card>
 
           <Card className="bi-glass-reflection cursor-pointer">
-            <CardContent className="pt-6">
+            <CardContent className="p-4 pt-6">
               <div className="flex justify-between items-start">
                 <div>
                   <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Presença Média Geral</p>
-                  <h3 className="text-2xl font-black mt-2 text-green-600">
+                  <h3 className="text-xl xl:text-2xl font-black mt-2 text-green-600 tracking-tight">
                     {generalMetrics.avgAttendance.toFixed(1)}%
                   </h3>
                 </div>
-                <div className="p-2.5 bg-green-500/10 rounded-xl text-green-600 dark:text-green-400 bi-glass-pill">
+                <div className="p-2.5 bg-green-500/10 rounded-xl text-green-600 dark:text-green-400 bi-glass-pill shrink-0">
                   <Activity className="w-5 h-5" />
                 </div>
               </div>
               <div className="mt-4 flex items-center text-xs text-muted-foreground font-medium">
-                <TrendingUp className="w-3.5 h-3.5 text-green-500 mr-1" />
+                <TrendingUp className="w-3.5 h-3.5 text-green-500 mr-1 shrink-0" />
                 <span>Aulas marcadas como presentes</span>
               </div>
             </CardContent>
           </Card>
 
           <Card className="bi-glass-reflection cursor-pointer">
-            <CardContent className="pt-6">
+            <CardContent className="p-4 pt-6">
               <div className="flex justify-between items-start">
                 <div>
                   <p className="text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-wider">Alunos em Turmas</p>
-                  <h3 className="text-2xl font-black mt-2 text-purple-700 dark:text-purple-300">
+                  <h3 className="text-xl xl:text-2xl font-black mt-2 text-purple-700 dark:text-purple-300 tracking-tight">
                     {generalMetrics.totalAlunosEmTurmas} <span className="text-sm font-semibold text-muted-foreground">vagas</span>
                   </h3>
                 </div>
-                <div className="p-2.5 bg-purple-500/10 rounded-xl text-purple-600 dark:text-purple-400 bi-glass-pill">
+                <div className="p-2.5 bg-purple-500/10 rounded-xl text-purple-600 dark:text-purple-400 bi-glass-pill shrink-0">
                   <Layers className="w-5 h-5" />
                 </div>
               </div>
