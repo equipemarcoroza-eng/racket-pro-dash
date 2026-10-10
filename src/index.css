@@ -425,18 +425,5 @@ body.privacy-mode .privacy-blur-chart:focus {
   filter: blur(0px) !important;
 }
 
-/* Cilindros / Termômetros de BI */
-body.privacy-mode .privacy-blur-cylinder {
-  filter: blur(8px) !important;
-  user-select: none !important;
-  transition: filter 0.25s ease;
-  cursor: pointer;
-}
-
-body.privacy-mode .privacy-blur-cylinder:hover,
-body.privacy-mode .privacy-blur-cylinder:focus {
-  filter: blur(0px) !important;
-}
-
 
 

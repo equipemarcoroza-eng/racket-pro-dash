@@ -127,7 +127,7 @@ export const GlassLiquidCylinderSection: React.FC<GlassLiquidCylinderSectionProp
                 </div>
 
                 {/* Centro: O Cilindro de Vidro com Líquido Colorido */}
-                <div className="py-2 flex items-center justify-center gap-4 privacy-blur-cylinder">
+                <div className="py-2 flex items-center justify-center gap-4">
                   {/* Estrutura do Cilindro */}
                   <div className="relative w-20 h-52 flex flex-col items-center justify-end">
                     {/* Borda / Boca superior do copo (Elipse 3D) */}
