@@ -346,7 +346,7 @@ const FinancialProjection = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs font-bold text-green-700 uppercase">Mensalidades Contratadas</p>
-                <p className="text-2xl font-black text-green-600">
+                <p className="text-2xl font-black text-green-600 sensitive-data">
                   R$ {totals.faturamento.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </p>
               </div>
@@ -359,7 +359,7 @@ const FinancialProjection = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs font-bold text-red-700 uppercase">Contas a Pagar</p>
-                <p className="text-2xl font-black text-red-600">
+                <p className="text-2xl font-black text-red-600 sensitive-data">
                   R$ {totals.gastos.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </p>
               </div>
@@ -415,7 +415,7 @@ const FinancialProjection = () => {
           </div>
         </Card>
 
-        <Card ref={chartFinanceiroRef} className="p-4 shadow-sm border-muted/40 bg-white">
+        <Card ref={chartFinanceiroRef} className="p-4 shadow-sm border-muted/40 bg-white privacy-blur-chart">
           <CardHeader className="p-2 mb-4">
             <CardTitle className="text-sm font-bold text-muted-foreground flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-green-600" />
@@ -440,7 +440,7 @@ const FinancialProjection = () => {
                   dataKey="label" 
                   axisLine={false} 
                   tickLine={false} 
-                  tick={{ fontSize: 10, fill: '#888' }}
+                  tick={{ fontSize: 10, fill: '#888' }} 
                   tickFormatter={(val) => val.split(' ')[0]}
                 />
                 <YAxis 
@@ -485,15 +485,15 @@ const FinancialProjection = () => {
                 <TableRow key={idx}>
                   <TableCell className="font-semibold">{m.label}</TableCell>
                   <TableCell className="text-center font-bold text-primary">{m.alunos}</TableCell>
-                  <TableCell className="text-right">R$ {m.faturamento.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
-                  <TableCell className="text-right text-red-600 font-medium">R$ {m.gastos.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                  <TableCell className="text-right sensitive-data">R$ {m.faturamento.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                  <TableCell className="text-right text-red-600 font-medium sensitive-data">R$ {m.gastos.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
                 </TableRow>
               ))}
               <TableRow className="bg-muted/30 font-black border-t-2">
                 <TableCell>TOTAIS</TableCell>
                 <TableCell className="text-center text-primary">{totals.alunos}</TableCell>
-                <TableCell className="text-right">R$ {totals.faturamento.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
-                <TableCell className="text-right text-red-600">R$ {totals.gastos.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                <TableCell className="text-right sensitive-data">R$ {totals.faturamento.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                <TableCell className="text-right text-red-600 sensitive-data">R$ {totals.gastos.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
               </TableRow>
             </TableBody>
           </Table>

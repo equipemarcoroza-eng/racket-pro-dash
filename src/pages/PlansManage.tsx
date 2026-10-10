@@ -97,7 +97,7 @@ const PlansManage = () => {
                 ) : plans.map((plan) => (
                   <TableRow key={plan.id}>
                     <TableCell className="font-medium">{plan.nome}</TableCell>
-                    <TableCell>R$ {plan.valor.toFixed(2).replace(".", ",")}</TableCell>
+                    <TableCell className="sensitive-data">R$ {plan.valor.toFixed(2).replace(".", ",")}</TableCell>
                     <TableCell>{plan.turno}</TableCell>
                     <TableCell>{plan.frequencia}</TableCell>
                     <TableCell>{plan.periodicidade}</TableCell>

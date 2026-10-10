@@ -568,7 +568,7 @@ const Revenue = () => {
                     Parcelas em Aberto
                   </h3>
                   <Badge className="bg-orange-500 hover:bg-orange-600 text-white font-black text-[11px] px-2.5 py-0.5 shadow-sm">
-                    {openRevenuesList.length} {openRevenuesList.length === 1 ? "parcela" : "parcelas"} • {totalOpenAmount.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                    {openRevenuesList.length} {openRevenuesList.length === 1 ? "parcela" : "parcelas"} • <span className="sensitive-data">{totalOpenAmount.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</span>
                   </Badge>
                 </div>
                 <p className="text-xs text-slate-700 dark:text-slate-300 font-medium mt-0.5">
@@ -693,7 +693,7 @@ const Revenue = () => {
                         </div>
 
                         <div className="flex items-center gap-1.5 text-[10px] text-slate-700 dark:text-slate-300 font-semibold mt-0.5">
-                          <span className="font-extrabold text-slate-900 dark:text-white font-mono">
+                          <span className="font-extrabold text-slate-900 dark:text-white font-mono sensitive-data">
                             R$ {r.valor.toFixed(2).replace(".", ",")}
                           </span>
                           <span>•</span>
@@ -790,24 +790,24 @@ const Revenue = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-8">
             <div className="bg-primary/5 border-l-4 border-primary p-5 rounded-lg shadow-sm">
               <p className="text-xs text-primary font-bold uppercase tracking-wider mb-1">Total Faturado</p>
-              <p className="text-3xl font-black">R$ {totalFaturadoMes.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
+              <p className="text-3xl font-black sensitive-data">R$ {totalFaturadoMes.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
               <p className="text-[10px] text-muted-foreground mt-2 font-medium">Total gerado (exceto isenções) no mês.</p>
             </div>
             <div className="bg-green-50 border-l-4 border-green-500 p-5 rounded-lg shadow-sm">
               <p className="text-xs text-green-700 font-bold uppercase tracking-wider mb-1">Total Recebido</p>
-              <p className="text-3xl font-black text-green-600">R$ {totalPagoMes.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
+              <p className="text-3xl font-black text-green-600 sensitive-data">R$ {totalPagoMes.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
               <p className="text-[10px] text-muted-foreground mt-2 font-medium">Total baixado e confirmado no mês.</p>
             </div>
             <div className="bg-orange-50 border-l-4 border-orange-500 p-5 rounded-lg shadow-sm">
               <p className="text-xs text-orange-700 font-bold uppercase tracking-wider mb-1">Total a Receber</p>
-              <p className="text-3xl font-black text-orange-600">R$ {totalAReceberMes.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
+              <p className="text-3xl font-black text-orange-600 sensitive-data">R$ {totalAReceberMes.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
               <p className="text-[10px] text-muted-foreground mt-2 font-medium">Pendentes ou em atraso no mês.</p>
             </div>
             
             {totalPagoPassadoMes > 0 && (
               <div className="bg-slate-50 border-l-4 border-slate-400 p-5 rounded-lg shadow-sm">
                 <p className="text-xs text-slate-700 font-bold uppercase tracking-wider mb-1">Recebido (Passado)</p>
-                <p className="text-3xl font-black text-slate-600">R$ {totalPagoPassadoMes.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
+                <p className="text-3xl font-black text-slate-600 sensitive-data">R$ {totalPagoPassadoMes.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
                 <p className="text-[10px] text-muted-foreground mt-2 font-medium">Total de alunos inativados pagos.</p>
               </div>
             )}
@@ -815,7 +815,7 @@ const Revenue = () => {
             {totalPagoExtrasMes > 0 && (
               <div className="bg-purple-50 border-l-4 border-purple-400 p-5 rounded-lg shadow-sm">
                 <p className="text-xs text-purple-700 font-bold uppercase tracking-wider mb-1">Recebido (Extras)</p>
-                <p className="text-3xl font-black text-purple-600">R$ {totalPagoExtrasMes.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
+                <p className="text-3xl font-black text-purple-600 sensitive-data">R$ {totalPagoExtrasMes.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
                 <p className="text-[10px] text-muted-foreground mt-2 font-medium">Total de alunos extras pagos.</p>
               </div>
             )}
@@ -823,7 +823,7 @@ const Revenue = () => {
 
           {/* Gráficos */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-            <div className="h-[320px] border rounded-xl p-5 bg-card shadow-sm">
+            <div className="h-[320px] border rounded-xl p-5 bg-card shadow-sm privacy-blur-chart">
               <p className="text-sm font-bold text-muted-foreground mb-6 flex items-center gap-2">
                 <span className="w-2 h-2 bg-primary rounded-full"></span>
                 Comparativo Financeiro ({selectedMonth}/{selectedYear})
@@ -847,7 +847,7 @@ const Revenue = () => {
               </ResponsiveContainer>
             </div>
 
-            <div className="h-[320px] border rounded-xl p-5 bg-card shadow-sm flex flex-col justify-between">
+            <div className="h-[320px] border rounded-xl p-5 bg-card shadow-sm flex flex-col justify-between privacy-blur-chart">
               <div className="flex items-center justify-between mb-2">
                 <p className="text-sm font-bold text-muted-foreground flex items-center gap-2">
                   <span className="w-2 h-2 bg-blue-600 rounded-full"></span>
@@ -978,7 +978,7 @@ const Revenue = () => {
                     </TableCell>
                     <TableCell>{r.plano}</TableCell>
                     <TableCell>{r.vencimento}</TableCell>
-                    <TableCell>R$ {r.valor.toFixed(2).replace(".", ",")}</TableCell>
+                    <TableCell className="sensitive-data">R$ {r.valor.toFixed(2).replace(".", ",")}</TableCell>
                     <TableCell>{r.status}</TableCell>
                     <TableCell>
                       <div className="flex gap-1">
@@ -1007,7 +1007,7 @@ const Revenue = () => {
                 <div><p className="text-sm text-muted-foreground">Aluno</p><p className="font-medium">{viewingReceita.aluno} {students.find(s => s.id === viewingReceita.alunoId || s.nome === viewingReceita.aluno)?.status && <span className="text-[10px] text-muted-foreground ml-1">({students.find(s => s.id === viewingReceita.alunoId || s.nome === viewingReceita.aluno)?.status})</span>}</p></div>
                 <div><p className="text-sm text-muted-foreground">Plano</p><p className="font-medium">{viewingReceita.plano}</p></div>
                 <div><p className="text-sm text-muted-foreground">Vencimento</p><p className="font-medium">{viewingReceita.vencimento}</p></div>
-                <div><p className="text-sm text-muted-foreground">Valor</p><p className="font-medium">R$ {viewingReceita.valor.toFixed(2).replace(".", ",")}</p></div>
+                <div><p className="text-sm text-muted-foreground">Valor</p><p className="font-medium sensitive-data">R$ {viewingReceita.valor.toFixed(2).replace(".", ",")}</p></div>
                 <div><p className="text-sm text-muted-foreground">Status do Pagamento</p><p className="font-medium">{viewingReceita.status}</p></div>
               </div>
             </div>

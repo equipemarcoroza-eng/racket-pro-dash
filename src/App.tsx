@@ -25,6 +25,7 @@ import AppLayout from "./components/AppLayout";
 import NotFound from "./pages/NotFound";
 import { AppProvider } from "@/contexts/AppContext";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { PrivacyProvider } from "@/contexts/PrivacyContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
 const queryClient = new QueryClient();
@@ -36,7 +37,8 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          <AppProvider>
+          <PrivacyProvider>
+            <AppProvider>
             <Routes>
               <Route path="/" element={<Login />} />
               <Route path="/reset-password" element={<ResetPassword />} />
@@ -64,6 +66,7 @@ const App = () => (
               <Route path="*" element={<NotFound />} />
             </Routes>
           </AppProvider>
+          </PrivacyProvider>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>

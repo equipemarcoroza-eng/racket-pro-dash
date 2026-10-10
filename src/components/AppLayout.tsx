@@ -19,6 +19,9 @@ import logo from "@/assets/logo.png";
 import { Helmet } from "react-helmet-async";
 import { useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { DiscreetModeToggle } from "@/components/DiscreetModeToggle";
+import { usePrivacy } from "@/contexts/PrivacyContext";
+import { ShieldCheck } from "lucide-react";
 
 const navItems = [
   { to: "/bi-history", label: "BI Financeiro", icon: LineChart },
@@ -40,6 +43,7 @@ const navItems = [
 
 const AppLayout = () => {
   const location = useLocation();
+  const { isDiscreetMode } = usePrivacy();
   const pageLabel =
     navItems.find((i) => location.pathname.startsWith(i.to))?.label ?? "Painel";
   const [isCollapsed, setIsCollapsed] = useState(() => {
@@ -134,20 +138,57 @@ const AppLayout = () => {
             </NavLink>
           ))}
         </nav>
-      </aside>
-      <main className="flex-1 min-w-0 overflow-auto p-6 lg:p-8 app-glass-theme relative isolation-isolate">
-        {/* Esferas de iluminação ambiental tridimensional para o efeito Glassmorphism */}
-        <div className="bi-glass-ambient-orbs">
-          <div className="bi-orb-1" />
-          <div className="bi-orb-2" />
-          <div className="bi-orb-3" />
-          <div className="bi-orb-4" />
-        </div>
 
-        <div className="relative z-10">
-          <Outlet />
+        {/* Rodapé da Sidebar: Acesso ao Modo Discreto */}
+        <div className="p-3 border-t border-sidebar-border mt-auto">
+          <DiscreetModeToggle variant="sidebar" isCollapsed={isCollapsed} />
         </div>
-      </main>
+      </aside>
+
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Barra Superior / Header do Sistema */}
+        <header className="sticky top-0 z-30 h-16 border-b border-border/40 bg-card/75 backdrop-blur-md px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4 shadow-xs">
+          <div className="flex items-center gap-3 min-w-0">
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-base sm:text-lg font-bold tracking-tight text-foreground truncate">
+                  {pageLabel}
+                </h1>
+                {isDiscreetMode && (
+                  <span className="hidden md:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-300/60 animate-in fade-in">
+                    <ShieldCheck className="w-3 h-3 text-amber-600 dark:text-amber-400" />
+                    Proteção Arena Ativa
+                  </span>
+                )}
+              </div>
+              <p className="text-[11px] text-muted-foreground hidden sm:block">
+                Arena Equipe Marco Roza • Gestão Beach Tennis
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 sm:gap-3">
+            <DiscreetModeToggle variant="header" />
+          </div>
+        </header>
+
+        <main className="flex-1 min-w-0 overflow-auto p-6 lg:p-8 app-glass-theme relative isolation-isolate">
+          {/* Esferas de iluminação ambiental tridimensional para o efeito Glassmorphism */}
+          <div className="bi-glass-ambient-orbs">
+            <div className="bi-orb-1" />
+            <div className="bi-orb-2" />
+            <div className="bi-orb-3" />
+            <div className="bi-orb-4" />
+          </div>
+
+          <div className="relative z-10">
+            <Outlet />
+          </div>
+        </main>
+      </div>
+
+      {/* Botão Flutuante Rápido no Tablet / Mobile */}
+      <DiscreetModeToggle variant="floating" />
     </div>
   );
 };

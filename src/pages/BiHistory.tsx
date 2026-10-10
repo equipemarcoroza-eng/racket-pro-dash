@@ -1273,10 +1273,10 @@ export default function BiHistory() {
                 <DollarSign className="w-4 h-4 text-blue-600 shrink-0" />
               </div>
               <div className="mt-2">
-                <div className="flex items-baseline gap-1.5">
+                <div className="flex items-baseline gap-1.5 sensitive-data">
                   <span className="text-lg xl:text-xl font-bold tracking-tight text-foreground">{formatCurrency(consolidatedKpis.receitaTotalAcumulada)}</span>
                 </div>
-                <div className="mt-1.5">
+                <div className="mt-1.5 sensitive-data">
                   <Badge className="bg-blue-500/10 text-blue-700 dark:text-blue-300 font-bold border-none text-[10px]">
                     Média: {formatCurrency(consolidatedKpis.mrrMedioPeriodo)}/mês
                   </Badge>
@@ -1296,7 +1296,7 @@ export default function BiHistory() {
                 <Award className="w-4 h-4 text-emerald-600 shrink-0" />
               </div>
               <div className="mt-2">
-                <div className="flex items-baseline gap-1.5">
+                <div className="flex items-baseline gap-1.5 sensitive-data">
                   <span className="text-lg xl:text-xl font-bold tracking-tight text-foreground">{formatCurrency(consolidatedKpis.ltvEstimado)}</span>
                 </div>
                 <div className="mt-1.5">
@@ -1319,7 +1319,7 @@ export default function BiHistory() {
                 <Activity className="w-4 h-4 text-amber-500 shrink-0" />
               </div>
               <div className="mt-2">
-                <div className="flex items-baseline gap-1.5">
+                <div className="flex items-baseline gap-1.5 sensitive-data">
                   <span className="text-lg xl:text-xl font-bold tracking-tight text-foreground">{formatCurrency(consolidatedKpis.ticketMedioGeral)}</span>
                 </div>
                 <div className="mt-1.5">
@@ -1624,12 +1624,12 @@ export default function BiHistory() {
                     Comparativo entre o valor total faturado nas mensalidades e o total efetivamente pago pelos alunos.
                   </CardDescription>
                 </div>
-                <Badge variant="outline" className="text-xs text-emerald-600 border-emerald-300">
+                <Badge variant="outline" className="text-xs text-emerald-600 border-emerald-300 sensitive-data">
                   {formatCurrency(consolidatedKpis.receitaTotalAcumulada)} Arrecadados
                 </Badge>
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="privacy-blur-chart">
               <div className="h-[290px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={historicalSeries} margin={{ top: 10, right: 15, left: 0, bottom: 0 }}>
@@ -1665,7 +1665,7 @@ export default function BiHistory() {
               <CardTitle className="text-base font-bold">Evolução do Ticket Médio</CardTitle>
               <CardDescription className="text-xs">Valor médio mensal por aluno ativo.</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="privacy-blur-chart">
               <div className="h-[290px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={historicalSeries} margin={{ top: 10, right: 15, left: 0, bottom: 0 }}>
@@ -1742,8 +1742,8 @@ export default function BiHistory() {
                           <span className="text-muted-foreground font-medium">0</span>
                         )}
                       </td>
-                      <td className="py-2.5 px-3 font-bold text-foreground">{formatCurrency(m.receitaPrevista)}</td>
-                      <td className="py-2.5 px-3 font-mono text-muted-foreground">{formatCurrency(m.ticketMedio)}</td>
+                      <td className="py-2.5 px-3 font-bold text-foreground sensitive-data">{formatCurrency(m.receitaPrevista)}</td>
+                      <td className="py-2.5 px-3 font-mono text-muted-foreground sensitive-data">{formatCurrency(m.ticketMedio)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -2055,18 +2055,18 @@ export default function BiHistory() {
                     <p className="text-sm leading-relaxed text-muted-foreground">
                       Com a profissionalização da gestão e a implementação de mensalidades fixas por recorrência, o faturamento
                       da escola deixou de ser uma incógnita sazonal. A criação de planos estruturados (1x, 2x e 3x por semana)
-                      permitiu ancorar a receita em patamares estáveis de <strong>{formatCurrency(consolidatedKpis.mrrAtual)} mensais</strong>.
+                      permitiu ancorar a receita em patamares estáveis de <strong className="sensitive-data">{formatCurrency(consolidatedKpis.mrrAtual)} mensais</strong>.
                     </p>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2">
                       <div className="bg-muted/50 p-3 rounded-lg">
                         <span className="text-[10px] uppercase font-bold text-muted-foreground">Receita Histórica Paga</span>
-                        <p className="text-base font-black text-emerald-600 mt-0.5">
+                        <p className="text-base font-black text-emerald-600 mt-0.5 sensitive-data">
                           {formatCurrency(consolidatedKpis.receitaTotalAcumulada)}
                         </p>
                       </div>
                       <div className="bg-muted/50 p-3 rounded-lg">
                         <span className="text-[10px] uppercase font-bold text-muted-foreground">Ticket Médio Consolidado</span>
-                        <p className="text-base font-black text-foreground mt-0.5">
+                        <p className="text-base font-black text-foreground mt-0.5 sensitive-data">
                           {formatCurrency(consolidatedKpis.ticketMedioGeral)}
                         </p>
                       </div>
@@ -2094,7 +2094,7 @@ export default function BiHistory() {
                       Em qualquer escola de esportes de raquete, o maior desafio operacional é a desistência nos primeiros 90 dias.
                       Ao analisar os dados de frequência da Marco Roza, notamos que o aluno que conclui os 3 primeiros meses
                       atinge uma taxa de sobrevivência impressionante de <strong>88% ao longo do ano</strong>, acumulando um LTV médio
-                      superior a <strong>{formatCurrency(consolidatedKpis.ltvEstimado)}</strong>.
+                      superior a <strong className="sensitive-data">{formatCurrency(consolidatedKpis.ltvEstimado)}</strong>.
                     </p>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2">
                       <div className="bg-muted/50 p-3 rounded-lg">

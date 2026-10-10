@@ -319,24 +319,24 @@ const Expenses = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div className="bg-primary/5 border-l-4 border-primary p-5 rounded-lg shadow-sm">
               <p className="text-xs text-primary font-bold uppercase tracking-wider mb-1">Total Lançado</p>
-              <p className="text-3xl font-black">R$ {periodMetrics.totalLancado.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
+              <p className="text-3xl font-black sensitive-data">R$ {periodMetrics.totalLancado.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
               <p className="text-[10px] text-muted-foreground mt-2 font-medium">Todas as contas com vencimento no período.</p>
             </div>
             <div className="bg-green-50 border-l-4 border-green-500 p-5 rounded-lg shadow-sm">
               <p className="text-xs text-green-700 font-bold uppercase tracking-wider mb-1">Total Pago</p>
-              <p className="text-3xl font-black text-green-600">R$ {periodMetrics.totalPago.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
+              <p className="text-3xl font-black text-green-600 sensitive-data">R$ {periodMetrics.totalPago.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
               <p className="text-[10px] text-muted-foreground mt-2 font-medium">Contas liquidadas no período.</p>
             </div>
             <div className="bg-red-50 border-l-4 border-red-500 p-5 rounded-lg shadow-sm">
               <p className="text-xs text-red-700 font-bold uppercase tracking-wider mb-1">Total Pendente</p>
-              <p className="text-3xl font-black text-red-600">R$ {periodMetrics.totalPendente.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
+              <p className="text-3xl font-black text-red-600 sensitive-data">R$ {periodMetrics.totalPendente.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
               <p className="text-[10px] text-muted-foreground mt-2 font-medium">Contas em aberto com vencimento no período.</p>
             </div>
           </div>
 
           {/* Gráficos */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-4">
-            <div className="h-[320px] border rounded-xl p-5 bg-card shadow-sm">
+            <div className="h-[320px] border rounded-xl p-5 bg-card shadow-sm privacy-blur-chart">
               <p className="text-sm font-bold text-muted-foreground mb-6 flex items-center gap-2">
                 <span className="w-2 h-2 bg-primary rounded-full"></span>
                 Comparativo de Despesas (Período)
@@ -360,7 +360,7 @@ const Expenses = () => {
               </ResponsiveContainer>
             </div>
 
-            <div className="h-[320px] border rounded-xl p-5 bg-card shadow-sm">
+            <div className="h-[320px] border rounded-xl p-5 bg-card shadow-sm privacy-blur-chart">
               <p className="text-sm font-bold text-muted-foreground mb-6 flex items-center gap-2">
                 <span className="w-2 h-2 bg-primary rounded-full"></span>
                 Composição do Contas a Pagar (Período)
@@ -422,7 +422,7 @@ const Expenses = () => {
             {filteredCategories.map((cat) => (
               <div key={cat.id} className="border rounded-md p-4 group relative">
                 <p className="text-sm text-muted-foreground">{cat.categoria}</p>
-                <p className="text-xl font-bold">R$ {cat.valor.toLocaleString("pt-BR")}</p>
+                <p className="text-xl font-bold sensitive-data">R$ {cat.valor.toLocaleString("pt-BR")}</p>
                 <Button variant="ghost" size="sm" className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 text-xs" onClick={() => handleDeleteCategory(cat.id)}>✕</Button>
               </div>
             ))}
@@ -452,7 +452,7 @@ const Expenses = () => {
                       <span className="text-xs text-muted-foreground">{p.categoria}</span>
                     </div>
                     <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto">
-                      <span className="font-semibold mr-2">R$ {p.valor.toLocaleString("pt-BR")}</span>
+                      <span className="font-semibold mr-2 sensitive-data">R$ {p.valor.toLocaleString("pt-BR")}</span>
                       <div className="flex gap-1.5">
                         <Button variant="outline" size="sm" className="h-8 px-2.5 text-xs" onClick={() => setViewingPayment(p)}>Visualizar</Button>
                         <Button variant="outline" size="sm" className="h-8 px-2.5 text-xs" onClick={() => openEdit(p)}>Editar</Button>
@@ -470,7 +470,7 @@ const Expenses = () => {
               </div>
               <div className="mt-4 bg-secondary rounded-md p-3">
                 <p className="text-sm text-muted-foreground">Total previsto no período</p>
-                <p className="text-xl font-bold">R$ {totalPrevisto.toLocaleString("pt-BR")}</p>
+                <p className="text-xl font-bold sensitive-data">R$ {totalPrevisto.toLocaleString("pt-BR")}</p>
               </div>
             </CardContent>
           </Card>
@@ -508,7 +508,7 @@ const Expenses = () => {
                         <span className="text-xs text-muted-foreground">{p.categoria}</span>
                       </div>
                       <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto">
-                        <span className="font-semibold mr-2 text-muted-foreground">R$ {p.valor.toLocaleString("pt-BR")}</span>
+                        <span className="font-semibold mr-2 text-muted-foreground sensitive-data">R$ {p.valor.toLocaleString("pt-BR")}</span>
                         <div className="flex gap-1">
                           <Button variant="outline" size="sm" className="h-8 px-2.5 text-xs" onClick={() => setViewingPayment(p)}>Visualizar</Button>
                         </div>
@@ -530,15 +530,15 @@ const Expenses = () => {
             <p className="text-xl font-bold">Resumo Geral</p>
             <div className="border rounded-md p-3 flex justify-between">
               <span className="text-sm">Pagamentos Totais (Geral)</span>
-              <span className="font-semibold">R$ {totalPagamentos.toLocaleString("pt-BR")}</span>
+              <span className="font-semibold sensitive-data">R$ {totalPagamentos.toLocaleString("pt-BR")}</span>
             </div>
             <div className="border rounded-md p-3 flex justify-between bg-orange-50/50">
               <span className="text-sm font-medium text-orange-700">Contas Pendentes</span>
-              <span className="font-bold text-orange-700">R$ {totalPendentes.toLocaleString("pt-BR")}</span>
+              <span className="font-bold text-orange-700 sensitive-data">R$ {totalPendentes.toLocaleString("pt-BR")}</span>
             </div>
             <div className="border rounded-md p-3 flex justify-between bg-green-50/50">
               <span className="text-sm font-medium text-green-700">Contas Pagas</span>
-              <span className="font-bold text-green-700">R$ {totalPagas.toLocaleString("pt-BR")}</span>
+              <span className="font-bold text-green-700 sensitive-data">R$ {totalPagas.toLocaleString("pt-BR")}</span>
             </div>
             <Button variant="outline" className="w-full gap-2" onClick={handlePrintPDF}>
               <Printer className="h-4 w-4" /> Imprimir (PDF)
@@ -603,7 +603,7 @@ const Expenses = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div><p className="text-xs text-muted-foreground uppercase font-bold">Fornecedor</p><p className="font-medium text-lg">{viewingPayment.fornecedor}</p></div>
                 <div><p className="text-xs text-muted-foreground uppercase font-bold">Categoria</p><p className="font-medium text-lg">{viewingPayment.categoria}</p></div>
-                <div><p className="text-xs text-muted-foreground uppercase font-bold">Valor</p><p className="font-bold text-xl text-primary">R$ {viewingPayment.valor.toLocaleString("pt-BR")}</p></div>
+                <div><p className="text-xs text-muted-foreground uppercase font-bold">Valor</p><p className="font-bold text-xl text-primary sensitive-data">R$ {viewingPayment.valor.toLocaleString("pt-BR")}</p></div>
                 <div><p className="text-xs text-muted-foreground uppercase font-bold">Vencimento</p><p className="font-medium text-lg">{viewingPayment.vencimento ? viewingPayment.vencimento.split('-').reverse().join('/') : "—"}</p></div>
                 <div><p className="text-xs text-muted-foreground uppercase font-bold">Status</p><p className="font-medium text-lg uppercase text-orange-500">{viewingPayment.status}</p></div>
               </div>

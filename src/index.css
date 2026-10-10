@@ -386,4 +386,57 @@
   animation: bubbleRise2 4.1s cubic-bezier(0.4, 0, 0.6, 1) infinite 1.1s;
 }
 
+/* ========================================================================= */
+/* MODO DISCRETO / ARENA PRIVACY SHIELD                                      */
+/* ========================================================================= */
+
+body.privacy-mode .sensitive-data,
+body.privacy-mode .privacy-blur,
+body.privacy-mode [data-sensitive="true"] {
+  filter: blur(8px) !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  transition: filter 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  position: relative;
+}
+
+/* Espiar temporariamente ao passar o cursor ou dar foco */
+body.privacy-mode .sensitive-data:hover,
+body.privacy-mode .sensitive-data:focus,
+body.privacy-mode .privacy-blur:hover,
+body.privacy-mode .privacy-blur:focus,
+body.privacy-mode [data-sensitive="true"]:hover,
+body.privacy-mode [data-sensitive="true"]:focus {
+  filter: blur(0px) !important;
+}
+
+/* Gráficos e visualizações analíticas sensíveis */
+body.privacy-mode .privacy-blur-chart {
+  filter: blur(12px) !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  transition: filter 0.3s ease;
+  cursor: pointer;
+}
+
+body.privacy-mode .privacy-blur-chart:hover,
+body.privacy-mode .privacy-blur-chart:focus {
+  filter: blur(0px) !important;
+}
+
+/* Cilindros / Termômetros de BI */
+body.privacy-mode .privacy-blur-cylinder {
+  filter: blur(8px) !important;
+  user-select: none !important;
+  transition: filter 0.25s ease;
+  cursor: pointer;
+}
+
+body.privacy-mode .privacy-blur-cylinder:hover,
+body.privacy-mode .privacy-blur-cylinder:focus {
+  filter: blur(0px) !important;
+}
+
+
 

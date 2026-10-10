@@ -1099,15 +1099,15 @@ const Students = () => {
                 <div className="grid grid-cols-3 gap-4">
                   <div className="p-3 border rounded-lg bg-blue-50/50">
                     <p className="text-[10px] font-bold text-blue-700 uppercase">Total Faturado</p>
-                    <p className="text-xl font-black">R$ {getStudentFinance().totals.faturado.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
+                    <p className="text-xl font-black sensitive-data">R$ {getStudentFinance().totals.faturado.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
                   </div>
                   <div className="p-3 border rounded-lg bg-green-50/50">
                     <p className="text-[10px] font-bold text-green-700 uppercase">Mensalidades Recebidas</p>
-                    <p className="text-xl font-black">R$ {getStudentFinance().totals.pago.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
+                    <p className="text-xl font-black sensitive-data">R$ {getStudentFinance().totals.pago.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
                   </div>
                   <div className="p-3 border rounded-lg bg-orange-50/50">
                     <p className="text-[10px] font-bold text-orange-700 uppercase">Em Aberto</p>
-                    <p className="text-xl font-black">R$ {getStudentFinance().totals.aReceber.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
+                    <p className="text-xl font-black sensitive-data">R$ {getStudentFinance().totals.aReceber.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
                   </div>
                 </div>
                 
@@ -1129,7 +1129,7 @@ const Students = () => {
                           <TableRow key={r.id}>
                             <TableCell className="font-medium">{r.vencimento}</TableCell>
                             <TableCell>{r.plano}</TableCell>
-                            <TableCell>R$ {r.valor.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</TableCell>
+                            <TableCell className="sensitive-data">R$ {r.valor.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</TableCell>
                             <TableCell><Badge variant={r.status === "Pago" ? "default" : r.status === "Isento" ? "secondary" : "outline"}>{r.status}</Badge></TableCell>
                           </TableRow>
                         ))

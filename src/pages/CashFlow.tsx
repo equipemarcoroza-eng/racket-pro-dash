@@ -318,13 +318,13 @@ const CashFlow = () => {
                 ].map((item) => (
                   <div key={item.label} className="border rounded-md p-3">
                     <p className="text-sm text-muted-foreground">{item.label}</p>
-                    <p className={`text-xl font-bold ${item.color}`}>
+                    <p className={`text-xl font-bold ${item.color} sensitive-data`}>
                       R$ {item.value.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </p>
                   </div>
                 ))}
               </div>
-              <div ref={chartRef} className="h-[300px] w-full bg-white p-2 rounded-md">
+              <div ref={chartRef} className="h-[300px] w-full bg-white p-2 rounded-md privacy-blur-chart">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={metrics.dynamicChartData}>
                     <defs>
@@ -374,19 +374,19 @@ const CashFlow = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
                 <div className="border rounded-md p-3">
                   <p className="text-sm text-muted-foreground">Receitas previstas (total faturamento)</p>
-                  <p className="text-xl font-bold">R$ {metrics.receitasPrevistas.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                  <p className="text-xl font-bold sensitive-data">R$ {metrics.receitasPrevistas.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                 </div>
                 <div className="border rounded-md p-3 bg-blue-50/30 border-blue-100">
                   <p className="text-sm text-blue-700 font-medium">Total de Mensalidades (Ativos/Inativos e Pagos)</p>
-                  <p className="text-xl font-black text-blue-800">R$ {metrics.totalMensalidadesAtivos.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                  <p className="text-xl font-black text-blue-800 sensitive-data">R$ {metrics.totalMensalidadesAtivos.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                 </div>
                 <div className="border rounded-md p-3 bg-amber-50/30 border-amber-100">
                   <p className="text-sm text-amber-700 font-medium">Total Pendente (Ativos/Inativos)</p>
-                  <p className="text-xl font-black text-amber-800">R$ {metrics.totalPendentesAtivosInativos.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                  <p className="text-xl font-black text-amber-800 sensitive-data">R$ {metrics.totalPendentesAtivosInativos.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                 </div>
                 <div className="border rounded-md p-3">
                   <p className="text-sm text-muted-foreground">Despesas estimadas</p>
-                  <p className="text-xl font-bold">R$ {metrics.despesasPrevistas.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                  <p className="text-xl font-bold sensitive-data">R$ {metrics.despesasPrevistas.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                 </div>
               </div>
             </CardContent>
@@ -406,7 +406,7 @@ const CashFlow = () => {
             ].map((item) => (
               <div key={item.label} className="border rounded-md p-3">
                 <p className="text-sm text-muted-foreground">{item.label}</p>
-                <p className={`text-xl font-bold ${item.value >= 0 ? "text-foreground" : "text-destructive"}`}>
+                <p className={`text-xl font-bold ${item.value >= 0 ? "text-foreground" : "text-destructive"} sensitive-data`}>
                   R$ {item.value.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </p>
               </div>
