@@ -11,9 +11,10 @@ import { useAppContext } from "@/contexts/AppContext";
 import { toast } from "sonner";
 import { startOfWeek, addDays, format, startOfDay, addWeeks, subWeeks } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Search, Plus, Edit, Trash2, ChevronLeft, ChevronRight, Printer } from "lucide-react";
+import { Search, Plus, Edit, Trash2, ChevronLeft, ChevronRight, Printer, Compass } from "lucide-react";
 import logo from "@/assets/logo.png";
 import { CLASS_LIMIT, type LessonType, type LessonPlan as LessonPlanType } from "@/data/mockData";
+import { TacticalBoardModal } from "@/components/TacticalBoardModal";
 
 const dias = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 const horarios = [
@@ -44,6 +45,7 @@ const LessonPlan = () => {
   
   const [showPrintModal, setShowPrintModal] = useState(false);
   const [printDate, setPrintDate] = useState(format(new Date(), "yyyy-MM-dd"));
+  const [showTacticalBoard, setShowTacticalBoard] = useState(false);
 
   // Week calculation
   const weekStart = startOfWeek(currentWeek, { weekStartsOn: 1 });
@@ -312,6 +314,13 @@ const LessonPlan = () => {
                 <Button variant="ghost" size="icon" className="h-8 w-8 text-white hover:bg-white/20 hover:text-white" onClick={handleNextWeek}><ChevronRight className="h-4 w-4" /></Button>
               </div>
               <Button 
+                variant="outline" 
+                onClick={() => setShowTacticalBoard(true)} 
+                className="flex gap-2 bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold border-none shadow-md"
+              >
+                <Compass className="h-4 w-4 text-slate-950" /> Quadro Tático 2D
+              </Button>
+              <Button 
                 variant="default" 
                 onClick={() => setShowPrintModal(true)} 
                 className="flex gap-2 shadow-sm font-semibold bg-white text-[#1c2394] hover:bg-white/90 border-none"
@@ -533,11 +542,23 @@ const LessonPlan = () => {
                 rows={4}
               />
             </div>
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setEditingPlan(null)}>Cancelar</Button>
-              <Button onClick={() => editingPlan && handleSavePlan(editingPlan.slotId, editingPlan.date, schedule.find(s => s.id === editingPlan.slotId)?.quadra || "")}>
-                Salvar Plano
+            <div className="flex items-center justify-between pt-1">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setShowTacticalBoard(true)}
+                className="gap-1.5 text-xs border-amber-400 text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30"
+              >
+                <Compass className="h-3.5 w-3.5" />
+                Desenhar no Quadro Tático 2D
               </Button>
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={() => setEditingPlan(null)}>Cancelar</Button>
+                <Button onClick={() => editingPlan && handleSavePlan(editingPlan.slotId, editingPlan.date, schedule.find(s => s.id === editingPlan.slotId)?.quadra || "")}>
+                  Salvar Plano
+                </Button>
+              </div>
             </div>
           </div>
         </DialogContent>
@@ -568,6 +589,16 @@ const LessonPlan = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Quadro Tático 2D do Treinador */}
+      <TacticalBoardModal
+        open={showTacticalBoard}
+        onOpenChange={setShowTacticalBoard}
+        initialNotes={planObservacoes}
+        onSaveToLessonPlan={(tacticalSummary) => {
+          setPlanObservacoes((prev) => (prev ? `${prev}\n\n${tacticalSummary}` : tacticalSummary));
+        }}
+      />
     </div>
   );
 };

@@ -6,6 +6,9 @@ import { useAppContext } from "@/contexts/AppContext";
 import { TrendingUp, Users, DollarSign, Wallet, AlertCircle, BarChart as BarChartIcon, FileText } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { FinancialWhatIfSimulator } from "@/components/FinancialWhatIfSimulator";
+import { Sparkles, LineChart } from "lucide-react";
 import logo from "@/assets/logo.png";
 import { toast } from "sonner";
 
@@ -282,7 +285,24 @@ const FinancialProjection = () => {
 
   return (
     <div className="space-y-6">
-      <Card className="bg-gradient-to-br from-[#0f1236] via-[#1c2394] to-[#de392a] text-white border-none shadow-lg relative overflow-hidden">
+      <Tabs defaultValue="whatif" className="w-full">
+        <TabsList className="grid grid-cols-2 max-w-md mb-4 bg-muted/80 p-1">
+          <TabsTrigger value="whatif" className="gap-2 text-xs sm:text-sm font-semibold text-emerald-600 dark:text-emerald-400">
+            <Sparkles className="h-4 w-4" />
+            Simulador What-If
+          </TabsTrigger>
+          <TabsTrigger value="linear" className="gap-2 text-xs sm:text-sm font-semibold">
+            <LineChart className="h-4 w-4" />
+            Projeção Linear
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="whatif" className="space-y-6 mt-0">
+          <FinancialWhatIfSimulator />
+        </TabsContent>
+
+        <TabsContent value="linear" className="space-y-6 mt-0">
+          <Card className="bg-gradient-to-br from-[#0f1236] via-[#1c2394] to-[#de392a] text-white border-none shadow-lg relative overflow-hidden">
         <div className="absolute top-0 right-0 h-32 w-32 rounded-full bg-white/10 blur-xl pointer-events-none" />
         <CardContent className="p-6 relative z-10">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -499,6 +519,8 @@ const FinancialProjection = () => {
           </Table>
         </CardContent>
       </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

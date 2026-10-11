@@ -5,9 +5,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useAppContext } from "@/contexts/AppContext";
 import { toast } from "sonner";
-import { Cake, Printer, Edit, Check, X } from "lucide-react";
+import { Cake, Printer, Edit, Check, X, MessageCircle } from "lucide-react";
 import logo from "@/assets/logo.png";
 import { Input } from "@/components/ui/input";
+import { WhatsAppQuickDialog } from "@/components/WhatsAppQuickDialog";
+import { type WhatsAppMessageOptions } from "@/lib/whatsapp";
 
 const months = [
   { value: "01", label: "Janeiro" },
@@ -32,6 +34,13 @@ const Birthdays = () => {
   const { setStudents } = useAppContext();
   const [editingObsId, setEditingObsId] = useState<string | null>(null);
   const [tempObs, setTempObs] = useState("");
+  const [whatsAppModal, setWhatsAppModal] = useState<{
+    open: boolean;
+    options: WhatsAppMessageOptions;
+  }>({
+    open: false,
+    options: { phone: "", studentName: "", type: "birthday" },
+  });
 
   const filteredStudents = students.filter((s) => {
     if (!s.dataNascimento) return false;
@@ -150,6 +159,7 @@ const Birthdays = () => {
                   <TableHead>Categoria</TableHead>
                   <TableHead>Data de Nascimento</TableHead>
                   <TableHead>Observações</TableHead>
+                  <TableHead className="text-right">Parabéns</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -197,11 +207,32 @@ const Birthdays = () => {
                           </div>
                         )}
                       </TableCell>
+                      <TableCell className="text-right">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            const phone = s.whatsappAluno || s.whatsappResponsavel || "";
+                            setWhatsAppModal({
+                              open: true,
+                              options: {
+                                phone,
+                                studentName: s.nome,
+                                type: "birthday",
+                              },
+                            });
+                          }}
+                          className="h-8 text-xs bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 gap-1.5 font-medium"
+                        >
+                          <MessageCircle className="h-3.5 w-3.5" />
+                          Felicitar
+                        </Button>
+                      </TableCell>
                     </TableRow>
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                       Nenhum aniversariante encontrado para este mês.
                     </TableCell>
                   </TableRow>
@@ -219,6 +250,12 @@ const Birthdays = () => {
           )}
         </CardContent>
       </Card>
+
+      <WhatsAppQuickDialog
+        open={whatsAppModal.open}
+        onOpenChange={(open) => setWhatsAppModal((prev) => ({ ...prev, open }))}
+        options={whatsAppModal.options}
+      />
     </div>
   );
 };

@@ -14,6 +14,7 @@ import {
   PieChart,
   LineChart,
   RotateCcw,
+  Tv,
 } from "lucide-react";
 import logo from "@/assets/logo.png";
 import { Helmet } from "react-helmet-async";
@@ -24,6 +25,7 @@ import { usePrivacy } from "@/contexts/PrivacyContext";
 import { ShieldCheck } from "lucide-react";
 
 const navItems = [
+  { to: "/arena-live", label: "Modo TV / Arena Live", icon: Tv },
   { to: "/bi-history", label: "BI Financeiro", icon: LineChart },
   { to: "/bi-dashboard", label: "BI Comportamental", icon: PieChart },
   { to: "/students", label: "Alunos", icon: Users },

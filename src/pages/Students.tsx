@@ -21,9 +21,11 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import type { Student } from "@/data/mockData";
 import { useAppContext, calculateAge, getCategoryFromBirthDate } from "@/contexts/AppContext";
-import { toast } from "sonner";
-import { Printer, Trash2, Award, Clock, Sparkles, Cake, PartyPopper, ArrowRight, MessageCircle } from "lucide-react";
+import { Printer, Trash2, Award, Clock, Sparkles, Cake, PartyPopper, ArrowRight, MessageCircle, Trophy } from "lucide-react";
 import logo from "@/assets/logo.png";
+import { AthleteCardModal } from "@/components/AthleteCardModal";
+import { WhatsAppQuickDialog } from "@/components/WhatsAppQuickDialog";
+import { type WhatsAppMessageOptions } from "@/lib/whatsapp";
 
 const months = [
   { value: "01", label: "Janeiro" },
@@ -125,10 +127,13 @@ const Students = () => {
   const [sexoFilter, setSexoFilter] = useState<Student["sexo"] | null>(null);
   const [form, setForm] = useState<FormState>(emptyForm);
   const [studentToDelete, setStudentToDelete] = useState<string | null>(null);
-  const [showEntryDateModal, setShowEntryDateModal] = useState(false);
-  const [queryEntryDate, setQueryEntryDate] = useState(() => {
-    const now = new Date();
-    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
+  const [athleteCardStudent, setAthleteCardStudent] = useState<Student | null>(null);
+  const [whatsAppModal, setWhatsAppModal] = useState<{
+    open: boolean;
+    options: WhatsAppMessageOptions;
+  }>({
+    open: false,
+    options: { phone: "", studentName: "", type: "custom" },
   });
 
   const navigate = useNavigate();
@@ -1054,7 +1059,40 @@ const Students = () => {
                     <Badge variant={statusVariant[s.status]}>{s.status}</Badge>
                   </TableCell>
                   <TableCell>
-                    <div className="flex gap-1">
+                    <div className="flex gap-1 flex-wrap items-center">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setAthleteCardStudent(s)}
+                        className="bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 border-amber-500/30 gap-1 font-semibold"
+                        title="Ver Card EA Sports do Atleta"
+                      >
+                        <Trophy className="h-3.5 w-3.5" />
+                        Card EA
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          const phone = s.whatsappAluno || s.whatsappResponsavel || "";
+                          setWhatsAppModal({
+                            open: true,
+                            options: {
+                              phone,
+                              studentName: s.nome,
+                              type: "custom",
+                              details: {
+                                planName: getPlanoNome(s.planoId),
+                              },
+                            },
+                          });
+                        }}
+                        className="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 gap-1"
+                        title="Enviar WhatsApp"
+                      >
+                        <MessageCircle className="h-3.5 w-3.5" />
+                        Zap
+                      </Button>
                       <Button variant="outline" size="sm" onClick={() => setViewingStudent(s)}>Visualizar</Button>
                       <Button variant="outline" size="sm" onClick={() => openEdit(s)}>Editar</Button>
                       <Button variant="outline" size="sm" className="text-blue-600 border-blue-200 hover:bg-blue-50" onClick={() => { setReportStudent(s); setReportType("finance"); }}>Financeiro</Button>
@@ -1295,6 +1333,20 @@ const Students = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Card Oficial do Atleta EA Sports */}
+      <AthleteCardModal
+        open={!!athleteCardStudent}
+        onOpenChange={(open) => !open && setAthleteCardStudent(null)}
+        student={athleteCardStudent}
+      />
+
+      {/* Disparo Rápido de WhatsApp */}
+      <WhatsAppQuickDialog
+        open={whatsAppModal.open}
+        onOpenChange={(open) => setWhatsAppModal((prev) => ({ ...prev, open }))}
+        options={whatsAppModal.options}
+      />
     </div>
   );
 };

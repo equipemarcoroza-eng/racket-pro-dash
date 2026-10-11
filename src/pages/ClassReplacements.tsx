@@ -24,9 +24,11 @@ import {
   ChevronUp,
   ChevronsUpDown,
   Phone,
-  User
+  User,
+  Zap,
 } from "lucide-react";
 import logo from "@/assets/logo.png";
+import { SmartReplacementMatchmaker } from "@/components/SmartReplacementMatchmaker";
 
 const formatDateBr = (dateStr: string) => {
   if (!dateStr) return "—";
@@ -53,6 +55,10 @@ const ClassReplacements = () => {
 
   // Track expanded students (all open by default for convenience)
   const [expandedStudents, setExpandedStudents] = useState<Record<string, boolean>>({});
+
+  // Matchmaker State
+  const [matchmakerOpen, setMatchmakerOpen] = useState(false);
+  const [matchmakerTargetStudentId, setMatchmakerTargetStudentId] = useState("");
 
   // Dialog state for registering replacement
   const [dialogState, setDialogState] = useState<{
@@ -499,6 +505,16 @@ const ClassReplacements = () => {
           </div>
 
           <div className="flex items-center gap-2 flex-wrap">
+            <Button
+              onClick={() => {
+                setMatchmakerTargetStudentId("");
+                setMatchmakerOpen(true);
+              }}
+              className="bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold gap-2 cursor-pointer shadow-md border-none"
+            >
+              <Zap className="h-4 w-4 text-slate-950" />
+              Matchmaker de Vagas
+            </Button>
             <Button
               onClick={handleExportPDF}
               variant="outline"
@@ -958,14 +974,29 @@ const ClassReplacements = () => {
                                             Reverter
                                           </Button>
                                         ) : (
-                                          <Button
-                                            size="sm"
-                                            className="bg-purple-600 hover:bg-purple-700 text-white text-xs h-7 gap-1 cursor-pointer"
-                                            onClick={() => handleOpenRegisterReplacement(item)}
-                                          >
-                                            <RotateCcw className="h-3 w-3" />
-                                            Agendar
-                                          </Button>
+                                          <div className="flex items-center gap-1">
+                                            <Button
+                                              size="sm"
+                                              variant="outline"
+                                              className="border-amber-400 text-amber-600 dark:text-amber-400 hover:bg-amber-50 text-xs h-7 gap-1 cursor-pointer font-medium"
+                                              onClick={() => {
+                                                setMatchmakerTargetStudentId(item.student.id);
+                                                setMatchmakerOpen(true);
+                                              }}
+                                              title="Buscar turma compatível pelo nível"
+                                            >
+                                              <Zap className="h-3 w-3" />
+                                              Match
+                                            </Button>
+                                            <Button
+                                              size="sm"
+                                              className="bg-purple-600 hover:bg-purple-700 text-white text-xs h-7 gap-1 cursor-pointer"
+                                              onClick={() => handleOpenRegisterReplacement(item)}
+                                            >
+                                              <RotateCcw className="h-3 w-3" />
+                                              Agendar
+                                            </Button>
+                                          </div>
                                         )}
                                       </div>
                                     </TableCell>
@@ -1203,6 +1234,42 @@ const ClassReplacements = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Matchmaker Inteligente de Reposições */}
+      <SmartReplacementMatchmaker
+        open={matchmakerOpen}
+        onOpenChange={setMatchmakerOpen}
+        targetStudentId={matchmakerTargetStudentId}
+        onConfirmReplacement={(slotId, dateIso, studentId) => {
+          // Registra a reposição se houver falta pendente
+          const studentLogs = attendanceLogs.filter((l) => l.alunoId === studentId);
+          const pendingLog = studentLogs.find((l) => l.presente === "Falta" || l.presente === "Cancelado");
+
+          if (pendingLog) {
+            setAttendanceLogs((prev) => [
+              ...prev.filter((l) => l.id !== pendingLog.id),
+              {
+                ...pendingLog,
+                presente: "Reposição",
+                dataRealizacao: dateIso,
+              },
+            ]);
+          } else {
+            // Cria um novo log de reposição
+            setAttendanceLogs((prev) => [
+              ...prev,
+              {
+                id: crypto.randomUUID(),
+                alunoId: studentId,
+                turmaId: slotId,
+                data: dateIso,
+                presente: "Reposição",
+                dataRealizacao: dateIso,
+              },
+            ]);
+          }
+        }}
+      />
     </div>
   );
 };

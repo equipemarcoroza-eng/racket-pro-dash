@@ -15,6 +15,10 @@ import logo from "@/assets/logo.png";
 
 const diasMap: Record<string, number> = { "Dom": 0, "Seg": 1, "Ter": 2, "Qua": 3, "Qui": 4, "Sex": 5, "Sáb": 6 };
 
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ChurnRadar } from "@/components/ChurnRadar";
+import { ShieldAlert, UserCheck } from "lucide-react";
+
 // Período de datas padrão inicializado no relatório de frequência
 
 const FrequencyReport = () => {
@@ -268,7 +272,20 @@ const FrequencyReport = () => {
 
   return (
     <div className="space-y-6">
-      <Card className="bg-gradient-to-br from-[#0f1236] via-[#1c2394] to-[#de392a] text-white border-none shadow-lg relative overflow-hidden">
+      <Tabs defaultValue="individual" className="w-full">
+        <TabsList className="grid grid-cols-2 max-w-md mb-4 bg-muted/80 p-1">
+          <TabsTrigger value="individual" className="gap-2 text-xs sm:text-sm font-semibold">
+            <UserCheck className="h-4 w-4" />
+            Relatório do Aluno
+          </TabsTrigger>
+          <TabsTrigger value="churn" className="gap-2 text-xs sm:text-sm font-semibold text-red-600 dark:text-red-400">
+            <ShieldAlert className="h-4 w-4" />
+            Radar Anti-Churn
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="individual" className="space-y-6 mt-0">
+          <Card className="bg-gradient-to-br from-[#0f1236] via-[#1c2394] to-[#de392a] text-white border-none shadow-lg relative overflow-hidden">
         <div className="absolute top-0 right-0 h-32 w-32 rounded-full bg-white/10 blur-xl pointer-events-none" />
         <CardHeader className="flex flex-row items-center justify-between relative z-10">
           <div>
@@ -391,6 +408,13 @@ const FrequencyReport = () => {
           </Card>
         </>
       )}
+
+        </TabsContent>
+
+        <TabsContent value="churn" className="space-y-6 mt-0">
+          <ChurnRadar />
+        </TabsContent>
+      </Tabs>
 
       {/* Dialog Especial */}
       <Dialog open={specialDialog.open} onOpenChange={(open) => !open && setSpecialDialog({ ...specialDialog, open: false })}>

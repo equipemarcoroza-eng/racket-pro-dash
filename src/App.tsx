@@ -21,6 +21,7 @@ import LessonPlan from "./pages/LessonPlan";
 import Tests from "./pages/Tests";
 import BiDashboard from "./pages/BiDashboard";
 import BiHistory from "./pages/BiHistory";
+import ArenaLiveKiosk from "./pages/ArenaLiveKiosk";
 import AppLayout from "./components/AppLayout";
 import NotFound from "./pages/NotFound";
 import { AppProvider } from "@/contexts/AppContext";
@@ -63,6 +64,9 @@ const App = () => (
                 <Route path="/bi-dashboard" element={<BiDashboard />} />
                 <Route path="/bi-history" element={<BiHistory />} />
               </Route>
+              {/* Modo TV / Arena Kiosk (Tela Cheia Dedicada) */}
+              <Route path="/arena-live" element={<ProtectedRoute><ArenaLiveKiosk /></ProtectedRoute>} />
+              <Route path="/arena-kiosk" element={<Navigate to="/arena-live" replace />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </AppProvider>
