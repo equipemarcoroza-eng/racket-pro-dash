@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -120,6 +121,8 @@ const Students = () => {
   
   const getPlanoNome = (planoId: string) => plans.find((p) => p.id === planoId)?.nome ?? "—";
   const [showForm, setShowForm] = useState(false);
+  const [showEntryDateModal, setShowEntryDateModal] = useState(false);
+  const [queryEntryDate, setQueryEntryDate] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [viewingStudent, setViewingStudent] = useState<Student | null>(null);
   const [catFilter, setCatFilter] = useState<string | null>(null);
