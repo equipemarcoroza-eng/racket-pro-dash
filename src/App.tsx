@@ -28,6 +28,7 @@ import { AppProvider } from "@/contexts/AppContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { PrivacyProvider } from "@/contexts/PrivacyContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import { CopilotoIA } from "@/components/CopilotoIA";
 
 const queryClient = new QueryClient();
 
@@ -69,6 +70,7 @@ const App = () => (
               <Route path="/arena-kiosk" element={<Navigate to="/arena-live" replace />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
+            <CopilotoIA />
           </AppProvider>
           </PrivacyProvider>
         </AuthProvider>
