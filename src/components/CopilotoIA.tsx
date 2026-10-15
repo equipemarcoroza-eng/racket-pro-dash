@@ -26,6 +26,8 @@ import {
   Users,
   RotateCcw,
   ClipboardList,
+  Layers,
+  ChevronDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -74,19 +76,109 @@ interface ChatMessage {
     urlWhatsappAnderson: string;
     urlWhatsappContato: string;
   };
+  isWelcome?: boolean;
 }
 
-const SUGESTOES_RAPIDAS = [
-  { label: "💬 Concierge Telegram 24/7", query: "Como funciona o Suporte Concierge do Telegram?" },
-  { label: "📺 Modo TV / Arena Live", query: "Como funciona o Modo TV e a sirene de troca de turmas?" },
-  { label: "📊 BI Financeiro & Vidro", query: "O que mostram os termômetros de vidro do BI Financeiro?" },
-  { label: "🔥 Card do Atleta & Streak", query: "Como funciona o Card do Atleta, streak de presenças e o status ON FIRE?" },
-  { label: "🏓 Prancheta Tática & Drills", query: "Como utilizar a Prancheta Tática e planejar treinos?" },
-  { label: "🎯 Radar de Churn", query: "Como o Radar de Churn previne a desistência de alunos?" },
-  { label: "🔄 Smart Matchmaker Reposição", query: "Como funciona o casamento inteligente de reposições de aulas?" },
-  { label: "📅 Agendar com Anderson", query: "Quero agendar uma Reunião de Alinhamento com o Anderson Diroza" },
-  { label: "🔒 Modo Discreto na Arena", query: "Para que serve o Modo Discreto na recepção da arena?" },
-  { label: "💡 Simulador What-If", query: "Como simular reajustes e novas quadras no simulador financeiro?" },
+export interface SugestaoRapida {
+  icone: string;
+  categoria: "Arena" | "BI & Gestão" | "Atletas" | "Atendimento";
+  label: string;
+  query: string;
+  descricao?: string;
+}
+
+const TODAS_SUGESTOES: SugestaoRapida[] = [
+  {
+    icone: "📺",
+    categoria: "Arena",
+    label: "Modo TV / Arena Live",
+    query: "Como funciona o Modo TV e a sirene de troca de turmas?",
+    descricao: "Painel para telões com aviso sonoro e grade ao vivo",
+  },
+  {
+    icone: "📅",
+    categoria: "Arena",
+    label: "Agenda & Horários aos Sábados",
+    query: "Como funciona a Agenda de Quadras e os horários aos sábados?",
+    descricao: "Grade semanal de quadras e professores (06h às 22h)",
+  },
+  {
+    icone: "📋",
+    categoria: "Arena",
+    label: "Controle de Turmas & Lotação",
+    query: "Como controlar a lotação das turmas e vagas por quadra?",
+    descricao: "Gestão de vagas e limites de alunos por quadra",
+  },
+  {
+    icone: "📊",
+    categoria: "BI & Gestão",
+    label: "BI Financeiro & Vidro",
+    query: "O que mostram os termômetros de vidro do BI Financeiro?",
+    descricao: "Faturamento, ticket médio e gráficos Glassmorphism",
+  },
+  {
+    icone: "📈",
+    categoria: "BI & Gestão",
+    label: "BI Comportamental",
+    query: "Como analisar a distribuição de níveis e retenção no BI Comportamental?",
+    descricao: "Perfil de alunos por categoria, gênero e assiduidade",
+  },
+  {
+    icone: "💡",
+    categoria: "BI & Gestão",
+    label: "Simulador What-If Financeiro",
+    query: "Como simular reajustes e novas quadras no simulador financeiro?",
+    descricao: "Projeções de impacto de reajuste ou novas quadras",
+  },
+  {
+    icone: "🔒",
+    categoria: "BI & Gestão",
+    label: "Modo Discreto na Arena",
+    query: "Para que serve o Modo Discreto na recepção da arena?",
+    descricao: "Proteção LGPD que oculta cifras à vista de visitantes",
+  },
+  {
+    icone: "🔥",
+    categoria: "Atletas",
+    label: "Card do Atleta & Streak",
+    query: "Como funciona o Card do Atleta, streak de presenças e o status ON FIRE?",
+    descricao: "Gamificação esportiva com XP, assiduidade e conquistas",
+  },
+  {
+    icone: "🎯",
+    categoria: "Atletas",
+    label: "Radar de Churn Preditivo",
+    query: "Como o Radar de Churn previne a desistência de alunos?",
+    descricao: "Alerta preditivo de evasão para contato via WhatsApp",
+  },
+  {
+    icone: "🔄",
+    categoria: "Atletas",
+    label: "Smart Matchmaker Reposição",
+    query: "Como funciona o casamento inteligente de reposições de aulas?",
+    descricao: "Casamento automático de faltas com vagas ociosas",
+  },
+  {
+    icone: "🏓",
+    categoria: "Atletas",
+    label: "Prancheta Tática & Drills",
+    query: "Como utilizar a Prancheta Tática e planejar treinos?",
+    descricao: "Desenho de jogadas de duplas e fundamentos de Beach Tennis",
+  },
+  {
+    icone: "🤝",
+    categoria: "Atendimento",
+    label: "Agendar com Anderson Diroza",
+    query: "Quero agendar uma Reunião de Alinhamento com o Anderson Diroza",
+    descricao: "Horários em hora inteira com Google Calendar e WhatsApp",
+  },
+  {
+    icone: "💬",
+    categoria: "Atendimento",
+    label: "Concierge Telegram 24/7",
+    query: "Como funciona o Suporte Concierge do Telegram?",
+    descricao: "Canal executivo 24/7 para envio de prints e áudios",
+  },
 ];
 
 export function CopilotoIA() {
@@ -94,6 +186,7 @@ export function CopilotoIA() {
   const [isOpen, setIsOpen] = useState(false);
   const [inputMessage, setInputMessage] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [categoriaAtiva, setCategoriaAtiva] = useState<string>("Todas");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Estado para fluxo de agendamento de alinhamento
@@ -110,7 +203,7 @@ export function CopilotoIA() {
   const initialWelcomeText =
     "Olá! Sou o **Copiloto IA**, o **Gêmeo Digital do Anderson Diroza**, treinado com toda a inteligência e tecnologia do ecossistema **Equipe Marco Roza Beach Tennis**.\n\n" +
     "Posso guiar você na gestão de **Quadras e Turmas**, configuração do **Modo TV / Arena Live**, análise dos **Termômetros de Vidro do BI Financeiro**, retenção pelo **Radar de Churn**, estratégias na **Prancheta Tática** ou agendar um alinhamento direto comigo.\n\n" +
-    "Como posso impulsionar sua arena de beach tennis hoje?";
+    "Selecione um dos tópicos rápidos abaixo ou digite sua pergunta:";
 
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
@@ -118,6 +211,7 @@ export function CopilotoIA() {
       sender: "bot",
       text: initialWelcomeText,
       timestamp: "Agora",
+      isWelcome: true,
     },
   ]);
 
@@ -131,10 +225,16 @@ export function CopilotoIA() {
     }
   }, [messages, isOpen, isTyping, modoAgendamento]);
 
+  // Listener para acionamento apenas pelo botão superior
   useEffect(() => {
+    const handleToggle = () => setIsOpen((prev) => !prev);
     const handleOpen = () => setIsOpen(true);
+    window.addEventListener("toggle-copiloto-ia", handleToggle);
     window.addEventListener("open-copiloto-ia", handleOpen);
-    return () => window.removeEventListener("open-copiloto-ia", handleOpen);
+    return () => {
+      window.removeEventListener("toggle-copiloto-ia", handleToggle);
+      window.removeEventListener("open-copiloto-ia", handleOpen);
+    };
   }, []);
 
   const handleSendMessage = (textToSend?: string) => {
@@ -233,10 +333,8 @@ export function CopilotoIA() {
     const urlWaAnderson = gerarLinkWhatsappAnderson(dadosReuniao);
     const urlWaContato = gerarLinkWhatsappContato(dadosReuniao);
 
-    // Bloqueia o slot para evitar colisões
     registrarBloqueioSlot(dadosReuniao.dataIso, dadosReuniao.hora);
 
-    // Dispara WhatsApp para notificar Anderson Diroza
     if (typeof window !== "undefined") {
       try {
         window.open(urlWaAnderson, "_blank", "noopener,noreferrer");
@@ -277,45 +375,16 @@ export function CopilotoIA() {
     setFormWhatsapp("");
   };
 
+  const sugestoesFiltradas =
+    categoriaAtiva === "Todas"
+      ? TODAS_SUGESTOES
+      : TODAS_SUGESTOES.filter((s) => s.categoria === categoriaAtiva);
+
   return (
     <>
-      {/* Botão Flutuante Gatilho no Canto Inferior Direito */}
-      <div className="fixed bottom-6 right-6 z-50 print:hidden">
-        {!isOpen && (
-          <button
-            type="button"
-            onClick={() => setIsOpen(true)}
-            className="group relative flex items-center gap-3 p-2 pr-4 rounded-full bg-[#13142e]/95 border border-[#2d2b82]/70 text-white shadow-2xl shadow-indigo-950/70 backdrop-blur-xl hover:border-[#ea3829] hover:shadow-[0_0_28px_rgba(234,56,41,0.35)] transition-all duration-300 hover:scale-[1.03] cursor-pointer"
-            aria-label="Abrir Copiloto IA - Gêmeo Digital do Anderson"
-          >
-            {/* Foto / Avatar com Anel Gradiente Marco Roza (Azul + Vermelho/Coral) */}
-            <div className="relative w-11 h-11 rounded-full p-0.5 bg-gradient-to-tr from-[#2d2b82] via-[#ea3829] to-[#38bdf8] shadow-md shrink-0">
-              <img
-                src={andersonPhoto}
-                alt="Anderson Diroza AI"
-                className="w-full h-full object-cover rounded-full"
-              />
-              <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-emerald-400 border-2 border-[#13142e] animate-pulse" />
-            </div>
-
-            <div className="text-left hidden sm:block">
-              <div className="flex items-center gap-1.5">
-                <span className="text-xs font-extrabold text-white tracking-tight">
-                  Copiloto IA
-                </span>
-                <span className="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded-full bg-[#ea3829]/20 text-[#ff8f84] border border-[#ea3829]/40">
-                  ONLINE
-                </span>
-              </div>
-              <p className="text-[10px] text-zinc-300 font-medium">Gêmeo Digital do Anderson</p>
-            </div>
-          </button>
-        )}
-      </div>
-
-      {/* Janela Executiva do Chat Flutuante */}
+      {/* Janela Executiva do Chat Flutuante (Acionada apenas pela barra superior) */}
       {isOpen && (
-        <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 w-[95vw] sm:w-[440px] max-h-[88vh] h-[670px] z-50 rounded-3xl border border-[#2d2b82]/80 bg-[#0c0d1c] shadow-2xl shadow-indigo-950/90 backdrop-blur-2xl flex flex-col overflow-hidden text-white transition-all duration-300 print:hidden animate-in fade-in slide-in-from-bottom-5">
+        <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 w-[95vw] sm:w-[460px] max-h-[90vh] h-[700px] z-50 rounded-3xl border border-[#2d2b82]/80 bg-[#0c0d1c] shadow-2xl shadow-indigo-950/90 backdrop-blur-2xl flex flex-col overflow-hidden text-white transition-all duration-300 print:hidden animate-in fade-in slide-in-from-bottom-5">
           {/* Header do Chat em Paleta Marco Roza */}
           <div className="p-4 border-b border-[#242650] bg-gradient-to-r from-[#17193b] via-[#1f2150] to-[#17193b] flex items-center justify-between shrink-0">
             <div className="flex items-center gap-3">
@@ -357,6 +426,7 @@ export function CopilotoIA() {
                       sender: "bot",
                       text: initialWelcomeText,
                       timestamp: "Agora",
+                      isWelcome: true,
                     },
                   ]);
                   setModoAgendamento(false);
@@ -410,7 +480,7 @@ export function CopilotoIA() {
                 className={`flex flex-col ${m.sender === "user" ? "items-end" : "items-start"}`}
               >
                 <div
-                  className={`p-3.5 rounded-2xl max-w-[90%] ${
+                  className={`p-3.5 rounded-2xl max-w-[92%] ${
                     m.sender === "user"
                       ? "bg-gradient-to-r from-[#2d2b82] to-[#201e63] text-white rounded-br-none shadow-md shadow-indigo-950/40 border border-[#3f4185]"
                       : "bg-[#141633] text-zinc-200 border border-[#272952] rounded-bl-none shadow-sm"
@@ -432,6 +502,44 @@ export function CopilotoIA() {
                       </p>
                     ))}
                   </div>
+
+                  {/* No Card de Boas-vindas: Exibe as opções completas em grade para máxima visibilidade */}
+                  {m.isWelcome && (
+                    <div className="mt-3 pt-3 border-t border-[#272952] space-y-2">
+                      <div className="flex items-center justify-between text-[11px] font-bold text-white">
+                        <span className="flex items-center gap-1.5">
+                          <Sparkles className="w-3.5 h-3.5 text-[#ea3829]" />
+                          Dúvidas Frequentes & Funcionalidades:
+                        </span>
+                        <span className="text-[10px] text-[#ff8f84] font-mono">
+                          {TODAS_SUGESTOES.length} tópicos
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-1 gap-1.5 pt-1">
+                        {TODAS_SUGESTOES.map((s, idx) => (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={() => handleSendMessage(s.query)}
+                            className="flex items-center gap-2.5 p-2 rounded-xl bg-[#0c0d1c] hover:bg-[#1a1c45] border border-[#272952] hover:border-[#ea3829] text-left transition-all cursor-pointer group shadow-xs"
+                          >
+                            <span className="text-base shrink-0">{s.icone}</span>
+                            <div className="min-w-0 flex-1">
+                              <p className="text-[11px] font-bold text-white group-hover:text-[#ff8f84] truncate">
+                                {s.label}
+                              </p>
+                              {s.descricao && (
+                                <p className="text-[9.5px] text-zinc-400 truncate">
+                                  {s.descricao}
+                                </p>
+                              )}
+                            </div>
+                            <ArrowRight className="w-3.5 h-3.5 text-zinc-500 group-hover:text-[#ea3829] group-hover:translate-x-0.5 transition-all shrink-0 ml-1" />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
                   {/* Botão de Navegação Interna com 1 clique */}
                   {m.rotaSugerida && m.labelRota && (
@@ -557,7 +665,6 @@ export function CopilotoIA() {
 
                 {/* Seletor de Opções Inteligentes */}
                 <div className="grid grid-cols-2 gap-2">
-                  {/* Opção 1: Mais Próxima */}
                   <button
                     type="button"
                     onClick={() => {
@@ -583,7 +690,6 @@ export function CopilotoIA() {
                     </p>
                   </button>
 
-                  {/* Opção 2: Semana Seguinte */}
                   <button
                     type="button"
                     onClick={() => {
@@ -708,18 +814,47 @@ export function CopilotoIA() {
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Sugestões Rápidas em Chips Deslizáveis */}
-          <div className="p-2 border-t border-[#242650] bg-[#12132b] flex gap-1.5 overflow-x-auto no-scrollbar shrink-0">
-            {SUGESTOES_RAPIDAS.map((s, idx) => (
-              <button
-                key={idx}
-                type="button"
-                onClick={() => handleSendMessage(s.query)}
-                className="whitespace-nowrap px-2.5 py-1 rounded-full bg-[#191b3f] hover:bg-[#25285e] border border-[#2d2b82]/60 text-[10px] text-zinc-200 hover:text-white transition-all cursor-pointer shrink-0"
-              >
-                {s.label}
-              </button>
-            ))}
+          {/* Seção Completa de Dúvidas & Atalhos Rápidos (Multi-linhas e Categorias) */}
+          <div className="p-2.5 border-t border-[#242650] bg-[#12132b] flex flex-col gap-1.5 shrink-0">
+            <div className="flex items-center justify-between text-[10px] text-zinc-300 font-bold px-0.5">
+              <span className="flex items-center gap-1 text-white">
+                <Sparkles className="w-3 h-3 text-[#ea3829]" />
+                Dúvidas & Funcionalidades:
+              </span>
+              {/* Filtro por Categorias */}
+              <div className="flex items-center gap-1">
+                {["Todas", "Arena", "BI & Gestão", "Atletas"].map((cat) => (
+                  <button
+                    key={cat}
+                    type="button"
+                    onClick={() => setCategoriaAtiva(cat)}
+                    className={`px-1.5 py-0.5 rounded text-[9px] font-medium transition-colors cursor-pointer ${
+                      categoriaAtiva === cat
+                        ? "bg-[#ea3829] text-white font-bold"
+                        : "bg-[#181a3d] text-zinc-400 hover:text-white"
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Chips em Múltiplas Linhas com Quebra Automática (flex-wrap) */}
+            <div className="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto pr-1">
+              {sugestoesFiltradas.map((s, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => handleSendMessage(s.query)}
+                  className="inline-flex items-center gap-1.5 text-[10.5px] font-medium px-2.5 py-1 rounded-lg bg-[#181a3d] border border-[#2d2b82]/70 text-zinc-200 hover:border-[#ea3829] hover:text-white hover:bg-[#25285e] transition-all cursor-pointer shadow-xs active:scale-95"
+                  title={s.query}
+                >
+                  <span>{s.icone}</span>
+                  <span>{s.label}</span>
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Input de Mensagem */}
