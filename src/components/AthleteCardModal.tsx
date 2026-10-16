@@ -47,6 +47,40 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
   const [cachedBlob, setCachedBlob] = useState<Blob | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
 
+  // Pré-renderização em background do card assim que o modal abre (declarado no topo para respeitar as regras de hooks do React)
+  useEffect(() => {
+    let isMounted = true;
+    if (open && student) {
+      const timer = setTimeout(async () => {
+        if (!cardRef.current) return;
+        try {
+          const html2canvas = (await import("html2canvas")).default;
+          const canvas = await html2canvas(cardRef.current, {
+            scale: 2.2,
+            useCORS: true,
+            allowTaint: true,
+            backgroundColor: "#030712",
+            logging: false,
+          });
+          canvas.toBlob((blob) => {
+            if (isMounted && blob) {
+              setCachedBlob(blob);
+            }
+          }, "image/png");
+        } catch (e) {
+          console.warn("Pré-geração do card falhou:", e);
+        }
+      }, 350);
+
+      return () => {
+        isMounted = false;
+        clearTimeout(timer);
+      };
+    } else {
+      setCachedBlob(null);
+    }
+  }, [open, student?.id]);
+
   // Atributos, notas, frequência e evolução contínua do atleta
   const athleteStats = useMemo(() => {
     if (!student) return null;
@@ -263,39 +297,6 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
     setTimeout(() => URL.revokeObjectURL(url), 5000);
   };
 
-  // Pré-renderização em background do card assim que o modal abre
-  useEffect(() => {
-    let isMounted = true;
-    if (open && student) {
-      const timer = setTimeout(async () => {
-        if (!cardRef.current) return;
-        try {
-          const html2canvas = (await import("html2canvas")).default;
-          const canvas = await html2canvas(cardRef.current, {
-            scale: 2.2,
-            useCORS: true,
-            allowTaint: true,
-            backgroundColor: "#030712",
-            logging: false,
-          });
-          canvas.toBlob((blob) => {
-            if (isMounted && blob) {
-              setCachedBlob(blob);
-            }
-          }, "image/png");
-        } catch (e) {
-          console.warn("Pré-geração do card falhou:", e);
-        }
-      }, 350);
-
-      return () => {
-        isMounted = false;
-        clearTimeout(timer);
-      };
-    } else {
-      setCachedBlob(null);
-    }
-  }, [open, student?.id]);
 
   // Gerador da imagem do Card em HD usando html2canvas (com cache para resposta instantânea)
   const generateCardBlob = async (): Promise<Blob | null> => {
