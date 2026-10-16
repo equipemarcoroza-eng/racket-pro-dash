@@ -547,77 +547,82 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
           <div className="md:col-span-5 flex flex-col items-center">
             <div
               ref={cardRef}
-              className={`relative mx-auto w-[340px] rounded-3xl p-1 shadow-2xl transition-all duration-300 ${
+              className={`relative mx-auto w-full max-w-[340px] rounded-3xl p-1 shadow-2xl transition-all duration-300 ${
                 athleteStats.isOnFire
                   ? "bg-gradient-to-b from-orange-400 via-amber-500 to-amber-950 shadow-orange-500/30 ring-1 ring-orange-400/40"
                   : "bg-gradient-to-b from-amber-300 via-yellow-600 to-amber-950 shadow-yellow-500/20"
               }`}
             >
-              <div className="relative rounded-[22px] bg-gradient-to-b from-slate-900 via-slate-950 to-black p-4 sm:p-5 overflow-hidden border border-white/5">
+              <div className="relative rounded-[22px] bg-gradient-to-b from-slate-900 via-slate-950 to-black p-4 sm:p-5 overflow-hidden">
+                {/* Efeito de Reflexo de Vidro e Luz */}
+                <div
+                  className={`absolute top-0 right-0 -mr-16 -mt-16 w-48 h-48 rounded-full blur-3xl pointer-events-none ${
+                    athleteStats.isOnFire ? "bg-orange-500/20" : "bg-amber-400/10"
+                  }`}
+                />
+                <div className="absolute bottom-0 left-0 -ml-16 -mb-16 w-48 h-48 rounded-full bg-emerald-500/10 blur-3xl pointer-events-none" />
+
                 {/* Cabeçalho do Card */}
-                <div className="flex items-center justify-between relative z-10 pb-1.5 border-b border-white/5">
-                  <div className="flex items-center gap-3">
-                    {/* Nota Overall (OVR) nítida sem background-clip para exportar perfeito no WhatsApp */}
-                    <div className="flex flex-col items-center justify-center">
-                      <span className="text-5xl font-black tracking-tight text-amber-400 font-mono leading-none drop-shadow-[0_2px_10px_rgba(245,158,11,0.6)]">
+                <div className="flex items-start justify-between relative z-10">
+                  <div className="flex flex-col">
+                    <div className="flex items-baseline gap-1.5">
+                      <span className="text-5xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-amber-200 via-yellow-400 to-amber-600 drop-shadow-md">
                         {athleteStats.ovr}
                       </span>
-                      <span className="text-[10px] font-black uppercase tracking-widest text-amber-300/90 mt-1">
-                        OVR
-                      </span>
-                    </div>
-
-                    {/* Divisor vertical */}
-                    <div className="h-10 w-[1px] bg-amber-500/30" />
-
-                    {/* Badges de Categoria & Status */}
-                    <div className="flex flex-col gap-1.5 justify-center">
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40">
-                          {student.categoria}
-                        </span>
-                        {athleteStats.ovrBoost > 0 && (
-                          <span className="text-[9.5px] font-black text-emerald-300 bg-emerald-500/20 border border-emerald-500/40 px-1.5 py-0.5 rounded flex items-center gap-0.5">
-                            +{athleteStats.ovrBoost} FORMA 🔥
-                          </span>
-                        )}
-                      </div>
-
-                      {athleteStats.isOnFire ? (
-                        <span className="bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black text-[9px] px-2 py-0.5 rounded border border-orange-400/40 shadow-sm flex items-center gap-1 w-fit">
-                          <Flame className="h-2.5 w-2.5 fill-current text-yellow-200" />
-                          ON FIRE 🔥
-                        </span>
-                      ) : (
-                        <span className="text-[9px] font-medium border border-white/20 text-slate-300 px-2 py-0.5 rounded flex items-center gap-1 w-fit bg-white/5">
-                          <Zap className="h-2.5 w-2.5 text-amber-400" />
-                          EM RITMO
+                      {athleteStats.ovrBoost > 0 && (
+                        <span className="text-[10px] font-black text-emerald-300 bg-emerald-500/25 border border-emerald-500/40 px-1.5 py-0.5 rounded-full flex items-center gap-0.5 shadow-sm">
+                          +{athleteStats.ovrBoost} FORMA 🔥
                         </span>
                       )}
                     </div>
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      <span className="text-xs font-black uppercase tracking-widest text-amber-400/90">
+                        OVR
+                      </span>
+                      <Badge
+                        variant="outline"
+                        className="text-[10px] border-amber-400/40 text-amber-300 px-1.5 py-0"
+                      >
+                        {student.categoria}
+                      </Badge>
+                    </div>
+
+                    {athleteStats.isOnFire ? (
+                      <Badge className="mt-1.5 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black text-[9px] border-orange-400/40 shadow-sm gap-1 w-fit animate-pulse">
+                        <Flame className="h-2.5 w-2.5 fill-current text-yellow-200" />
+                        ON FIRE 🔥
+                      </Badge>
+                    ) : (
+                      <Badge
+                        variant="outline"
+                        className="mt-1.5 text-[9px] border-white/20 text-slate-300 gap-1 w-fit"
+                      >
+                        <Zap className="h-2.5 w-2.5 text-amber-400" />
+                        EM RITMO
+                      </Badge>
+                    )}
                   </div>
 
-                  {/* Logo Marco Roza */}
-                  <div className="flex flex-col items-center shrink-0">
+                  <div className="flex flex-col items-center">
                     <img
                       src={logo}
                       alt="Marco Roza"
-                      className="h-13 w-auto object-contain drop-shadow-[0_4px_12px_rgba(234,179,8,0.35)]"
+                      className="h-12 w-auto object-contain drop-shadow-[0_4px_12px_rgba(234,179,8,0.3)]"
                     />
-                    <span className="text-[8px] uppercase tracking-wider text-slate-400 font-bold mt-1 text-center">
+                    <span className="text-[8px] uppercase tracking-widest text-slate-400 font-bold mt-1">
                       Equipe Marco Roza
                     </span>
                   </div>
                 </div>
 
-                {/* Nome do Atleta sem cortes */}
-                <div className="my-2 text-center border-y border-amber-500/30 py-2 relative z-10 bg-black/25 rounded">
-                  <div className="text-base sm:text-lg font-black uppercase tracking-wide text-white leading-normal px-2">
+                {/* Nome do Atleta */}
+                <div className="my-2.5 text-center border-y border-amber-500/30 py-1.5 relative z-10">
+                  <h3 className="text-base sm:text-lg font-extrabold uppercase tracking-wider text-white truncate px-1">
                     {student.nome}
-                  </div>
-                  <div className="text-[9px] text-amber-300 font-bold tracking-widest uppercase mt-0.5">
+                  </h3>
+                  <p className="text-[9px] text-amber-300/80 font-medium tracking-widest uppercase">
                     RACKET PRO ATHLETE
-                  </div>
+                  </p>
                 </div>
 
                 {/* Gráfico de Radar Poligonal SVG */}
