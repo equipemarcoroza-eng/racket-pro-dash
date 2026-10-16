@@ -94,9 +94,8 @@ export const BASE_CONHECIMENTO: IntencaoCopiloto[] = [
     ],
     resposta: {
       texto:
-        "Será uma honra alinharmos a evolução estratégica e operacional da **Equipe Marco Roza Beach Tennis**! Podemos realizar uma **Reunião de Alinhamento Executivo & Demonstração** diretamente com o **Anderson Diroza**.\n\n" +
-        "O Copiloto consulta e respeita as regras oficiais da minha agenda no Google Calendar (**andersondiroza@gmail.com**): manhãs das **10:00 às 12:00** (início às 10h e 11h) e tardes/noite das **13:00 às 19:00** (início às 13h, 14h, 15h, 16h, 17h e 18h), sempre em horas inteiras.\n\n" +
-        "Você pode agendar pelo formulário inteligente abaixo ou acessar a **[Página Oficial de Agendamento do Google](https://calendar.app.google/6MPgmFRuwR8FAF4KA)** com sincronização em tempo real e confirmação instantânea no WhatsApp.",
+        "Fico muito feliz com seu contato! Como você já possui contrato ativo e conta com o **Suporte Concierge Exclusivo da Equipe Marco Roza Beach Tennis**, podemos agendar uma **Reunião de Alinhamento Executivo & Suporte Estratégico** (estritamente **1 hora inteira**) diretamente com o **Anderson Diroza**.\n\n" +
+        "Você pode escolher o melhor dia e horário diretamente na **agenda oficial do Google Calendar** (**andersondiroza@gmail.com**) com garantia de **Conflito Zero** e geração automática da sua sala exclusiva no **Google Meet**. Veja o convite oficial logo abaixo:",
       acaoEspecial: "abrir_agendamento",
       topicosRelacionados: [
         "Suporte Concierge no Telegram",

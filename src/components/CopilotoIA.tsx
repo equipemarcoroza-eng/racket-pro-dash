@@ -41,17 +41,9 @@ import {
   type RespostaCopiloto,
 } from "@/lib/copiloto-knowledge";
 import {
-  calcularOpcoesHorariosAlinhamento,
-  gerarLinkGoogleCalendar,
-  gerarLinkWhatsappAnderson,
-  gerarLinkWhatsappContato,
-  registrarBloqueioSlot,
+  LINK_GOOGLE_CALENDAR_OFICIAL,
+  gerarLinkWhatsappEncaixe,
   GOOGLE_CALENDAR_EMAIL,
-  GOOGLE_CALENDAR_SCHEDULE_URL,
-  LINK_MEET_PADRAO,
-  type HorarioSugerido,
-  type OpcoesHorariosAlinhamento,
-  type DadosReuniaoAlinhamento,
 } from "@/lib/agendamento-alinhamento";
 
 interface ChatMessage {
@@ -191,14 +183,6 @@ export function CopilotoIA() {
 
   // Estado para fluxo de agendamento de alinhamento
   const [modoAgendamento, setModoAgendamento] = useState(false);
-  const [opcoesHorarios, setOpcoesHorarios] = useState<OpcoesHorariosAlinhamento | null>(null);
-  const [opcaoSelecionada, setOpcaoSelecionada] = useState<"maisProxima" | "semanaSeguinte">(
-    "maisProxima",
-  );
-  const [horarioEscolhidoCustom, setHorarioEscolhidoCustom] = useState<string | null>(null);
-  const [formNome, setFormNome] = useState("");
-  const [formArena, setFormArena] = useState("");
-  const [formWhatsapp, setFormWhatsapp] = useState("");
 
   const initialWelcomeText =
     "Olá! Sou o **Copiloto IA**, o **Gêmeo Digital do Anderson Diroza**, treinado com toda a inteligência e tecnologia do ecossistema **Equipe Marco Roza Beach Tennis**.\n\n" +
@@ -256,9 +240,6 @@ export function CopilotoIA() {
       const resp: RespostaCopiloto = buscarRespostaCopiloto(text);
 
       if (resp.acaoEspecial === "abrir_agendamento") {
-        const opcoes = calcularOpcoesHorariosAlinhamento();
-        setOpcoesHorarios(opcoes);
-        setHorarioEscolhidoCustom(opcoes.maisProxima.hora);
         setModoAgendamento(true);
       }
 
@@ -307,73 +288,6 @@ export function CopilotoIA() {
     }
   };
 
-  const handleConfirmarAgendamento = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formNome.trim() || !formWhatsapp.trim() || !opcoesHorarios) return;
-
-    const horarioBase: HorarioSugerido =
-      opcaoSelecionada === "maisProxima"
-        ? opcoesHorarios.maisProxima
-        : opcoesHorarios.semanaSeguinte;
-
-    const horaFinal = horarioEscolhidoCustom || horarioBase.hora;
-
-    const dadosReuniao: DadosReuniaoAlinhamento = {
-      nomeContato: formNome.trim(),
-      escritorioOuBanca: formArena.trim() || "Equipe Marco Roza Beach Tennis",
-      telefoneWhatsapp: formWhatsapp.trim(),
-      dataIso: horarioBase.dataIso,
-      dataFormatada: horarioBase.dataFormatada,
-      diaSemanaExtenso: horarioBase.diaSemanaExtenso,
-      hora: horaFinal,
-      linkMeet: LINK_MEET_PADRAO,
-    };
-
-    const urlCalendar = gerarLinkGoogleCalendar(dadosReuniao);
-    const urlWaAnderson = gerarLinkWhatsappAnderson(dadosReuniao);
-    const urlWaContato = gerarLinkWhatsappContato(dadosReuniao);
-
-    registrarBloqueioSlot(dadosReuniao.dataIso, dadosReuniao.hora);
-
-    if (typeof window !== "undefined") {
-      try {
-        window.open(urlWaAnderson, "_blank", "noopener,noreferrer");
-      } catch (err) {
-        console.warn("Abertura da janela bloqueada:", err);
-      }
-    }
-    toast.success("Reunião agendada com sucesso! Abrindo confirmação no WhatsApp...");
-
-    const msgConfirmacao: ChatMessage = {
-      id: Date.now().toString(),
-      sender: "bot",
-      text:
-        `🎉 **Reunião de Alinhamento Pré-Agendada com Sucesso!**\n\n` +
-        `• **Data:** ${dadosReuniao.diaSemanaExtenso}, ${dadosReuniao.dataFormatada}\n` +
-        `• **Horário:** ${dadosReuniao.hora} (Hora Inteira Reservada)\n` +
-        `• **Apresentador:** Anderson Diroza (${GOOGLE_CALENDAR_EMAIL})\n` +
-        `• **Google Meet:** Sala privativa gerada\n\n` +
-        `O WhatsApp de confirmação foi acionado automaticamente. Você também pode salvar o compromisso no seu Google Calendar ou reenviar abaixo:`,
-      timestamp: "Agora",
-      cardAgendamento: {
-        nomeContato: dadosReuniao.nomeContato,
-        escritorioOuBanca: dadosReuniao.escritorioOuBanca,
-        telefoneWhatsapp: dadosReuniao.telefoneWhatsapp,
-        dataFormatada: dadosReuniao.dataFormatada,
-        hora: dadosReuniao.hora,
-        linkMeet: dadosReuniao.linkMeet || LINK_MEET_PADRAO,
-        urlGoogleCalendar: urlCalendar,
-        urlWhatsappAnderson: urlWaAnderson,
-        urlWhatsappContato: urlWaContato,
-      },
-    };
-
-    setMessages((prev) => [...prev, msgConfirmacao]);
-    setModoAgendamento(false);
-    setFormNome("");
-    setFormArena("");
-    setFormWhatsapp("");
-  };
 
   const sugestoesFiltradas =
     categoriaAtiva === "Todas"
@@ -487,20 +401,24 @@ export function CopilotoIA() {
                   }`}
                 >
                   {/* Texto com formatação de negrito e parágrafos */}
-                  <div className="whitespace-pre-line space-y-1.5">
-                    {m.text.split("\n\n").map((paragraph, pIdx) => (
-                      <p key={pIdx}>
-                        {paragraph.split("**").map((chunk, cIdx) =>
-                          cIdx % 2 === 1 ? (
-                            <strong key={cIdx} className="font-bold text-white">
-                              {chunk}
-                            </strong>
-                          ) : (
-                            chunk
-                          ),
-                        )}
-                      </p>
-                    ))}
+                  <div className="whitespace-pre-wrap font-normal leading-relaxed space-y-1">
+                    {m.text.split("\n").map((paragrafo, idx) => {
+                      if (!paragrafo.trim()) return <div key={idx} className="h-1.5" />;
+
+                      // Renderiza tópicos em bullet points com destaque
+                      if (paragrafo.startsWith("• ") || paragrafo.startsWith("- ")) {
+                        return (
+                          <div key={idx} className="flex items-start gap-1.5 pl-1 py-0.5">
+                            <span className="text-[#ea3829] font-bold leading-none mt-1">▸</span>
+                            <span className="flex-1">
+                              {renderMarkdownBold(paragrafo.replace(/^[•-]\s*/, ""))}
+                            </span>
+                          </div>
+                        );
+                      }
+
+                      return <p key={idx}>{renderMarkdownBold(paragrafo)}</p>;
+                    })}
                   </div>
 
                   {/* No Card de Boas-vindas: Exibe as opções completas em grade para máxima visibilidade */}
@@ -621,179 +539,101 @@ export function CopilotoIA() {
               </div>
             ))}
 
-            {/* FORMULÁRIO DE AGENDAMENTO INTELIGENTE */}
-            {modoAgendamento && opcoesHorarios && (
-              <div className="p-4 rounded-2xl bg-[#141635] border border-[#ea3829]/60 shadow-xl space-y-3 animate-in fade-in slide-in-from-bottom-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1.5">
-                    <Calendar className="w-4 h-4 text-[#ea3829]" />
-                    <h4 className="font-bold text-xs text-white">
-                      Agendamento com Anderson Diroza
-                    </h4>
+            {/* Card de Agendamento Executivo em 1 Clique (Contrato Ativo & Suporte Concierge) */}
+            {modoAgendamento && (
+              <div className="p-3.5 rounded-2xl bg-gradient-to-b from-[#181a3d] to-[#0c0d1c] border border-[#ea3829]/50 shadow-xl space-y-3 animate-in fade-in zoom-in-95 duration-200">
+                <div className="flex items-center gap-3 border-b border-[#272952] pb-2.5">
+                  <div className="relative">
+                    <img
+                      src={andersonPhoto}
+                      alt="Anderson Diroza"
+                      className="w-10 h-10 rounded-full object-cover border-2 border-[#ea3829] shadow-sm"
+                    />
+                    <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-400 border border-[#17193b] animate-pulse" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-semibold text-xs text-white truncate">
+                        Reunião Executiva & Concierge
+                      </span>
+                      <Badge className="bg-[#ea3829]/20 text-[#ff8f84] text-[8.5px] border-[#ea3829]/40 shrink-0 font-bold">
+                        1 HORA
+                      </Badge>
+                    </div>
+                    <p className="text-[10px] text-[#ffb0a8] font-medium truncate">
+                      Anderson Diroza · Suporte Estratégico Marco Roza
+                    </p>
                   </div>
                   <button
                     type="button"
                     onClick={() => setModoAgendamento(false)}
-                    className="text-zinc-400 hover:text-white"
+                    className="text-zinc-400 hover:text-white p-1 cursor-pointer"
+                    title="Fechar agendamento"
                   >
                     <X className="w-3.5 h-3.5" />
                   </button>
                 </div>
 
-                <div className="p-2.5 rounded-xl bg-[#0c0d1c] border border-[#272952] space-y-2">
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2 text-[10px] text-zinc-300">
-                      <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
-                      <div className="leading-tight">
-                        <span className="text-white font-semibold">Agenda Google Calendar Oficial ({GOOGLE_CALENDAR_EMAIL})</span>
-                        <div className="text-zinc-400 text-[9.5px]">
-                          Manhãs: 10h às 12h (início 10h e 11h) · Tardes: 13h às 19h (início 13h às 18h)
-                        </div>
-                      </div>
-                    </div>
+                {/* 3 Pilares de Confiança Executiva */}
+                <div className="space-y-1.5 py-0.5">
+                  <div className="flex items-center gap-2 text-[10.5px] text-zinc-300">
+                    <ShieldCheck className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
+                    <span>
+                      <strong className="text-white font-semibold">Conflito Zero:</strong> Sincronização direta na agenda oficial ({GOOGLE_CALENDAR_EMAIL}).
+                    </span>
                   </div>
+                  <div className="flex items-center gap-2 text-[10.5px] text-zinc-300">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-blue-400 shrink-0" />
+                    <span>
+                      <strong className="text-white font-semibold">Google Meet Automático:</strong> Sala exclusiva gerada no convite com link direto.
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 text-[10.5px] text-zinc-300">
+                    <Sparkles className="h-3.5 w-3.5 text-[#ff8f84] shrink-0" />
+                    <span>
+                      <strong className="text-white font-semibold">Zero Retrabalho:</strong> 1 clique para escolher o melhor dia e horário.
+                    </span>
+                  </div>
+                </div>
+
+                {/* Ações em 1 Clique */}
+                <div className="space-y-2 pt-1">
                   <a
-                    href={GOOGLE_CALENDAR_SCHEDULE_URL}
+                    href={LINK_GOOGLE_CALENDAR_OFICIAL}
                     target="_blank"
-                    rel="noreferrer"
-                    className="flex items-center justify-center gap-1.5 w-full py-1 px-2 rounded-lg bg-[#181a3d] hover:bg-[#232657] text-[#a5b4fc] text-[10px] font-medium border border-[#2d2b82]/40 transition-colors"
+                    rel="noopener noreferrer"
+                    onClick={() => {
+                      toast.success("Abrindo Agenda Oficial Google Calendar", {
+                        description: "Escolha seu melhor horário diretamente na agenda do Anderson.",
+                      });
+                    }}
+                    className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#2d2b82] to-[#ea3829] hover:from-[#373599] hover:to-[#f0493b] text-white font-bold text-xs py-2.5 px-3 transition shadow-md hover:scale-[1.01] cursor-pointer"
                   >
-                    <ExternalLink className="w-3 h-3" />
-                    Abrir Página Oficial de Agendamento Google
+                    <Calendar className="h-4 w-4" />
+                    <span>Escolher Horário na Agenda Oficial Google</span>
+                    <ExternalLink className="h-3.5 w-3.5" />
+                  </a>
+
+                  <a
+                    href={gerarLinkWhatsappEncaixe()}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full inline-flex items-center justify-center gap-1.5 rounded-lg border border-[#ea3829]/40 bg-[#141635] hover:bg-white/5 text-[#ffb0a8] font-medium text-[10.5px] py-1.5 px-3 transition"
+                  >
+                    <MessageCircle className="h-3 w-3 text-emerald-400" />
+                    <span>Solicitar encaixe ou dúvida no WhatsApp</span>
+                  </a>
+
+                  <a
+                    href={TELEGRAM_CONCIERGE_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full inline-flex items-center justify-center gap-1.5 rounded-lg border border-[#229ED9]/40 bg-[#229ED9]/10 hover:bg-[#229ED9]/20 text-[#70c9f5] font-medium text-[10.5px] py-1.5 px-3 transition"
+                  >
+                    <MessageCircle className="h-3 w-3 text-[#229ED9]" />
+                    <span>Canal Direto: Suporte Concierge no Telegram 24/7</span>
                   </a>
                 </div>
-
-                {/* Seletor de Opções Inteligentes */}
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setOpcaoSelecionada("maisProxima");
-                      setHorarioEscolhidoCustom(opcoesHorarios.maisProxima.hora);
-                    }}
-                    className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
-                      opcaoSelecionada === "maisProxima"
-                        ? "bg-[#1f2150] border-[#ea3829] shadow-sm shadow-red-950/40"
-                        : "bg-[#0f1026] border-[#272952] opacity-75 hover:opacity-100"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between text-[10px] text-[#ff8f84] font-bold">
-                      <span>Mais Próxima</span>
-                      {opcaoSelecionada === "maisProxima" && <Check className="w-3 h-3 text-[#ea3829]" />}
-                    </div>
-                    <p className="text-xs font-bold text-white mt-0.5">
-                      {opcoesHorarios.maisProxima.diaSemanaExtenso.split("-")[0]},{" "}
-                      {opcoesHorarios.maisProxima.dataFormatada.slice(0, 5)}
-                    </p>
-                    <p className="text-[10px] text-zinc-300 font-mono mt-0.5">
-                      {opcoesHorarios.maisProxima.hora} ({opcoesHorarios.maisProxima.turno})
-                    </p>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setOpcaoSelecionada("semanaSeguinte");
-                      setHorarioEscolhidoCustom(opcoesHorarios.semanaSeguinte.hora);
-                    }}
-                    className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
-                      opcaoSelecionada === "semanaSeguinte"
-                        ? "bg-[#1f2150] border-[#ea3829] shadow-sm shadow-red-950/40"
-                        : "bg-[#0f1026] border-[#272952] opacity-75 hover:opacity-100"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between text-[10px] text-[#ff8f84] font-bold">
-                      <span>Semana Seguinte</span>
-                      {opcaoSelecionada === "semanaSeguinte" && (
-                        <Check className="w-3 h-3 text-[#ea3829]" />
-                      )}
-                    </div>
-                    <p className="text-xs font-bold text-white mt-0.5">
-                      {opcoesHorarios.semanaSeguinte.diaSemanaExtenso.split("-")[0]},{" "}
-                      {opcoesHorarios.semanaSeguinte.dataFormatada.slice(0, 5)}
-                    </p>
-                    <p className="text-[10px] text-zinc-300 font-mono mt-0.5">
-                      {opcoesHorarios.semanaSeguinte.hora} ({opcoesHorarios.semanaSeguinte.turno})
-                    </p>
-                  </button>
-                </div>
-
-                {/* Seletor de Hora Inteira Disponível no Dia Selecionado */}
-                {(() => {
-                  const horarioRef =
-                    opcaoSelecionada === "maisProxima"
-                      ? opcoesHorarios.maisProxima
-                      : opcoesHorarios.semanaSeguinte;
-                  const horasDisponiveis = horarioRef.horariosDisponiveisNoDia || [horarioRef.hora];
-
-                  return (
-                    <div className="space-y-1">
-                      <label className="text-[10px] text-zinc-300 font-semibold flex items-center gap-1">
-                        <Clock className="w-3 h-3 text-[#ea3829]" />
-                        Horários em Hora Inteira Disponíveis no Dia:
-                      </label>
-                      <div className="grid grid-cols-4 gap-1.5">
-                        {horasDisponiveis.map((h) => {
-                          const ativa = (horarioEscolhidoCustom || horarioRef.hora) === h;
-                          return (
-                            <button
-                              type="button"
-                              key={h}
-                              onClick={() => setHorarioEscolhidoCustom(h)}
-                              className={`py-1.5 px-2 rounded-lg text-[10px] font-mono font-bold transition-all text-center border cursor-pointer ${
-                                ativa
-                                  ? "bg-[#ea3829] text-white border-[#ea3829] shadow-sm"
-                                  : "bg-[#0c0d1c] text-zinc-300 border-[#272952] hover:bg-[#181a3d] hover:text-white"
-                              }`}
-                            >
-                              {h}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  );
-                })()}
-
-                {/* Formulário de Identificação */}
-                <form onSubmit={handleConfirmarAgendamento} className="space-y-2 pt-1">
-                  <div>
-                    <input
-                      type="text"
-                      required
-                      placeholder="Seu Nome Completo"
-                      value={formNome}
-                      onChange={(e) => setFormNome(e.target.value)}
-                      className="w-full px-3 py-1.5 text-xs rounded-xl bg-[#0c0d1c] border border-[#272952] text-white placeholder-zinc-500 focus:outline-none focus:border-[#ea3829]"
-                    />
-                  </div>
-                  <div>
-                    <input
-                      type="text"
-                      placeholder="Arena / Unidade (Opcional)"
-                      value={formArena}
-                      onChange={(e) => setFormArena(e.target.value)}
-                      className="w-full px-3 py-1.5 text-xs rounded-xl bg-[#0c0d1c] border border-[#272952] text-white placeholder-zinc-500 focus:outline-none focus:border-[#ea3829]"
-                    />
-                  </div>
-                  <div>
-                    <input
-                      type="tel"
-                      required
-                      placeholder="WhatsApp (ex: 48 98845-5454)"
-                      value={formWhatsapp}
-                      onChange={(e) => setFormWhatsapp(e.target.value)}
-                      className="w-full px-3 py-1.5 text-xs rounded-xl bg-[#0c0d1c] border border-[#272952] text-white placeholder-zinc-500 focus:outline-none focus:border-[#ea3829]"
-                    />
-                  </div>
-
-                  <Button
-                    type="submit"
-                    className="w-full bg-gradient-to-r from-[#ea3829] via-[#c7261a] to-[#2d2b82] hover:from-[#f0493b] hover:to-[#3836a0] text-white font-bold text-xs py-2 rounded-xl shadow-lg cursor-pointer"
-                  >
-                    Confirmar Reserva & Notificar no WhatsApp
-                  </Button>
-                </form>
               </div>
             )}
 
@@ -882,4 +722,44 @@ export function CopilotoIA() {
       )}
     </>
   );
+}
+
+/**
+ * Função utilitária para converter negrito em Markdown simples (**texto**) e código em crase (`código`)
+ */
+function renderMarkdownBold(text: string) {
+  const parts = text.split(/(\*{2}[^*]+\*{2}|`[^`]+`)/g);
+  return parts.map((part, i) => {
+    if (part.startsWith("**") && part.endsWith("**") && part.length >= 4) {
+      const inner = part.slice(2, -2);
+      const sub = inner.split(/(`[^`]+`)/g);
+      return (
+        <strong key={i} className="font-bold text-white">
+          {sub.map((s, sIdx) =>
+            s.startsWith("`") && s.endsWith("`") ? (
+              <code
+                key={sIdx}
+                className="px-1 py-0.5 rounded bg-white/10 text-[#ff8f84] font-mono text-[10.5px]"
+              >
+                {s.slice(1, -1)}
+              </code>
+            ) : (
+              s
+            ),
+          )}
+        </strong>
+      );
+    }
+    if (part.startsWith("`") && part.endsWith("`") && part.length >= 2) {
+      return (
+        <code
+          key={i}
+          className="px-1 py-0.5 rounded bg-white/10 text-[#ff8f84] font-mono text-[10.5px]"
+        >
+          {part.slice(1, -1)}
+        </code>
+      );
+    }
+    return part;
+  });
 }

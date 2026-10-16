@@ -35,7 +35,8 @@ export const HORAS_MANHA_CERTAS = ["10:00", "11:00"];
 export const HORAS_TARDE_CERTAS = ["13:00", "14:00", "15:00", "16:00", "17:00", "18:00"];
 
 export const WHATSAPP_DESTINO = "5548988455454";
-export const LINK_MEET_PADRAO = "https://meet.google.com/marcoroza-alinhamento-ia";
+export const LINK_GOOGLE_CALENDAR_OFICIAL = "https://calendar.app.google/6MPgmFRuwR8FAF4KA";
+export const LINK_MEET_PADRAO = "https://calendar.app.google/6MPgmFRuwR8FAF4KA";
 export const GOOGLE_CALENDAR_EMAIL = "andersondiroza@gmail.com";
 export const GOOGLE_CALENDAR_SCHEDULE_URL = "https://calendar.app.google/6MPgmFRuwR8FAF4KA";
 export const TELEGRAM_CONCIERGE_LINK = "https://t.me/diroza_concierge_bot?start=marco_roza";
@@ -419,4 +420,10 @@ export function gerarLinkWhatsappContato(dados: DadosReuniaoAlinhamento): string
   return completo
     ? `https://wa.me/${completo}?text=${encodeURIComponent(texto)}`
     : `https://wa.me/?text=${encodeURIComponent(texto)}`;
+}
+
+
+export function gerarLinkWhatsappEncaixe(): string {
+  const texto = "Olá, Anderson! Gostaria de verificar a possibilidade de um encaixe para nossa Reunião de Alinhamento / Suporte Concierge da Equipe Marco Roza Beach Tennis.";
+  return `https://wa.me/${WHATSAPP_DESTINO}?text=${encodeURIComponent(texto)}`;
 }
