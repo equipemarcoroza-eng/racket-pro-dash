@@ -397,7 +397,7 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
       setIsGenerating(true);
       const blob = await generateCardBlob();
 
-      // 1. Tentar Web Share API se suportar envio de arquivos (Dispositivos Móveis e Safari macOS)
+      // 1. Tentar Web Share API se suportar envio de arquivos (Chrome Android / Celular)
       if (blob && navigator.canShare) {
         const file = new File(
           [blob],
@@ -405,25 +405,34 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
           { type: "image/png" }
         );
         if (navigator.canShare({ files: [file] })) {
-          await navigator.share({
-            title: `Card Oficial do Atleta - ${student.nome}`,
-            text: text,
-            files: [file],
-          });
-          toast.success("Card compartilhado com sucesso!");
-          setIsGenerating(false);
-          return;
+          try {
+            await navigator.share({
+              title: `Card Oficial do Atleta - ${student.nome}`,
+              text: text,
+              files: [file],
+            });
+            toast.success("Card compartilhado com sucesso!");
+            setIsGenerating(false);
+            return;
+          } catch (shareErr: any) {
+            // Se o usuário cancelou o menu nativo de compartilhamento no celular
+            if (shareErr?.name === "AbortError") {
+              setIsGenerating(false);
+              return;
+            }
+            console.warn("Falha no Web Share nativo, aplicando fallback desktop:", shareErr);
+          }
         }
       }
 
-      // 2. Desktop Fallback: Copiar a imagem para o clipboard automaticamente!
+      // 2. Desktop Fallback (Chrome no Computador): Copiar a imagem para o clipboard automaticamente!
       if (blob && navigator.clipboard && typeof ClipboardItem !== "undefined") {
         try {
           const item = new ClipboardItem({ "image/png": blob });
           await navigator.clipboard.write([item]);
           toast.success("📸 Imagem do Card copiada para sua Área de Transferência!", {
             description:
-              "Ao abrir o WhatsApp, pressione Ctrl+V (ou Cmd+V) para colar a imagem do card na conversa!",
+              "Ao abrir o WhatsApp Web, pressione Ctrl+V (ou Cmd+V) para colar a imagem do card na conversa!",
             duration: 7000,
           });
         } catch (clipErr) {
