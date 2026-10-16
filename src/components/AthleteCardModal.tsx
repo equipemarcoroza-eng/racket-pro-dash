@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useRef } from "react";
+import React, { useMemo, useState, useRef, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -44,6 +44,7 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
   const [copiedText, setCopiedText] = useState(false);
   const [copiedImage, setCopiedImage] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [cachedBlob, setCachedBlob] = useState<Blob | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
 
   // Atributos, notas, frequência e evolução contínua do atleta
@@ -250,8 +251,55 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
 
   const gridCircles = [0.33, 0.66, 1.0];
 
-  // Gerador da imagem do Card em HD usando html2canvas
+  // Helper para disparar download direto de Blob
+  const downloadBlob = (blob: Blob, filename: string) => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+  };
+
+  // Pré-renderização em background do card assim que o modal abre
+  useEffect(() => {
+    let isMounted = true;
+    if (open && student) {
+      const timer = setTimeout(async () => {
+        if (!cardRef.current) return;
+        try {
+          const html2canvas = (await import("html2canvas")).default;
+          const canvas = await html2canvas(cardRef.current, {
+            scale: 2.2,
+            useCORS: true,
+            allowTaint: true,
+            backgroundColor: "#030712",
+            logging: false,
+          });
+          canvas.toBlob((blob) => {
+            if (isMounted && blob) {
+              setCachedBlob(blob);
+            }
+          }, "image/png");
+        } catch (e) {
+          console.warn("Pré-geração do card falhou:", e);
+        }
+      }, 350);
+
+      return () => {
+        isMounted = false;
+        clearTimeout(timer);
+      };
+    } else {
+      setCachedBlob(null);
+    }
+  }, [open, student?.id]);
+
+  // Gerador da imagem do Card em HD usando html2canvas (com cache para resposta instantânea)
   const generateCardBlob = async (): Promise<Blob | null> => {
+    if (cachedBlob) return cachedBlob;
     if (!cardRef.current) return null;
     try {
       const html2canvas = (await import("html2canvas")).default;
@@ -264,7 +312,10 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
       });
 
       return new Promise<Blob | null>((resolve) => {
-        canvas.toBlob((blob) => resolve(blob), "image/png");
+        canvas.toBlob((blob) => {
+          if (blob) setCachedBlob(blob);
+          resolve(blob);
+        }, "image/png");
       });
     } catch (err) {
       console.error("Erro ao renderizar canvas do card:", err);
@@ -311,20 +362,16 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
       const blob = await generateCardBlob();
       if (!blob) throw new Error("Erro ao gerar imagem");
 
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
       const safeName = student.nome.toLowerCase().replace(/[^a-z0-9]/g, "-");
-      a.href = url;
-      a.download = `card-marco-roza-${safeName}.png`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      const filename = `card-marco-roza-${safeName}.png`;
+      downloadBlob(blob, filename);
 
-      toast.success("Card baixado com sucesso em alta definição (PNG)!");
+      toast.success("Card salvo com sucesso em alta definição (PNG)!", {
+        description: "A imagem foi salva na sua galeria / pasta de downloads.",
+      });
     } catch (err) {
       console.error("Erro ao baixar card:", err);
-      toast.error("Falha ao baixar a imagem do card.");
+      toast.error("Falha ao salvar a imagem do card.");
     } finally {
       setIsGenerating(false);
     }
@@ -393,17 +440,17 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
         .join("\n") +
       `\n\nParabéns pela dedicação nos treinos! Continue marcando presença para manter o boost ativo! 🚀🏆`;
 
-    try {
-      setIsGenerating(true);
-      const blob = await generateCardBlob();
+    setIsGenerating(true);
+    const blob = await generateCardBlob();
+    const safeName = student.nome.toLowerCase().replace(/[^a-z0-9]/g, "-");
+    const filename = `card-marco-roza-${safeName}.png`;
 
-      // 1. Tentar Web Share API se suportar envio de arquivos (Chrome Android / Celular)
-      if (blob && navigator.canShare) {
-        const file = new File(
-          [blob],
-          `card-${student.nome.toLowerCase().replace(/[^a-z0-9]/g, "-")}.png`,
-          { type: "image/png" }
-        );
+    let sharedViaNative = false;
+
+    // 1. Tentar Web Share API nativa com arquivo PNG (Chrome Android / Celular)
+    if (blob && typeof navigator !== "undefined" && navigator.canShare) {
+      try {
+        const file = new File([blob], filename, { type: "image/png" });
         if (navigator.canShare({ files: [file] })) {
           try {
             await navigator.share({
@@ -411,6 +458,7 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
               text: text,
               files: [file],
             });
+            sharedViaNative = true;
             toast.success("Card compartilhado com sucesso!");
             setIsGenerating(false);
             return;
@@ -420,30 +468,37 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
               setIsGenerating(false);
               return;
             }
-            console.warn("Falha no Web Share nativo, aplicando fallback desktop:", shareErr);
+            console.warn("Falha no Web Share nativo, aplicando fallback direto:", shareErr);
           }
         }
+      } catch (errFile) {
+        console.warn("Erro ao instanciar arquivo para Web Share:", errFile);
       }
+    }
 
-      // 2. Desktop Fallback (Chrome no Computador): Copiar a imagem para o clipboard automaticamente!
-      if (blob && navigator.clipboard && typeof ClipboardItem !== "undefined") {
+    // 2. Fallback de Segurança: Salva automaticamente a imagem no dispositivo e copia para o clipboard
+    if (!sharedViaNative && blob) {
+      // Dispara o download automático do PNG para a galeria/downloads do celular ou PC
+      downloadBlob(blob, filename);
+
+      // Copia a imagem para o clipboard se suportado
+      if (navigator.clipboard && typeof ClipboardItem !== "undefined") {
         try {
           const item = new ClipboardItem({ "image/png": blob });
           await navigator.clipboard.write([item]);
-          toast.success("📸 Imagem do Card copiada para sua Área de Transferência!", {
-            description:
-              "Ao abrir o WhatsApp Web, pressione Ctrl+V (ou Cmd+V) para colar a imagem do card na conversa!",
-            duration: 7000,
-          });
         } catch (clipErr) {
-          console.warn("Não foi possível copiar imagem automaticamente", clipErr);
+          console.warn("Não foi possível copiar imagem automaticamente:", clipErr);
         }
       }
-    } catch (err) {
-      console.warn("Capture error", err);
-    } finally {
-      setIsGenerating(false);
+
+      toast.success("📸 Card salvo na sua Galeria!", {
+        description:
+          "O WhatsApp vai abrir: toque no 📎 clipe ou 📷 câmera para enviar o card recém-salvo junto com o texto!",
+        duration: 8000,
+      });
     }
+
+    setIsGenerating(false);
 
     // 3. Abrir WhatsApp com a mensagem pronta
     const waUrl = cleanPhone
@@ -892,15 +947,18 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
                 </span>
               </div>
 
-              {/* Dica de como a imagem vai pro WhatsApp Web */}
-              <div className="bg-slate-950/80 border border-emerald-500/20 rounded-xl p-2.5 text-[11px] text-slate-300 flex items-center gap-2">
-                <Sparkles className="h-4 w-4 text-emerald-400 shrink-0" />
-                <span>
-                  <strong>Dica de envio:</strong> Ao clicar em compartilhar, no celular
-                  a imagem vai direto. No computador (WhatsApp Web), a imagem é{" "}
-                  <strong className="text-emerald-300">copiada automaticamente</strong>{" "}
-                  para você apenas teclar <kbd className="px-1 py-0.5 bg-slate-800 text-white rounded font-mono text-[10px]">Ctrl+V</kbd> na conversa!
-                </span>
+              {/* Dica de envio clara para celular e computador */}
+              <div className="bg-slate-950/80 border border-emerald-500/25 rounded-xl p-3 text-[11px] text-slate-300 space-y-1.5">
+                <div className="flex items-center gap-1.5 text-emerald-400 font-bold">
+                  <Sparkles className="h-4 w-4 shrink-0" />
+                  <span>Dica de Envio do Card Oficial:</span>
+                </div>
+                <p className="leading-relaxed">
+                  • <strong>No Celular:</strong> Ao tocar no botão verde, se o WhatsApp abrir apenas com o texto, <strong>o card já foi salvo na sua galeria</strong>: basta tocar no ícone de 📎 clipe ou 📷 câmera no WhatsApp para anexar o card recém-salvo junto com o texto!
+                </p>
+                <p className="text-slate-400 leading-relaxed">
+                  • <strong>No Computador:</strong> Ao abrir o WhatsApp Web, o card já fica copiado na memória: basta dar <strong>Ctrl+V</strong> na conversa.
+                </p>
               </div>
 
               {/* Botão Principal: WhatsApp */}
@@ -908,45 +966,54 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
                 type="button"
                 onClick={handleShareWhatsApp}
                 disabled={isGenerating}
-                className="w-full h-11 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm gap-2.5 shadow-lg shadow-emerald-600/25 transition-all"
+                className="w-full h-12 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-sm gap-2.5 shadow-lg shadow-emerald-600/30 transition-all rounded-xl"
               >
                 {isGenerating ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
-                  <MessageCircle className="h-4 w-4 fill-current" />
+                  <MessageCircle className="h-5 w-5 fill-current" />
                 )}
                 Compartilhar no WhatsApp com Imagem do Card
               </Button>
 
-              {/* Botões Secundários: Copiar Imagem e Copiar Ficha em Texto */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 border-t border-white/5">
+              {/* Botões Secundários: Salvar Imagem, Copiar Imagem e Copiar Texto */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1 border-t border-white/5">
+                <Button
+                  type="button"
+                  onClick={handleDownloadCard}
+                  disabled={isGenerating}
+                  className="w-full bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/40 text-xs font-semibold gap-1.5 transition-colors shadow-sm"
+                >
+                  <Download className="h-3.5 w-3.5 text-amber-400" />
+                  Salvar Imagem (PNG)
+                </Button>
+
                 <Button
                   type="button"
                   onClick={handleCopyCardImage}
                   disabled={isGenerating}
-                  className="w-full bg-slate-850 hover:bg-slate-800 text-amber-300 border border-amber-500/30 text-xs font-semibold gap-2 transition-colors shadow-sm"
+                  className="w-full bg-slate-850 hover:bg-slate-800 text-slate-200 border border-slate-700 text-xs font-semibold gap-1.5 transition-colors shadow-sm"
                 >
-                  {isGenerating ? (
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  ) : copiedImage ? (
+                  {copiedImage ? (
                     <Check className="h-3.5 w-3.5 text-emerald-400" />
                   ) : (
-                    <Camera className="h-3.5 w-3.5 text-amber-400" />
+                    <Camera className="h-3.5 w-3.5 text-slate-300" />
                   )}
-                  {copiedImage ? "Imagem Copiada!" : "Copiar Imagem do Card"}
+                  {copiedImage ? "Imagem Copiada!" : "Copiar Imagem"}
                 </Button>
 
                 <Button
                   type="button"
                   onClick={handleCopyCardText}
-                  className="w-full bg-slate-850 hover:bg-slate-800 text-slate-100 border border-slate-700 text-xs font-semibold gap-2 transition-colors shadow-sm"
+                  disabled={isGenerating}
+                  className="w-full bg-slate-850 hover:bg-slate-800 text-slate-200 border border-slate-700 text-xs font-semibold gap-1.5 transition-colors shadow-sm"
                 >
                   {copiedText ? (
                     <Check className="h-3.5 w-3.5 text-emerald-400" />
                   ) : (
                     <Copy className="h-3.5 w-3.5 text-slate-300" />
                   )}
-                  {copiedText ? "Texto Copiado!" : "Copiar Ficha em Texto"}
+                  {copiedText ? "Texto Copiado!" : "Copiar Texto"}
                 </Button>
               </div>
             </div>
