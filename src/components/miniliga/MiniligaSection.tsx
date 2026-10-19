@@ -50,6 +50,7 @@ import {
   ListOrdered,
   LayoutGrid,
   CheckCircle2,
+  Cloud,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -79,9 +80,36 @@ export const MiniligaSection: React.FC = () => {
 
   const refreshHistory = () => {
     setHistoryList(miniligaStorage.getHistory());
+    miniligaStorage.fetchCloudHistory().then((cloudHistory) => {
+      if (cloudHistory && cloudHistory.length > 0) {
+        setHistoryList(cloudHistory);
+      }
+    });
   };
 
-  // Auto-salvamento resiliente no localStorage
+  // Carregamento e sincronização com Lovable Cloud (Supabase) na inicialização
+  useEffect(() => {
+    miniligaStorage.fetchCloudHistory().then((cloudHistory) => {
+      if (cloudHistory && cloudHistory.length > 0) {
+        setHistoryList(cloudHistory);
+      }
+    });
+
+    miniligaStorage.fetchCloudActiveSession().then((cloudSession) => {
+      if (cloudSession) {
+        setSession((prev) => {
+          if (!prev) return cloudSession;
+          if (prev.isSimulation) return prev;
+          if (new Date(cloudSession.updatedAt) > new Date(prev.updatedAt)) {
+            return cloudSession;
+          }
+          return prev;
+        });
+      }
+    });
+  }, []);
+
+  // Auto-salvamento resiliente (Local + Lovable Cloud em Modo Real)
   useEffect(() => {
     if (session) {
       miniligaStorage.saveActiveSession(session);
@@ -539,7 +567,8 @@ export const MiniligaSection: React.FC = () => {
         "⚠️ ATENÇÃO: Deseja realmente zerar a Miniliga?\n\nTodos os dados da sessão ativa, placares registrados e a escalação atual dos participantes serão deletados permanentemente."
       )
     ) {
-      miniligaStorage.clearActiveSession();
+      const currentId = session?.id;
+      miniligaStorage.clearActiveSession(currentId);
       setSession(null);
       setCustomPlayers([]);
       toast.info("Dados da Miniliga deletados com sucesso. Pronto para iniciar uma nova configuração!");
@@ -558,12 +587,13 @@ export const MiniligaSection: React.FC = () => {
             <h2 className="text-xl font-black text-foreground flex items-center gap-2">
               Miniligas Marco Roza
               {session?.isSimulation ? (
-                <Badge className="bg-sky-500 text-white font-extrabold text-xs">
-                  🧪 Modo Simulação (Sandbox)
+                <Badge className="bg-sky-500/20 text-sky-400 border border-sky-500/40 font-extrabold text-xs">
+                  🧪 Modo Sandbox (Local)
                 </Badge>
               ) : (
-                <Badge className="bg-emerald-500 text-black font-extrabold text-xs">
-                  🟢 Modo Real Oficial
+                <Badge className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 font-extrabold text-xs flex items-center gap-1.5 shadow-sm">
+                  <Cloud className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
+                  Modo Real Oficial • Lovable Cloud
                 </Badge>
               )}
             </h2>
@@ -1365,9 +1395,9 @@ export const MiniligaSection: React.FC = () => {
                       <Button
                         size="sm"
                         variant="ghost"
-                        onClick={() => {
+                        onClick={async () => {
                           if (window.confirm(`Excluir "${h.title}" do histórico?`)) {
-                            miniligaStorage.deleteFromHistory(h.id);
+                            await miniligaStorage.deleteFromHistory(h.id);
                             refreshHistory();
                             toast.info("Registro removido do histórico.");
                           }

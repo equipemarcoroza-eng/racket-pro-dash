@@ -203,6 +203,69 @@ export type Database = {
         }
         Relationships: []
       }
+      miniliga_sessions: {
+        Row: {
+          courts_count: number
+          created_at: string
+          current_round: number
+          date: string
+          duration_seconds: number
+          has_bonus_final: boolean
+          has_semifinais: boolean
+          has_tiebreak_simples: boolean
+          id: string
+          is_simulation: boolean
+          matches: Json
+          model_type: string
+          participant_count: number
+          participants: Json
+          status: string
+          title: string
+          total_rounds: number
+          updated_at: string
+        }
+        Insert: {
+          courts_count?: number
+          created_at?: string
+          current_round?: number
+          date: string
+          duration_seconds?: number
+          has_bonus_final?: boolean
+          has_semifinais?: boolean
+          has_tiebreak_simples?: boolean
+          id: string
+          is_simulation?: boolean
+          matches?: Json
+          model_type: string
+          participant_count: number
+          participants?: Json
+          status?: string
+          title: string
+          total_rounds?: number
+          updated_at?: string
+        }
+        Update: {
+          courts_count?: number
+          created_at?: string
+          current_round?: number
+          date?: string
+          duration_seconds?: number
+          has_bonus_final?: boolean
+          has_semifinais?: boolean
+          has_tiebreak_simples?: boolean
+          id?: string
+          is_simulation?: boolean
+          matches?: Json
+          model_type?: string
+          participant_count?: number
+          participants?: Json
+          status?: string
+          title?: string
+          total_rounds?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       plans: {
         Row: {
           created_at: string
