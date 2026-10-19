@@ -15,6 +15,7 @@ import {
 import { miniligaStorage } from "@/lib/miniliga-storage";
 import { MatchTimer } from "@/components/miniliga/MatchTimer";
 import { CourtMatchCard } from "@/components/miniliga/CourtMatchCard";
+import { AllMatchesOverview } from "@/components/miniliga/AllMatchesOverview";
 import { MiniligaStandingsTable } from "@/components/miniliga/MiniligaStandingsTable";
 import { MiniligaSummaryModal } from "@/components/miniliga/MiniligaSummaryModal";
 
@@ -35,6 +36,10 @@ import {
   ChevronRight,
   ShieldCheck,
   Zap,
+  Dices,
+  ListOrdered,
+  LayoutGrid,
+  CheckCircle2,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -56,6 +61,9 @@ export const MiniligaSection: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [summaryModalOpen, setSummaryModalOpen] = useState(false);
   const [isSavingPoints, setIsSavingPoints] = useState(false);
+
+  // Modo de visualização de jogos: "todos" (visão panorâmica de 1 por 1) ou "rodada" (foco com cronômetro)
+  const [matchViewMode, setMatchViewMode] = useState<"todos" | "rodada">("todos");
 
   // Auto-salvamento resiliente no localStorage
   useEffect(() => {
@@ -146,8 +154,8 @@ export const MiniligaSection: React.FC = () => {
     toast.success("Participantes preenchidos com sucesso!");
   };
 
-  // INICIAR A MINILIGA
-  const handleStartMiniliga = () => {
+  // INICIAR A MINILIGA (Modo Simulação por padrão para segurança)
+  const handleStartMiniliga = (isSimulation: boolean = true) => {
     if (customPlayers.length !== selectedCount) {
       toast.error(`Adicione exatamente ${selectedCount} participantes para iniciar.`);
       return;
@@ -191,7 +199,7 @@ export const MiniligaSection: React.FC = () => {
       participantCount: selectedCount,
       modelType: selectedModel,
       courtsCount,
-      durationSeconds: 300, // 5 minutos
+      durationSeconds: 300,
       currentRound: 1,
       totalRounds,
       status: "em_andamento",
@@ -199,13 +207,18 @@ export const MiniligaSection: React.FC = () => {
       matches,
       hasBonusFinal: false,
       hasTiebreakSimples: false,
+      isSimulation,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
 
     setSession(newSession);
     miniligaStorage.saveActiveSession(newSession);
-    toast.success(`Miniliga iniciada! Rodada 1 liberada na(s) ${courtsCount} quadra(s).`);
+    toast.success(
+      isSimulation
+        ? "🧪 Modo Simulação iniciado! Todos os jogos listados na tela."
+        : "🟢 Miniliga Real iniciada com sucesso!"
+    );
   };
 
   const participantsMap = useMemo(() => {
@@ -233,6 +246,7 @@ export const MiniligaSection: React.FC = () => {
     return session.participants.filter((p) => !playingIds.has(p.id));
   }, [session, currentRoundMatches]);
 
+  // Atualizar placar de um jogo (1 por 1 direto na grade)
   const handleScoreChange = (
     matchId: string,
     scoreA: number | null,
@@ -267,6 +281,41 @@ export const MiniligaSection: React.FC = () => {
     };
 
     setSession(updatedSession);
+  };
+
+  // BOTÃO MÁGICO: GERAR PLACARES SIMULADOS EM 1 CLIQUE
+  const handleGenerateRandomScores = () => {
+    if (!session) return;
+
+    const updatedMatches = session.matches.map((m) => {
+      // Gera placares realistas de Beach Tennis nos 5 minutos (entre 4 e 10 pontos)
+      const sA = Math.floor(Math.random() * 6) + 4;
+      let sB = Math.floor(Math.random() * 6) + 4;
+      if (sB === sA) sB += 1; // evita empate no jogo individual
+
+      return {
+        ...m,
+        scoreA: sA,
+        scoreB: sB,
+        isCompleted: true,
+        finishedAt: new Date().toISOString(),
+      };
+    });
+
+    const updatedStandings = recalculateMiniligaStandings(
+      session.participants,
+      updatedMatches
+    );
+
+    setSession({
+      ...session,
+      matches: updatedMatches,
+      participants: updatedStandings,
+      status: "aguardando_final",
+      updatedAt: new Date().toISOString(),
+    });
+
+    toast.success("Placares de simulação gerados para todos os jogos!");
   };
 
   const handleNextRound = () => {
@@ -347,10 +396,27 @@ export const MiniligaSection: React.FC = () => {
     toast.success("Grande Final (1º+3º vs 2º+4º) criada na Quadra 1!");
   };
 
+  // Alternar Simulação para Modo Real
+  const handlePromoteToReal = () => {
+    if (!session) return;
+    if (window.confirm("Deseja ativar esta Miniliga como Modo Real Oficial para creditar pontos?")) {
+      setSession({
+        ...session,
+        isSimulation: false,
+        updatedAt: new Date().toISOString(),
+      });
+      toast.success("🏆 Miniliga convertida para Modo Real Oficial!");
+    }
+  };
+
   const handleDistributeCardPoints = async () => {
     if (!session) return;
-    setIsSavingPoints(true);
+    if (session.isSimulation) {
+      toast.info("A Miniliga está em Modo Simulação. Mude para Modo Real para creditar pontos.");
+      return;
+    }
 
+    setIsSavingPoints(true);
     try {
       miniligaStorage.saveToHistory({
         ...session,
@@ -390,17 +456,17 @@ export const MiniligaSection: React.FC = () => {
   };
 
   const handleResetSession = () => {
-    if (window.confirm("Deseja realmente encerrar e iniciar uma nova Miniliga?")) {
+    if (window.confirm("Deseja realmente reiniciar a Miniliga?")) {
       miniligaStorage.clearActiveSession();
       setSession(null);
       setCustomPlayers([]);
-      toast.info("Pronto para configurar uma nova Miniliga!");
+      toast.info("Pronto para configurar ou simular uma nova Miniliga!");
     }
   };
 
   return (
     <div className="space-y-6">
-      {/* Top Banner da Miniliga */}
+      {/* Top Banner da Miniliga com Alternador Simulação / Real */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-card border border-amber-500/30 shadow-md">
         <div className="flex items-center gap-3">
           <div className="p-3 rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-500 text-black shadow-lg shadow-amber-500/20">
@@ -409,18 +475,47 @@ export const MiniligaSection: React.FC = () => {
           <div>
             <h2 className="text-xl font-black text-foreground flex items-center gap-2">
               Miniligas Marco Roza
-              <Badge className="bg-amber-500 text-black font-extrabold text-xs">
-                Método Oficial
-              </Badge>
+              {session?.isSimulation ? (
+                <Badge className="bg-sky-500 text-white font-extrabold text-xs">
+                  🧪 Modo Simulação (Sandbox)
+                </Badge>
+              ) : (
+                <Badge className="bg-emerald-500 text-black font-extrabold text-xs">
+                  🟢 Modo Real Oficial
+                </Badge>
+              )}
             </h2>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Rodízios de 5 min cronometrados, pontuação combinada e premiação para o Card do Atleta
+              Grade com todos os jogos na tela, preenchimento 1 por 1 e pontuação em tempo real
             </p>
           </div>
         </div>
 
         {session && (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            {session.isSimulation && (
+              <>
+                <Button
+                  onClick={handleGenerateRandomScores}
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5 border-sky-500/40 text-sky-400 hover:bg-sky-500/10 text-xs font-bold"
+                >
+                  <Dices className="w-3.5 h-3.5" />
+                  Auto-Preencher Resultados
+                </Button>
+
+                <Button
+                  onClick={handlePromoteToReal}
+                  size="sm"
+                  className="gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md"
+                >
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  Ativar Modo Real
+                </Button>
+              </>
+            )}
+
             <Button
               onClick={() => setSummaryModalOpen(true)}
               variant="outline"
@@ -428,7 +523,7 @@ export const MiniligaSection: React.FC = () => {
               className="gap-2 border-amber-500/40 text-amber-300 hover:bg-amber-500/10 font-bold"
             >
               <Trophy className="w-4 h-4 text-amber-400" />
-              Ver Pódio
+              Pódio & XP
             </Button>
             <Button
               onClick={handleResetSession}
@@ -437,7 +532,7 @@ export const MiniligaSection: React.FC = () => {
               className="gap-2 text-muted-foreground hover:text-rose-400"
             >
               <RotateCcw className="w-4 h-4" />
-              Nova Miniliga
+              Reiniciar
             </Button>
           </div>
         )}
@@ -546,22 +641,34 @@ export const MiniligaSection: React.FC = () => {
                     <ShieldCheck className="w-4 h-4 text-emerald-400" />
                     Regras Oficiais Aplicadas:
                   </div>
-                  <div>• Baterias de 5 minutos cronometradas</div>
+                  <div>• Tabela de todos os jogos na tela para preenchimento 1 por 1</div>
                   <div>• Pontuação Total = Pontos de Jogo (PP) + Vitórias</div>
                   <div>• Empate no topo = Partida Extra de Simples</div>
                   <div>• Tempo de sobra = Final Opcional (1º+3º vs 2º+4º)</div>
-                  <div>• Crédito automático de XP no Card por colocação</div>
+                  <div>• Modo Simulação seguro antes de efetivar no Real</div>
                 </div>
 
-                <Button
-                  onClick={handleStartMiniliga}
-                  disabled={customPlayers.length !== selectedCount}
-                  size="lg"
-                  className="w-full gap-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-black text-base shadow-lg shadow-emerald-600/20 h-12"
-                >
-                  <Play className="w-5 h-5 fill-current" />
-                  Iniciar Miniliga ({customPlayers.length}/{selectedCount})
-                </Button>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                  <Button
+                    onClick={() => handleStartMiniliga(true)}
+                    disabled={customPlayers.length !== selectedCount}
+                    size="lg"
+                    className="w-full gap-2 bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-700 hover:to-blue-700 text-white font-black text-sm shadow-md"
+                  >
+                    <Dices className="w-4 h-4" />
+                    Iniciar Simulação ({customPlayers.length}/{selectedCount})
+                  </Button>
+
+                  <Button
+                    onClick={() => handleStartMiniliga(false)}
+                    disabled={customPlayers.length !== selectedCount}
+                    size="lg"
+                    className="w-full gap-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-black text-sm shadow-md"
+                  >
+                    <Play className="w-4 h-4 fill-current" />
+                    Iniciar Modo Real
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           </div>
@@ -655,100 +762,124 @@ export const MiniligaSection: React.FC = () => {
           </div>
         </div>
       ) : (
-        /* MESA DE CONTROLE AO VIVO DA MINILIGA */
+        /* MESA DE CONTROLE: GRADE DE TODOS OS JOGOS + CLASSIFICAÇÃO */
         <div className="space-y-6">
-          <MatchTimer
-            initialSeconds={session.durationSeconds}
-            isActive={session.status === "em_andamento"}
-            onTimeEnd={() => {
-              toast.info("Tempo de 5 minutos esgotado! Lance os placares da rodada.");
-            }}
-          />
-
+          {/* Seletor do Modo de Visualização dos Jogos */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-card/60 border border-border/80 backdrop-blur-md">
             <div className="flex items-center gap-3">
-              <Badge className="bg-primary text-primary-foreground font-black text-sm px-3 py-1">
-                Rodada {session.currentRound} de {session.totalRounds}
-              </Badge>
               <span className="text-sm font-bold text-foreground">
-                {session.title} • {session.participantCount} Atletas ({session.courtsCount} Quadra(s))
+                Visualização dos Jogos:
               </span>
+              <div className="flex items-center gap-1 bg-background p-1 rounded-xl border border-border/80">
+                <Button
+                  size="sm"
+                  variant={matchViewMode === "todos" ? "default" : "ghost"}
+                  className="h-8 text-xs font-bold gap-1.5"
+                  onClick={() => setMatchViewMode("todos")}
+                >
+                  <ListOrdered className="w-3.5 h-3.5" />
+                  Todos os Jogos (1 por 1)
+                </Button>
+                <Button
+                  size="sm"
+                  variant={matchViewMode === "rodada" ? "default" : "ghost"}
+                  className="h-8 text-xs font-bold gap-1.5"
+                  onClick={() => setMatchViewMode("rodada")}
+                >
+                  <LayoutGrid className="w-3.5 h-3.5" />
+                  Foco na Rodada Ativa
+                </Button>
+              </div>
             </div>
 
+            {/* Ações Especiais de Final */}
             <div className="flex items-center gap-2">
-              {session.currentRound < session.totalRounds ? (
+              {hasTieInFirstPlace && !session.hasTiebreakSimples && (
                 <Button
-                  onClick={handleNextRound}
-                  className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-md"
+                  onClick={handleAddTiebreakSimples}
+                  className="gap-2 bg-rose-600 hover:bg-rose-700 text-white font-extrabold shadow-lg shadow-rose-600/20 text-xs animate-pulse"
                 >
-                  Próxima Rodada <ChevronRight className="w-4 h-4" />
+                  <Zap className="w-3.5 h-3.5 fill-current" /> Desempate Simples (1º vs 2º)
                 </Button>
-              ) : (
-                <div className="flex items-center gap-2">
-                  {hasTieInFirstPlace && !session.hasTiebreakSimples && (
-                    <Button
-                      onClick={handleAddTiebreakSimples}
-                      className="gap-2 bg-rose-600 hover:bg-rose-700 text-white font-extrabold shadow-lg shadow-rose-600/20 animate-pulse"
-                    >
-                      <Zap className="w-4 h-4 fill-current" /> Desempate Simples (1º vs 2º)
-                    </Button>
-                  )}
+              )}
 
-                  {!session.hasBonusFinal && (
-                    <Button
-                      onClick={handleAddBonusFinal}
-                      variant="outline"
-                      className="gap-2 border-amber-500/50 text-amber-300 hover:bg-amber-500/10 font-bold"
-                    >
-                      <Trophy className="w-4 h-4 text-amber-400" />
-                      Grande Final (1º+3º vs 2º+4º)
-                    </Button>
-                  )}
-
-                  <Button
-                    onClick={() => setSummaryModalOpen(true)}
-                    className="gap-2 bg-gradient-to-r from-amber-500 to-orange-500 text-black font-black shadow-lg shadow-amber-500/20"
-                  >
-                    <Trophy className="w-4 h-4" />
-                    Ver Pódio e Concluir
-                  </Button>
-                </div>
+              {!session.hasBonusFinal && (
+                <Button
+                  onClick={handleAddBonusFinal}
+                  variant="outline"
+                  className="gap-2 border-amber-500/50 text-amber-300 hover:bg-amber-500/10 font-bold text-xs"
+                >
+                  <Trophy className="w-3.5 h-3.5 text-amber-400" />
+                  Grande Final (1º+3º vs 2º+4º)
+                </Button>
               )}
             </div>
           </div>
 
-          <div className="space-y-3">
-            <h3 className="font-extrabold text-sm uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-              <Layers className="w-4 h-4 text-primary" /> Quadras em Disputa (Rodada {session.currentRound})
-            </h3>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {currentRoundMatches.map((match) => (
-                <CourtMatchCard
-                  key={match.id}
-                  match={match}
-                  participantsMap={participantsMap}
-                  onScoreChange={handleScoreChange}
-                />
-              ))}
-            </div>
-          </div>
+          {/* MODO 1: TODOS OS JOGOS NA TELA (O QUE VOCÊ PEDIU!) */}
+          {matchViewMode === "todos" ? (
+            <AllMatchesOverview
+              matches={session.matches}
+              participantsMap={participantsMap}
+              onScoreChange={handleScoreChange}
+              totalRounds={session.totalRounds}
+            />
+          ) : (
+            /* MODO 2: FOCO NA RODADA COM CRONÔMETRO */
+            <div className="space-y-6">
+              <MatchTimer
+                initialSeconds={session.durationSeconds}
+                isActive={session.status === "em_andamento"}
+                onTimeEnd={() => {
+                  toast.info("Tempo de 5 minutos esgotado! Lance os placares da rodada.");
+                }}
+              />
 
-          {restingPlayers.length > 0 && (
-            <div className="p-3.5 rounded-xl bg-muted/30 border border-border/60 flex items-center justify-between gap-3 text-xs">
-              <span className="font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-                <RotateCcw className="w-3.5 h-3.5 text-primary" />
-                Descansando nesta rodada:
-              </span>
-              <div className="flex items-center gap-2 flex-wrap">
-                {restingPlayers.map((rp) => (
-                  <Badge key={rp.id} variant="outline" className="bg-background text-foreground font-semibold">
-                    {rp.name}
-                  </Badge>
+              <div className="flex items-center justify-between p-3 rounded-xl bg-muted/40 border">
+                <Badge className="bg-primary text-primary-foreground font-black text-xs px-2.5 py-0.5">
+                  Rodada {session.currentRound} de {session.totalRounds}
+                </Badge>
+                {session.currentRound < session.totalRounds && (
+                  <Button
+                    onClick={handleNextRound}
+                    size="sm"
+                    className="gap-1.5 font-bold text-xs"
+                  >
+                    Próxima Rodada <ChevronRight className="w-3.5 h-3.5" />
+                  </Button>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {currentRoundMatches.map((match) => (
+                  <CourtMatchCard
+                    key={match.id}
+                    match={match}
+                    participantsMap={participantsMap}
+                    onScoreChange={handleScoreChange}
+                  />
                 ))}
               </div>
+
+              {restingPlayers.length > 0 && (
+                <div className="p-3 rounded-xl bg-muted/30 border border-border/60 flex items-center justify-between gap-3 text-xs">
+                  <span className="font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                    <RotateCcw className="w-3.5 h-3.5 text-primary" />
+                    Descansando nesta rodada:
+                  </span>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {restingPlayers.map((rp) => (
+                      <Badge key={rp.id} variant="outline" className="bg-background text-foreground font-semibold">
+                        {rp.name}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
+          {/* TABELA DE CLASSIFICAÇÃO GERAL AO VIVO */}
           <MiniligaStandingsTable
             standings={session.participants}
             hasTiebreakWarning={hasTieInFirstPlace && !session.hasTiebreakSimples}

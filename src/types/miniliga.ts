@@ -75,6 +75,9 @@ export interface MiniligaSession {
   hasBonusFinal: boolean;
   hasTiebreakSimples: boolean;
   
+  // Modo de operação: Simulação (Sandbox de teste) vs Real (Oficial com pontos no card)
+  isSimulation?: boolean;
+  
   createdAt: string;
   updatedAt: string;
 }
