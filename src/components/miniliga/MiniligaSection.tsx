@@ -696,8 +696,8 @@ export const MiniligaSection: React.FC = () => {
                         </div>
                         <p className="text-[11px] text-muted-foreground mt-1">
                           {selectedCount === 8
-                            ? "Grupo 1 vs 2 • 12 jogos"
-                            : "Grupo 1 vs 2 • 10 jogos"}
+                            ? "Grupo 1 vs 2 • 8 jogos (4 rodadas)"
+                            : "Grupo 1 vs 2 • 10 jogos (5 rodadas)"}
                         </p>
                       </div>
 

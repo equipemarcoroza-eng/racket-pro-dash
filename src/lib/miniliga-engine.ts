@@ -147,51 +147,37 @@ function generate6PlayersRotativo(p: MiniligaParticipant[]) {
 }
 
 /**
- * 8 JOGADORES - MODELO INTERGRUPOS (MÉTODO DO ÁUDIO DO MARCO ROZA)
- * Grupo 1: 0, 1, 2, 3 (P1, P2, P3, P4)
- * Grupo 2: 4, 5, 6, 7 (P5, P6, P7, P8)
- * 2 Quadras simultâneas.
- * Cada jogador do G1 faz dupla com cada um do G2.
- * Mini-ciclos de 3 jogos por rodada, totalizando 12 jogos!
+ * 8 JOGADORES - MODELO INTERGRUPOS OFICIAL (MÉTODO MARCO ROZA)
+ * Grupo 1: 0, 1, 2, 3 (A1, B1, C1, D1)
+ * Grupo 2: 4, 5, 6, 7 (e1, f1, g1, h1)
+ * 2 Quadras simultâneas (100% de ocupação sem folgas).
+ * 4 Rodadas no total (8 partidas 100% inéditas).
+ * Cada jogador do G1 faz dupla exatamente 1 vez com cada um do G2:
+ * - A1 joga com: e1, f1, g1, h1
+ * - B1 joga com: f1, g1, h1, e1
+ * - C1 joga com: g1, h1, e1, f1
+ * - D1 joga com: h1, e1, f1, g1
+ * ZERO repetições de parcerias e ZERO repetições de confrontos!
  */
 function generate8PlayersIntergrupos(p: MiniligaParticipant[]) {
   const matches: MiniligaMatch[] = [];
 
-  // Duplas formadas:
-  // Ciclo 1: [0+4, 1+5, 2+6, 3+7]
-  // Cada dupla joga contra as outras 3 (total 3 jogos por dupla).
-  // Distribuídos em 2 quadras paralelas:
-  // Bateria 1 (Rodada 1): Q1 [0+4 vs 1+5], Q2 [2+6 vs 3+7]
-  // Bateria 2 (Rodada 2): Q1 [0+4 vs 2+6], Q2 [1+5 vs 3+7]
-  // Bateria 3 (Rodada 3): Q1 [0+4 vs 3+7], Q2 [1+5 vs 2+6]
-  //
-  // Ciclo 2 (Rotaciona parcerias do Grupo 2): [0+5, 1+6, 2+7, 3+4]
-  // Bateria 4 (Rodada 4): Q1 [0+5 vs 1+6], Q2 [2+7 vs 3+4]
-  // Bateria 5 (Rodada 5): Q1 [0+5 vs 2+7], Q2 [1+6 vs 3+4]
-  // Bateria 6 (Rodada 6): Q1 [0+5 vs 3+4], Q2 [1+6 vs 2+7]
-
-  const pairRounds = [
-    // Rodada 1
+  const schedule = [
+    // Rodada 1: A1/e1 vs B1/f1 (Q1), C1/g1 vs D1/h1 (Q2)
     { r: 1, c: 1, a: [0, 4], b: [1, 5] },
     { r: 1, c: 2, a: [2, 6], b: [3, 7] },
-    // Rodada 2
-    { r: 2, c: 1, a: [0, 4], b: [2, 6] },
-    { r: 2, c: 2, a: [1, 5], b: [3, 7] },
-    // Rodada 3
-    { r: 3, c: 1, a: [0, 4], b: [3, 7] },
-    { r: 3, c: 2, a: [1, 5], b: [2, 6] },
-    // Rodada 4
-    { r: 4, c: 1, a: [0, 5], b: [1, 6] },
-    { r: 4, c: 2, a: [2, 7], b: [3, 4] },
-    // Rodada 5
-    { r: 5, c: 1, a: [0, 5], b: [2, 7] },
-    { r: 5, c: 2, a: [1, 6], b: [3, 4] },
-    // Rodada 6
-    { r: 6, c: 1, a: [0, 5], b: [3, 4] },
-    { r: 6, c: 2, a: [1, 6], b: [2, 7] },
+    // Rodada 2: A1/f1 vs B1/g1 (Q1), C1/h1 vs D1/e1 (Q2)
+    { r: 2, c: 1, a: [0, 5], b: [1, 6] },
+    { r: 2, c: 2, a: [2, 7], b: [3, 4] },
+    // Rodada 3: A1/g1 vs C1/e1 (Q1), B1/h1 vs D1/f1 (Q2)
+    { r: 3, c: 1, a: [0, 6], b: [2, 4] },
+    { r: 3, c: 2, a: [1, 7], b: [3, 5] },
+    // Rodada 4: A1/h1 vs C1/f1 (Q1), B1/e1 vs D1/g1 (Q2)
+    { r: 4, c: 1, a: [0, 7], b: [2, 5] },
+    { r: 4, c: 2, a: [1, 4], b: [3, 6] },
   ];
 
-  pairRounds.forEach((pr, idx) => {
+  schedule.forEach((pr, idx) => {
     matches.push({
       id: `match-8p-ig-${idx + 1}`,
       roundNumber: pr.r,
@@ -204,7 +190,7 @@ function generate8PlayersIntergrupos(p: MiniligaParticipant[]) {
     });
   });
 
-  return { matches, totalRounds: 6, courtsCount: 2 };
+  return { matches, totalRounds: 4, courtsCount: 2 };
 }
 
 /**
