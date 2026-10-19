@@ -103,7 +103,7 @@ export const AllMatchesOverview: React.FC<AllMatchesOverviewProps> = ({
         </div>
 
         {/* Lista dos jogos da bateria em Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className={`grid grid-cols-1 ${roundMatches.length >= 3 ? "lg:grid-cols-3 md:grid-cols-2" : "md:grid-cols-2"} gap-3`}>
           {roundMatches.map((m) => {
             const p1A = participantsMap.get(m.teamA.player1Id);
             const p2A = m.teamA.player2Id ? participantsMap.get(m.teamA.player2Id) : null;
