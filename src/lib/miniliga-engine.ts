@@ -151,30 +151,69 @@ function generate6PlayersRotativo(p: MiniligaParticipant[]) {
  * Grupo 1: 0, 1, 2, 3 (A1, B1, C1, D1)
  * Grupo 2: 4, 5, 6, 7 (e1, f1, g1, h1)
  * 2 Quadras simultâneas (100% de ocupação sem folgas).
- * 4 Rodadas no total (8 partidas 100% inéditas).
- * Cada jogador do G1 faz dupla exatamente 1 vez com cada um do G2:
- * - A1 joga com: e1, f1, g1, h1
- * - B1 joga com: f1, g1, h1, e1
- * - C1 joga com: g1, h1, e1, f1
- * - D1 joga com: h1, e1, f1, g1
- * ZERO repetições de parcerias e ZERO repetições de confrontos!
+ * 12 Rodadas no total (4 ciclos de 3 rodadas = 24 confrontos 100% inéditos).
+ * Cada jogador do G1 faz dupla em 1 ciclo com cada participante do G2:
+ * - Ciclo 1 (Rodadas 1 a 3): A1 joga com e1 (enfrenta B1/f1, C1/g1, D1/h1)
+ * - Ciclo 2 (Rodadas 4 a 6): A1 joga com f1 (enfrenta B1/g1, C1/h1, D1/e1)
+ * - Ciclo 3 (Rodadas 7 a 9): A1 joga com g1 (enfrenta B1/h1, C1/e1, D1/f1)
+ * - Ciclo 4 (Rodadas 10 a 12): A1 joga com h1 (enfrenta B1/e1, C1/f1, D1/g1)
+ * Todos os 8 alunos jogam exatamente 12 partidas!
  */
 function generate8PlayersIntergrupos(p: MiniligaParticipant[]) {
   const matches: MiniligaMatch[] = [];
 
   const schedule = [
-    // Rodada 1: A1/e1 vs B1/f1 (Q1), C1/g1 vs D1/h1 (Q2)
+    // ==========================================
+    // CICLO 1: Duplas [0+4, 1+5, 2+6, 3+7] (A1/e1, B1/f1, C1/g1, D1/h1)
+    // ==========================================
+    // Rodada 1
     { r: 1, c: 1, a: [0, 4], b: [1, 5] },
     { r: 1, c: 2, a: [2, 6], b: [3, 7] },
-    // Rodada 2: A1/f1 vs B1/g1 (Q1), C1/h1 vs D1/e1 (Q2)
-    { r: 2, c: 1, a: [0, 5], b: [1, 6] },
-    { r: 2, c: 2, a: [2, 7], b: [3, 4] },
-    // Rodada 3: A1/g1 vs C1/e1 (Q1), B1/h1 vs D1/f1 (Q2)
-    { r: 3, c: 1, a: [0, 6], b: [2, 4] },
-    { r: 3, c: 2, a: [1, 7], b: [3, 5] },
-    // Rodada 4: A1/h1 vs C1/f1 (Q1), B1/e1 vs D1/g1 (Q2)
-    { r: 4, c: 1, a: [0, 7], b: [2, 5] },
-    { r: 4, c: 2, a: [1, 4], b: [3, 6] },
+    // Rodada 2
+    { r: 2, c: 1, a: [0, 4], b: [2, 6] },
+    { r: 2, c: 2, a: [1, 5], b: [3, 7] },
+    // Rodada 3
+    { r: 3, c: 1, a: [0, 4], b: [3, 7] },
+    { r: 3, c: 2, a: [1, 5], b: [2, 6] },
+
+    // ==========================================
+    // CICLO 2: Duplas [0+5, 1+6, 2+7, 3+4] (A1/f1, B1/g1, C1/h1, D1/e1)
+    // ==========================================
+    // Rodada 4
+    { r: 4, c: 1, a: [0, 5], b: [1, 6] },
+    { r: 4, c: 2, a: [2, 7], b: [3, 4] },
+    // Rodada 5
+    { r: 5, c: 1, a: [0, 5], b: [2, 7] },
+    { r: 5, c: 2, a: [1, 6], b: [3, 4] },
+    // Rodada 6
+    { r: 6, c: 1, a: [0, 5], b: [3, 4] },
+    { r: 6, c: 2, a: [1, 6], b: [2, 7] },
+
+    // ==========================================
+    // CICLO 3: Duplas [0+6, 1+7, 2+4, 3+5] (A1/g1, B1/h1, C1/e1, D1/f1)
+    // ==========================================
+    // Rodada 7
+    { r: 7, c: 1, a: [0, 6], b: [1, 7] },
+    { r: 7, c: 2, a: [2, 4], b: [3, 5] },
+    // Rodada 8
+    { r: 8, c: 1, a: [0, 6], b: [2, 4] },
+    { r: 8, c: 2, a: [1, 7], b: [3, 5] },
+    // Rodada 9
+    { r: 9, c: 1, a: [0, 6], b: [3, 5] },
+    { r: 9, c: 2, a: [1, 7], b: [2, 4] },
+
+    // ==========================================
+    // CICLO 4: Duplas [0+7, 1+4, 2+5, 3+6] (A1/h1, B1/e1, C1/f1, D1/g1)
+    // ==========================================
+    // Rodada 10
+    { r: 10, c: 1, a: [0, 7], b: [1, 4] },
+    { r: 10, c: 2, a: [2, 5], b: [3, 6] },
+    // Rodada 11
+    { r: 11, c: 1, a: [0, 7], b: [2, 5] },
+    { r: 11, c: 2, a: [1, 4], b: [3, 6] },
+    // Rodada 12
+    { r: 12, c: 1, a: [0, 7], b: [3, 6] },
+    { r: 12, c: 2, a: [1, 4], b: [2, 5] },
   ];
 
   schedule.forEach((pr, idx) => {
@@ -190,7 +229,7 @@ function generate8PlayersIntergrupos(p: MiniligaParticipant[]) {
     });
   });
 
-  return { matches, totalRounds: 4, courtsCount: 2 };
+  return { matches, totalRounds: 12, courtsCount: 2 };
 }
 
 /**
