@@ -378,18 +378,62 @@ export const BASE_CONHECIMENTO: IntencaoCopiloto[] = [
     ],
     resposta: {
       texto:
-        "O módulo de **Reposição de Aulas** (`/class-replacements`) é equipado com o algoritmo **Smart Replacement Matchmaker**:\n\n" +
-        "• **Casamento Inteligente de Vagas:** Cruzamento automático do nível técnico do aluno faltante com vagas ociosas em turmas compatíveis.\n" +
-        "• **Visão Agrupada por Aluno:** Acompanhamento claro de quantas aulas o atleta tem pendentes e quantas já foram realizadas.\n" +
-        "• **Exportação Estruturada em PDF:** Geração de relatórios com layout profissional para prestar contas aos alunos ou arquivamento interno.\n" +
-        "• **Filtro de Período & Status:** Localização rápida de reposições agendadas, concluídas ou expiradas.",
+        "O módulo de **Reposição de Aulas** (`/class-replacements`) é equipado com duas ferramentas de alta performance:\n\n" +
+        "• **Smart Replacement Matchmaker:** Cruzamento automático do nível técnico do aluno faltante com vagas ociosas em turmas compatíveis da grade.\n" +
+        "• **Miniligas Marco Roza (Torneio Express de Reposição):** Solução prática para repor aulas em formato de torneio dinâmico com rodadas de 5 min cronometradas.\n" +
+        "• **Visão Agrupada por Aluno:** Acompanhamento claro de quantas aulas o atleta tem pendentes e quantas já foram repostas.\n" +
+        "• **Exportação Estruturada em PDF:** Geração de relatórios com layout profissional e logo da Equipe Marco Roza.",
       rotaSugerida: "/class-replacements",
       labelRota: "Abrir Reposição de Aulas",
       topicosRelacionados: [
+        "Miniligas Marco Roza",
         "Controle de Presença",
         "Controle de Turmas",
-        "Alunos",
-        "Agenda de Quadras",
+        "Athlete Card",
+      ],
+    },
+  },
+
+  // 11.1 MINILIGAS MARCO ROZA (TORNEIOS EXPRESS DE REPOSIÇÃO)
+  {
+    chaves: [
+      "miniliga",
+      "miniligas",
+      "torneio express",
+      "repor aula em grupo",
+      "rodizio americano",
+      "5 minutos",
+      "cronometro miniliga",
+      "intergrupos",
+      "marco roza miniliga",
+      "pontuacao miniliga",
+      "5 participantes",
+      "6 participantes",
+      "8 participantes",
+      "10 participantes",
+      "12 participantes",
+      "podio miniliga",
+    ],
+    resposta: {
+      texto:
+        "As **Miniligas Marco Roza** são o formato exclusivo da equipe para resolver reposições de forma dinâmica, divertida e ranqueada:\n\n" +
+        "• **Baterias Cronometradas de 5 Minutos:** Cronômetro digital integrado com alertas sonoros de quadra para apitar as trocas de lado e rodadas.\n" +
+        "• **Modelos de Disputa Oficiais:**\n" +
+        "  - **5 e 6 Alunos (1 Quadra):** Rodízio Americano balanceado com folgas automáticas.\n" +
+        "  - **8 e 10 Alunos (2 Quadras):** Modo Intergrupos (Grupo 1 vs Grupo 2 com 12 ou 10 jogos no total) ou Rodízio Geral.\n" +
+        "  - **12 Alunos (3 Quadras):** Ocupação 100% de quadras simultâneas.\n" +
+        "• **Regra de Pontuação Oficial do Marco:** `Pontuação Total = Pontos de Jogo Feitos (PP) + Vitórias (1 pt por vitória)`.\n" +
+        "• **Desempates & Finais Especiais:**\n" +
+        "  - *Empate no 1º lugar:* Partida Extra de Simples (1º vs 2º) para decidir o título na bola!\n" +
+        "  - *Tempo de sobra na aula:* Grande Final cruzada entre duplas (1º+3º vs 2º+4º).\n" +
+        "• **Gamificação no Athlete Card:** Distribuição automática de pontos de XP nos Cards dos atletas por colocação e baixa nas faltas de reposição.",
+      rotaSugerida: "/class-replacements",
+      labelRota: "Acessar Miniligas (Aba Reposição)",
+      topicosRelacionados: [
+        "Reposição de Aulas",
+        "Card do Atleta",
+        "Controle de Presença",
+        "Suporte Concierge",
       ],
     },
   },
