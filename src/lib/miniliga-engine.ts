@@ -279,34 +279,42 @@ function generate8PlayersRotativo(p: MiniligaParticipant[]) {
 }
 
 /**
- * 10 JOGADORES - MODELO INTERGRUPOS (MÉTODO DO ÁUDIO DO MARCO ROZA)
- * Grupo 1: 0, 1, 2, 3, 4
- * Grupo 2: 5, 6, 7, 8, 9
- * Exatamente 10 jogos no total em 2 quadras (5 baterias de 5 minutos!)
- * - Todos os 10 atletas jogam rigorosamente 4 partidas e folgam exatamente 1 vez.
- * - Todas as 20 duplas formadas são 100% ÚNICAS (sem nenhuma dupla repetida).
- * - Todos os 10 confrontos são 100% inéditos.
+ * 10 JOGADORES (2 Quadras) - MODELO OFICIAL MARCO ROZA (12 RODADAS)
+ * - 12 Rodadas no total em 2 quadras (24 confrontos 100% inéditos).
+ * - Nas primeiras 11 rodadas, rodízio equilibrado com ZERO folgas consecutivas.
+ * - Na 12ª rodada: 2 jogos com duplas sorteadas de apoio (exatamente como no modelo de 6 alunos).
+ * - A dupla sorteada de apoio não pontua extra para si mesma, garantindo que todos
+ *   os 10 alunos encerrem a Miniliga rigorosamente com 9 jogos computados na classificação.
  */
 function generate10PlayersIntergrupos(p: MiniligaParticipant[]) {
   const matches: MiniligaMatch[] = [];
 
-  // 5 Rodadas em 2 quadras = 10 jogos calibrados com isonomia perfeita
   const schedule = [
-    // Rodada 1: Folgam 0 e 5
-    { r: 1, c: 1, a: [1, 9], b: [4, 6] },
-    { r: 1, c: 2, a: [3, 7], b: [2, 8] },
-    // Rodada 2: Folgam 1 e 6
-    { r: 2, c: 1, a: [2, 5], b: [0, 8] },
-    { r: 2, c: 2, a: [3, 9], b: [4, 7] },
-    // Rodada 3: Folgam 2 e 7
-    { r: 3, c: 1, a: [0, 9], b: [3, 6] },
-    { r: 3, c: 2, a: [1, 8], b: [4, 5] },
-    // Rodada 4: Folgam 3 e 8
-    { r: 4, c: 1, a: [2, 6], b: [4, 9] },
-    { r: 4, c: 2, a: [0, 5], b: [1, 7] },
-    // Rodada 5: Folgam 4 e 9
-    { r: 5, c: 1, a: [2, 7], b: [0, 6] },
-    { r: 5, c: 2, a: [3, 8], b: [1, 5] },
+    { r: 1, c: 1, a: [0, 2], b: [6, 7] },
+    { r: 1, c: 2, a: [3, 9], b: [5, 8] },
+    { r: 2, c: 1, a: [1, 2], b: [0, 9] },
+    { r: 2, c: 2, a: [4, 7], b: [3, 5] },
+    { r: 3, c: 1, a: [6, 9], b: [1, 8] },
+    { r: 3, c: 2, a: [3, 7], b: [2, 4] },
+    { r: 4, c: 1, a: [6, 8], b: [3, 4] },
+    { r: 4, c: 2, a: [1, 5], b: [0, 7] },
+    { r: 5, c: 1, a: [0, 5], b: [1, 8] },
+    { r: 5, c: 2, a: [4, 6], b: [2, 9] },
+    { r: 6, c: 1, a: [1, 4], b: [6, 8] },
+    { r: 6, c: 2, a: [3, 5], b: [0, 7] },
+    { r: 7, c: 1, a: [2, 9], b: [0, 5] },
+    { r: 7, c: 2, a: [3, 7], b: [1, 6] },
+    { r: 8, c: 1, a: [5, 8], b: [2, 9] },
+    { r: 8, c: 2, a: [3, 6], b: [1, 4] },
+    { r: 9, c: 1, a: [2, 7], b: [4, 8] },
+    { r: 9, c: 2, a: [0, 9], b: [5, 6] },
+    { r: 10, c: 1, a: [4, 7], b: [0, 3] },
+    { r: 10, c: 2, a: [1, 8], b: [2, 9] },
+    { r: 11, c: 1, a: [3, 7], b: [8, 9] },
+    { r: 11, c: 2, a: [0, 5], b: [1, 6] },
+    // Rodada 12: 2 jogos com duplas sorteadas de apoio para fechar 9 jogos para todos
+    { r: 12, c: 1, a: [2, 4], b: [8, 0], support: [8, 0] },
+    { r: 12, c: 2, a: [9, 3], b: [5, 7], support: [9, 3, 5, 7] },
   ];
 
   schedule.forEach((pr, idx) => {
@@ -319,10 +327,11 @@ function generate10PlayersIntergrupos(p: MiniligaParticipant[]) {
       scoreA: null,
       scoreB: null,
       isCompleted: false,
+      ...(pr.support ? { supportPairPlayerIds: pr.support.map((idx) => p[idx].id) } : {}),
     });
   });
 
-  return { matches, totalRounds: 5, courtsCount: 2 };
+  return { matches, totalRounds: 12, courtsCount: 2 };
 }
 
 /**
@@ -333,36 +342,60 @@ function generate10PlayersRotativo(p: MiniligaParticipant[]) {
 }
 
 /**
- * 12 JOGADORES (3 Quadras) - Rodízio Completo
- * 5 Rodadas em 3 quadras simultâneas (15 jogos no total)
- * - Ocupação simultânea de 100% (sem folgas para nenhum aluno).
- * - Todos os 12 alunos jogam exatamente 5 vezes.
- * - Todas as 30 duplas formadas são 100% ÚNICAS (zero repetições).
- * - Todos os 15 confrontos são 100% inéditos com rotação equilibrada entre quadras.
+ * 12 JOGADORES (3 Quadras) - MODELO OFICIAL MARCO ROZA (11 RODADAS COMPLETAS)
+ * 11 Rodadas em 3 quadras simultâneas (33 jogos no total)
+ * - Ocupação simultânea de 100% (todos os 12 alunos jogam em todas as 11 rodadas, sem nenhuma folga).
+ * - Todos os 12 alunos jogam exatamente 11 vezes.
+ * - Todas as 66 duplas possíveis são formadas: cada aluno joga com todos os outros 11 alunos exatamente UMA vez!
+ * - Todos os 33 confrontos são 100% inéditos (zero repetição).
  */
 function generate12PlayersRotativo(p: MiniligaParticipant[]) {
   const matches: MiniligaMatch[] = [];
   const schedule = [
     // Rodada 1
-    { r: 1, c: 1, a: [0, 5], b: [4, 11] },
-    { r: 1, c: 2, a: [1, 10], b: [3, 8] },
-    { r: 1, c: 3, a: [2, 9], b: [6, 7] },
+    { r: 1, c: 1, a: [0, 11], b: [1, 2] },
+    { r: 1, c: 2, a: [3, 6], b: [4, 8] },
+    { r: 1, c: 3, a: [5, 10], b: [7, 9] },
     // Rodada 2
-    { r: 2, c: 1, a: [1, 2], b: [6, 9] },
-    { r: 2, c: 2, a: [0, 11], b: [4, 7] },
-    { r: 2, c: 3, a: [3, 5], b: [8, 10] },
+    { r: 2, c: 1, a: [1, 11], b: [2, 3] },
+    { r: 2, c: 2, a: [4, 7], b: [5, 9] },
+    { r: 2, c: 3, a: [0, 6], b: [8, 10] },
     // Rodada 3
-    { r: 3, c: 1, a: [5, 9], b: [7, 8] },
-    { r: 3, c: 2, a: [1, 6], b: [2, 3] },
-    { r: 3, c: 3, a: [0, 4], b: [10, 11] },
+    { r: 3, c: 1, a: [2, 11], b: [3, 4] },
+    { r: 3, c: 2, a: [5, 8], b: [6, 10] },
+    { r: 3, c: 3, a: [1, 7], b: [0, 9] },
     // Rodada 4
-    { r: 4, c: 1, a: [1, 7], b: [3, 11] },
-    { r: 4, c: 2, a: [0, 9], b: [2, 10] },
-    { r: 4, c: 3, a: [4, 8], b: [5, 6] },
+    { r: 4, c: 1, a: [3, 11], b: [4, 5] },
+    { r: 4, c: 2, a: [6, 9], b: [0, 7] },
+    { r: 4, c: 3, a: [2, 8], b: [1, 10] },
     // Rodada 5
-    { r: 5, c: 1, a: [2, 6], b: [3, 10] },
-    { r: 5, c: 2, a: [4, 5], b: [8, 11] },
-    { r: 5, c: 3, a: [0, 1], b: [7, 9] },
+    { r: 5, c: 1, a: [4, 11], b: [5, 6] },
+    { r: 5, c: 2, a: [7, 10], b: [1, 8] },
+    { r: 5, c: 3, a: [3, 9], b: [0, 2] },
+    // Rodada 6
+    { r: 6, c: 1, a: [5, 11], b: [6, 7] },
+    { r: 6, c: 2, a: [0, 8], b: [2, 9] },
+    { r: 6, c: 3, a: [4, 10], b: [1, 3] },
+    // Rodada 7
+    { r: 7, c: 1, a: [6, 11], b: [7, 8] },
+    { r: 7, c: 2, a: [1, 9], b: [3, 10] },
+    { r: 7, c: 3, a: [0, 5], b: [2, 4] },
+    // Rodada 8
+    { r: 8, c: 1, a: [7, 11], b: [8, 9] },
+    { r: 8, c: 2, a: [2, 10], b: [0, 4] },
+    { r: 8, c: 3, a: [1, 6], b: [3, 5] },
+    // Rodada 9
+    { r: 9, c: 1, a: [8, 11], b: [9, 10] },
+    { r: 9, c: 2, a: [0, 3], b: [1, 5] },
+    { r: 9, c: 3, a: [2, 7], b: [4, 6] },
+    // Rodada 10
+    { r: 10, c: 1, a: [9, 11], b: [0, 10] },
+    { r: 10, c: 2, a: [1, 4], b: [2, 6] },
+    { r: 10, c: 3, a: [3, 8], b: [5, 7] },
+    // Rodada 11
+    { r: 11, c: 1, a: [10, 11], b: [0, 1] },
+    { r: 11, c: 2, a: [2, 5], b: [3, 7] },
+    { r: 11, c: 3, a: [4, 9], b: [6, 8] },
   ];
 
   schedule.forEach((pr, idx) => {
@@ -378,7 +411,7 @@ function generate12PlayersRotativo(p: MiniligaParticipant[]) {
     });
   });
 
-  return { matches, totalRounds: 5, courtsCount: 3 };
+  return { matches, totalRounds: 11, courtsCount: 3 };
 }
 
 /**

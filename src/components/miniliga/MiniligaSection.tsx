@@ -697,7 +697,7 @@ export const MiniligaSection: React.FC = () => {
                         <p className="text-[11px] text-muted-foreground mt-1">
                           {selectedCount === 8
                             ? "Grupo 1 vs 2 • 12 rodadas (24 jogos)"
-                            : "Grupo 1 vs 2 • 10 jogos (5 rodadas)"}
+                            : "12 rodadas • 24 jogos (2 jogos p/ sortear)"}
                         </p>
                       </div>
 
@@ -716,6 +716,19 @@ export const MiniligaSection: React.FC = () => {
                           Todos contra todos rotativo
                         </p>
                       </div>
+                    </div>
+                  </div>
+                )}
+
+                {selectedCount === 12 && (
+                  <div className="space-y-2 pt-2 border-t border-border/60">
+                    <div className="p-3 rounded-xl bg-primary/10 border border-primary/30">
+                      <div className="flex items-center gap-1.5 font-black text-xs text-primary">
+                        <Flame className="w-3.5 h-3.5 text-amber-400" /> 11 Rodadas Completas (Regra Oficial Marco Roza)
+                      </div>
+                      <p className="text-[11px] text-muted-foreground mt-1">
+                        3 Quadras simultâneas • 33 jogos • Todos os 12 alunos jogam com todos os outros 11 alunos rigorosamente sem repetição de duplas ou confrontos.
+                      </p>
                     </div>
                   </div>
                 )}

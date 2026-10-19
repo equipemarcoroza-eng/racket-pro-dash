@@ -429,8 +429,8 @@ export const BASE_CONHECIMENTO: IntencaoCopiloto[] = [
         "  - **5 Alunos (1 Quadra):** 5 rodadas rotativas (4 jogos e 1 folga por atleta).\n" +
         "  - **6 Alunos (1 Quadra):** Modelo Oficial Marco Roza de 5 Jogos (8 rodadas no total, com 5 jogos para todos os alunos e sorteio de uma dupla de apoio para completar a 8ª rodada) ou Modelo Direto de 4 Jogos (6 rodadas, 4 jogos e 2 folgas iguais para todos).\n" +
         "  - **8 Alunos (2 Quadras):** Modo Intergrupos Oficial Marco Roza (Grupo 1 vs Grupo 2 com 12 rodadas no total divididas em 4 ciclos de 3 jogos: A1 com e1, f1, g1, h1 em confrontos 100% inéditos em 2 quadras) ou Rodízio Geral (7 rodadas perfeitas).\n" +
-        "  - **10 Alunos (2 Quadras):** Modo Intergrupos oficial (10 jogos no total) ou Rodízio Geral.\n" +
-        "  - **12 Alunos (3 Quadras):** 5 rodadas com 100% de ocupação simultânea.\n" +
+        "  - **10 Alunos (2 Quadras):** Modelo Oficial Marco Roza com 12 rodadas no total (24 jogos), com 2 jogos na 12ª rodada tendo duplas sorteadas de apoio para fechar a conta de jogos igual para todos os 10 alunos.\n" +
+        "  - **12 Alunos (3 Quadras):** Modelo Oficial Marco Roza com 11 rodadas completas (33 jogos) e 100% de ocupação simultânea (todos jogam 11 vezes, com cada aluno fazendo parceria com os outros 11 alunos exatamente uma vez, zero repetições de duplas ou confrontos).\n" +
         "• **Regra de Pontuação Oficial do Marco:** `Pontuação Total = Pontos de Jogo Feitos (PP) + Vitórias (1 pt por vitória)`.\n" +
         "• **Desempates & Finais Especiais:**\n" +
         "  - *Empate no 1º lugar:* Partida Extra de Simples (1º vs 2º) para decidir o título na bola!\n" +
