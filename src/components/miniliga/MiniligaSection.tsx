@@ -552,12 +552,22 @@ export const MiniligaSection: React.FC = () => {
                 </Button>
                 <Button
                   onClick={handleResetSession}
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5 border-primary/40 text-primary hover:bg-primary/10 font-bold text-xs"
+                >
+                  <Users className="w-3.5 h-3.5" />
+                  Trocar Participantes
+                </Button>
+
+                <Button
+                  onClick={handleResetSession}
                   variant="ghost"
                   size="sm"
-                  className="gap-2 text-muted-foreground hover:text-rose-400"
+                  className="gap-1.5 text-muted-foreground hover:text-rose-400 text-xs"
                 >
-                  <RotateCcw className="w-4 h-4" />
-                  Reiniciar
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  Zerar Tudo
                 </Button>
               </div>
             )}

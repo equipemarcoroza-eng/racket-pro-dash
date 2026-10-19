@@ -71,17 +71,18 @@ function generate5PlayersRotativo(p: MiniligaParticipant[]) {
 }
 
 /**
- * 6 JOGADORES (1 Quadra) - 2 Folgam por rodada
- * 5 Rodadas bem balanceadas
+ * 6 JOGADORES (1 Quadra) - Rodízio Perfeito
+ * 6 Rodadas: cada um joga exatamente 4 partidas e folga exatamente 2 vezes!
  */
 function generate6PlayersRotativo(p: MiniligaParticipant[]) {
   const matches: MiniligaMatch[] = [];
   const schedule = [
     { r: 1, a: [0, 1], b: [2, 3] }, // Folgam 4, 5
-    { r: 2, a: [4, 5], b: [0, 2] }, // Folgam 1, 3
-    { r: 3, a: [1, 3], b: [4, 0] }, // Folgam 2, 5
-    { r: 4, a: [2, 5], b: [1, 4] }, // Folgam 0, 3
-    { r: 5, a: [0, 3], b: [5, 1] }, // Folgam 2, 4
+    { r: 2, a: [0, 2], b: [4, 5] }, // Folgam 1, 3
+    { r: 3, a: [1, 4], b: [3, 5] }, // Folgam 0, 2
+    { r: 4, a: [0, 3], b: [1, 2] }, // Folgam 4, 5
+    { r: 5, a: [0, 4], b: [2, 5] }, // Folgam 1, 3
+    { r: 6, a: [1, 5], b: [3, 4] }, // Folgam 0, 2
   ];
 
   schedule.forEach((s) => {
@@ -97,7 +98,7 @@ function generate6PlayersRotativo(p: MiniligaParticipant[]) {
     });
   });
 
-  return { matches, totalRounds: 5, courtsCount: 1 };
+  return { matches, totalRounds: 6, courtsCount: 1 };
 }
 
 /**
@@ -163,7 +164,7 @@ function generate8PlayersIntergrupos(p: MiniligaParticipant[]) {
 
 /**
  * 8 JOGADORES - MODELO ROTATIVO AMERICANO GERAL
- * 7 Rodadas (todos jogam com parceiros e adversários diferentes em 2 quadras)
+ * 7 Rodadas perfeitas (cada um joga exatamente 7 vezes em 2 quadras)
  */
 function generate8PlayersRotativo(p: MiniligaParticipant[]) {
   const matches: MiniligaMatch[] = [];
@@ -182,7 +183,13 @@ function generate8PlayersRotativo(p: MiniligaParticipant[]) {
     { r: 4, c: 2, a: [2, 5], b: [3, 6] },
     // R5
     { r: 5, c: 1, a: [0, 5], b: [2, 7] },
-    { r: 5, c: 2, a: [1, 4], b: [3, 5] },
+    { r: 5, c: 2, a: [1, 6], b: [3, 4] },
+    // R6
+    { r: 6, c: 1, a: [0, 6], b: [1, 5] },
+    { r: 6, c: 2, a: [2, 4], b: [3, 7] },
+    // R7
+    { r: 7, c: 1, a: [0, 7], b: [3, 5] },
+    { r: 7, c: 2, a: [1, 4], b: [2, 6] },
   ];
 
   schedule.forEach((pr, idx) => {
@@ -198,7 +205,7 @@ function generate8PlayersRotativo(p: MiniligaParticipant[]) {
     });
   });
 
-  return { matches, totalRounds: 5, courtsCount: 2 };
+  return { matches, totalRounds: 7, courtsCount: 2 };
 }
 
 /**
