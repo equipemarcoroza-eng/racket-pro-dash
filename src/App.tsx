@@ -11,9 +11,7 @@ import Schedule from "./pages/Schedule";
 import ClassManagement from "./pages/ClassManagement";
 import AttendanceControl from "./pages/AttendanceControl";
 import FrequencyReport from "./pages/FrequencyReport";
-import { lazy, Suspense } from "react";
 import ClassReplacements from "./pages/ClassReplacements";
-const Miniligas = lazy(() => import("./pages/Miniligas"));
 import Revenue from "./pages/Revenue";
 import Expenses from "./pages/Expenses";
 import CashFlow from "./pages/CashFlow";
@@ -56,20 +54,6 @@ const App = () => (
                 <Route path="/attendance" element={<AttendanceControl />} />
                 <Route path="/frequency" element={<FrequencyReport />} />
                 <Route path="/class-replacements" element={<ClassReplacements />} />
-                <Route
-                  path="/miniligas"
-                  element={
-                    <Suspense
-                      fallback={
-                        <div className="flex h-64 items-center justify-center">
-                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-                        </div>
-                      }
-                    >
-                      <Miniligas />
-                    </Suspense>
-                  }
-                />
                 <Route path="/replacement-classes" element={<Navigate to="/class-replacements" replace />} />
                 <Route path="/reposicao-aulas" element={<Navigate to="/class-replacements" replace />} />
                 <Route path="/lesson-plan" element={<LessonPlan />} />

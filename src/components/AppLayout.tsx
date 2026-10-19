@@ -36,7 +36,6 @@ const navItems = [
   { to: "/attendance", label: "Controle de Presença", icon: ClipboardCheck },
   { to: "/frequency", label: "Frequência", icon: BarChart3 },
   { to: "/class-replacements", label: "Reposição de Aulas", icon: RotateCcw },
-  { to: "/miniligas", label: "Miniligas", icon: Trophy },
   { to: "/lesson-plan", label: "Plano de Aulas", icon: ClipboardList },
   { to: "/tests", label: "Provas", icon: ClipboardCheck },
   { to: "/finance/revenue", label: "Contas a Receber", icon: TrendingUp },
