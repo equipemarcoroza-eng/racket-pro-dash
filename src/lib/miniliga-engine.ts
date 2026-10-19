@@ -258,28 +258,30 @@ function generate8PlayersRotativo(p: MiniligaParticipant[]) {
  * Grupo 1: 0, 1, 2, 3, 4
  * Grupo 2: 5, 6, 7, 8, 9
  * Exatamente 10 jogos no total em 2 quadras (5 baterias de 5 minutos!)
+ * - Todos os 10 atletas jogam rigorosamente 4 partidas e folgam exatamente 1 vez.
+ * - Todas as 20 duplas formadas são 100% ÚNICAS (sem nenhuma dupla repetida).
+ * - Todos os 10 confrontos são 100% inéditos.
  */
 function generate10PlayersIntergrupos(p: MiniligaParticipant[]) {
   const matches: MiniligaMatch[] = [];
 
-  // 5 Rodadas em 2 quadras = 10 jogos!
-  // A cada rodada, 8 jogam e 2 folgam (1 do G1 e 1 do G2 descansam)
+  // 5 Rodadas em 2 quadras = 10 jogos calibrados com isonomia perfeita
   const schedule = [
-    // Rodada 1: Folgam 4 e 9
-    { r: 1, c: 1, a: [0, 5], b: [1, 6] },
-    { r: 1, c: 2, a: [2, 7], b: [3, 8] },
-    // Rodada 2: Folgam 0 e 5
-    { r: 2, c: 1, a: [1, 7], b: [2, 8] },
-    { r: 2, c: 2, a: [3, 9], b: [4, 6] },
-    // Rodada 3: Folgam 1 e 6
-    { r: 3, c: 1, a: [2, 9], b: [3, 5] },
-    { r: 3, c: 2, a: [4, 7], b: [0, 8] },
-    // Rodada 4: Folgam 2 e 7
-    { r: 4, c: 1, a: [3, 6], b: [4, 8] },
-    { r: 4, c: 2, a: [0, 9], b: [1, 5] },
-    // Rodada 5: Folgam 3 e 8
-    { r: 5, c: 1, a: [4, 5], b: [0, 6] },
-    { r: 5, c: 2, a: [1, 8], b: [2, 9] },
+    // Rodada 1: Folgam 0 e 5
+    { r: 1, c: 1, a: [1, 9], b: [4, 6] },
+    { r: 1, c: 2, a: [3, 7], b: [2, 8] },
+    // Rodada 2: Folgam 1 e 6
+    { r: 2, c: 1, a: [2, 5], b: [0, 8] },
+    { r: 2, c: 2, a: [3, 9], b: [4, 7] },
+    // Rodada 3: Folgam 2 e 7
+    { r: 3, c: 1, a: [0, 9], b: [3, 6] },
+    { r: 3, c: 2, a: [1, 8], b: [4, 5] },
+    // Rodada 4: Folgam 3 e 8
+    { r: 4, c: 1, a: [2, 6], b: [4, 9] },
+    { r: 4, c: 2, a: [0, 5], b: [1, 7] },
+    // Rodada 5: Folgam 4 e 9
+    { r: 5, c: 1, a: [2, 7], b: [0, 6] },
+    { r: 5, c: 2, a: [3, 8], b: [1, 5] },
   ];
 
   schedule.forEach((pr, idx) => {
@@ -302,37 +304,40 @@ function generate10PlayersIntergrupos(p: MiniligaParticipant[]) {
  * 10 JOGADORES - ROTATIVO GERAL
  */
 function generate10PlayersRotativo(p: MiniligaParticipant[]) {
-  // Similar estrutura de 5 rodadas em 2 quadras
   return generate10PlayersIntergrupos(p);
 }
 
 /**
  * 12 JOGADORES (3 Quadras) - Rodízio Completo
- * 5 Rodadas em 3 quadras simultâneas
+ * 5 Rodadas em 3 quadras simultâneas (15 jogos no total)
+ * - Ocupação simultânea de 100% (sem folgas para nenhum aluno).
+ * - Todos os 12 alunos jogam exatamente 5 vezes.
+ * - Todas as 30 duplas formadas são 100% ÚNICAS (zero repetições).
+ * - Todos os 15 confrontos são 100% inéditos com rotação equilibrada entre quadras.
  */
 function generate12PlayersRotativo(p: MiniligaParticipant[]) {
   const matches: MiniligaMatch[] = [];
   const schedule = [
-    // R1
-    { r: 1, c: 1, a: [0, 1], b: [2, 3] },
-    { r: 1, c: 2, a: [4, 5], b: [6, 7] },
-    { r: 1, c: 3, a: [8, 9], b: [10, 11] },
-    // R2
-    { r: 2, c: 1, a: [0, 4], b: [8, 1] },
-    { r: 2, c: 2, a: [2, 6], b: [10, 5] },
-    { r: 2, c: 3, a: [3, 7], b: [11, 9] },
-    // R3
-    { r: 3, c: 1, a: [0, 7], b: [10, 2] },
-    { r: 3, c: 2, a: [1, 6], b: [11, 4] },
-    { r: 3, c: 3, a: [3, 5], b: [8, 9] },
-    // R4
-    { r: 4, c: 1, a: [0, 10], b: [5, 6] },
-    { r: 4, c: 2, a: [1, 9], b: [2, 7] },
-    { r: 4, c: 3, a: [3, 8], b: [4, 11] },
-    // R5
-    { r: 5, c: 1, a: [0, 11], b: [1, 2] },
-    { r: 5, c: 2, a: [3, 4], b: [5, 8] },
-    { r: 5, c: 3, a: [6, 9], b: [7, 10] },
+    // Rodada 1
+    { r: 1, c: 1, a: [0, 5], b: [4, 11] },
+    { r: 1, c: 2, a: [1, 10], b: [3, 8] },
+    { r: 1, c: 3, a: [2, 9], b: [6, 7] },
+    // Rodada 2
+    { r: 2, c: 1, a: [1, 2], b: [6, 9] },
+    { r: 2, c: 2, a: [0, 11], b: [4, 7] },
+    { r: 2, c: 3, a: [3, 5], b: [8, 10] },
+    // Rodada 3
+    { r: 3, c: 1, a: [5, 9], b: [7, 8] },
+    { r: 3, c: 2, a: [1, 6], b: [2, 3] },
+    { r: 3, c: 3, a: [0, 4], b: [10, 11] },
+    // Rodada 4
+    { r: 4, c: 1, a: [1, 7], b: [3, 11] },
+    { r: 4, c: 2, a: [0, 9], b: [2, 10] },
+    { r: 4, c: 3, a: [4, 8], b: [5, 6] },
+    // Rodada 5
+    { r: 5, c: 1, a: [2, 6], b: [3, 10] },
+    { r: 5, c: 2, a: [4, 5], b: [8, 11] },
+    { r: 5, c: 3, a: [0, 1], b: [7, 9] },
   ];
 
   schedule.forEach((pr, idx) => {
