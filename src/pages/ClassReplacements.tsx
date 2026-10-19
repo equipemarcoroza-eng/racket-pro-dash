@@ -29,6 +29,8 @@ import {
 } from "lucide-react";
 import logo from "@/assets/logo.png";
 import { SmartReplacementMatchmaker } from "@/components/SmartReplacementMatchmaker";
+import { MiniligaSection } from "@/components/miniliga/MiniligaSection";
+import { Trophy } from "lucide-react";
 
 const formatDateBr = (dateStr: string) => {
   if (!dateStr) return "—";
@@ -52,6 +54,7 @@ const ClassReplacements = () => {
   const [typeFilter, setTypeFilter] = useState<"todos" | "Falta" | "Cancelado">("todos");
   const [statusFilter, setStatusFilter] = useState<"pendentes" | "repostas" | "todos">("pendentes");
   const [viewMode, setViewMode] = useState<"alunos" | "aulas">("alunos");
+  const [mainTab, setMainTab] = useState<"gestao" | "miniliga">("gestao");
 
   // Track expanded students (all open by default for convenience)
   const [expandedStudents, setExpandedStudents] = useState<Record<string, boolean>>({});
@@ -525,7 +528,45 @@ const ClassReplacements = () => {
             </Button>
           </div>
         </CardHeader>
+
+        {/* Abas Principais: Gestão de Faltas vs Miniligas Express */}
+        <div className="flex items-center gap-2 px-6 pb-4 border-t border-white/10 pt-3 relative z-10">
+          <button
+            type="button"
+            onClick={() => setMainTab("gestao")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+              mainTab === "gestao"
+                ? "bg-white text-slate-900 shadow-lg scale-102"
+                : "bg-white/10 hover:bg-white/20 text-white/80"
+            }`}
+          >
+            <RotateCcw className="w-4 h-4" />
+            Gestão de Reposições
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setMainTab("miniliga")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-black transition-all cursor-pointer ${
+              mainTab === "miniliga"
+                ? "bg-amber-400 text-slate-950 shadow-lg shadow-amber-400/30 scale-102"
+                : "bg-amber-400/20 hover:bg-amber-400/30 text-amber-300 border border-amber-400/30"
+            }`}
+          >
+            <Trophy className="w-4 h-4 fill-current" />
+            Miniligas Marco Roza
+            <Badge className="bg-amber-500 text-black text-[10px] font-black ml-1">
+              Novo
+            </Badge>
+          </button>
+        </div>
       </Card>
+
+      {/* RENDERIZAÇÃO CONDICIONAL CONFORME A ABA ESCOLHIDA */}
+      {mainTab === "miniliga" ? (
+        <MiniligaSection />
+      ) : (
+        <>
 
       {/* Filter and Period Selection */}
       <Card className="shadow-sm">
@@ -1270,6 +1311,8 @@ const ClassReplacements = () => {
           }
         }}
       />
+        </>
+      )}
     </div>
   );
 };
