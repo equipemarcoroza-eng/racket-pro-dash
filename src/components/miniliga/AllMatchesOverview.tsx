@@ -239,6 +239,7 @@ export const AllMatchesOverview: React.FC<AllMatchesOverviewProps> = ({
   // =========================================================================
   if (is8PIntergrupos) {
     const officialCycles = [1, 2, 3, 4];
+    const playoffRounds = Array.from(matchesByRound.keys()).filter((r) => r > 12);
 
     return (
       <div className="space-y-8">
@@ -345,6 +346,32 @@ export const AllMatchesOverview: React.FC<AllMatchesOverviewProps> = ({
             </div>
           );
         })}
+
+        {/* Playoff: Grande Final e Desempates (Rounds > 12) */}
+        {playoffRounds.length > 0 && (
+          <div className="space-y-4 rounded-2xl border border-amber-500/40 bg-gradient-to-br from-amber-500/10 via-zinc-950 to-zinc-950 p-4 sm:p-5 shadow-xl">
+            <div className="flex items-center gap-3 pb-3 border-b border-amber-500/30">
+              <div className="p-2.5 rounded-xl bg-amber-500 text-black font-black">
+                <Trophy className="w-5 h-5 fill-current" />
+              </div>
+              <div>
+                <h3 className="text-base font-extrabold text-white">
+                  Fase Final / Playoffs (Grande Final 1º+3º vs 2º+4º)
+                </h3>
+                <p className="text-xs text-zinc-400">
+                  Disputa decisiva pelo título entre as melhores duplas da classificação geral
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              {playoffRounds.map((rNum) => {
+                const pMatches = matchesByRound.get(rNum) || [];
+                return renderBateriaCard(rNum, pMatches);
+              })}
+            </div>
+          </div>
+        )}
       </div>
     );
   }

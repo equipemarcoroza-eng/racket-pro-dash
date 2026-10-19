@@ -1026,6 +1026,40 @@ export const MiniligaSection: React.FC = () => {
               />
 
               {session.participantCount === 8 && session.modelType === "intergrupos" ? (() => {
+                const isPlayoff = session.currentRound > 12;
+
+                if (isPlayoff) {
+                  const isFinal = session.matches.some(m => m.roundNumber === session.currentRound && m.isBonusFinal);
+                  return (
+                    <div className="flex flex-col gap-3 p-4 rounded-2xl bg-amber-500/15 border border-amber-500/40">
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Badge className="bg-amber-500 text-black font-black text-xs px-3 py-1 uppercase shadow">
+                            {isFinal ? "🏆 GRANDE FINAL (PLAYOFFS)" : "🏆 JOGO EXTRA DE DESEMPATE"}
+                          </Badge>
+                          <span className="text-xs font-semibold text-zinc-400">
+                            Rodada {session.currentRound} de {session.totalRounds}
+                          </span>
+                        </div>
+                        {session.currentRound < session.totalRounds && (
+                          <Button
+                            onClick={handleNextRound}
+                            size="sm"
+                            className="gap-1.5 font-bold text-xs bg-amber-500 hover:bg-amber-600 text-black font-extrabold"
+                          >
+                            Próxima Rodada <ChevronRight className="w-3.5 h-3.5" />
+                          </Button>
+                        )}
+                      </div>
+                      <p className="text-xs text-zinc-300">
+                        {isFinal
+                          ? "Grande Final Cruzada: 1º+3º vs 2º+4º disputando o título da Miniliga!"
+                          : "Partida de desempate simples entre os líderes."}
+                      </p>
+                    </div>
+                  );
+                }
+
                 const cycleInfo = get8PlayersCycleInfo(session.currentRound);
                 return (
                   <div className="flex flex-col gap-3 p-4 rounded-2xl bg-zinc-950/80 border border-zinc-800">
