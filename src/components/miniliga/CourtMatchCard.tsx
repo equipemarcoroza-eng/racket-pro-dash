@@ -65,6 +65,11 @@ export const CourtMatchCard: React.FC<CourtMatchCardProps> = ({
               <Zap className="w-3 h-3 fill-current" /> Desempate Simples (1º vs 2º)
             </Badge>
           )}
+          {match.supportPairPlayerIds && match.supportPairPlayerIds.length > 0 && (
+            <Badge className="bg-sky-500/20 text-sky-300 border-sky-500/40 font-bold text-xs gap-1">
+              🎲 Dupla Sorteada ({match.supportPairPlayerIds.map(id => participantsMap.get(id)?.name?.split(" ")[0]).filter(Boolean).join(" & ")})
+            </Badge>
+          )}
         </div>
 
         {match.isCompleted && (

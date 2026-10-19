@@ -1,6 +1,6 @@
 export type MiniligaParticipantCount = 5 | 6 | 8 | 10 | 12;
 
-export type MiniligaModelType = "rotativo" | "intergrupos";
+export type MiniligaModelType = "rotativo" | "intergrupos" | "rotativo_5jogos";
 
 export interface MiniligaParticipant {
   id: string; // unique ID in this miniliga session
@@ -50,6 +50,9 @@ export interface MiniligaMatch {
   isBonusFinal?: boolean; // 1º+3º vs 2º+4º
   isTiebreakSimples?: boolean; // Partida Extra de Simples 1º vs 2º
   
+  // Dupla sorteada para completar a rodada de 5 jogos (não pontua extra para si mesma)
+  supportPairPlayerIds?: string[];
+
   // Timestamp
   finishedAt?: string | null;
 }

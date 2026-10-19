@@ -619,6 +619,9 @@ export const MiniligaSection: React.FC = () => {
                         onClick={() => {
                           setSelectedCount(count);
                           setCustomPlayers([]);
+                          if (count === 6) setSelectedModel("rotativo_5jogos");
+                          else if (count === 8 || count === 10) setSelectedModel("intergrupos");
+                          else setSelectedModel("rotativo");
                         }}
                         className={`p-3 rounded-xl border text-center transition-all ${
                           selectedCount === count
@@ -632,6 +635,47 @@ export const MiniligaSection: React.FC = () => {
                     ))}
                   </div>
                 </div>
+
+                {selectedCount === 6 && (
+                  <div className="space-y-2 pt-2 border-t border-border/60">
+                    <label className="text-xs font-semibold text-muted-foreground uppercase">
+                      Modelo para 6 Participantes
+                    </label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                      <div
+                        onClick={() => setSelectedModel("rotativo_5jogos")}
+                        className={`p-3 rounded-xl border cursor-pointer transition-all ${
+                          selectedModel === "rotativo_5jogos"
+                            ? "bg-amber-500/15 border-amber-500/50 shadow-sm"
+                            : "bg-muted/30 border-border hover:bg-muted/50"
+                        }`}
+                      >
+                        <div className="flex items-center gap-1.5 font-black text-xs text-amber-400">
+                          <Flame className="w-3.5 h-3.5" /> 5 Jogos (Regra Marco Roza)
+                        </div>
+                        <p className="text-[11px] text-muted-foreground mt-1">
+                          8 Rodadas • 5 jogos p/ todos + Dupla Sorteada na 8ª rodada (40 min)
+                        </p>
+                      </div>
+
+                      <div
+                        onClick={() => setSelectedModel("rotativo")}
+                        className={`p-3 rounded-xl border cursor-pointer transition-all ${
+                          selectedModel === "rotativo"
+                            ? "bg-primary/15 border-primary/50 shadow-sm"
+                            : "bg-muted/30 border-border hover:bg-muted/50"
+                        }`}
+                      >
+                        <div className="flex items-center gap-1.5 font-black text-xs text-primary">
+                          <RotateCcw className="w-3.5 h-3.5" /> 4 Jogos (Isonomia Direta)
+                        </div>
+                        <p className="text-[11px] text-muted-foreground mt-1">
+                          6 Rodadas • 4 jogos e 2 folgas iguais para todos (30 min)
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {(selectedCount === 8 || selectedCount === 10) && (
                   <div className="space-y-2 pt-2 border-t border-border/60">

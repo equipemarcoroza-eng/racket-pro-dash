@@ -427,7 +427,7 @@ export const BASE_CONHECIMENTO: IntencaoCopiloto[] = [
         "• **Visão Panorâmica de Todos os Jogos (1 por 1):** Grade completa de partidas na tela, permitindo digitar os resultados jogo a jogo no ritmo do professor, recalculando a tabela ao vivo.\n" +
         "• **Modelos de Disputa & Equilíbrio Matemático Perfeito:**\n" +
         "  - **5 Alunos (1 Quadra):** 5 rodadas rotativas (4 jogos e 1 folga por atleta).\n" +
-        "  - **6 Alunos (1 Quadra):** 6 rodadas perfeitamente calibradas (4 jogos e 2 folgas para todos os 6 atletas, com isonomia 100%).\n" +
+        "  - **6 Alunos (1 Quadra):** Modelo Oficial Marco Roza de 5 Jogos (8 rodadas no total, com 5 jogos para todos os alunos e sorteio de uma dupla de apoio para completar a 8ª rodada) ou Modelo Direto de 4 Jogos (6 rodadas, 4 jogos e 2 folgas iguais para todos).\n" +
         "  - **8 Alunos (2 Quadras):** Modo Intergrupos (Grupo 1 vs Grupo 2 com 12 jogos no total) ou Rodízio Geral (7 rodadas perfeitas).\n" +
         "  - **10 Alunos (2 Quadras):** Modo Intergrupos oficial (10 jogos no total) ou Rodízio Geral.\n" +
         "  - **12 Alunos (3 Quadras):** 5 rodadas com 100% de ocupação simultânea.\n" +

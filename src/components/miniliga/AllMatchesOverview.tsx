@@ -117,6 +117,11 @@ export const AllMatchesOverview: React.FC<AllMatchesOverviewProps> = ({
                           <Zap className="w-3 h-3" /> Desempate Simples (1º vs 2º)
                         </span>
                       )}
+                      {m.supportPairPlayerIds && m.supportPairPlayerIds.length > 0 && (
+                        <span className="text-[10px] font-bold text-sky-400 bg-sky-950/40 px-2 py-0.5 rounded border border-sky-500/30 flex items-center gap-1">
+                          🎲 Dupla Sorteada ({m.supportPairPlayerIds.map(id => participantsMap.get(id)?.name?.split(" ")[0]).filter(Boolean).join(" & ")})
+                        </span>
+                      )}
                     </div>
 
                     {/* Placar & Duplas */}

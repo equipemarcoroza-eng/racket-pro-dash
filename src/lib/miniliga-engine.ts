@@ -19,6 +19,9 @@ export function generateMiniligaMatches(
   if (count === 5) {
     return generate5PlayersRotativo(participants);
   } else if (count === 6) {
+    if (modelType === "rotativo_5jogos") {
+      return generate6Players5Jogos(participants);
+    }
     return generate6PlayersRotativo(participants);
   } else if (count === 8) {
     if (modelType === "intergrupos") {
@@ -71,7 +74,76 @@ function generate5PlayersRotativo(p: MiniligaParticipant[]) {
 }
 
 /**
- * 6 JOGADORES (1 Quadra) - Rodízio Perfeito
+ * 6 JOGADORES (1 Quadra) - MODELO OFICIAL MARCO ROZA (5 JOGOS POR ALUNO)
+ * 8 Rodadas no total: todos os 6 alunos jogam exatamente 5 vezes!
+ * - Rodadas 1 a 6: cada um joga 4 vezes e descansa 2 vezes.
+ * - Rodada 7: alunos 0, 1, 2 e 3 jogam sua 5ª partida oficial.
+ * - Rodada 8: alunos 4 e 5 jogam sua 5ª partida oficial.
+ *   Para completar os 4 na quadra, é SORTEADA UMA DUPLA dentre os alunos {0, 1, 2, 3}
+ *   para entrar como parceiros de apoio.
+ *   Essa dupla sorteada não pontua extra em seu ranking individual (garantindo que todos
+ *   os 6 alunos fechem rigorosamente com 5 jogos válidos).
+ */
+function generate6Players5Jogos(p: MiniligaParticipant[]) {
+  const matches: MiniligaMatch[] = [];
+  const schedule = [
+    { r: 1, a: [0, 1], b: [2, 3] }, // Folgam 4, 5
+    { r: 2, a: [0, 2], b: [4, 5] }, // Folgam 1, 3
+    { r: 3, a: [1, 4], b: [3, 5] }, // Folgam 0, 2
+    { r: 4, a: [0, 3], b: [1, 2] }, // Folgam 4, 5
+    { r: 5, a: [0, 4], b: [2, 5] }, // Folgam 1, 3
+    { r: 6, a: [1, 5], b: [3, 4] }, // Folgam 0, 2
+  ];
+
+  schedule.forEach((s) => {
+    matches.push({
+      id: `match-6p-5j-r${s.r}-c1`,
+      roundNumber: s.r,
+      courtNumber: 1,
+      teamA: { player1Id: p[s.a[0]].id, player2Id: p[s.a[1]].id },
+      teamB: { player1Id: p[s.b[0]].id, player2Id: p[s.b[1]].id },
+      scoreA: null,
+      scoreB: null,
+      isCompleted: false,
+    });
+  });
+
+  // Rodada 7: Atletas 0, 1, 2 e 3 completam seu 5º jogo
+  matches.push({
+    id: `match-6p-5j-r7-c1`,
+    roundNumber: 7,
+    courtNumber: 1,
+    teamA: { player1Id: p[0].id, player2Id: p[1].id },
+    teamB: { player1Id: p[2].id, player2Id: p[3].id },
+    scoreA: null,
+    scoreB: null,
+    isCompleted: false,
+  });
+
+  // Rodada 8: Atletas 4 e 5 completam seu 5º jogo!
+  // Sorteia uma dupla entre os alunos {0, 1, 2, 3} para completar a quadra
+  const candidates = [0, 1, 2, 3];
+  const shuffled = [...candidates].sort(() => Math.random() - 0.5);
+  const supportIndex1 = shuffled[0];
+  const supportIndex2 = shuffled[1];
+
+  matches.push({
+    id: `match-6p-5j-r8-c1`,
+    roundNumber: 8,
+    courtNumber: 1,
+    teamA: { player1Id: p[4].id, player2Id: p[supportIndex1].id },
+    teamB: { player1Id: p[5].id, player2Id: p[supportIndex2].id },
+    scoreA: null,
+    scoreB: null,
+    isCompleted: false,
+    supportPairPlayerIds: [p[supportIndex1].id, p[supportIndex2].id],
+  });
+
+  return { matches, totalRounds: 8, courtsCount: 1 };
+}
+
+/**
+ * 6 JOGADORES (1 Quadra) - Rodízio Perfeito (4 Jogos)
  * 6 Rodadas: cada um joga exatamente 4 partidas e folga exatamente 2 vezes!
  */
 function generate6PlayersRotativo(p: MiniligaParticipant[]) {
@@ -351,8 +423,13 @@ export function recalculateMiniligaStandings(
     const aWon = m.scoreA > m.scoreB;
     const bWon = m.scoreB > m.scoreA;
 
+    // Se a partida tiver dupla sorteada de apoio (ex: 8ª rodada para fechar 5 jogos),
+    // seus pontos contam para os atletas que completam seu 5º jogo, mas não somam como 6º jogo para a dupla sorteada
+    const supportIds = new Set(m.supportPairPlayerIds || []);
+
     // Team A
     teamAPlayers.forEach((pId) => {
+      if (supportIds.has(pId)) return; // Não contabiliza jogo a mais para a dupla sorteada de apoio
       const curr = statsMap.get(pId);
       if (curr) {
         curr.matchesPlayed++;
@@ -365,6 +442,7 @@ export function recalculateMiniligaStandings(
 
     // Team B
     teamBPlayers.forEach((pId) => {
+      if (supportIds.has(pId)) return; // Não contabiliza jogo a mais para a dupla sorteada de apoio
       const curr = statsMap.get(pId);
       if (curr) {
         curr.matchesPlayed++;
