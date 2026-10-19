@@ -12,6 +12,9 @@ import {
   createBonusFinalMatch,
   createTiebreakSimplesMatch,
   get8PlayersCycleInfo,
+  get10PlayersCycleInfo,
+  create10PlayersSemifinalsMatches,
+  create10PlayersFinalMatch,
 } from "@/lib/miniliga-engine";
 import { miniligaStorage } from "@/lib/miniliga-storage";
 import { MatchTimer } from "@/components/miniliga/MatchTimer";
@@ -414,6 +417,57 @@ export const MiniligaSection: React.FC = () => {
     toast.success("Grande Final (1º+3º vs 2º+4º) criada na Quadra 1!");
   };
 
+  const handleAdd10PSemifinals = () => {
+    if (!session) return;
+    const nextRound = session.totalRounds + 1;
+    const semis = create10PlayersSemifinalsMatches(session.participants, nextRound);
+
+    if (semis.length < 2) {
+      toast.error("Não há participantes suficientes nos Grupos A e B para as Semifinais.");
+      return;
+    }
+
+    setSession({
+      ...session,
+      totalRounds: nextRound,
+      currentRound: nextRound,
+      matches: [...session.matches, ...semis],
+      hasSemifinais: true,
+      status: "em_andamento",
+      updatedAt: new Date().toISOString(),
+    });
+
+    toast.success("🏆 Semifinais (1ºA+1ªB vs 4ºA+4ªB e 2ºA+2ªB vs 3ºA+3ªB) criadas nas Quadras 1 e 2!");
+  };
+
+  const handleAdd10PFinal = () => {
+    if (!session) return;
+    const semiMatches = session.matches.filter((m) => m.isSemifinal);
+    if (semiMatches.length < 2 || !semiMatches.every((m) => m.isCompleted)) {
+      toast.error("Preencha os resultados das duas Semifinais antes de gerar a Grande Final.");
+      return;
+    }
+
+    const nextRound = session.totalRounds + 1;
+    const finalMatch = create10PlayersFinalMatch(semiMatches[0], semiMatches[1], nextRound);
+    if (!finalMatch) {
+      toast.error("Erro ao gerar a Grande Final.");
+      return;
+    }
+
+    setSession({
+      ...session,
+      totalRounds: nextRound,
+      currentRound: nextRound,
+      matches: [...session.matches, finalMatch],
+      hasBonusFinal: true,
+      status: "em_andamento",
+      updatedAt: new Date().toISOString(),
+    });
+
+    toast.success("🏆 Grande Final (Vencedores das Semis) criada na Quadra 1!");
+  };
+
   // Alternar Simulação para Modo Real
   const handlePromoteToReal = () => {
     if (!session) return;
@@ -697,8 +751,8 @@ export const MiniligaSection: React.FC = () => {
                         </div>
                         <p className="text-[11px] text-muted-foreground mt-1">
                           {selectedCount === 8
-                            ? "Grupo 1 vs 2 • 12 rodadas (24 jogos)"
-                            : "12 rodadas • 24 jogos (2 jogos p/ sortear)"}
+                            ? "Grupo 1 vs 2 • 4 Rodadas Oficiais (12 baterias • 24 jogos)"
+                            : "Grupo A vs B • 6 Rodadas (14 baterias • 26 jogos • Semis e Final)"}
                         </p>
                       </div>
 
@@ -890,26 +944,51 @@ export const MiniligaSection: React.FC = () => {
               </div>
             </div>
 
-            {/* Ações Especiais de Final */}
-            <div className="flex items-center gap-2">
-              {hasTieInFirstPlace && !session.hasTiebreakSimples && (
-                <Button
-                  onClick={handleAddTiebreakSimples}
-                  className="gap-2 bg-rose-600 hover:bg-rose-700 text-white font-extrabold shadow-lg shadow-rose-600/20 text-xs animate-pulse"
-                >
-                  <Zap className="w-3.5 h-3.5 fill-current" /> Desempate Simples (1º vs 2º)
-                </Button>
-              )}
+            {/* Ações Especiais de Final / Playoffs */}
+            <div className="flex items-center gap-2 flex-wrap">
+              {session.participantCount === 10 && session.modelType === "intergrupos" ? (
+                <>
+                  {!session.hasSemifinais && (
+                    <Button
+                      onClick={handleAdd10PSemifinals}
+                      className="gap-2 bg-purple-600 hover:bg-purple-700 text-white font-extrabold shadow-lg shadow-purple-600/20 text-xs"
+                    >
+                      <Trophy className="w-3.5 h-3.5 fill-current" />
+                      Iniciar Semifinais (1ºA+1ªB vs 4ºA+4ªB e 2ºA+2ªB vs 3ºA+3ªB)
+                    </Button>
+                  )}
+                  {session.hasSemifinais && !session.hasBonusFinal && (
+                    <Button
+                      onClick={handleAdd10PFinal}
+                      className="gap-2 bg-amber-500 hover:bg-amber-600 text-black font-extrabold shadow-lg shadow-amber-500/20 text-xs animate-pulse"
+                    >
+                      <Trophy className="w-3.5 h-3.5 fill-current" />
+                      Gerar Grande Final (Vencedores das Semis)
+                    </Button>
+                  )}
+                </>
+              ) : (
+                <>
+                  {hasTieInFirstPlace && !session.hasTiebreakSimples && (
+                    <Button
+                      onClick={handleAddTiebreakSimples}
+                      className="gap-2 bg-rose-600 hover:bg-rose-700 text-white font-extrabold shadow-lg shadow-rose-600/20 text-xs animate-pulse"
+                    >
+                      <Zap className="w-3.5 h-3.5 fill-current" /> Desempate Simples (1º vs 2º)
+                    </Button>
+                  )}
 
-              {!session.hasBonusFinal && (
-                <Button
-                  onClick={handleAddBonusFinal}
-                  variant="outline"
-                  className="gap-2 border-amber-500/50 text-amber-300 hover:bg-amber-500/10 font-bold text-xs"
-                >
-                  <Trophy className="w-3.5 h-3.5 text-amber-400" />
-                  Grande Final (1º+3º vs 2º+4º)
-                </Button>
+                  {!session.hasBonusFinal && (
+                    <Button
+                      onClick={handleAddBonusFinal}
+                      variant="outline"
+                      className="gap-2 border-amber-500/50 text-amber-300 hover:bg-amber-500/10 font-bold text-xs"
+                    >
+                      <Trophy className="w-3.5 h-3.5 text-amber-400" />
+                      Grande Final (1º+3º vs 2º+4º)
+                    </Button>
+                  )}
+                </>
               )}
             </div>
           </div>
@@ -989,17 +1068,138 @@ export const MiniligaSection: React.FC = () => {
                     </div>
                   </div>
                 );
+              })() : session.participantCount === 10 && session.modelType === "intergrupos" ? (() => {
+                const isPlayoff = session.currentRound > 14;
+                const cycleInfo = get10PlayersCycleInfo(session.currentRound);
+
+                if (isPlayoff) {
+                  const isFinal = session.matches.some(m => m.roundNumber === session.currentRound && m.isBonusFinal);
+                  return (
+                    <div className="flex flex-col gap-3 p-4 rounded-2xl bg-amber-500/15 border border-amber-500/40">
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Badge className="bg-amber-500 text-black font-black text-xs px-3 py-1 uppercase shadow">
+                            {isFinal ? "🏆 GRANDE FINAL (PLAYOFFS)" : "🏆 SEMIFINAIS (PLAYOFFS)"}
+                          </Badge>
+                          <Badge variant="outline" className="font-mono text-amber-300 border-amber-500/40 bg-zinc-900/60 font-bold text-xs gap-1">
+                            <Clock className="w-3 h-3 text-amber-400" /> {isFinal ? "21h10" : "21h00"}
+                          </Badge>
+                        </div>
+                        {session.currentRound < session.totalRounds && (
+                          <Button
+                            onClick={handleNextRound}
+                            size="sm"
+                            className="gap-1.5 font-bold text-xs bg-amber-500 hover:bg-amber-600 text-black font-extrabold"
+                          >
+                            Próxima Rodada <ChevronRight className="w-3.5 h-3.5" />
+                          </Button>
+                        )}
+                      </div>
+                      <p className="text-xs text-zinc-300">
+                        {isFinal
+                          ? "Disputa pelo título de Dupla Campeã da Mini Liga Marco Roza!"
+                          : "1ºA+1ªB vs 4ºA+4ªB (Quadra 1) e 2ºA+2ªB vs 3ºA+3ªB (Quadra 2)."}
+                      </p>
+                    </div>
+                  );
+                }
+
+                if (cycleInfo.type === "sorteio") {
+                  return (
+                    <div className="flex flex-col gap-3 p-4 rounded-2xl bg-sky-950/40 border border-sky-500/40">
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Badge className="bg-sky-500 text-black font-black text-xs px-3 py-1 uppercase shadow gap-1">
+                            <Dices className="w-3.5 h-3.5" /> JOGO EXTRA DE SORTEIO
+                          </Badge>
+                          <Badge variant="outline" className="font-mono text-sky-300 border-sky-500/40 bg-sky-950/60 font-bold text-xs gap-1">
+                            <Clock className="w-3 h-3 text-sky-400" /> {cycleInfo.horario}
+                          </Badge>
+                          <span className="text-xs font-semibold text-zinc-400">
+                            Entrada Geral {session.currentRound} de {session.totalRounds}
+                          </span>
+                        </div>
+                        {session.currentRound < session.totalRounds && (
+                          <Button
+                            onClick={handleNextRound}
+                            size="sm"
+                            className="gap-1.5 font-bold text-xs bg-sky-500 hover:bg-sky-600 text-black font-extrabold"
+                          >
+                            Próxima Entrada <ChevronRight className="w-3.5 h-3.5" />
+                          </Button>
+                        )}
+                      </div>
+                      <p className="text-xs text-sky-200">
+                        Confronto de reposição: a dupla A5/B4 entra em quadra contra a dupla sorteada de apoio para fechar a meta de 10 jogos.
+                      </p>
+                    </div>
+                  );
+                }
+
+                return (
+                  <div className="flex flex-col gap-3 p-4 rounded-2xl bg-zinc-950/80 border border-zinc-800">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Badge className="bg-white text-black font-black text-xs px-3 py-1 uppercase shadow">
+                          RODADA OFICIAL {cycleInfo.oficialRound} DE 6
+                        </Badge>
+                        <Badge className="bg-amber-500/20 text-amber-300 border border-amber-500/40 font-black text-xs px-2.5 py-1">
+                          ⚡ Bateria {cycleInfo.bateriaIndex} de 2
+                        </Badge>
+                        <Badge variant="outline" className="font-mono text-zinc-300 border-zinc-700 bg-zinc-900/60 font-bold text-xs gap-1">
+                          <Clock className="w-3 h-3 text-amber-400" /> {cycleInfo.horario}
+                        </Badge>
+                        <span className="text-xs font-semibold text-zinc-400">
+                          Entrada Geral {session.currentRound} de {session.totalRounds}
+                        </span>
+                      </div>
+
+                      {session.currentRound < session.totalRounds && (
+                        <Button
+                          onClick={handleNextRound}
+                          size="sm"
+                          className="gap-1.5 font-bold text-xs bg-amber-500 hover:bg-amber-600 text-black font-extrabold"
+                        >
+                          Próxima Bateria <ChevronRight className="w-3.5 h-3.5" />
+                        </Button>
+                      )}
+                    </div>
+
+                    {/* Sub-banner das duplas desta rodada oficial e folga */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1 text-xs">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-1">
+                          <Users className="w-3 h-3 text-amber-400" /> Duplas:
+                        </span>
+                        {cycleInfo.pairsDescription.map((pair, pIdx) => {
+                          const p1 = session.participants[pair.p1Index];
+                          const p2 = session.participants[pair.p2Index];
+                          return (
+                            <span
+                              key={pIdx}
+                              className="text-[11px] font-semibold bg-zinc-900 border border-zinc-800 px-2 py-0.5 rounded-lg text-zinc-300"
+                            >
+                              <strong className="text-amber-400 mr-1">{pair.codeA}+{pair.codeB}</strong>
+                              {p1 ? p1.name.split(" ")[0] : pair.codeA}&{p2 ? p2.name.split(" ")[0] : pair.codeB}
+                            </span>
+                          );
+                        })}
+                      </div>
+
+                      {cycleInfo.restingDescription && (
+                        <span className="text-[11px] font-semibold text-amber-300 bg-amber-500/10 border border-amber-500/30 px-2 py-0.5 rounded-lg self-start sm:self-auto">
+                          💤 Folgam: [{cycleInfo.restingDescription.codeA}] {session.participants[cycleInfo.restingDescription.p1Index]?.name.split(" ")[0]} & [{cycleInfo.restingDescription.codeB}] {session.participants[cycleInfo.restingDescription.p2Index]?.name.split(" ")[0]}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                );
               })() : (
                 <div className="flex items-center justify-between p-3.5 rounded-xl bg-muted/40 border">
                   <div className="flex items-center gap-2">
                     <Badge className="bg-primary text-primary-foreground font-black text-xs px-2.5 py-0.5">
                       Rodada {session.currentRound} de {session.totalRounds}
                     </Badge>
-                    {session.participantCount === 10 && session.currentRound === 12 && (
-                      <Badge className="bg-sky-500/20 text-sky-300 border-sky-500/40 text-xs font-bold">
-                        🎲 Duplas de Apoio Sorteadas
-                      </Badge>
-                    )}
                   </div>
                   {session.currentRound < session.totalRounds && (
                     <Button

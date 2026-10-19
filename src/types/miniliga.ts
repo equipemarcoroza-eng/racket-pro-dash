@@ -47,7 +47,8 @@ export interface MiniligaMatch {
   scoreB: number | null;
   
   isCompleted: boolean;
-  isBonusFinal?: boolean; // 1º+3º vs 2º+4º
+  isBonusFinal?: boolean; // 1º+3º vs 2º+4º ou Grande Final
+  isSemifinal?: boolean; // Semifinais (1ºA+1ªB vs 4ºA+4ªB e 2ºA+2ªB vs 3ºA+3ªB)
   isTiebreakSimples?: boolean; // Partida Extra de Simples 1º vs 2º
   
   // Dupla sorteada para completar a rodada de 5 jogos (não pontua extra para si mesma)
@@ -77,6 +78,7 @@ export interface MiniligaSession {
   // Special matches flags
   hasBonusFinal: boolean;
   hasTiebreakSimples: boolean;
+  hasSemifinais?: boolean;
   
   // Modo de operação: Simulação (Sandbox de teste) vs Real (Oficial com pontos no card)
   isSimulation?: boolean;

@@ -279,42 +279,92 @@ function generate8PlayersRotativo(p: MiniligaParticipant[]) {
 }
 
 /**
- * 10 JOGADORES (2 Quadras) - MODELO OFICIAL MARCO ROZA (12 RODADAS)
- * - 12 Rodadas no total em 2 quadras (24 confrontos 100% inéditos).
- * - Nas primeiras 11 rodadas, rodízio equilibrado com ZERO folgas consecutivas.
- * - Na 12ª rodada: 2 jogos com duplas sorteadas de apoio (exatamente como no modelo de 6 alunos).
- * - A dupla sorteada de apoio não pontua extra para si mesma, garantindo que todos
- *   os 10 alunos encerrem a Miniliga rigorosamente com 9 jogos computados na classificação.
+ * 10 JOGADORES (2 Quadras) - MODELO OFICIAL MARCO ROZA (MINI LIGA MISTA / REPOSIÇÕES)
+ * 2 Grupos de 5:
+ * Grupo A: A1, A2, A3, A4, A5 (índices 0, 1, 2, 3, 4)
+ * Grupo B: B1, B2, B3, B4, B5 (índices 5, 6, 7, 8, 9)
+ *
+ * 6 Rodadas Oficiais com 2 Baterias cada (2 quadras simultâneas, 4 jogos por rodada) = 24 jogos.
+ * 2 Jogos Extras de Sorteio (às 19h57 e 20h52) onde a dupla A5/B4 que folgou enfrenta duplas de apoio sorteadas = 2 jogos.
+ * Total da Fase Classificatória: 26 jogos distribuídos em 14 entradas / baterias.
+ * Todos os 10 atletas jogam rigorosamente 10 partidas na fase classificatória!
  */
 function generate10PlayersIntergrupos(p: MiniligaParticipant[]) {
   const matches: MiniligaMatch[] = [];
 
   const schedule = [
-    { r: 1, c: 1, a: [0, 2], b: [6, 7] },
-    { r: 1, c: 2, a: [3, 9], b: [5, 8] },
-    { r: 2, c: 1, a: [1, 2], b: [0, 9] },
-    { r: 2, c: 2, a: [4, 7], b: [3, 5] },
-    { r: 3, c: 1, a: [6, 9], b: [1, 8] },
-    { r: 3, c: 2, a: [3, 7], b: [2, 4] },
-    { r: 4, c: 1, a: [6, 8], b: [3, 4] },
-    { r: 4, c: 2, a: [1, 5], b: [0, 7] },
-    { r: 5, c: 1, a: [0, 5], b: [1, 8] },
-    { r: 5, c: 2, a: [4, 6], b: [2, 9] },
-    { r: 6, c: 1, a: [1, 4], b: [6, 8] },
-    { r: 6, c: 2, a: [3, 5], b: [0, 7] },
-    { r: 7, c: 1, a: [2, 9], b: [0, 5] },
-    { r: 7, c: 2, a: [3, 7], b: [1, 6] },
-    { r: 8, c: 1, a: [5, 8], b: [2, 9] },
-    { r: 8, c: 2, a: [3, 6], b: [1, 4] },
-    { r: 9, c: 1, a: [2, 7], b: [4, 8] },
-    { r: 9, c: 2, a: [0, 9], b: [5, 6] },
-    { r: 10, c: 1, a: [4, 7], b: [0, 3] },
-    { r: 10, c: 2, a: [1, 8], b: [2, 9] },
-    { r: 11, c: 1, a: [3, 7], b: [8, 9] },
-    { r: 11, c: 2, a: [0, 5], b: [1, 6] },
-    // Rodada 12: 2 jogos com duplas sorteadas de apoio para fechar 9 jogos para todos
-    { r: 12, c: 1, a: [2, 4], b: [8, 0], support: [8, 0] },
-    { r: 12, c: 2, a: [9, 3], b: [5, 7], support: [9, 3, 5, 7] },
+    // =======================================================
+    // RODADA OFICIAL 1: A1/B2, A3/B3, A4/B4, A5/B5 | Folgam: A2 e B1
+    // =======================================================
+    // Bateria 1 (19h15)
+    { r: 1, c: 1, a: [0, 6], b: [2, 7] }, // A1/B2 vs A3/B3
+    { r: 1, c: 2, a: [3, 8], b: [4, 9] }, // A4/B4 vs A5/B5
+    // Bateria 2 (19h22)
+    { r: 2, c: 1, a: [0, 6], b: [4, 9] }, // A1/B2 vs A5/B5
+    { r: 2, c: 2, a: [3, 8], b: [2, 7] }, // A4/B4 vs A3/B3
+
+    // =======================================================
+    // RODADA OFICIAL 2: A2/B1, A5/B2, A3/B4, A4/B5 | Folgam: A1 e B3
+    // =======================================================
+    // Bateria 1 (19h29)
+    { r: 3, c: 1, a: [1, 5], b: [4, 6] }, // A2/B1 vs A5/B2
+    { r: 3, c: 2, a: [2, 8], b: [3, 9] }, // A3/B4 vs A4/B5
+    // Bateria 2 (19h36)
+    { r: 4, c: 1, a: [1, 5], b: [3, 9] }, // A2/B1 vs A4/B5
+    { r: 4, c: 2, a: [4, 6], b: [2, 8] }, // A5/B2 vs A3/B4
+
+    // =======================================================
+    // RODADA OFICIAL 3: A1/B3, A3/B5, A2/B2, A4/B1 | Folgam: A5 e B4
+    // =======================================================
+    // Bateria 1 (19h43)
+    { r: 5, c: 1, a: [0, 7], b: [2, 9] }, // A1/B3 vs A3/B5
+    { r: 5, c: 2, a: [1, 6], b: [3, 5] }, // A2/B2 vs A4/B1
+    // Bateria 2 (19h50)
+    { r: 6, c: 1, a: [0, 7], b: [3, 5] }, // A1/B3 vs A4/B1
+    { r: 6, c: 2, a: [1, 6], b: [2, 9] }, // A2/B2 vs A3/B5
+
+    // =======================================================
+    // JOGO EXTRA DE SORTEIO 1 (19h57)
+    // A5 e B4 enfrentam dupla sorteada de apoio (ex: A1/B1)
+    // A dupla de apoio não pontua extra para si mesma (suporte)
+    // =======================================================
+    { r: 7, c: 1, a: [4, 8], b: [0, 5], support: [0, 5] }, // A5/B4 vs Sorteio Sorteio
+
+    // =======================================================
+    // RODADA OFICIAL 4: A1/B4, A5/B1, A4/B3, A2/B5 | Folgam: A3 e B2
+    // =======================================================
+    // Bateria 1 (20h10)
+    { r: 8, c: 1, a: [0, 8], b: [4, 5] }, // A1/B4 vs A5/B1
+    { r: 8, c: 2, a: [3, 7], b: [1, 9] }, // A4/B3 vs A2/B5
+    // Bateria 2 (20h17)
+    { r: 9, c: 1, a: [0, 8], b: [3, 7] }, // A1/B4 vs A4/B3
+    { r: 9, c: 2, a: [1, 9], b: [4, 5] }, // A2/B5 vs A5/B1
+
+    // =======================================================
+    // RODADA OFICIAL 5: A1/B1, A2/B4, A3/B2, A5/B3 | Folgam: A4 e B5
+    // =======================================================
+    // Bateria 1 (20h24)
+    { r: 10, c: 1, a: [0, 5], b: [1, 8] }, // A1/B1 vs A2/B4
+    { r: 10, c: 2, a: [2, 6], b: [4, 7] }, // A3/B2 vs A5/B3
+    // Bateria 2 (20h31)
+    { r: 11, c: 1, a: [0, 5], b: [4, 7] }, // A1/B1 vs A5/B3
+    { r: 11, c: 2, a: [2, 6], b: [1, 8] }, // A3/B2 vs A2/B4
+
+    // =======================================================
+    // RODADA OFICIAL 6: A3/B1, A1/B5, A2/B3, A4/B2 | Folgam: A5 e B4
+    // =======================================================
+    // Bateria 1 (20h38)
+    { r: 12, c: 1, a: [2, 5], b: [0, 9] }, // A3/B1 vs A1/B5
+    { r: 12, c: 2, a: [1, 7], b: [3, 6] }, // A2/B3 vs A4/B2
+    // Bateria 2 (20h45)
+    { r: 13, c: 1, a: [3, 6], b: [0, 9] }, // A4/B2 vs A1/B5
+    { r: 13, c: 2, a: [1, 7], b: [2, 5] }, // A2/B3 vs A3/B1
+
+    // =======================================================
+    // JOGO EXTRA DE SORTEIO 2 (20h52)
+    // A5 e B4 enfrentam dupla sorteada de apoio (ex: A3/B3)
+    // =======================================================
+    { r: 14, c: 1, a: [4, 8], b: [2, 7], support: [2, 7] }, // A5/B4 vs Sorteio Sorteio
   ];
 
   schedule.forEach((pr, idx) => {
@@ -327,11 +377,11 @@ function generate10PlayersIntergrupos(p: MiniligaParticipant[]) {
       scoreA: null,
       scoreB: null,
       isCompleted: false,
-      ...(pr.support ? { supportPairPlayerIds: pr.support.map((idx) => p[idx].id) } : {}),
+      ...(pr.support ? { supportPairPlayerIds: pr.support.map((i) => p[i].id) } : {}),
     });
   });
 
-  return { matches, totalRounds: 12, courtsCount: 2 };
+  return { matches, totalRounds: 14, courtsCount: 2 };
 }
 
 /**
@@ -648,4 +698,297 @@ export function getPlayerGroupCode(
   }
   return null;
 }
+
+/**
+ * INFORMAÇÕES DE CICLO E BATERIAS (MÉTODO MARCO ROZA - 10 JOGADORES INTERGRUPOS)
+ * 6 Rodadas Oficiais x 2 Baterias cada + 2 Jogos de Sorteio de Apoio = 14 Entradas / Baterias
+ */
+export interface Miniliga10PCycleInfo {
+  type: "rodada" | "sorteio";
+  oficialRound?: number; // 1 a 6
+  bateriaIndex?: number; // 1 ou 2
+  horario: string;
+  pairsDescription: { tag: string; p1Index: number; p2Index: number; codeA: string; codeB: string }[];
+  restingDescription?: { p1Index: number; p2Index: number; codeA: string; codeB: string };
+  isSorteio?: boolean;
+}
+
+export function get10PlayersCycleInfo(roundNumber: number): Miniliga10PCycleInfo {
+  switch (roundNumber) {
+    case 1:
+      return {
+        type: "rodada",
+        oficialRound: 1,
+        bateriaIndex: 1,
+        horario: "19h15",
+        pairsDescription: [
+          { tag: "Dupla 1", p1Index: 0, p2Index: 6, codeA: "A1", codeB: "B2" },
+          { tag: "Dupla 2", p1Index: 2, p2Index: 7, codeA: "A3", codeB: "B3" },
+          { tag: "Dupla 3", p1Index: 3, p2Index: 8, codeA: "A4", codeB: "B4" },
+          { tag: "Dupla 4", p1Index: 4, p2Index: 9, codeA: "A5", codeB: "B5" },
+        ],
+        restingDescription: { p1Index: 1, p2Index: 5, codeA: "A2", codeB: "B1" },
+      };
+    case 2:
+      return {
+        type: "rodada",
+        oficialRound: 1,
+        bateriaIndex: 2,
+        horario: "19h22",
+        pairsDescription: [
+          { tag: "Dupla 1", p1Index: 0, p2Index: 6, codeA: "A1", codeB: "B2" },
+          { tag: "Dupla 2", p1Index: 2, p2Index: 7, codeA: "A3", codeB: "B3" },
+          { tag: "Dupla 3", p1Index: 3, p2Index: 8, codeA: "A4", codeB: "B4" },
+          { tag: "Dupla 4", p1Index: 4, p2Index: 9, codeA: "A5", codeB: "B5" },
+        ],
+        restingDescription: { p1Index: 1, p2Index: 5, codeA: "A2", codeB: "B1" },
+      };
+    case 3:
+      return {
+        type: "rodada",
+        oficialRound: 2,
+        bateriaIndex: 1,
+        horario: "19h29",
+        pairsDescription: [
+          { tag: "Dupla 1", p1Index: 1, p2Index: 5, codeA: "A2", codeB: "B1" },
+          { tag: "Dupla 2", p1Index: 4, p2Index: 6, codeA: "A5", codeB: "B2" },
+          { tag: "Dupla 3", p1Index: 2, p2Index: 8, codeA: "A3", codeB: "B4" },
+          { tag: "Dupla 4", p1Index: 3, p2Index: 9, codeA: "A4", codeB: "B5" },
+        ],
+        restingDescription: { p1Index: 0, p2Index: 7, codeA: "A1", codeB: "B3" },
+      };
+    case 4:
+      return {
+        type: "rodada",
+        oficialRound: 2,
+        bateriaIndex: 2,
+        horario: "19h36",
+        pairsDescription: [
+          { tag: "Dupla 1", p1Index: 1, p2Index: 5, codeA: "A2", codeB: "B1" },
+          { tag: "Dupla 2", p1Index: 4, p2Index: 6, codeA: "A5", codeB: "B2" },
+          { tag: "Dupla 3", p1Index: 2, p2Index: 8, codeA: "A3", codeB: "B4" },
+          { tag: "Dupla 4", p1Index: 3, p2Index: 9, codeA: "A4", codeB: "B5" },
+        ],
+        restingDescription: { p1Index: 0, p2Index: 7, codeA: "A1", codeB: "B3" },
+      };
+    case 5:
+      return {
+        type: "rodada",
+        oficialRound: 3,
+        bateriaIndex: 1,
+        horario: "19h43",
+        pairsDescription: [
+          { tag: "Dupla 1", p1Index: 0, p2Index: 7, codeA: "A1", codeB: "B3" },
+          { tag: "Dupla 2", p1Index: 2, p2Index: 9, codeA: "A3", codeB: "B5" },
+          { tag: "Dupla 3", p1Index: 1, p2Index: 6, codeA: "A2", codeB: "B2" },
+          { tag: "Dupla 4", p1Index: 3, p2Index: 5, codeA: "A4", codeB: "B1" },
+        ],
+        restingDescription: { p1Index: 4, p2Index: 8, codeA: "A5", codeB: "B4" },
+      };
+    case 6:
+      return {
+        type: "rodada",
+        oficialRound: 3,
+        bateriaIndex: 2,
+        horario: "19h50",
+        pairsDescription: [
+          { tag: "Dupla 1", p1Index: 0, p2Index: 7, codeA: "A1", codeB: "B3" },
+          { tag: "Dupla 2", p1Index: 2, p2Index: 9, codeA: "A3", codeB: "B5" },
+          { tag: "Dupla 3", p1Index: 1, p2Index: 6, codeA: "A2", codeB: "B2" },
+          { tag: "Dupla 4", p1Index: 3, p2Index: 5, codeA: "A4", codeB: "B1" },
+        ],
+        restingDescription: { p1Index: 4, p2Index: 8, codeA: "A5", codeB: "B4" },
+      };
+    case 7:
+      return {
+        type: "sorteio",
+        horario: "19h57",
+        isSorteio: true,
+        pairsDescription: [
+          { tag: "Dupla que Folgou", p1Index: 4, p2Index: 8, codeA: "A5", codeB: "B4" },
+          { tag: "Dupla Sorteada de Apoio", p1Index: 0, p2Index: 5, codeA: "A1", codeB: "B1" },
+        ],
+      };
+    case 8:
+      return {
+        type: "rodada",
+        oficialRound: 4,
+        bateriaIndex: 1,
+        horario: "20h10",
+        pairsDescription: [
+          { tag: "Dupla 1", p1Index: 0, p2Index: 8, codeA: "A1", codeB: "B4" },
+          { tag: "Dupla 2", p1Index: 4, p2Index: 5, codeA: "A5", codeB: "B1" },
+          { tag: "Dupla 3", p1Index: 3, p2Index: 7, codeA: "A4", codeB: "B3" },
+          { tag: "Dupla 4", p1Index: 1, p2Index: 9, codeA: "A2", codeB: "B5" },
+        ],
+        restingDescription: { p1Index: 2, p2Index: 6, codeA: "A3", codeB: "B2" },
+      };
+    case 9:
+      return {
+        type: "rodada",
+        oficialRound: 4,
+        bateriaIndex: 2,
+        horario: "20h17",
+        pairsDescription: [
+          { tag: "Dupla 1", p1Index: 0, p2Index: 8, codeA: "A1", codeB: "B4" },
+          { tag: "Dupla 2", p1Index: 4, p2Index: 5, codeA: "A5", codeB: "B1" },
+          { tag: "Dupla 3", p1Index: 3, p2Index: 7, codeA: "A4", codeB: "B3" },
+          { tag: "Dupla 4", p1Index: 1, p2Index: 9, codeA: "A2", codeB: "B5" },
+        ],
+        restingDescription: { p1Index: 2, p2Index: 6, codeA: "A3", codeB: "B2" },
+      };
+    case 10:
+      return {
+        type: "rodada",
+        oficialRound: 5,
+        bateriaIndex: 1,
+        horario: "20h24",
+        pairsDescription: [
+          { tag: "Dupla 1", p1Index: 0, p2Index: 5, codeA: "A1", codeB: "B1" },
+          { tag: "Dupla 2", p1Index: 1, p2Index: 8, codeA: "A2", codeB: "B4" },
+          { tag: "Dupla 3", p1Index: 2, p2Index: 6, codeA: "A3", codeB: "B2" },
+          { tag: "Dupla 4", p1Index: 4, p2Index: 7, codeA: "A5", codeB: "B3" },
+        ],
+        restingDescription: { p1Index: 3, p2Index: 9, codeA: "A4", codeB: "B5" },
+      };
+    case 11:
+      return {
+        type: "rodada",
+        oficialRound: 5,
+        bateriaIndex: 2,
+        horario: "20h31",
+        pairsDescription: [
+          { tag: "Dupla 1", p1Index: 0, p2Index: 5, codeA: "A1", codeB: "B1" },
+          { tag: "Dupla 2", p1Index: 1, p2Index: 8, codeA: "A2", codeB: "B4" },
+          { tag: "Dupla 3", p1Index: 2, p2Index: 6, codeA: "A3", codeB: "B2" },
+          { tag: "Dupla 4", p1Index: 4, p2Index: 7, codeA: "A5", codeB: "B3" },
+        ],
+        restingDescription: { p1Index: 3, p2Index: 9, codeA: "A4", codeB: "B5" },
+      };
+    case 12:
+      return {
+        type: "rodada",
+        oficialRound: 6,
+        bateriaIndex: 1,
+        horario: "20h38",
+        pairsDescription: [
+          { tag: "Dupla 1", p1Index: 2, p2Index: 5, codeA: "A3", codeB: "B1" },
+          { tag: "Dupla 2", p1Index: 0, p2Index: 9, codeA: "A1", codeB: "B5" },
+          { tag: "Dupla 3", p1Index: 1, p2Index: 7, codeA: "A2", codeB: "B3" },
+          { tag: "Dupla 4", p1Index: 3, p2Index: 6, codeA: "A4", codeB: "B2" },
+        ],
+        restingDescription: { p1Index: 4, p2Index: 8, codeA: "A5", codeB: "B4" },
+      };
+    case 13:
+      return {
+        type: "rodada",
+        oficialRound: 6,
+        bateriaIndex: 2,
+        horario: "20h45",
+        pairsDescription: [
+          { tag: "Dupla 1", p1Index: 2, p2Index: 5, codeA: "A3", codeB: "B1" },
+          { tag: "Dupla 2", p1Index: 0, p2Index: 9, codeA: "A1", codeB: "B5" },
+          { tag: "Dupla 3", p1Index: 1, p2Index: 7, codeA: "A2", codeB: "B3" },
+          { tag: "Dupla 4", p1Index: 3, p2Index: 6, codeA: "A4", codeB: "B2" },
+        ],
+        restingDescription: { p1Index: 4, p2Index: 8, codeA: "A5", codeB: "B4" },
+      };
+    case 14:
+      return {
+        type: "sorteio",
+        horario: "20h52",
+        isSorteio: true,
+        pairsDescription: [
+          { tag: "Dupla que Folgou", p1Index: 4, p2Index: 8, codeA: "A5", codeB: "B4" },
+          { tag: "Dupla Sorteada de Apoio", p1Index: 2, p2Index: 7, codeA: "A3", codeB: "B3" },
+        ],
+      };
+    default:
+      return {
+        type: "rodada",
+        horario: "21h00",
+        pairsDescription: [],
+      };
+  }
+}
+
+/**
+ * CRIAR JOGOS DAS SEMIFINAIS (MÉTODO MARCO ROZA - 10 JOGADORES)
+ * 21h00:
+ * Quadra 1: 1º A + 1ª B  x  4º A + 4ª B
+ * Quadra 2: 2º A + 2ª B  x  3º A + 3ª B
+ */
+export function create10PlayersSemifinalsMatches(
+  standings: MiniligaParticipant[],
+  nextRoundNumber: number
+): MiniligaMatch[] {
+  const groupA = standings.filter((p) => p.groupNumber === 1);
+  const groupB = standings.filter((p) => p.groupNumber === 2);
+
+  if (groupA.length < 4 || groupB.length < 4) return [];
+
+  const a1 = groupA[0]; // 1º A
+  const a2 = groupA[1]; // 2º A
+  const a3 = groupA[2]; // 3º A
+  const a4 = groupA[3]; // 4º A
+
+  const b1 = groupB[0]; // 1ª B
+  const b2 = groupB[1]; // 2ª B
+  const b3 = groupB[2]; // 3ª B
+  const b4 = groupB[3]; // 4ª B
+
+  return [
+    {
+      id: `match-10p-semi-1-${Date.now()}`,
+      roundNumber: nextRoundNumber,
+      courtNumber: 1,
+      teamA: { player1Id: a1.id, player2Id: b1.id }, // 1º A + 1ª B
+      teamB: { player1Id: a4.id, player2Id: b4.id }, // 4º A + 4ª B
+      scoreA: null,
+      scoreB: null,
+      isCompleted: false,
+      isSemifinal: true,
+    },
+    {
+      id: `match-10p-semi-2-${Date.now() + 1}`,
+      roundNumber: nextRoundNumber,
+      courtNumber: 2,
+      teamA: { player1Id: a2.id, player2Id: b2.id }, // 2º A + 2ª B
+      teamB: { player1Id: a3.id, player2Id: b3.id }, // 3º A + 3ª B
+      scoreA: null,
+      scoreB: null,
+      isCompleted: false,
+      isSemifinal: true,
+    },
+  ];
+}
+
+/**
+ * CRIAR JOGO DA GRANDE FINAL (MÉTODO MARCO ROZA - 10 JOGADORES)
+ * 21h10:
+ * Quadra 1: Vencedor Semi 1  x  Vencedor Semi 2
+ */
+export function create10PlayersFinalMatch(
+  semi1Match: MiniligaMatch,
+  semi2Match: MiniligaMatch,
+  nextRoundNumber: number
+): MiniligaMatch | null {
+  if (!semi1Match.isCompleted || !semi2Match.isCompleted) return null;
+
+  const s1Winner = (semi1Match.scoreA ?? 0) >= (semi1Match.scoreB ?? 0) ? semi1Match.teamA : semi1Match.teamB;
+  const s2Winner = (semi2Match.scoreA ?? 0) >= (semi2Match.scoreB ?? 0) ? semi2Match.teamA : semi2Match.teamB;
+
+  return {
+    id: `match-10p-final-${Date.now()}`,
+    roundNumber: nextRoundNumber,
+    courtNumber: 1,
+    teamA: { player1Id: s1Winner.player1Id, player2Id: s1Winner.player2Id },
+    teamB: { player1Id: s2Winner.player1Id, player2Id: s2Winner.player2Id },
+    scoreA: null,
+    scoreB: null,
+    isCompleted: false,
+    isBonusFinal: true,
+  };
+}
+
 
