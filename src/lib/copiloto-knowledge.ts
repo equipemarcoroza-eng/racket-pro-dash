@@ -413,20 +413,29 @@ export const BASE_CONHECIMENTO: IntencaoCopiloto[] = [
       "10 participantes",
       "12 participantes",
       "podio miniliga",
+      "modo simulacao",
+      "simular miniliga",
+      "historico miniligas",
+      "editar miniliga",
     ],
     resposta: {
       texto:
         "As **Miniligas Marco Roza** são o formato exclusivo da equipe para resolver reposições de forma dinâmica, divertida e ranqueada:\n\n" +
-        "• **Baterias Cronometradas de 5 Minutos:** Cronômetro digital integrado com alertas sonoros de quadra para apitar as trocas de lado e rodadas.\n" +
-        "• **Modelos de Disputa Oficiais:**\n" +
-        "  - **5 e 6 Alunos (1 Quadra):** Rodízio Americano balanceado com folgas automáticas.\n" +
-        "  - **8 e 10 Alunos (2 Quadras):** Modo Intergrupos (Grupo 1 vs Grupo 2 com 12 ou 10 jogos no total) ou Rodízio Geral.\n" +
-        "  - **12 Alunos (3 Quadras):** Ocupação 100% de quadras simultâneas.\n" +
+        "• **Modo Simulação (Sandbox) vs Modo Real:**\n" +
+        "  - *🧪 Simulação:* Permite testar modalidades, auto-preencher placares aleatórios com 1 clique e validar a tabela sem mexer nos Cards dos alunos.\n" +
+        "  - *🟢 Modo Real:* Para quando estiver valendo na quadra, creditando XP no Card do Atleta e dando baixa automática na falta de reposição.\n" +
+        "• **Visão Panorâmica de Todos os Jogos (1 por 1):** Grade completa de partidas na tela, permitindo digitar os resultados jogo a jogo no ritmo do professor, recalculando a tabela ao vivo.\n" +
+        "• **Modelos de Disputa & Equilíbrio Matemático Perfeito:**\n" +
+        "  - **5 Alunos (1 Quadra):** 5 rodadas rotativas (4 jogos e 1 folga por atleta).\n" +
+        "  - **6 Alunos (1 Quadra):** 6 rodadas perfeitamente calibradas (4 jogos e 2 folgas para todos os 6 atletas, com isonomia 100%).\n" +
+        "  - **8 Alunos (2 Quadras):** Modo Intergrupos (Grupo 1 vs Grupo 2 com 12 jogos no total) ou Rodízio Geral (7 rodadas perfeitas).\n" +
+        "  - **10 Alunos (2 Quadras):** Modo Intergrupos oficial (10 jogos no total) ou Rodízio Geral.\n" +
+        "  - **12 Alunos (3 Quadras):** 5 rodadas com 100% de ocupação simultânea.\n" +
         "• **Regra de Pontuação Oficial do Marco:** `Pontuação Total = Pontos de Jogo Feitos (PP) + Vitórias (1 pt por vitória)`.\n" +
         "• **Desempates & Finais Especiais:**\n" +
         "  - *Empate no 1º lugar:* Partida Extra de Simples (1º vs 2º) para decidir o título na bola!\n" +
         "  - *Tempo de sobra na aula:* Grande Final cruzada entre duplas (1º+3º vs 2º+4º).\n" +
-        "• **Gamificação no Athlete Card:** Distribuição automática de pontos de XP nos Cards dos atletas por colocação e baixa nas faltas de reposição.",
+        "• **Histórico & Edição:** Salva edições anteriores com opção de *Reabrir / Editar* e envio do pódio formatado direto para o WhatsApp dos alunos.",
       rotaSugerida: "/class-replacements",
       labelRota: "Acessar Miniligas (Aba Reposição)",
       topicosRelacionados: [
