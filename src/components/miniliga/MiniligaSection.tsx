@@ -84,7 +84,7 @@ export const MiniligaSection: React.FC = () => {
     }
   }, [session]);
 
-  // Alunos com reposições pendentes para seleção rápida
+  // Alunos ATIVOS com reposições pendentes para seleção rápida
   const pendingReplacementStudents = useMemo(() => {
     const studentFaltasCount = new Map<string, number>();
     attendanceLogs.forEach((log) => {
@@ -99,15 +99,18 @@ export const MiniligaSection: React.FC = () => {
       }
     });
 
-    return students.filter((s) => (studentFaltasCount.get(s.id) || 0) > 0);
+    return students.filter(
+      (s) => s.status === "Ativo" && (studentFaltasCount.get(s.id) || 0) > 0
+    );
   }, [students, attendanceLogs]);
 
-  // Filtragem de alunos para adicionar no setup
+  // Filtragem de alunos para adicionar no setup (APENAS ATIVOS)
   const filteredStudents = useMemo(() => {
-    if (!searchTerm.trim()) return students.slice(0, 8);
-    return students
+    const activeStudents = students.filter((s) => s.status === "Ativo");
+    if (!searchTerm.trim()) return activeStudents.slice(0, 10);
+    return activeStudents
       .filter((s) => s.nome.toLowerCase().includes(searchTerm.toLowerCase()))
-      .slice(0, 10);
+      .slice(0, 12);
   }, [students, searchTerm]);
 
   // Adicionar aluno na lista do torneio
@@ -130,7 +133,7 @@ export const MiniligaSection: React.FC = () => {
     setCustomPlayers((prev) => prev.filter((p) => p.id !== id));
   };
 
-  // Preencher com sugestão automática de alunos com reposição pendente
+  // Preencher com sugestão automática de alunos ATIVOS com reposição pendente
   const handleAutoFillWithReplacements = () => {
     const needed = selectedCount - customPlayers.length;
     if (needed <= 0) return;
@@ -146,14 +149,16 @@ export const MiniligaSection: React.FC = () => {
       studentId: s.id,
     }));
 
+    // Se ainda faltar, preenche estritamente com outros alunos ATIVOS
     if (newItems.length < needed) {
       const remainingNeeded = needed - newItems.length;
-      const otherStudents = students.filter(
+      const otherActiveStudents = students.filter(
         (s) =>
+          s.status === "Ativo" &&
           !customPlayers.some((cp) => cp.studentId === s.id) &&
           !newItems.some((ni) => ni.studentId === s.id)
       );
-      otherStudents.slice(0, remainingNeeded).forEach((s) => {
+      otherActiveStudents.slice(0, remainingNeeded).forEach((s) => {
         newItems.push({
           id: `p-${s.id}`,
           name: s.nome,
@@ -163,7 +168,7 @@ export const MiniligaSection: React.FC = () => {
     }
 
     setCustomPlayers((prev) => [...prev, ...newItems]);
-    toast.success("Participantes preenchidos com sucesso!");
+    toast.success("Participantes preenchidos com sucesso (apenas alunos ativos)!");
   };
 
   // INICIAR A MINILIGA (Modo Simulação por padrão para segurança)
