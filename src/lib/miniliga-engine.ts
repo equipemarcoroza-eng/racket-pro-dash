@@ -922,8 +922,15 @@ export function create10PlayersSemifinalsMatches(
   standings: MiniligaParticipant[],
   nextRoundNumber: number
 ): MiniligaMatch[] {
-  const groupA = standings.filter((p) => p.groupNumber === 1);
-  const groupB = standings.filter((p) => p.groupNumber === 2);
+  // Ordenar cada grupo rigorosamente pela regra do Marco Roza (TotalScore, Saldo, Pontos Pró)
+  const sortByScore = (a: MiniligaParticipant, b: MiniligaParticipant) => {
+    if (b.totalScore !== a.totalScore) return b.totalScore - a.totalScore;
+    if (b.pointsBalance !== a.pointsBalance) return b.pointsBalance - a.pointsBalance;
+    return b.pointsFor - a.pointsFor;
+  };
+
+  const groupA = standings.filter((p) => p.groupNumber === 1).sort(sortByScore);
+  const groupB = standings.filter((p) => p.groupNumber === 2).sort(sortByScore);
 
   if (groupA.length < 4 || groupB.length < 4) return [];
 

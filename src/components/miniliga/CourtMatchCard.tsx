@@ -65,9 +65,17 @@ export const CourtMatchCard: React.FC<CourtMatchCardProps> = ({
           >
             Quadra {match.courtNumber}
           </Badge>
+          {match.isSemifinal && (
+            <Badge className="bg-purple-600 text-white font-extrabold text-xs gap-1">
+              <Trophy className="w-3 h-3 fill-current" />
+              {match.courtNumber === 1
+                ? "Semifinal 1 (1ºA + 1ªB vs 4ºA + 4ªB)"
+                : "Semifinal 2 (2ºA + 2ªB vs 3ºA + 3ªB)"}
+            </Badge>
+          )}
           {match.isBonusFinal && (
             <Badge className="bg-amber-500 text-black font-extrabold text-xs gap-1">
-              <Trophy className="w-3 h-3 fill-current" /> Grande Final (1º+3º vs 2º+4º)
+              <Trophy className="w-3 h-3 fill-current" /> Grande Final
             </Badge>
           )}
           {match.isTiebreakSimples && (
