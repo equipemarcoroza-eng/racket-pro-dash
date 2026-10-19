@@ -572,3 +572,80 @@ export function createTiebreakSimplesMatch(
     isTiebreakSimples: true,
   };
 }
+
+/**
+ * INFORMAÇÕES DE CICLO E BATERIAS (MÉTODO MARCO ROZA - 8 JOGADORES INTERGRUPOS)
+ * 4 Rodadas Oficiais x 3 Baterias cada = 12 Baterias / Entradas em Quadra.
+ */
+export interface Miniliga8PCycleInfo {
+  oficialRound: number; // 1, 2, 3, 4
+  bateriaIndex: number; // 1, 2, 3
+  totalBateriasInRound: number; // 3
+  pairsDescription: { tag: string; p1Index: number; p2Index: number; codeA: string; codeB: string }[];
+}
+
+export function get8PlayersCycleInfo(roundNumber: number): Miniliga8PCycleInfo {
+  const boundedRound = Math.max(1, Math.min(12, roundNumber));
+  const oficialRound = Math.ceil(boundedRound / 3);
+  const bateriaIndex = ((boundedRound - 1) % 3) + 1;
+
+  let pairs: { tag: string; p1Index: number; p2Index: number; codeA: string; codeB: string }[] = [];
+  if (oficialRound === 1) {
+    pairs = [
+      { tag: "Dupla 1", p1Index: 0, p2Index: 4, codeA: "A1", codeB: "B1" },
+      { tag: "Dupla 2", p1Index: 1, p2Index: 5, codeA: "A2", codeB: "B2" },
+      { tag: "Dupla 3", p1Index: 2, p2Index: 6, codeA: "A3", codeB: "B3" },
+      { tag: "Dupla 4", p1Index: 3, p2Index: 7, codeA: "A4", codeB: "B4" },
+    ];
+  } else if (oficialRound === 2) {
+    pairs = [
+      { tag: "Dupla 1", p1Index: 0, p2Index: 5, codeA: "A1", codeB: "B2" },
+      { tag: "Dupla 2", p1Index: 1, p2Index: 4, codeA: "A2", codeB: "B1" },
+      { tag: "Dupla 3", p1Index: 2, p2Index: 7, codeA: "A3", codeB: "B4" },
+      { tag: "Dupla 4", p1Index: 3, p2Index: 6, codeA: "A4", codeB: "B3" },
+    ];
+  } else if (oficialRound === 3) {
+    pairs = [
+      { tag: "Dupla 1", p1Index: 0, p2Index: 6, codeA: "A1", codeB: "B3" },
+      { tag: "Dupla 2", p1Index: 1, p2Index: 7, codeA: "A2", codeB: "B4" },
+      { tag: "Dupla 3", p1Index: 2, p2Index: 5, codeA: "A3", codeB: "B2" },
+      { tag: "Dupla 4", p1Index: 3, p2Index: 4, codeA: "A4", codeB: "B1" },
+    ];
+  } else {
+    pairs = [
+      { tag: "Dupla 1", p1Index: 0, p2Index: 7, codeA: "A1", codeB: "B4" },
+      { tag: "Dupla 2", p1Index: 1, p2Index: 6, codeA: "A2", codeB: "B3" },
+      { tag: "Dupla 3", p1Index: 2, p2Index: 4, codeA: "A3", codeB: "B1" },
+      { tag: "Dupla 4", p1Index: 3, p2Index: 5, codeA: "A4", codeB: "B2" },
+    ];
+  }
+
+  return {
+    oficialRound,
+    bateriaIndex,
+    totalBateriasInRound: 3,
+    pairsDescription: pairs,
+  };
+}
+
+/**
+ * OBTER CÓDIGO DA DUPLA/GRUPO DO JOGADOR (Ex: A1..A4, B1..B4)
+ */
+export function getPlayerGroupCode(
+  participantId: string,
+  participants: MiniligaParticipant[],
+  modelType?: MiniligaModelType
+): string | null {
+  if (modelType === "intergrupos" && participants.length === 8) {
+    const idx = participants.findIndex((p) => p.id === participantId);
+    if (idx >= 0 && idx < 4) return `A${idx + 1}`;
+    if (idx >= 4 && idx < 8) return `B${idx - 3}`;
+  }
+  if (modelType === "intergrupos" && participants.length === 10) {
+    const idx = participants.findIndex((p) => p.id === participantId);
+    if (idx >= 0 && idx < 5) return `A${idx + 1}`;
+    if (idx >= 5 && idx < 10) return `B${idx - 4}`;
+  }
+  return null;
+}
+

@@ -11,6 +11,7 @@ import {
   recalculateMiniligaStandings,
   createBonusFinalMatch,
   createTiebreakSimplesMatch,
+  get8PlayersCycleInfo,
 } from "@/lib/miniliga-engine";
 import { miniligaStorage } from "@/lib/miniliga-storage";
 import { MatchTimer } from "@/components/miniliga/MatchTimer";
@@ -918,8 +919,11 @@ export const MiniligaSection: React.FC = () => {
             <AllMatchesOverview
               matches={session.matches}
               participantsMap={participantsMap}
+              participants={session.participants}
               onScoreChange={handleScoreChange}
               totalRounds={session.totalRounds}
+              modelType={session.modelType}
+              participantCount={session.participantCount}
             />
           ) : (
             /* MODO 2: FOCO NA RODADA COM CRONÔMETRO */
@@ -932,20 +936,82 @@ export const MiniligaSection: React.FC = () => {
                 }}
               />
 
-              <div className="flex items-center justify-between p-3 rounded-xl bg-muted/40 border">
-                <Badge className="bg-primary text-primary-foreground font-black text-xs px-2.5 py-0.5">
-                  Rodada {session.currentRound} de {session.totalRounds}
-                </Badge>
-                {session.currentRound < session.totalRounds && (
-                  <Button
-                    onClick={handleNextRound}
-                    size="sm"
-                    className="gap-1.5 font-bold text-xs"
-                  >
-                    Próxima Rodada <ChevronRight className="w-3.5 h-3.5" />
-                  </Button>
-                )}
-              </div>
+              {session.participantCount === 8 && session.modelType === "intergrupos" ? (() => {
+                const cycleInfo = get8PlayersCycleInfo(session.currentRound);
+                return (
+                  <div className="flex flex-col gap-3 p-4 rounded-2xl bg-zinc-950/80 border border-zinc-800">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Badge className="bg-white text-black font-black text-xs px-3 py-1 uppercase shadow">
+                          RODADA OFICIAL {cycleInfo.oficialRound} DE 4
+                        </Badge>
+                        <Badge className="bg-amber-500/20 text-amber-300 border border-amber-500/40 font-black text-xs px-2.5 py-1">
+                          ⚡ Bateria {cycleInfo.bateriaIndex} de 3
+                        </Badge>
+                        <span className="text-xs font-semibold text-zinc-400">
+                          Entrada Geral {session.currentRound} de {session.totalRounds}
+                        </span>
+                      </div>
+
+                      {session.currentRound < session.totalRounds && (
+                        <Button
+                          onClick={handleNextRound}
+                          size="sm"
+                          className="gap-1.5 font-bold text-xs bg-amber-500 hover:bg-amber-600 text-black font-extrabold"
+                        >
+                          Próxima Bateria <ChevronRight className="w-3.5 h-3.5" />
+                        </Button>
+                      )}
+                    </div>
+
+                    {/* Sub-banner das duplas desta rodada oficial */}
+                    <div className="flex items-center gap-2 overflow-x-auto pt-1">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 flex-shrink-0 flex items-center gap-1">
+                        <Users className="w-3 h-3 text-amber-400" /> Duplas Desta Rodada:
+                      </span>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        {cycleInfo.pairsDescription.map((pair, pIdx) => {
+                          const p1 = session.participants[pair.p1Index];
+                          const p2 = session.participants[pair.p2Index];
+                          return (
+                            <span
+                              key={pIdx}
+                              className="text-[11px] font-semibold bg-zinc-900 border border-zinc-800 px-2 py-0.5 rounded-lg text-zinc-300"
+                            >
+                              <strong className="text-amber-400 mr-1">
+                                {pair.codeA}+{pair.codeB}
+                              </strong>
+                              {p1 ? p1.name.split(" ")[0] : pair.codeA}&{p2 ? p2.name.split(" ")[0] : pair.codeB}
+                            </span>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })() : (
+                <div className="flex items-center justify-between p-3.5 rounded-xl bg-muted/40 border">
+                  <div className="flex items-center gap-2">
+                    <Badge className="bg-primary text-primary-foreground font-black text-xs px-2.5 py-0.5">
+                      Rodada {session.currentRound} de {session.totalRounds}
+                    </Badge>
+                    {session.participantCount === 10 && session.currentRound === 12 && (
+                      <Badge className="bg-sky-500/20 text-sky-300 border-sky-500/40 text-xs font-bold">
+                        🎲 Duplas de Apoio Sorteadas
+                      </Badge>
+                    )}
+                  </div>
+                  {session.currentRound < session.totalRounds && (
+                    <Button
+                      onClick={handleNextRound}
+                      size="sm"
+                      className="gap-1.5 font-bold text-xs"
+                    >
+                      Próxima Rodada <ChevronRight className="w-3.5 h-3.5" />
+                    </Button>
+                  )}
+                </div>
+              )}
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 {currentRoundMatches.map((match) => (
@@ -953,6 +1019,8 @@ export const MiniligaSection: React.FC = () => {
                     key={match.id}
                     match={match}
                     participantsMap={participantsMap}
+                    participants={session.participants}
+                    modelType={session.modelType}
                     onScoreChange={handleScoreChange}
                   />
                 ))}

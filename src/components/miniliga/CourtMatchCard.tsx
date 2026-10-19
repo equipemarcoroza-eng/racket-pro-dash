@@ -1,18 +1,23 @@
 import React from "react";
-import { MiniligaMatch, MiniligaParticipant } from "@/types/miniliga";
+import { MiniligaMatch, MiniligaParticipant, MiniligaModelType } from "@/types/miniliga";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle2, Swords, Trophy, Zap } from "lucide-react";
+import { getPlayerGroupCode } from "@/lib/miniliga-engine";
 
 interface CourtMatchCardProps {
   match: MiniligaMatch;
   participantsMap: Map<string, MiniligaParticipant>;
+  participants?: MiniligaParticipant[];
+  modelType?: MiniligaModelType;
   onScoreChange: (matchId: string, scoreA: number | null, scoreB: number | null) => void;
 }
 
 export const CourtMatchCard: React.FC<CourtMatchCardProps> = ({
   match,
   participantsMap,
+  participants = [],
+  modelType,
   onScoreChange,
 }) => {
   const p1A = participantsMap.get(match.teamA.player1Id);
@@ -20,6 +25,11 @@ export const CourtMatchCard: React.FC<CourtMatchCardProps> = ({
 
   const p1B = participantsMap.get(match.teamB.player1Id);
   const p2B = match.teamB.player2Id ? participantsMap.get(match.teamB.player2Id) : null;
+
+  const codeP1A = getPlayerGroupCode(match.teamA.player1Id, participants, modelType);
+  const codeP2A = match.teamA.player2Id ? getPlayerGroupCode(match.teamA.player2Id, participants, modelType) : null;
+  const codeP1B = getPlayerGroupCode(match.teamB.player1Id, participants, modelType);
+  const codeP2B = match.teamB.player2Id ? getPlayerGroupCode(match.teamB.player2Id, participants, modelType) : null;
 
   const handleScoreAChange = (val: string) => {
     const num = val === "" ? null : Math.max(0, parseInt(val, 10) || 0);
@@ -89,12 +99,14 @@ export const CourtMatchCard: React.FC<CourtMatchCardProps> = ({
               : "bg-muted/30 border-border/40"
           }`}
         >
-          <div className="flex flex-col">
-            <span className="text-sm font-bold text-foreground">
+          <div className="flex flex-col truncate">
+            <span className="text-sm font-bold text-foreground truncate">
+              {codeP1A && <span className="text-amber-400 font-mono font-extrabold mr-1">[{codeP1A}]</span>}
               {p1A?.name ?? "Jogador 1"}
             </span>
             {p2A && (
-              <span className="text-sm font-bold text-foreground">
+              <span className="text-sm font-bold text-foreground truncate">
+                {codeP2A && <span className="text-amber-400 font-mono font-extrabold mr-1">[{codeP2A}]</span>}
                 {p2A.name}
               </span>
             )}
@@ -129,12 +141,14 @@ export const CourtMatchCard: React.FC<CourtMatchCardProps> = ({
               : "bg-muted/30 border-border/40"
           }`}
         >
-          <div className="flex flex-col">
-            <span className="text-sm font-bold text-foreground">
+          <div className="flex flex-col truncate">
+            <span className="text-sm font-bold text-foreground truncate">
+              {codeP1B && <span className="text-amber-400 font-mono font-extrabold mr-1">[{codeP1B}]</span>}
               {p1B?.name ?? "Jogador 2"}
             </span>
             {p2B && (
-              <span className="text-sm font-bold text-foreground">
+              <span className="text-sm font-bold text-foreground truncate">
+                {codeP2B && <span className="text-amber-400 font-mono font-extrabold mr-1">[{codeP2B}]</span>}
                 {p2B.name}
               </span>
             )}
