@@ -528,11 +528,15 @@ export const MiniligaSection: React.FC = () => {
   };
 
   const handleResetSession = () => {
-    if (window.confirm("Deseja realmente reiniciar a Miniliga?")) {
+    if (
+      window.confirm(
+        "⚠️ ATENÇÃO: Deseja realmente zerar a Miniliga?\n\nTodos os dados da sessão ativa, placares registrados e a escalação atual dos participantes serão deletados permanentemente."
+      )
+    ) {
       miniligaStorage.clearActiveSession();
       setSession(null);
       setCustomPlayers([]);
-      toast.info("Pronto para configurar ou simular uma nova Miniliga!");
+      toast.info("Dados da Miniliga deletados com sucesso. Pronto para iniciar uma nova configuração!");
     }
   };
 
@@ -1081,9 +1085,6 @@ export const MiniligaSection: React.FC = () => {
                           <Badge className="bg-amber-500 text-black font-black text-xs px-3 py-1 uppercase shadow">
                             {isFinal ? "🏆 GRANDE FINAL (PLAYOFFS)" : "🏆 SEMIFINAIS (PLAYOFFS)"}
                           </Badge>
-                          <Badge variant="outline" className="font-mono text-amber-300 border-amber-500/40 bg-zinc-900/60 font-bold text-xs gap-1">
-                            <Clock className="w-3 h-3 text-amber-400" /> {isFinal ? "21h10" : "21h00"}
-                          </Badge>
                         </div>
                         {session.currentRound < session.totalRounds && (
                           <Button
@@ -1111,9 +1112,6 @@ export const MiniligaSection: React.FC = () => {
                         <div className="flex items-center gap-2 flex-wrap">
                           <Badge className="bg-sky-500 text-black font-black text-xs px-3 py-1 uppercase shadow gap-1">
                             <Dices className="w-3.5 h-3.5" /> JOGO EXTRA DE SORTEIO
-                          </Badge>
-                          <Badge variant="outline" className="font-mono text-sky-300 border-sky-500/40 bg-sky-950/60 font-bold text-xs gap-1">
-                            <Clock className="w-3 h-3 text-sky-400" /> {cycleInfo.horario}
                           </Badge>
                           <span className="text-xs font-semibold text-zinc-400">
                             Entrada Geral {session.currentRound} de {session.totalRounds}
@@ -1145,9 +1143,6 @@ export const MiniligaSection: React.FC = () => {
                         </Badge>
                         <Badge className="bg-amber-500/20 text-amber-300 border border-amber-500/40 font-black text-xs px-2.5 py-1">
                           ⚡ Bateria {cycleInfo.bateriaIndex} de 2
-                        </Badge>
-                        <Badge variant="outline" className="font-mono text-zinc-300 border-zinc-700 bg-zinc-900/60 font-bold text-xs gap-1">
-                          <Clock className="w-3 h-3 text-amber-400" /> {cycleInfo.horario}
                         </Badge>
                         <span className="text-xs font-semibold text-zinc-400">
                           Entrada Geral {session.currentRound} de {session.totalRounds}

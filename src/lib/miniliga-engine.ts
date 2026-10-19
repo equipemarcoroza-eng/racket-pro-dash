@@ -285,7 +285,7 @@ function generate8PlayersRotativo(p: MiniligaParticipant[]) {
  * Grupo B: B1, B2, B3, B4, B5 (índices 5, 6, 7, 8, 9)
  *
  * 6 Rodadas Oficiais com 2 Baterias cada (2 quadras simultâneas, 4 jogos por rodada) = 24 jogos.
- * 2 Jogos Extras de Sorteio (às 19h57 e 20h52) onde a dupla A5/B4 que folgou enfrenta duplas de apoio sorteadas = 2 jogos.
+ * 2 Jogos Extras de Sorteio onde a dupla A5/B4 que folgou enfrenta duplas de apoio sorteadas = 2 jogos.
  * Total da Fase Classificatória: 26 jogos distribuídos em 14 entradas / baterias.
  * Todos os 10 atletas jogam rigorosamente 10 partidas na fase classificatória!
  */
@@ -707,7 +707,6 @@ export interface Miniliga10PCycleInfo {
   type: "rodada" | "sorteio";
   oficialRound?: number; // 1 a 6
   bateriaIndex?: number; // 1 ou 2
-  horario: string;
   pairsDescription: { tag: string; p1Index: number; p2Index: number; codeA: string; codeB: string }[];
   restingDescription?: { p1Index: number; p2Index: number; codeA: string; codeB: string };
   isSorteio?: boolean;
@@ -720,7 +719,6 @@ export function get10PlayersCycleInfo(roundNumber: number): Miniliga10PCycleInfo
         type: "rodada",
         oficialRound: 1,
         bateriaIndex: 1,
-        horario: "19h15",
         pairsDescription: [
           { tag: "Dupla 1", p1Index: 0, p2Index: 6, codeA: "A1", codeB: "B2" },
           { tag: "Dupla 2", p1Index: 2, p2Index: 7, codeA: "A3", codeB: "B3" },
@@ -734,7 +732,6 @@ export function get10PlayersCycleInfo(roundNumber: number): Miniliga10PCycleInfo
         type: "rodada",
         oficialRound: 1,
         bateriaIndex: 2,
-        horario: "19h22",
         pairsDescription: [
           { tag: "Dupla 1", p1Index: 0, p2Index: 6, codeA: "A1", codeB: "B2" },
           { tag: "Dupla 2", p1Index: 2, p2Index: 7, codeA: "A3", codeB: "B3" },
@@ -748,7 +745,6 @@ export function get10PlayersCycleInfo(roundNumber: number): Miniliga10PCycleInfo
         type: "rodada",
         oficialRound: 2,
         bateriaIndex: 1,
-        horario: "19h29",
         pairsDescription: [
           { tag: "Dupla 1", p1Index: 1, p2Index: 5, codeA: "A2", codeB: "B1" },
           { tag: "Dupla 2", p1Index: 4, p2Index: 6, codeA: "A5", codeB: "B2" },
@@ -762,7 +758,6 @@ export function get10PlayersCycleInfo(roundNumber: number): Miniliga10PCycleInfo
         type: "rodada",
         oficialRound: 2,
         bateriaIndex: 2,
-        horario: "19h36",
         pairsDescription: [
           { tag: "Dupla 1", p1Index: 1, p2Index: 5, codeA: "A2", codeB: "B1" },
           { tag: "Dupla 2", p1Index: 4, p2Index: 6, codeA: "A5", codeB: "B2" },
@@ -776,7 +771,6 @@ export function get10PlayersCycleInfo(roundNumber: number): Miniliga10PCycleInfo
         type: "rodada",
         oficialRound: 3,
         bateriaIndex: 1,
-        horario: "19h43",
         pairsDescription: [
           { tag: "Dupla 1", p1Index: 0, p2Index: 7, codeA: "A1", codeB: "B3" },
           { tag: "Dupla 2", p1Index: 2, p2Index: 9, codeA: "A3", codeB: "B5" },
@@ -790,7 +784,6 @@ export function get10PlayersCycleInfo(roundNumber: number): Miniliga10PCycleInfo
         type: "rodada",
         oficialRound: 3,
         bateriaIndex: 2,
-        horario: "19h50",
         pairsDescription: [
           { tag: "Dupla 1", p1Index: 0, p2Index: 7, codeA: "A1", codeB: "B3" },
           { tag: "Dupla 2", p1Index: 2, p2Index: 9, codeA: "A3", codeB: "B5" },
@@ -802,7 +795,6 @@ export function get10PlayersCycleInfo(roundNumber: number): Miniliga10PCycleInfo
     case 7:
       return {
         type: "sorteio",
-        horario: "19h57",
         isSorteio: true,
         pairsDescription: [
           { tag: "Dupla que Folgou", p1Index: 4, p2Index: 8, codeA: "A5", codeB: "B4" },
@@ -814,7 +806,6 @@ export function get10PlayersCycleInfo(roundNumber: number): Miniliga10PCycleInfo
         type: "rodada",
         oficialRound: 4,
         bateriaIndex: 1,
-        horario: "20h10",
         pairsDescription: [
           { tag: "Dupla 1", p1Index: 0, p2Index: 8, codeA: "A1", codeB: "B4" },
           { tag: "Dupla 2", p1Index: 4, p2Index: 5, codeA: "A5", codeB: "B1" },
@@ -828,7 +819,6 @@ export function get10PlayersCycleInfo(roundNumber: number): Miniliga10PCycleInfo
         type: "rodada",
         oficialRound: 4,
         bateriaIndex: 2,
-        horario: "20h17",
         pairsDescription: [
           { tag: "Dupla 1", p1Index: 0, p2Index: 8, codeA: "A1", codeB: "B4" },
           { tag: "Dupla 2", p1Index: 4, p2Index: 5, codeA: "A5", codeB: "B1" },
@@ -842,7 +832,6 @@ export function get10PlayersCycleInfo(roundNumber: number): Miniliga10PCycleInfo
         type: "rodada",
         oficialRound: 5,
         bateriaIndex: 1,
-        horario: "20h24",
         pairsDescription: [
           { tag: "Dupla 1", p1Index: 0, p2Index: 5, codeA: "A1", codeB: "B1" },
           { tag: "Dupla 2", p1Index: 1, p2Index: 8, codeA: "A2", codeB: "B4" },
@@ -856,7 +845,6 @@ export function get10PlayersCycleInfo(roundNumber: number): Miniliga10PCycleInfo
         type: "rodada",
         oficialRound: 5,
         bateriaIndex: 2,
-        horario: "20h31",
         pairsDescription: [
           { tag: "Dupla 1", p1Index: 0, p2Index: 5, codeA: "A1", codeB: "B1" },
           { tag: "Dupla 2", p1Index: 1, p2Index: 8, codeA: "A2", codeB: "B4" },
@@ -870,7 +858,6 @@ export function get10PlayersCycleInfo(roundNumber: number): Miniliga10PCycleInfo
         type: "rodada",
         oficialRound: 6,
         bateriaIndex: 1,
-        horario: "20h38",
         pairsDescription: [
           { tag: "Dupla 1", p1Index: 2, p2Index: 5, codeA: "A3", codeB: "B1" },
           { tag: "Dupla 2", p1Index: 0, p2Index: 9, codeA: "A1", codeB: "B5" },
@@ -884,7 +871,6 @@ export function get10PlayersCycleInfo(roundNumber: number): Miniliga10PCycleInfo
         type: "rodada",
         oficialRound: 6,
         bateriaIndex: 2,
-        horario: "20h45",
         pairsDescription: [
           { tag: "Dupla 1", p1Index: 2, p2Index: 5, codeA: "A3", codeB: "B1" },
           { tag: "Dupla 2", p1Index: 0, p2Index: 9, codeA: "A1", codeB: "B5" },
@@ -896,7 +882,6 @@ export function get10PlayersCycleInfo(roundNumber: number): Miniliga10PCycleInfo
     case 14:
       return {
         type: "sorteio",
-        horario: "20h52",
         isSorteio: true,
         pairsDescription: [
           { tag: "Dupla que Folgou", p1Index: 4, p2Index: 8, codeA: "A5", codeB: "B4" },
@@ -906,7 +891,6 @@ export function get10PlayersCycleInfo(roundNumber: number): Miniliga10PCycleInfo
     default:
       return {
         type: "rodada",
-        horario: "21h00",
         pairsDescription: [],
       };
   }

@@ -2,7 +2,7 @@ import React from "react";
 import { MiniligaMatch, MiniligaParticipant, MiniligaModelType, MiniligaParticipantCount } from "@/types/miniliga";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, Trophy, Zap, AlertCircle, Layers, Users, Clock, Dices } from "lucide-react";
+import { CheckCircle2, Trophy, Zap, AlertCircle, Layers, Users, Dices } from "lucide-react";
 import { get8PlayersCycleInfo, get10PlayersCycleInfo, getPlayerGroupCode } from "@/lib/miniliga-engine";
 
 interface AllMatchesOverviewProps {
@@ -46,8 +46,7 @@ export const AllMatchesOverview: React.FC<AllMatchesOverviewProps> = ({
     roundNum: number,
     roundMatches: MiniligaMatch[],
     bateriaNumberInCycle?: number,
-    totalBateriasInCycle?: number,
-    horario?: string
+    totalBateriasInCycle?: number
   ) => {
     if (!roundMatches || roundMatches.length === 0) return null;
     const roundCompleted = roundMatches.every((m) => m.isCompleted);
@@ -69,12 +68,6 @@ export const AllMatchesOverview: React.FC<AllMatchesOverviewProps> = ({
                 ⚡ Bateria {bateriaNumberInCycle} de {totalBateriasInCycle ?? 3}
               </Badge>
             ) : null}
-
-            {horario && (
-              <Badge variant="outline" className="font-mono text-zinc-300 border-zinc-700 bg-zinc-900/60 font-bold text-xs gap-1">
-                <Clock className="w-3 h-3 text-amber-400" /> {horario}
-              </Badge>
-            )}
 
             <Badge
               className={`font-black text-xs px-2.5 py-0.5 ${
@@ -363,14 +356,14 @@ export const AllMatchesOverview: React.FC<AllMatchesOverviewProps> = ({
   if (is10PIntergrupos) {
     // Blocos ordenados conforme a tabela oficial do Marco Roza
     const blocks = [
-      { type: "rodada", oficialRound: 1, r1: 1, r2: 2, h1: "19h15", h2: "19h22" },
-      { type: "rodada", oficialRound: 2, r1: 3, r2: 4, h1: "19h29", h2: "19h36" },
-      { type: "rodada", oficialRound: 3, r1: 5, r2: 6, h1: "19h43", h2: "19h50" },
-      { type: "sorteio", roundNum: 7, horario: "19h57", label: "Sorteio 1 (Equilíbrio de Jogos A5/B4)" },
-      { type: "rodada", oficialRound: 4, r1: 8, r2: 9, h1: "20h10", h2: "20h17" },
-      { type: "rodada", oficialRound: 5, r1: 10, r2: 11, h1: "20h24", h2: "20h31" },
-      { type: "rodada", oficialRound: 6, r1: 12, r2: 13, h1: "20h38", h2: "20h45" },
-      { type: "sorteio", roundNum: 14, horario: "20h52", label: "Sorteio 2 (Equilíbrio de Jogos A5/B4)" },
+      { type: "rodada", oficialRound: 1, r1: 1, r2: 2 },
+      { type: "rodada", oficialRound: 2, r1: 3, r2: 4 },
+      { type: "rodada", oficialRound: 3, r1: 5, r2: 6 },
+      { type: "sorteio", roundNum: 7, label: "Sorteio 1 (Equilíbrio de Jogos A5/B4)" },
+      { type: "rodada", oficialRound: 4, r1: 8, r2: 9 },
+      { type: "rodada", oficialRound: 5, r1: 10, r2: 11 },
+      { type: "rodada", oficialRound: 6, r1: 12, r2: 13 },
+      { type: "sorteio", roundNum: 14, label: "Sorteio 2 (Equilíbrio de Jogos A5/B4)" },
     ];
 
     // Jogos de Semifinais e Finais (se existirem na sessão)
@@ -386,7 +379,7 @@ export const AllMatchesOverview: React.FC<AllMatchesOverviewProps> = ({
               Tabela de Jogos - Mini Liga Mista / Reposições (Método Marco Roza - 10 Participantes)
             </span>
             <p className="text-zinc-400">
-              A competição conta com <strong className="text-amber-300">6 Rodadas Oficiais</strong> de 2 baterias cada e <strong className="text-amber-300">2 Jogos Extras de Sorteio</strong> (19h57 e 20h52) para a dupla que folgou. Total de 26 confrontos na classificatória, garantindo exatamente <strong className="text-amber-300">10 jogos para cada um dos 10 participantes</strong>. Seguido de Semifinais (1ºA+1ªB vs 4ºA+4ªB e 2ºA+2ªB vs 3ºA+3ªB) e Grande Final!
+              A competição conta com <strong className="text-amber-300">6 Rodadas Oficiais</strong> de 2 baterias cada e <strong className="text-amber-300">2 Jogos Extras de Sorteio</strong> para a dupla que folgou. Total de 26 confrontos na classificatória, garantindo exatamente <strong className="text-amber-300">10 jogos para cada um dos 10 participantes</strong>. Seguido de Semifinais (1ºA+1ªB vs 4ºA+4ªB e 2ºA+2ªB vs 3ºA+3ªB) e Grande Final!
             </p>
           </div>
         </div>
@@ -408,9 +401,6 @@ export const AllMatchesOverview: React.FC<AllMatchesOverviewProps> = ({
                     <Badge className="bg-sky-500 text-black font-black text-xs px-2.5 py-0.5 shadow uppercase tracking-wide gap-1">
                       <Dices className="w-3.5 h-3.5" /> JOGO EXTRA DE SORTEIO
                     </Badge>
-                    <Badge variant="outline" className="font-mono text-sky-300 border-sky-500/40 bg-sky-950/60 font-bold text-xs gap-1">
-                      <Clock className="w-3 h-3 text-sky-400" /> {b.horario}
-                    </Badge>
                     <span className="text-xs font-semibold text-zinc-400">
                       Entrada Geral {b.roundNum} de {totalRounds}
                     </span>
@@ -428,7 +418,7 @@ export const AllMatchesOverview: React.FC<AllMatchesOverviewProps> = ({
                 </div>
 
                 <div className="pt-1">
-                  {renderBateriaCard(b.roundNum!, roundMatches, undefined, undefined, b.horario)}
+                  {renderBateriaCard(b.roundNum!, roundMatches)}
                 </div>
               </div>
             );
@@ -460,7 +450,7 @@ export const AllMatchesOverview: React.FC<AllMatchesOverviewProps> = ({
                       <h3 className="text-base font-extrabold tracking-tight flex items-center gap-2">
                         Rodada Oficial {b.oficialRound} de 6
                         <span className="text-xs font-semibold text-zinc-400">
-                          (Horários: {b.h1} e {b.h2} • 2 Baterias nas Quadras 1 e 2)
+                          (2 Baterias nas Quadras 1 e 2)
                         </span>
                       </h3>
                       <p className="text-xs text-zinc-400">
@@ -525,8 +515,8 @@ export const AllMatchesOverview: React.FC<AllMatchesOverviewProps> = ({
 
               {/* As 2 Baterias da Rodada Oficial */}
               <div className="space-y-3">
-                {renderBateriaCard(b.r1!, matchesR1, 1, 2, b.h1)}
-                {renderBateriaCard(b.r2!, matchesR2, 2, 2, b.h2)}
+                {renderBateriaCard(b.r1!, matchesR1, 1, 2)}
+                {renderBateriaCard(b.r2!, matchesR2, 2, 2)}
               </div>
             </div>
           );
@@ -544,7 +534,7 @@ export const AllMatchesOverview: React.FC<AllMatchesOverviewProps> = ({
                   Fase Final / Playoffs (Método Oficial Marco Roza)
                 </h3>
                 <p className="text-xs text-zinc-400">
-                  Semifinais (21h00): 1ºA+1ªB vs 4ºA+4ªB e 2ºA+2ªB vs 3ºA+3ªB • Grande Final (21h10)
+                  Semifinais: 1ºA+1ªB vs 4ºA+4ªB e 2ºA+2ªB vs 3ºA+3ªB • Grande Final
                 </p>
               </div>
             </div>
