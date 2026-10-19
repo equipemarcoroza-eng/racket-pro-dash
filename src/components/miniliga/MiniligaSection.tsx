@@ -24,6 +24,12 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   Trophy,
   Users,
   Play,
@@ -64,6 +70,12 @@ export const MiniligaSection: React.FC = () => {
 
   // Modo de visualização de jogos: "todos" (visão panorâmica de 1 por 1) ou "rodada" (foco com cronômetro)
   const [matchViewMode, setMatchViewMode] = useState<"todos" | "rodada">("todos");
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [historyList, setHistoryList] = useState<MiniligaSession[]>(() => miniligaStorage.getHistory());
+
+  const refreshHistory = () => {
+    setHistoryList(miniligaStorage.getHistory());
+  };
 
   // Auto-salvamento resiliente no localStorage
   useEffect(() => {
@@ -491,51 +503,64 @@ export const MiniligaSection: React.FC = () => {
           </div>
         </div>
 
-        {session && (
-          <div className="flex items-center gap-2 flex-wrap">
-            {session.isSimulation && (
-              <>
-                <Button
-                  onClick={handleGenerateRandomScores}
-                  variant="outline"
-                  size="sm"
-                  className="gap-1.5 border-sky-500/40 text-sky-400 hover:bg-sky-500/10 text-xs font-bold"
-                >
-                  <Dices className="w-3.5 h-3.5" />
-                  Auto-Preencher Resultados
-                </Button>
-
-                <Button
-                  onClick={handlePromoteToReal}
-                  size="sm"
-                  className="gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md"
-                >
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                  Ativar Modo Real
-                </Button>
-              </>
-            )}
-
             <Button
-              onClick={() => setSummaryModalOpen(true)}
+              onClick={() => {
+                refreshHistory();
+                setHistoryOpen(true);
+              }}
               variant="outline"
               size="sm"
-              className="gap-2 border-amber-500/40 text-amber-300 hover:bg-amber-500/10 font-bold"
+              className="gap-1.5 border-border/80 text-foreground hover:bg-muted font-bold text-xs"
             >
-              <Trophy className="w-4 h-4 text-amber-400" />
-              Pódio & XP
+              <RotateCcw className="w-3.5 h-3.5" />
+              Histórico ({historyList.length})
             </Button>
-            <Button
-              onClick={handleResetSession}
-              variant="ghost"
-              size="sm"
-              className="gap-2 text-muted-foreground hover:text-rose-400"
-            >
-              <RotateCcw className="w-4 h-4" />
-              Reiniciar
-            </Button>
-          </div>
-        )}
+
+            {session && (
+              <div className="flex items-center gap-2 flex-wrap">
+                {session.isSimulation && (
+                  <>
+                    <Button
+                      onClick={handleGenerateRandomScores}
+                      variant="outline"
+                      size="sm"
+                      className="gap-1.5 border-sky-500/40 text-sky-400 hover:bg-sky-500/10 text-xs font-bold"
+                    >
+                      <Dices className="w-3.5 h-3.5" />
+                      Auto-Preencher Resultados
+                    </Button>
+
+                    <Button
+                      onClick={handlePromoteToReal}
+                      size="sm"
+                      className="gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md"
+                    >
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      Ativar Modo Real
+                    </Button>
+                  </>
+                )}
+
+                <Button
+                  onClick={() => setSummaryModalOpen(true)}
+                  variant="outline"
+                  size="sm"
+                  className="gap-2 border-amber-500/40 text-amber-300 hover:bg-amber-500/10 font-bold"
+                >
+                  <Trophy className="w-4 h-4 text-amber-400" />
+                  Pódio & XP
+                </Button>
+                <Button
+                  onClick={handleResetSession}
+                  variant="ghost"
+                  size="sm"
+                  className="gap-2 text-muted-foreground hover:text-rose-400"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                  Reiniciar
+                </Button>
+              </div>
+            )}
       </div>
 
       {/* SETUP (QUANDO NÃO HÁ SESSÃO ATIVA) */}
@@ -896,6 +921,94 @@ export const MiniligaSection: React.FC = () => {
           isSavingPoints={isSavingPoints}
         />
       )}
+
+      {/* MODAL DE HISTÓRICO E EDIÇÃO */}
+      <Dialog open={historyOpen} onOpenChange={setHistoryOpen}>
+        <DialogContent className="max-w-3xl bg-card border-border shadow-2xl p-6">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-black text-foreground flex items-center gap-2">
+              <Trophy className="w-5 h-5 text-amber-400" /> Histórico de Miniligas Salvas
+            </DialogTitle>
+          </DialogHeader>
+
+          {historyList.length === 0 ? (
+            <div className="text-center py-12 text-sm text-muted-foreground">
+              Nenhuma Miniliga salva no histórico ainda. Quando você concluir uma sessão no Modo Real ou salvar, ela aparecerá aqui para consulta e reedição!
+            </div>
+          ) : (
+            <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-1">
+              {historyList.map((h) => {
+                const champ = h.participants[0];
+                const vice = h.participants[1];
+                return (
+                  <div
+                    key={h.id}
+                    className="p-4 rounded-xl border border-border/80 bg-muted/20 hover:bg-muted/40 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                  >
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-extrabold text-sm text-foreground">
+                          {h.title}
+                        </span>
+                        <Badge variant="outline" className="text-[10px]">
+                          {h.participantCount} Atletas
+                        </Badge>
+                        {h.isSimulation && (
+                          <Badge className="bg-sky-500/20 text-sky-400 border border-sky-500/30 text-[10px]">
+                            Simulação
+                          </Badge>
+                        )}
+                      </div>
+
+                      <div className="text-xs text-muted-foreground flex items-center gap-3">
+                        <span>📅 {new Date(h.date).toLocaleDateString("pt-BR")}</span>
+                        {champ && (
+                          <span className="font-bold text-amber-400">
+                            🥇 1º {champ.name} ({champ.totalScore} pts)
+                          </span>
+                        )}
+                        {vice && (
+                          <span className="text-slate-300">
+                            🥈 2º {vice.name}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          setSession(h);
+                          setHistoryOpen(false);
+                          toast.success(`Miniliga "${h.title}" carregada na mesa para consulta e edição!`);
+                        }}
+                        className="h-8 text-xs font-bold gap-1 bg-primary text-primary-foreground"
+                      >
+                        Reabrir / Editar
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => {
+                          if (window.confirm(`Excluir "${h.title}" do histórico?`)) {
+                            miniligaStorage.deleteFromHistory(h.id);
+                            refreshHistory();
+                            toast.info("Registro removido do histórico.");
+                          }
+                        }}
+                        className="h-8 text-xs text-muted-foreground hover:text-rose-400 p-2"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

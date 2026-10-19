@@ -51,4 +51,14 @@ export const miniligaStorage = {
       console.warn("Falha ao salvar histórico da Miniliga:", e);
     }
   },
+
+  deleteFromHistory(sessionId: string): void {
+    try {
+      const history = this.getHistory();
+      const filtered = history.filter((s) => s.id !== sessionId);
+      localStorage.setItem(STORAGE_HISTORY_KEY, JSON.stringify(filtered));
+    } catch (e) {
+      console.warn("Falha ao excluir do histórico da Miniliga:", e);
+    }
+  },
 };
