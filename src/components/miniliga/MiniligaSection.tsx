@@ -370,7 +370,13 @@ export const MiniligaSection: React.FC = () => {
     if (!session || session.participants.length < 2) return false;
     const p1 = session.participants[0];
     const p2 = session.participants[1];
-    return p1.totalScore === p2.totalScore && p1.totalScore > 0;
+    return (
+      p1.wins === p2.wins &&
+      p1.pointsBalance === p2.pointsBalance &&
+      p1.pointsFor === p2.pointsFor &&
+      p1.pointsAgainst === p2.pointsAgainst &&
+      p1.wins > 0
+    );
   }, [session]);
 
   const handleAddTiebreakSimples = () => {

@@ -431,7 +431,12 @@ export const BASE_CONHECIMENTO: IntencaoCopiloto[] = [
         "  - **8 Alunos (2 Quadras):** Modo Intergrupos Oficial Marco Roza (Grupo 1 vs Grupo 2 com 12 rodadas no total divididas em 4 ciclos de 3 jogos: A1 com e1, f1, g1, h1 em confrontos 100% inéditos em 2 quadras) ou Rodízio Geral (7 rodadas perfeitas).\n" +
         "  - **10 Alunos (2 Quadras):** Modelo Oficial Marco Roza (Mini Liga Mista / Reposições) com 6 Rodadas Oficiais de 2 baterias cada + 2 Jogos Extras de Sorteio de Apoio totalizando 26 confrontos (14 entradas), onde cada um dos 10 alunos joga exatamente 10 partidas na fase classificatória, seguido de Semifinais (1ºA+1ªB vs 4ºA+4ªB e 2ºA+2ªB vs 3ºA+3ªB) e Grande Final.\n" +
         "  - **12 Alunos (3 Quadras):** Modelo Oficial Marco Roza com 11 rodadas completas (33 jogos) e 100% de ocupação simultânea (todos jogam 11 vezes, com cada aluno fazendo parceria com os outros 11 alunos exatamente uma vez, zero repetições de duplas ou confrontos).\n" +
-        "• **Regra de Pontuação Oficial do Marco:** `Pontuação Total = Pontos de Jogo Feitos (PP) + Vitórias (1 pt por vitória)`.\n" +
+        "• **Critérios Oficiais de Classificação Marco Roza (Todos os Formatos):**\n" +
+        "  - 1º Critério: Número de Vitórias (V). Quando houver Semifinal e Final, soma-se 3 pontos nas vitórias (+3 vitórias por vitória em semi e final)!\n" +
+        "  - 2º Critério: Saldo de Games (Saldo = Games Pró - Games Contra).\n" +
+        "  - 3º Critério: Número de Games Vencidos (Games Pró / GP).\n" +
+        "  - 4º Critério: Menor Número de Games Perdidos (Games Contra / GC).\n" +
+        "  - *Total Geral da Tabela:* `Games Pró + Vitórias`.\n" +
         "• **Desempates & Finais Especiais:**\n" +
         "  - *Empate no 1º lugar:* Partida Extra de Simples (1º vs 2º) para decidir o título na bola!\n" +
         "  - *Tempo de sobra na aula:* Grande Final cruzada entre duplas (1º+3º vs 2º+4º).\n" +

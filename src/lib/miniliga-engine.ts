@@ -513,6 +513,9 @@ export function recalculateMiniligaStandings(
     // seus pontos contam para os atletas que completam seu 5º jogo, mas não somam como 6º jogo para a dupla sorteada
     const supportIds = new Set(m.supportPairPlayerIds || []);
 
+    // Regra Marco Roza: Quando tiver semifinal e final, soma-se 3 pontos nas vitórias de cada semifinal e final
+    const winPoints = (m.isSemifinal || m.isBonusFinal) ? 3 : 1;
+
     // Team A
     teamAPlayers.forEach((pId) => {
       if (supportIds.has(pId)) return; // Não contabiliza jogo a mais para a dupla sorteada de apoio
@@ -521,7 +524,7 @@ export function recalculateMiniligaStandings(
         curr.matchesPlayed++;
         curr.pointsFor += m.scoreA!;
         curr.pointsAgainst += m.scoreB!;
-        if (aWon) curr.wins++;
+        if (aWon) curr.wins += winPoints;
         else if (bWon) curr.losses++;
       }
     });
@@ -534,7 +537,7 @@ export function recalculateMiniligaStandings(
         curr.matchesPlayed++;
         curr.pointsFor += m.scoreB!;
         curr.pointsAgainst += m.scoreA!;
-        if (bWon) curr.wins++;
+        if (bWon) curr.wins += winPoints;
         else if (aWon) curr.losses++;
       }
     });
@@ -544,7 +547,7 @@ export function recalculateMiniligaStandings(
   const updated = participants.map((p) => {
     const s = statsMap.get(p.id)!;
     const balance = s.pointsFor - s.pointsAgainst;
-    // REGRA DE OURO DO MARCO ROZA: Pontos de Jogo + Vitórias
+    // Total Geral: Games Vencidos (Pró) + Vitórias
     const totalScore = s.pointsFor + s.wins;
 
     return {
@@ -559,12 +562,12 @@ export function recalculateMiniligaStandings(
     };
   });
 
-  // Ordenar por TotalScore decrescente, depois Saldo, depois Pontos Pró
-  updated.sort((a, b) => {
-    if (b.totalScore !== a.totalScore) return b.totalScore - a.totalScore;
-    if (b.pointsBalance !== a.pointsBalance) return b.pointsBalance - a.pointsBalance;
-    return b.pointsFor - a.pointsFor;
-  });
+  // ORDENAÇÃO OFICIAL MARCO ROZA (CRITÉRIOS GERAIS PARA TODOS OS FORMATOS):
+  // 1º critério: Número de vitórias (decrescente)
+  // 2º critério: Saldo de games (decrescente)
+  // 3º critério: Número de games vencidos / pró (decrescente)
+  // 4º critério: Menor número de games perdidos / contra (crescente)
+  updated.sort(compareMiniligaParticipants);
 
   // Atribuir Rank e Pontos do Card (Ex: 1º ganha N, último ganha 1)
   const totalP = updated.length;
@@ -573,6 +576,27 @@ export function recalculateMiniligaStandings(
     rank: idx + 1,
     cardPointsAwarded: Math.max(1, totalP - idx),
   }));
+}
+
+/**
+ * COMPARADOR OFICIAL DE CLASSIFICAÇÃO MARCO ROZA:
+ * 1º Critério: Número de Vitórias (decrescente)
+ * 2º Critério: Saldo de Games (decrescente)
+ * 3º Critério: Número de Games Vencidos / Pró (decrescente)
+ * 4º Critério: Menor Número de Games Perdidos / Contra (crescente)
+ * Desempate estável: TotalScore (Games Pró + Vitórias)
+ */
+export function compareMiniligaParticipants(a: MiniligaParticipant, b: MiniligaParticipant): number {
+  // 1º critério: Número de vitórias
+  if (b.wins !== a.wins) return b.wins - a.wins;
+  // 2º critério: Saldo de games
+  if (b.pointsBalance !== a.pointsBalance) return b.pointsBalance - a.pointsBalance;
+  // 3º critério: Número de games vencidos
+  if (b.pointsFor !== a.pointsFor) return b.pointsFor - a.pointsFor;
+  // 4º critério: Menor número de games perdidos
+  if (a.pointsAgainst !== b.pointsAgainst) return a.pointsAgainst - b.pointsAgainst;
+  // Desempate estável
+  return b.totalScore - a.totalScore;
 }
 
 /**
@@ -906,15 +930,9 @@ export function create10PlayersSemifinalsMatches(
   standings: MiniligaParticipant[],
   nextRoundNumber: number
 ): MiniligaMatch[] {
-  // Ordenar cada grupo rigorosamente pela regra do Marco Roza (TotalScore, Saldo, Pontos Pró)
-  const sortByScore = (a: MiniligaParticipant, b: MiniligaParticipant) => {
-    if (b.totalScore !== a.totalScore) return b.totalScore - a.totalScore;
-    if (b.pointsBalance !== a.pointsBalance) return b.pointsBalance - a.pointsBalance;
-    return b.pointsFor - a.pointsFor;
-  };
-
-  const groupA = standings.filter((p) => p.groupNumber === 1).sort(sortByScore);
-  const groupB = standings.filter((p) => p.groupNumber === 2).sort(sortByScore);
+  // Ordenar cada grupo rigorosamente pelos 4 critérios oficiais do Marco Roza
+  const groupA = standings.filter((p) => p.groupNumber === 1).sort(compareMiniligaParticipants);
+  const groupB = standings.filter((p) => p.groupNumber === 2).sort(compareMiniligaParticipants);
 
   if (groupA.length < 4 || groupB.length < 4) return [];
 

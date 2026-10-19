@@ -3,6 +3,7 @@ import { MiniligaParticipant } from "@/types/miniliga";
 import { Trophy, Flame, Sparkles, Users, Award } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { compareMiniligaParticipants } from "@/lib/miniliga-engine";
 
 interface MiniligaStandingsTableProps {
   standings: MiniligaParticipant[];
@@ -19,16 +20,12 @@ export const MiniligaStandingsTable: React.FC<MiniligaStandingsTableProps> = ({
 
   const [viewMode, setViewMode] = useState<"geral" | "grupos">("geral");
 
-  const sortByScore = (a: MiniligaParticipant, b: MiniligaParticipant) => {
-    if (b.totalScore !== a.totalScore) return b.totalScore - a.totalScore;
-    if (b.pointsBalance !== a.pointsBalance) return b.pointsBalance - a.pointsBalance;
-    return b.pointsFor - a.pointsFor;
-  };
-
-  const groupA = standings.filter((p) => p.groupNumber === 1).sort(sortByScore);
-  const groupB = standings.filter((p) => p.groupNumber === 2).sort(sortByScore);
+  const groupA = standings.filter((p) => p.groupNumber === 1).sort(compareMiniligaParticipants);
+  const groupB = standings.filter((p) => p.groupNumber === 2).sort(compareMiniligaParticipants);
 
   const renderTableRows = (list: MiniligaParticipant[], isGroupA?: boolean, isGroupB?: boolean) => {
+    const isGroup = isGroupA || isGroupB;
+
     return list.map((p, idx) => {
       const isFirst = idx === 0;
       const isSecond = idx === 1;
@@ -61,17 +58,17 @@ export const MiniligaStandingsTable: React.FC<MiniligaStandingsTableProps> = ({
           }`}
         >
           {/* Posição */}
-          <td className="py-3.5 px-4 text-center">
+          <td className="py-3 px-3 text-center">
             {isFirst ? (
-              <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-amber-500 text-black font-black text-xs shadow-md shadow-amber-500/30">
+              <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-amber-500 text-black font-black text-xs shadow-md shadow-amber-500/30">
                 1º
               </span>
             ) : isSecond ? (
-              <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-slate-300 text-black font-bold text-xs shadow-sm">
+              <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-slate-300 text-black font-bold text-xs shadow-sm">
                 2º
               </span>
             ) : isThird ? (
-              <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-amber-700/80 text-white font-bold text-xs">
+              <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-amber-700/80 text-white font-bold text-xs">
                 3º
               </span>
             ) : (
@@ -82,17 +79,17 @@ export const MiniligaStandingsTable: React.FC<MiniligaStandingsTableProps> = ({
           </td>
 
           {/* Nome do Aluno */}
-          <td className="py-3.5 px-4 font-semibold text-foreground">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-primary/30 to-primary/10 border border-primary/20 flex items-center justify-center text-xs font-black text-primary shrink-0">
+          <td className="py-3 px-3 font-semibold text-foreground">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-primary/30 to-primary/10 border border-primary/20 flex items-center justify-center text-xs font-black text-primary shrink-0">
                 {p.name.charAt(0)}
               </div>
               <div className="flex flex-col">
-                <span className="truncate max-w-[140px] sm:max-w-[200px]">
+                <span className="truncate max-w-[130px] sm:max-w-[190px]">
                   {p.name}
                 </span>
                 <div className="flex items-center gap-1.5 mt-0.5">
-                  {p.groupNumber && (
+                  {!isGroup && p.groupNumber && (
                     <span className="text-[10px] text-muted-foreground">
                       Grupo {p.groupNumber === 1 ? "A" : "B"}
                     </span>
@@ -107,23 +104,27 @@ export const MiniligaStandingsTable: React.FC<MiniligaStandingsTableProps> = ({
             </div>
           </td>
 
-          {/* Estatísticas */}
-          <td className="py-3.5 px-3 text-center text-muted-foreground">
+          {/* Estatísticas com os 4 Critérios Oficiais */}
+          <td className="py-3 px-2 text-center text-muted-foreground text-xs" title="Jogos Disputados">
             {p.matchesPlayed}
           </td>
-          <td className="py-3.5 px-3 text-center text-emerald-400 font-bold">
+          {/* 1º Critério: Vitórias */}
+          <td className="py-3 px-2 text-center text-emerald-400 font-extrabold text-xs" title="1º Critério: Vitórias (Semifinal/Final = +3)">
             {p.wins}
           </td>
-          <td className="py-3.5 px-3 text-center text-rose-400/80">
+          <td className="py-3 px-2 text-center text-rose-400/80 text-xs" title="Derrotas">
             {p.losses}
           </td>
-          <td className="py-3.5 px-3 text-center font-mono text-xs">
+          {/* 3º Critério: Games Pró */}
+          <td className="py-3 px-2 text-center font-mono text-xs text-foreground/90 font-semibold" title="3º Critério: Games Vencidos (Pró)">
             {p.pointsFor}
           </td>
-          <td className="py-3.5 px-3 text-center font-mono text-xs text-muted-foreground">
+          {/* 4º Critério: Games Contra */}
+          <td className="py-3 px-2 text-center font-mono text-xs text-muted-foreground" title="4º Critério: Menor Games Perdidos (Contra)">
             {p.pointsAgainst}
           </td>
-          <td className="py-3.5 px-3 text-center font-mono text-xs font-semibold">
+          {/* 2º Critério: Saldo de Games */}
+          <td className="py-3 px-2 text-center font-mono text-xs font-bold" title="2º Critério: Saldo de Games">
             <span
               className={
                 p.pointsBalance > 0
@@ -137,18 +138,20 @@ export const MiniligaStandingsTable: React.FC<MiniligaStandingsTableProps> = ({
             </span>
           </td>
 
-          {/* TOTAL GERAL (PP + Vitórias) */}
-          <td className="py-3.5 px-4 text-center font-mono font-black text-base text-amber-400 bg-amber-500/5">
+          {/* TOTAL GERAL (GP + Vitórias) */}
+          <td className="py-3 px-3 text-center font-mono font-black text-sm text-amber-400 bg-amber-500/5" title="Total Geral = Games Pró + Vitórias">
             {p.totalScore}
           </td>
 
-          {/* PONTOS NO ATHLETE CARD */}
-          <td className="py-3.5 px-4 text-center">
-            <Badge className="bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-300 border border-amber-500/30 text-xs font-extrabold gap-1">
-              <Sparkles className="w-3 h-3 text-amber-400" />
-              +{p.cardPointsAwarded} pts
-            </Badge>
-          </td>
+          {/* PONTOS NO ATHLETE CARD (Somente na tabela geral) */}
+          {!isGroup && (
+            <td className="py-3 px-3 text-center">
+              <Badge className="bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-300 border border-amber-500/30 text-xs font-extrabold gap-1">
+                <Sparkles className="w-3 h-3 text-amber-400" />
+                +{p.cardPointsAwarded} pts
+              </Badge>
+            </td>
+          )}
         </tr>
       );
     });
@@ -164,12 +167,12 @@ export const MiniligaStandingsTable: React.FC<MiniligaStandingsTableProps> = ({
           <div>
             <h3 className="font-extrabold text-base sm:text-lg tracking-tight text-foreground flex items-center gap-2">
               Classificação da Miniliga
-              <Badge variant="outline" className="text-xs bg-muted/40 border-border font-normal">
-                Regra Marco Roza: Pontos + Vitórias
+              <Badge variant="outline" className="text-xs bg-muted/40 border-amber-500/30 font-medium text-amber-300">
+                1º Vitórias · 2º Saldo · 3º Games Pró · 4º Menor Contra
               </Badge>
             </h3>
             <p className="text-xs text-muted-foreground">
-              Pontuação atualizada ao vivo a cada bateria
+              Pontuação atualizada ao vivo a cada bateria • Semifinal e Final somam +3 vitórias
             </p>
           </div>
         </div>
@@ -199,7 +202,7 @@ export const MiniligaStandingsTable: React.FC<MiniligaStandingsTableProps> = ({
           {hasTiebreakWarning && (
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-semibold animate-pulse">
               <Flame className="w-3.5 h-3.5" />
-              Empate na liderança!
+              Empate total na liderança!
             </div>
           )}
         </div>
@@ -210,18 +213,18 @@ export const MiniligaStandingsTable: React.FC<MiniligaStandingsTableProps> = ({
           <table className="w-full text-left text-sm">
             <thead className="bg-muted/40 text-muted-foreground text-xs uppercase tracking-wider font-semibold border-b border-border/40">
               <tr>
-                <th className="py-3 px-4 w-12 text-center">Pos</th>
-                <th className="py-3 px-4">Aluno / Atleta</th>
-                <th className="py-3 px-3 text-center" title="Jogos disputados">J</th>
-                <th className="py-3 px-3 text-center text-emerald-400 font-bold" title="Vitórias">V</th>
-                <th className="py-3 px-3 text-center text-rose-400" title="Derrotas">D</th>
-                <th className="py-3 px-3 text-center text-muted-foreground" title="Pontos Pró feitos">PP</th>
-                <th className="py-3 px-3 text-center text-muted-foreground" title="Pontos Contra levados">PC</th>
-                <th className="py-3 px-3 text-center" title="Saldo de Pontos (PP - PC)">Saldo</th>
-                <th className="py-3 px-4 text-center text-amber-400 font-black text-sm bg-amber-500/5">
+                <th className="py-3 px-3 w-12 text-center">Pos</th>
+                <th className="py-3 px-3">Aluno / Atleta</th>
+                <th className="py-3 px-2 text-center" title="Jogos disputados">J</th>
+                <th className="py-3 px-2 text-center text-emerald-400 font-extrabold" title="1º Critério: Vitórias (Semi/Final = +3)">1º V</th>
+                <th className="py-3 px-2 text-center text-rose-400" title="Derrotas">D</th>
+                <th className="py-3 px-2 text-center" title="3º Critério: Games Vencidos (Pró)">3º GP</th>
+                <th className="py-3 px-2 text-center" title="4º Critério: Menor Games Perdidos (Contra)">4º GC</th>
+                <th className="py-3 px-2 text-center text-sky-400 font-bold" title="2º Critério: Saldo de Games (GP - GC)">2º Saldo</th>
+                <th className="py-3 px-3 text-center text-amber-400 font-black text-sm bg-amber-500/5" title="Total Geral (GP + Vitórias)">
                   Total Geral
                 </th>
-                <th className="py-3 px-4 text-center text-xs">Card XP</th>
+                <th className="py-3 px-3 text-center text-xs">Card XP</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border/40 font-medium">
@@ -245,10 +248,14 @@ export const MiniligaStandingsTable: React.FC<MiniligaStandingsTableProps> = ({
               <table className="w-full text-left text-xs">
                 <thead className="bg-muted/30 text-muted-foreground text-[10px] uppercase font-semibold border-b border-border/40">
                   <tr>
-                    <th className="py-2.5 px-3 text-center">Pos</th>
+                    <th className="py-2.5 px-3 text-center w-10">Pos</th>
                     <th className="py-2.5 px-3">Atleta</th>
-                    <th className="py-2.5 px-2 text-center">V</th>
-                    <th className="py-2.5 px-2 text-center">Saldo</th>
+                    <th className="py-2.5 px-2 text-center">J</th>
+                    <th className="py-2.5 px-2 text-center text-emerald-400 font-bold" title="1º: Vitórias">1º V</th>
+                    <th className="py-2.5 px-2 text-center">D</th>
+                    <th className="py-2.5 px-2 text-center" title="3º: Games Pró">3º GP</th>
+                    <th className="py-2.5 px-2 text-center" title="4º: Menor Games Contra">4º GC</th>
+                    <th className="py-2.5 px-2 text-center text-sky-400 font-bold" title="2º: Saldo">2º Saldo</th>
                     <th className="py-2.5 px-3 text-center font-bold text-amber-400">Total</th>
                   </tr>
                 </thead>
@@ -273,10 +280,14 @@ export const MiniligaStandingsTable: React.FC<MiniligaStandingsTableProps> = ({
               <table className="w-full text-left text-xs">
                 <thead className="bg-muted/30 text-muted-foreground text-[10px] uppercase font-semibold border-b border-border/40">
                   <tr>
-                    <th className="py-2.5 px-3 text-center">Pos</th>
+                    <th className="py-2.5 px-3 text-center w-10">Pos</th>
                     <th className="py-2.5 px-3">Atleta</th>
-                    <th className="py-2.5 px-2 text-center">V</th>
-                    <th className="py-2.5 px-2 text-center">Saldo</th>
+                    <th className="py-2.5 px-2 text-center">J</th>
+                    <th className="py-2.5 px-2 text-center text-emerald-400 font-bold" title="1º: Vitórias">1º V</th>
+                    <th className="py-2.5 px-2 text-center">D</th>
+                    <th className="py-2.5 px-2 text-center" title="3º: Games Pró">3º GP</th>
+                    <th className="py-2.5 px-2 text-center" title="4º: Menor Games Contra">4º GC</th>
+                    <th className="py-2.5 px-2 text-center text-sky-400 font-bold" title="2º: Saldo">2º Saldo</th>
                     <th className="py-2.5 px-3 text-center font-bold text-amber-400">Total</th>
                   </tr>
                 </thead>
