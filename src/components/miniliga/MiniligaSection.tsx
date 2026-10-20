@@ -1222,6 +1222,17 @@ export const MiniligaSection: React.FC = () => {
             </div>
           </div>
 
+          {/* CRONÔMETRO OFICIAL DOS JOGOS (Visível e persistente em ambos os modos) */}
+          {session.status !== "finalizada" && (
+            <MatchTimer
+              initialSeconds={session.durationSeconds}
+              isActive={session.status === "em_andamento"}
+              onTimeEnd={() => {
+                toast.info("Tempo de 5 minutos esgotado! Lance os placares da rodada.");
+              }}
+            />
+          )}
+
           {/* MODO 1: TODOS OS JOGOS NA TELA (O QUE VOCÊ PEDIU!) */}
           {matchViewMode === "todos" ? (
             <AllMatchesOverview
@@ -1234,16 +1245,8 @@ export const MiniligaSection: React.FC = () => {
               participantCount={session.participantCount}
             />
           ) : (
-            /* MODO 2: FOCO NA RODADA COM CRONÔMETRO */
+            /* MODO 2: FOCO NA RODADA */
             <div className="space-y-6">
-              <MatchTimer
-                initialSeconds={session.durationSeconds}
-                isActive={session.status === "em_andamento"}
-                onTimeEnd={() => {
-                  toast.info("Tempo de 5 minutos esgotado! Lance os placares da rodada.");
-                }}
-              />
-
               {session.participantCount === 8 && session.modelType === "intergrupos" ? (() => {
                 const isPlayoff = session.currentRound > 12;
 
