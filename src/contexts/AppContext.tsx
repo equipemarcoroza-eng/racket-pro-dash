@@ -165,20 +165,25 @@ const enrollmentToDb = (e: Partial<Enrollment>) => ({
 const dbToAttendance = (r: any): AttendanceLog => ({
   id: r.id,
   alunoId: r.aluno_id,
-  turmaId: r.turma_id,
+  // Presenças de Miniliga não pertencem a uma turma: no banco ficam com turma_id nulo
+  turmaId: r.turma_id ?? "miniliga",
   data: r.data,
   presente: r.presente as AttendanceLog["presente"],
   dataRealizacao: r.data_realizacao,
   motivoCancelamento: r.motivo_cancelamento,
+  miniligaSessionId: r.miniliga_session_id ?? undefined,
+  miniligaPontos: r.miniliga_pontos ?? undefined,
 });
 const attendanceToDb = (a: Partial<AttendanceLog>) => ({
   ...(a.id ? { id: a.id } : {}),
   aluno_id: a.alunoId,
-  turma_id: a.turmaId,
+  turma_id: a.turmaId === "miniliga" ? null : a.turmaId,
   data: a.data,
   presente: a.presente,
   data_realizacao: a.dataRealizacao || null,
   motivo_cancelamento: a.motivoCancelamento || null,
+  miniliga_session_id: a.miniligaSessionId ?? null,
+  miniliga_pontos: a.miniligaPontos ?? null,
 });
 
 const dbToPlan = (r: any): Plan => ({

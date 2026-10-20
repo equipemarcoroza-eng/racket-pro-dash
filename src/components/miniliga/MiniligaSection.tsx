@@ -16,7 +16,7 @@ import {
   create10PlayersSemifinalsMatches,
   create10PlayersFinalMatch,
 } from "@/lib/miniliga-engine";
-import { miniligaStorage } from "@/lib/miniliga-storage";
+import { miniligaStorage, MiniligaCloudStatus } from "@/lib/miniliga-storage";
 import { MatchTimer } from "@/components/miniliga/MatchTimer";
 import { CourtMatchCard } from "@/components/miniliga/CourtMatchCard";
 import { AllMatchesOverview } from "@/components/miniliga/AllMatchesOverview";
@@ -72,6 +72,7 @@ export const MiniligaSection: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [summaryModalOpen, setSummaryModalOpen] = useState(false);
   const [isSavingPoints, setIsSavingPoints] = useState(false);
+  const [cloudStatus, setCloudStatus] = useState<MiniligaCloudStatus>("salvo");
 
   // Modo de visualização de jogos: "todos" (visão panorâmica de 1 por 1) ou "rodada" (foco com cronômetro)
   const [matchViewMode, setMatchViewMode] = useState<"todos" | "rodada">("todos");
@@ -107,6 +108,33 @@ export const MiniligaSection: React.FC = () => {
         });
       }
     });
+
+    miniligaStorage.setStatusListener(setCloudStatus);
+
+    // Tempo real: placares lançados em outro aparelho aparecem aqui sem recarregar
+    const unsubscribe = miniligaStorage.subscribe({
+      onUpsert: (remote) => {
+        setSession((prev) => {
+          if (prev?.isSimulation) return prev;
+          if (!prev) return remote.status === "finalizada" ? prev : remote;
+          if (prev.id !== remote.id) {
+            // Outra Miniliga real começou em outro aparelho: assume se a mesa daqui já terminou
+            return prev.status === "finalizada" && remote.status !== "finalizada" ? remote : prev;
+          }
+          return new Date(remote.updatedAt) > new Date(prev.updatedAt) ? remote : prev;
+        });
+        if (remote.status === "finalizada") refreshHistory();
+      },
+      onDelete: (id) => {
+        setSession((prev) => (prev && !prev.isSimulation && prev.id === id ? null : prev));
+        setHistoryList((prev) => prev.filter((h) => h.id !== id));
+      },
+    });
+
+    return () => {
+      unsubscribe();
+      miniligaStorage.setStatusListener(null);
+    };
   }, []);
 
   // Auto-salvamento resiliente (Local + Lovable Cloud em Modo Real)
@@ -556,6 +584,8 @@ export const MiniligaSection: React.FC = () => {
         updatedAt: new Date().toISOString(),
       };
 
+      // Só segue se a nuvem confirmar a gravação
+      await miniligaStorage.saveCloudNow(finalizedSession);
       miniligaStorage.saveToHistory(finalizedSession);
       miniligaStorage.saveActiveSession(finalizedSession);
 
@@ -563,26 +593,33 @@ export const MiniligaSection: React.FC = () => {
       const newAttendanceLogs = session.participants
         .filter((p) => p.studentId)
         .map((p) => ({
-          id: `att-miniliga-${p.studentId}-${Date.now()}`,
+          id: crypto.randomUUID(),
           alunoId: p.studentId!,
           turmaId: "miniliga",
           data: todayIso,
           presente: "Miniliga" as const,
           dataRealizacao: todayIso,
           motivoCancelamento: `Miniliga: ${p.rank}º lugar (+${p.cardPointsAwarded} pts no Card)`,
+          miniligaSessionId: session.id,
+          miniligaPontos: p.cardPointsAwarded,
         }));
 
-      if (newAttendanceLogs.length > 0) {
-        setAttendanceLogs((prev) => [...prev, ...newAttendanceLogs]);
-      }
+      // Validar de novo (após reabrir) substitui os créditos anteriores desta Miniliga
+      setAttendanceLogs((prev) => [
+        ...prev.filter((l) => l.miniligaSessionId !== session.id),
+        ...newAttendanceLogs,
+      ]);
 
       setSession(finalizedSession);
       refreshHistory();
       toast.success(
-        `🏆 Operação validada com sucesso! Torneio e pontos dos ${session.participants.length} atletas registrados no Lovable Cloud!`
+        `🏆 Miniliga validada! Torneio e pontos dos ${newAttendanceLogs.length} atletas vinculados gravados no Lovable Cloud.`
       );
     } catch (e) {
-      toast.error("Erro ao validar e salvar no Lovable Cloud.");
+      console.error("Erro ao validar Miniliga no Lovable Cloud:", e);
+      toast.error(
+        "Não foi possível gravar no Lovable Cloud. Nada foi creditado; confira a conexão e tente validar de novo."
+      );
     } finally {
       setIsSavingPoints(false);
     }
@@ -612,8 +649,7 @@ export const MiniligaSection: React.FC = () => {
         "⚠️ ATENÇÃO: Deseja realmente zerar a Miniliga?\n\nTodos os dados da sessão ativa, placares registrados e a escalação atual dos participantes serão deletados permanentemente."
       )
     ) {
-      const currentId = session?.id;
-      miniligaStorage.clearActiveSession(currentId);
+      miniligaStorage.clearActiveSession(session);
       setSession(null);
       setCustomPlayers([]);
       toast.info("Dados da Miniliga deletados com sucesso. Pronto para iniciar uma nova configuração!");
@@ -636,9 +672,28 @@ export const MiniligaSection: React.FC = () => {
                   🧪 Modo Sandbox (Local)
                 </Badge>
               ) : (
-                <Badge className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 font-extrabold text-xs flex items-center gap-1.5 shadow-sm">
-                  <Cloud className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
+                <Badge
+                  className={`font-extrabold text-xs flex items-center gap-1.5 shadow-sm border ${
+                    session && cloudStatus === "erro"
+                      ? "bg-rose-500/20 text-rose-400 border-rose-500/40"
+                      : "bg-emerald-500/20 text-emerald-400 border-emerald-500/40"
+                  }`}
+                >
+                  <Cloud
+                    className={`w-3.5 h-3.5 ${
+                      session && cloudStatus === "salvando" ? "animate-pulse" : ""
+                    }`}
+                  />
                   Modo Real Oficial • Lovable Cloud
+                  {session && (
+                    <span className="font-semibold opacity-80">
+                      {cloudStatus === "salvando"
+                        ? "· salvando..."
+                        : cloudStatus === "erro"
+                        ? "· falha ao salvar"
+                        : "· salvo"}
+                    </span>
+                  )}
                 </Badge>
               )}
             </h2>
@@ -1490,10 +1545,30 @@ export const MiniligaSection: React.FC = () => {
                         size="sm"
                         variant="ghost"
                         onClick={async () => {
-                          if (window.confirm(`Excluir "${h.title}" do histórico?`)) {
-                            await miniligaStorage.deleteFromHistory(h.id);
-                            refreshHistory();
-                            toast.info("Registro removido do histórico.");
+                          if (
+                            window.confirm(
+                              `Excluir "${h.title}" do histórico?${
+                                h.isSimulation ? "" : "\n\nOs pontos desta Miniliga também saem dos Cards dos atletas."
+                              }`
+                            )
+                          ) {
+                            try {
+                              await miniligaStorage.deleteFromHistory(h);
+                              if (!h.isSimulation) {
+                                setAttendanceLogs((prev) =>
+                                  prev.filter((l) => l.miniligaSessionId !== h.id)
+                                );
+                              }
+                              if (session?.id === h.id) {
+                                miniligaStorage.clearActiveSession(null);
+                                setSession(null);
+                              }
+                              refreshHistory();
+                              toast.info("Registro removido do histórico.");
+                            } catch (e) {
+                              console.error("Erro ao excluir Miniliga do Lovable Cloud:", e);
+                              toast.error("Não foi possível excluir no Lovable Cloud. Tente novamente.");
+                            }
                           }
                         }}
                         className="h-8 text-xs text-muted-foreground hover:text-rose-400 p-2"

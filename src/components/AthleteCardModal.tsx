@@ -91,7 +91,14 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
     // Contagem de presenças e eventos
     const presencas = studentLogs.filter((l) => l.presente === "Presente").length;
     const reposicoes = studentLogs.filter((l) => l.presente === "Reposição").length;
-    const miniligas = studentLogs.filter((l) => l.presente === "Miniliga").length;
+    const miniligaLogs = studentLogs.filter((l) => l.presente === "Miniliga");
+    const miniligas = miniligaLogs.length;
+    // Pontos de classificação: campo numérico ou, em registros antigos, o texto "(+N pts no Card)"
+    const miniligaPontos = miniligaLogs.reduce((acc, l) => {
+      if (typeof l.miniligaPontos === "number") return acc + l.miniligaPontos;
+      const legado = l.motivoCancelamento?.match(/\+(\d+) pts/);
+      return acc + (legado ? Number(legado[1]) : 0);
+    }, 0);
     const faltas = studentLogs.filter((l) => l.presente === "Falta").length;
 
     const attendedClasses = presencas + reposicoes + miniligas;
@@ -129,6 +136,7 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
       presencas * 25 +
       reposicoes * 35 +
       miniligas * 50 +
+      miniligaPontos * 10 +
       studentResults.length * 75;
     const totalXp = Math.max(50, baseXp);
     const seasonLevel = Math.max(1, Math.floor(totalXp / 100) + 1);

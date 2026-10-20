@@ -42,9 +42,11 @@ export type Database = {
           data: string
           data_realizacao: string | null
           id: string
+          miniliga_pontos: number | null
+          miniliga_session_id: string | null
           motivo_cancelamento: string | null
           presente: string
-          turma_id: string
+          turma_id: string | null
         }
         Insert: {
           aluno_id: string
@@ -52,9 +54,11 @@ export type Database = {
           data: string
           data_realizacao?: string | null
           id?: string
+          miniliga_pontos?: number | null
+          miniliga_session_id?: string | null
           motivo_cancelamento?: string | null
           presente: string
-          turma_id: string
+          turma_id?: string | null
         }
         Update: {
           aluno_id?: string
@@ -62,9 +66,11 @@ export type Database = {
           data?: string
           data_realizacao?: string | null
           id?: string
+          miniliga_pontos?: number | null
+          miniliga_session_id?: string | null
           motivo_cancelamento?: string | null
           presente?: string
-          turma_id?: string
+          turma_id?: string | null
         }
         Relationships: [
           {

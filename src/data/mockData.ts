@@ -69,6 +69,10 @@ export interface AttendanceLog {
   presente: "Presente" | "Falta" | "Cancelado" | "Miniliga" | "Reposição";
   dataRealizacao?: string;
   motivoCancelamento?: string;
+  /** Miniliga que gerou este registro (presente === "Miniliga") */
+  miniligaSessionId?: string;
+  /** Pontos de classificação ganhos na Miniliga (1º lugar recebe mais) */
+  miniligaPontos?: number;
 }
 
 export const mockAttendanceLogs: AttendanceLog[] = [];
