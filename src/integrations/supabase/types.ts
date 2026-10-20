@@ -42,11 +42,9 @@ export type Database = {
           data: string
           data_realizacao: string | null
           id: string
-          miniliga_pontos: number | null
-          miniliga_session_id: string | null
           motivo_cancelamento: string | null
           presente: string
-          turma_id: string | null
+          turma_id: string
         }
         Insert: {
           aluno_id: string
@@ -54,11 +52,9 @@ export type Database = {
           data: string
           data_realizacao?: string | null
           id?: string
-          miniliga_pontos?: number | null
-          miniliga_session_id?: string | null
           motivo_cancelamento?: string | null
           presente: string
-          turma_id?: string | null
+          turma_id: string
         }
         Update: {
           aluno_id?: string
@@ -66,11 +62,9 @@ export type Database = {
           data?: string
           data_realizacao?: string | null
           id?: string
-          miniliga_pontos?: number | null
-          miniliga_session_id?: string | null
           motivo_cancelamento?: string | null
           presente?: string
-          turma_id?: string | null
+          turma_id?: string
         }
         Relationships: [
           {
@@ -206,69 +200,6 @@ export type Database = {
           created_at?: string
           id?: string
           nome?: string
-        }
-        Relationships: []
-      }
-      miniliga_sessions: {
-        Row: {
-          courts_count: number
-          created_at: string
-          current_round: number
-          date: string
-          duration_seconds: number
-          has_bonus_final: boolean
-          has_semifinais: boolean
-          has_tiebreak_simples: boolean
-          id: string
-          is_simulation: boolean
-          matches: Json
-          model_type: string
-          participant_count: number
-          participants: Json
-          status: string
-          title: string
-          total_rounds: number
-          updated_at: string
-        }
-        Insert: {
-          courts_count?: number
-          created_at?: string
-          current_round?: number
-          date: string
-          duration_seconds?: number
-          has_bonus_final?: boolean
-          has_semifinais?: boolean
-          has_tiebreak_simples?: boolean
-          id: string
-          is_simulation?: boolean
-          matches?: Json
-          model_type: string
-          participant_count: number
-          participants?: Json
-          status?: string
-          title: string
-          total_rounds?: number
-          updated_at?: string
-        }
-        Update: {
-          courts_count?: number
-          created_at?: string
-          current_round?: number
-          date?: string
-          duration_seconds?: number
-          has_bonus_final?: boolean
-          has_semifinais?: boolean
-          has_tiebreak_simples?: boolean
-          id?: string
-          is_simulation?: boolean
-          matches?: Json
-          model_type?: string
-          participant_count?: number
-          participants?: Json
-          status?: string
-          title?: string
-          total_rounds?: number
-          updated_at?: string
         }
         Relationships: []
       }
