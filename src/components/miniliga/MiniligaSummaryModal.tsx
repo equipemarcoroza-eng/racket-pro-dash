@@ -44,18 +44,21 @@ export const MiniligaSummaryModal: React.FC<MiniligaSummaryModalProps> = ({
   const isFinalized = session.status === "finalizada";
   const isRealMode = !session.isSimulation;
 
+  const formatWins = (wins?: number) =>
+    `${wins ?? 0} ${(wins ?? 0) === 1 ? "vitória" : "vitórias"}`;
+
   const generateWhatsAppText = () => {
     let text = `🏆 *RESULTADO DA MINILIGA DE BEACH TENNIS* 🏆\n`;
     text += `*Equipe Marco Roza* • ${session.title}\n`;
     text += `📅 ${new Date(session.date).toLocaleDateString("pt-BR")}\n\n`;
 
-    text += `🥇 *CAMPEÃO:* ${champion?.name} (${champion?.totalScore} pts)\n`;
-    if (vice) text += `🥈 *VICE-CAMPEÃO:* ${vice?.name} (${vice?.totalScore} pts)\n`;
-    if (third) text += `🥉 *3º LUGAR:* ${third?.name} (${third?.totalScore} pts)\n\n`;
+    text += `🥇 *CAMPEÃO:* ${champion?.name} (${formatWins(champion?.wins)})\n`;
+    if (vice) text += `🥈 *VICE-CAMPEÃO:* ${vice?.name} (${formatWins(vice?.wins)})\n`;
+    if (third) text += `🥉 *3º LUGAR:* ${third?.name} (${formatWins(third?.wins)})\n\n`;
 
     text += `📊 *CLASSIFICAÇÃO GERAL & XP NO CARD:*\n`;
     standings.forEach((p, idx) => {
-      text += `${idx + 1}º. ${p.name} — ${p.totalScore} pts (+${p.cardPointsAwarded} pts no Card)\n`;
+      text += `${idx + 1}º. ${p.name} — ${formatWins(p.wins)} (+${p.cardPointsAwarded} pts no Card)\n`;
     });
 
     text += `\n🎾 Parabéns a todos pelo ritmo e pela energia em quadra! 🔥`;
@@ -113,7 +116,7 @@ export const MiniligaSummaryModal: React.FC<MiniligaSummaryModalProps> = ({
                 {vice.name}
               </span>
               <span className="text-xs font-black text-amber-400 mt-0.5">
-                {vice.totalScore} pts
+                {formatWins(vice.wins)}
               </span>
               <Badge variant="outline" className="mt-2 text-[10px] text-amber-300 border-amber-500/30">
                 +{vice.cardPointsAwarded} pts Card
@@ -134,7 +137,7 @@ export const MiniligaSummaryModal: React.FC<MiniligaSummaryModalProps> = ({
                 {champion.name}
               </span>
               <span className="text-sm font-black text-amber-400 mt-0.5">
-                {champion.totalScore} pts
+                {formatWins(champion.wins)}
               </span>
               <Badge className="mt-2 text-xs bg-amber-500 text-black font-extrabold shadow-sm">
                 +{champion.cardPointsAwarded} pts Card
@@ -151,7 +154,7 @@ export const MiniligaSummaryModal: React.FC<MiniligaSummaryModalProps> = ({
                 {third.name}
               </span>
               <span className="text-xs font-black text-amber-400 mt-0.5">
-                {third.totalScore} pts
+                {formatWins(third.wins)}
               </span>
               <Badge variant="outline" className="mt-2 text-[10px] text-amber-300 border-amber-500/30">
                 +{third.cardPointsAwarded} pts Card

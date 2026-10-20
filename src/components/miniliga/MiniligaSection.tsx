@@ -1518,7 +1518,7 @@ export const MiniligaSection: React.FC = () => {
                         <span>📅 {new Date(h.date).toLocaleDateString("pt-BR")}</span>
                         {champ && (
                           <span className="font-bold text-amber-400">
-                            🥇 1º {champ.name} ({champ.totalScore} pts)
+                            🥇 1º {champ.name} ({champ.wins ?? 0} {(champ.wins ?? 0) === 1 ? "vitória" : "vitórias"})
                           </span>
                         )}
                         {vice && (
