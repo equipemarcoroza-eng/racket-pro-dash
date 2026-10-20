@@ -51,6 +51,7 @@ import {
   LayoutGrid,
   CheckCircle2,
   Cloud,
+  LogOut,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -643,16 +644,29 @@ export const MiniligaSection: React.FC = () => {
     }
   };
 
+  const handleExitSession = () => {
+    // Desocupa a mesa de trabalho com total segurança: a Miniliga permanece gravada no Histórico e na Nuvem
+    miniligaStorage.clearActiveSession(session);
+    setSession(null);
+    setCustomPlayers([]);
+    toast.success("Mesa liberada! A Miniliga permanece salva com segurança no Histórico e no Lovable Cloud.");
+  };
+
   const handleResetSession = () => {
+    if (session?.status === "finalizada") {
+      handleExitSession();
+      return;
+    }
+
     if (
       window.confirm(
-        "⚠️ ATENÇÃO: Deseja realmente zerar a Miniliga?\n\nTodos os dados da sessão ativa, placares registrados e a escalação atual dos participantes serão deletados permanentemente."
+        "⚠️ ATENÇÃO: Deseja realmente zerar a Miniliga em andamento?\n\nOs dados da sessão ativa, placares registrados e a escalação atual dos participantes serão limpos."
       )
     ) {
       miniligaStorage.clearActiveSession(session);
       setSession(null);
       setCustomPlayers([]);
-      toast.info("Dados da Miniliga deletados com sucesso. Pronto para iniciar uma nova configuração!");
+      toast.info("Dados da Miniliga limpos com sucesso. Pronto para iniciar uma nova configuração!");
     }
   };
 
@@ -750,25 +764,41 @@ export const MiniligaSection: React.FC = () => {
                   <Trophy className="w-4 h-4 text-amber-400" />
                   Pódio & XP
                 </Button>
-                <Button
-                  onClick={handleResetSession}
-                  variant="outline"
-                  size="sm"
-                  className="gap-1.5 border-primary/40 text-primary hover:bg-primary/10 font-bold text-xs"
-                >
-                  <Users className="w-3.5 h-3.5" />
-                  Trocar Participantes
-                </Button>
 
                 <Button
-                  onClick={handleResetSession}
-                  variant="ghost"
+                  onClick={handleExitSession}
+                  variant="outline"
                   size="sm"
-                  className="gap-1.5 text-muted-foreground hover:text-rose-400 text-xs"
+                  className="gap-1.5 border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10 font-bold text-xs"
+                  title="Fechar visualização e voltar para a tela inicial de Miniligas"
                 >
-                  <RotateCcw className="w-3.5 h-3.5" />
-                  Zerar Tudo
+                  <LogOut className="w-3.5 h-3.5" />
+                  {session.status === "finalizada" ? "Sair da Miniliga" : "Liberar Mesa"}
                 </Button>
+
+                {session.status !== "finalizada" && (
+                  <>
+                    <Button
+                      onClick={handleResetSession}
+                      variant="outline"
+                      size="sm"
+                      className="gap-1.5 border-primary/40 text-primary hover:bg-primary/10 font-bold text-xs"
+                    >
+                      <Users className="w-3.5 h-3.5" />
+                      Trocar Participantes
+                    </Button>
+
+                    <Button
+                      onClick={handleResetSession}
+                      variant="ghost"
+                      size="sm"
+                      className="gap-1.5 text-muted-foreground hover:text-rose-400 text-xs"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" />
+                      Zerar Tudo
+                    </Button>
+                  </>
+                )}
               </div>
             )}
       </div>
@@ -1094,7 +1124,17 @@ export const MiniligaSection: React.FC = () => {
                   Reabrir para Ajustes
                 </Button>
                 <Button
-                  onClick={handleResetSession}
+                  onClick={handleExitSession}
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5 border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10 font-bold text-xs"
+                  title="Fechar a visualização desta Miniliga e liberar a mesa para o próximo uso"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                  Sair da Miniliga / Liberar Mesa
+                </Button>
+                <Button
+                  onClick={handleExitSession}
                   size="sm"
                   className="gap-1.5 bg-primary text-primary-foreground font-bold text-xs shadow-md"
                 >
