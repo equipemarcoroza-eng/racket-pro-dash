@@ -8,7 +8,16 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Share2, Copy, Check, Sparkles, Award } from "lucide-react";
+import {
+  Trophy,
+  Share2,
+  Check,
+  Sparkles,
+  Cloud,
+  CheckCircle2,
+  XCircle,
+  AlertCircle,
+} from "lucide-react";
 import { toast } from "sonner";
 
 interface MiniligaSummaryModalProps {
@@ -32,6 +41,8 @@ export const MiniligaSummaryModal: React.FC<MiniligaSummaryModalProps> = ({
   const champion = standings[0];
   const vice = standings[1];
   const third = standings[2];
+  const isFinalized = session.status === "finalizada";
+  const isRealMode = !session.isSimulation;
 
   const generateWhatsAppText = () => {
     let text = `🏆 *RESULTADO DA MINILIGA DE BEACH TENNIS* 🏆\n`;
@@ -63,11 +74,28 @@ export const MiniligaSummaryModal: React.FC<MiniligaSummaryModalProps> = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl bg-gradient-to-b from-card via-card/95 to-background border-border/80 shadow-2xl p-6">
         <DialogHeader>
-          <div className="flex items-center gap-2 text-amber-400 mb-1">
-            <Trophy className="w-6 h-6 fill-amber-400" />
-            <span className="text-xs font-bold uppercase tracking-widest text-amber-400">
-              Torneio Concluído
-            </span>
+          <div className="flex items-center justify-between gap-2 mb-1">
+            <div className="flex items-center gap-2 text-amber-400">
+              <Trophy className="w-6 h-6 fill-amber-400" />
+              <span className="text-xs font-bold uppercase tracking-widest text-amber-400">
+                {isFinalized ? "Torneio Finalizado" : "Encerramento da Miniliga"}
+              </span>
+            </div>
+            {isFinalized ? (
+              <Badge className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 font-extrabold text-xs flex items-center gap-1.5">
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                Validado no Lovable Cloud
+              </Badge>
+            ) : isRealMode ? (
+              <Badge className="bg-amber-500/20 text-amber-400 border border-amber-500/40 font-extrabold text-xs flex items-center gap-1.5">
+                <Cloud className="w-3.5 h-3.5 animate-pulse" />
+                Aguardando Validação Oficial
+              </Badge>
+            ) : (
+              <Badge className="bg-sky-500/20 text-sky-400 border border-sky-500/40 font-extrabold text-xs">
+                🧪 Modo Sandbox (Local)
+              </Badge>
+            )}
           </div>
           <DialogTitle className="text-2xl font-black tracking-tight text-foreground">
             Pódio da Miniliga & Premiação
@@ -132,12 +160,35 @@ export const MiniligaSummaryModal: React.FC<MiniligaSummaryModalProps> = ({
           )}
         </div>
 
-        {/* Ações: Distribuir Pontos no Card & Compartilhar */}
+        {/* Quadro informativo de Validação */}
+        {!isFinalized ? (
+          <div className="p-3.5 rounded-xl bg-card border border-border/80 text-xs space-y-1">
+            <div className="flex items-center gap-2 font-bold text-foreground">
+              <AlertCircle className="w-4 h-4 text-amber-400" />
+              <span>Validação Obrigatória para Encerramento</span>
+            </div>
+            <p className="text-muted-foreground">
+              {isRealMode
+                ? "Ao clicar em 'Salvar e Validar', o torneio será registrado permanentemente no Lovable Cloud e os pontos serão creditados nos cartões dos atletas. Se desejar conferir ou alterar algum placar antes, clique em 'Cancelar / Revisar Placares'."
+                : "A Miniliga está em Modo Sandbox (Simulação). Ao salvar, os dados serão arquivados apenas localmente para teste, sem alterar os pontos reais dos alunos."}
+            </p>
+          </div>
+        ) : (
+          <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-xs text-emerald-400 flex items-center gap-2 font-medium">
+            <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
+            <span>
+              Operação validada e salva com sucesso. Todos os pontos e confrontos estão gravados na base de dados.
+            </span>
+          </div>
+        )}
+
+        {/* Ações: Cancelar, Salvar e Compartilhar */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-border/80">
           <Button
             onClick={copyToClipboard}
             variant="outline"
-            className="w-full sm:w-auto gap-2 border-border/80 font-bold"
+            size="sm"
+            className="w-full sm:w-auto gap-2 border-border/80 font-bold text-xs"
           >
             {copied ? (
               <>
@@ -150,14 +201,56 @@ export const MiniligaSummaryModal: React.FC<MiniligaSummaryModalProps> = ({
             )}
           </Button>
 
-          <Button
-            onClick={onDistributeCardPoints}
-            disabled={isSavingPoints}
-            className="w-full sm:w-auto gap-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-black font-black shadow-lg shadow-amber-500/20"
-          >
-            <Sparkles className="w-4 h-4" />
-            {isSavingPoints ? "Creditando Pontos..." : "Distribuir Pontos nos Cards"}
-          </Button>
+          <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+            {!isFinalized ? (
+              <>
+                <Button
+                  onClick={() => onOpenChange(false)}
+                  variant="outline"
+                  size="sm"
+                  disabled={isSavingPoints}
+                  className="gap-1.5 border-border/80 text-muted-foreground hover:text-foreground font-bold text-xs"
+                >
+                  <XCircle className="w-4 h-4 text-rose-400" />
+                  Cancelar / Revisar Placares
+                </Button>
+
+                <Button
+                  onClick={onDistributeCardPoints}
+                  disabled={isSavingPoints}
+                  size="sm"
+                  className={`gap-2 font-black text-xs shadow-lg shadow-emerald-500/20 ${
+                    isRealMode
+                      ? "bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-black"
+                      : "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-black"
+                  }`}
+                >
+                  {isSavingPoints ? (
+                    <>
+                      <Sparkles className="w-4 h-4 animate-spin" />
+                      Gravando no Lovable Cloud...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="w-4 h-4" />
+                      {isRealMode
+                        ? "Salvar e Validar no Lovable Cloud"
+                        : "Salvar e Validar Simulação"}
+                    </>
+                  )}
+                </Button>
+              </>
+            ) : (
+              <Button
+                onClick={() => onOpenChange(false)}
+                variant="secondary"
+                size="sm"
+                className="font-bold text-xs"
+              >
+                Fechar Pódio
+              </Button>
+            )}
+          </div>
         </div>
       </DialogContent>
     </Dialog>

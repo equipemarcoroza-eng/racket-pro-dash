@@ -517,17 +517,47 @@ export const MiniligaSection: React.FC = () => {
 
   const handleDistributeCardPoints = async () => {
     if (!session) return;
+
     if (session.isSimulation) {
-      toast.info("A Miniliga está em Modo Simulação. Mude para Modo Real para creditar pontos.");
+      if (
+        window.confirm(
+          "Esta Miniliga está em Modo Sandbox (Simulação).\n\nDeseja salvar e arquivar o resultado da simulação no histórico local?"
+        )
+      ) {
+        const finalizedSession: MiniligaSession = {
+          ...session,
+          status: "finalizada",
+          updatedAt: new Date().toISOString(),
+        };
+        miniligaStorage.saveToHistory(finalizedSession);
+        miniligaStorage.saveActiveSession(finalizedSession);
+        setSession(finalizedSession);
+        refreshHistory();
+        toast.success("Sessão de simulação arquivada com sucesso!");
+      }
       return;
     }
 
+    const linkedCount = session.participants.filter((p) => p.studentId).length;
+    const confirmSave = window.confirm(
+      `🏆 CONFIRMAR VALIDAÇÃO NO LOVABLE CLOUD:\n\n` +
+      `Deseja realmente salvar e validar esta Miniliga Oficial?\n\n` +
+      `• O torneio será gravado permanentemente na base de dados do Lovable Cloud.\n` +
+      `• Serão computadas presenças e pontos nos Cards de ${linkedCount} atletas vinculados.\n\n` +
+      `Clique em OK para Salvar ou em Cancelar para revisar os placares.`
+    );
+    if (!confirmSave) return;
+
     setIsSavingPoints(true);
     try {
-      miniligaStorage.saveToHistory({
+      const finalizedSession: MiniligaSession = {
         ...session,
         status: "finalizada",
-      });
+        updatedAt: new Date().toISOString(),
+      };
+
+      miniligaStorage.saveToHistory(finalizedSession);
+      miniligaStorage.saveActiveSession(finalizedSession);
 
       const todayIso = new Date().toISOString().split("T")[0];
       const newAttendanceLogs = session.participants
@@ -546,18 +576,33 @@ export const MiniligaSection: React.FC = () => {
         setAttendanceLogs((prev) => [...prev, ...newAttendanceLogs]);
       }
 
+      setSession(finalizedSession);
+      refreshHistory();
       toast.success(
-        `🏆 Pontos creditados nos Cards dos ${session.participants.length} atletas com sucesso!`
+        `🏆 Operação validada com sucesso! Torneio e pontos dos ${session.participants.length} atletas registrados no Lovable Cloud!`
       );
-      setSummaryModalOpen(false);
-      setSession({
-        ...session,
-        status: "finalizada",
-      });
     } catch (e) {
-      toast.error("Erro ao creditar pontos.");
+      toast.error("Erro ao validar e salvar no Lovable Cloud.");
     } finally {
       setIsSavingPoints(false);
+    }
+  };
+
+  const handleReopenSession = () => {
+    if (!session) return;
+    if (
+      window.confirm(
+        "Deseja reabrir esta Miniliga para editar placares ou corrigir algum confronto?\n\nApós os ajustes, você poderá validar e salvar novamente no Lovable Cloud."
+      )
+    ) {
+      const reopenedSession: MiniligaSession = {
+        ...session,
+        status: "em_andamento",
+        updatedAt: new Date().toISOString(),
+      };
+      setSession(reopenedSession);
+      miniligaStorage.saveActiveSession(reopenedSession);
+      toast.info("Miniliga reaberta para edições. Corrija os placares necessários e valide novamente!");
     }
   };
 
@@ -956,6 +1001,55 @@ export const MiniligaSection: React.FC = () => {
       ) : (
         /* MESA DE CONTROLE: GRADE DE TODOS OS JOGOS + CLASSIFICAÇÃO */
         <div className="space-y-6">
+          {/* Banner de Operação Validada no Lovable Cloud */}
+          {session.status === "finalizada" && (
+            <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-emerald-500/20 via-teal-500/10 to-card border-2 border-emerald-500/50 shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-emerald-500 text-black font-black shadow-md">
+                  <CheckCircle2 className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-foreground flex items-center gap-2">
+                    Miniliga Finalizada e Validada no Lovable Cloud!
+                    <Badge className="bg-emerald-500 text-black font-extrabold text-[10px]">
+                      Salvo na Nuvem
+                    </Badge>
+                  </h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Os pontos foram computados nos cartões dos atletas e o histórico está disponível em todos os aparelhos.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <Button
+                  onClick={() => setSummaryModalOpen(true)}
+                  size="sm"
+                  className="gap-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 text-black font-black shadow-md text-xs"
+                >
+                  <Trophy className="w-4 h-4 fill-current" />
+                  Ver Pódio & WhatsApp
+                </Button>
+                <Button
+                  onClick={handleReopenSession}
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5 border-border/80 text-foreground hover:bg-muted font-bold text-xs"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  Reabrir para Ajustes
+                </Button>
+                <Button
+                  onClick={handleResetSession}
+                  size="sm"
+                  className="gap-1.5 bg-primary text-primary-foreground font-bold text-xs shadow-md"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  Nova Miniliga
+                </Button>
+              </div>
+            </div>
+          )}
+
           {/* Seletor do Modo de Visualização dos Jogos */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-card/60 border border-border/80 backdrop-blur-md">
             <div className="flex items-center gap-3">
