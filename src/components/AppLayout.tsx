@@ -15,6 +15,7 @@ import {
   LineChart,
   RotateCcw,
   Tv,
+  Sparkles,
 } from "lucide-react";
 import logo from "@/assets/logo.png";
 import andersonPhoto from "@/assets/anderson-profile-02.png";
@@ -174,15 +175,38 @@ const AppLayout = () => {
             <button
               type="button"
               onClick={() => window.dispatchEvent(new CustomEvent("toggle-copiloto-ia"))}
-              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold bg-[#1e1b4b] text-white hover:bg-[#2d2b82] border border-[#ea3829]/60 shadow-md shadow-indigo-950/40 transition-all hover:scale-[1.02] cursor-pointer"
-              title="Abrir / Fechar Copiloto IA (Gêmeo Digital do Anderson)"
+              className="group relative flex cursor-pointer items-center gap-2.5 rounded-full border border-[#ea3829]/50 bg-gradient-to-r from-[#17193b] via-[#242650] to-[#12132b] py-1 pl-1.5 pr-3.5 shadow-md shadow-indigo-950/50 hover:scale-[1.02] hover:border-[#ea3829]/80 transition-all text-white"
+              title="Abrir Copiloto IA · Anderson Diroza (Gêmeo Digital)"
+              aria-label="Copiloto IA"
             >
-              <div className="relative w-5 h-5 rounded-full overflow-hidden border border-[#ea3829] shrink-0">
-                <img src={andersonPhoto} alt="Anderson Diroza AI" className="w-full h-full object-cover" />
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 absolute bottom-0 right-0 animate-pulse" />
+              <div className="relative h-8 w-8 rounded-full p-[1.5px] bg-white/20 ring-1 ring-[#ea3829]/60 shadow-sm shrink-0">
+                <img
+                  src={andersonPhoto}
+                  alt="Anderson Diroza - Copiloto IA"
+                  className="h-full w-full object-cover rounded-full"
+                />
+                <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-emerald-400 border border-[#0c0d1c] animate-pulse shadow-[0_0_6px_#34d399]" />
               </div>
-              <span className="tracking-tight font-extrabold">Copiloto IA</span>
-              <span className="text-[10px] text-[#ff8f84] hidden sm:inline font-mono font-bold">Gêmeo Digital</span>
+
+              <div className="text-left hidden sm:flex sm:flex-col sm:justify-center gap-0.5 pr-0.5">
+                <div className="flex items-center gap-1.5 leading-none">
+                  <span className="font-bold text-[13px] text-white leading-none">
+                    Copiloto IA
+                  </span>
+                  <span className="px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-black/45 text-[#ff8f84] border border-[#ea3829]/30 leading-none">
+                    Anderson Diroza
+                  </span>
+                </div>
+                <div className="flex items-center gap-1 text-[10.5px] text-zinc-300 font-medium leading-none pt-0.5">
+                  <Sparkles className="h-3 w-3 text-[#ea3829] shrink-0" />
+                  <span>Gêmeo Digital & Agenda</span>
+                </div>
+              </div>
+
+              {/* Visível apenas no mobile super compacto */}
+              <span className="sm:hidden text-xs font-bold text-white tracking-tight pr-1">
+                Copiloto IA
+              </span>
             </button>
             <DiscreetModeToggle variant="header" />
           </div>

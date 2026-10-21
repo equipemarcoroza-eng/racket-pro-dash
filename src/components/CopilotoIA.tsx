@@ -311,13 +311,15 @@ export function CopilotoIA() {
                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-[#17193b] absolute bottom-0 right-0 animate-pulse" />
               </div>
               <div>
-                <div className="flex items-center gap-1.5">
-                  <h3 className="font-extrabold text-sm text-white tracking-tight">Copiloto IA</h3>
-                  <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-[#ea3829]/25 text-[#ffb0a8] border border-[#ea3829]/40 font-bold">
-                    IA OFICIAL
+                <div className="flex items-center gap-2">
+                  <h3 className="font-bold text-sm text-white leading-none">Anderson Diroza</h3>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#ea3829]/25 text-[#ff8f84] border border-[#ea3829]/40 leading-none">
+                    Gêmeo Digital
                   </span>
                 </div>
-                <p className="text-[11px] text-zinc-300 font-medium">Gêmeo Digital do Anderson</p>
+                <p className="text-[11px] text-zinc-300 font-normal leading-tight mt-0.5">
+                  Copiloto IA · Ecossistema Equipe Marco Roza Beach Tennis
+                </p>
               </div>
             </div>
 
@@ -360,6 +362,25 @@ export function CopilotoIA() {
               </button>
             </div>
           </div>
+
+          {/* Banner de Demonstração Exclusiva com o Criador */}
+          {!modoAgendamento && (
+            <div className="px-4 py-2.5 bg-gradient-to-r from-[#17193b] via-[#242650] to-[#12132b] border-b border-[#ea3829]/30 flex items-center justify-between gap-3 shadow-2xs shrink-0">
+              <div className="flex items-center gap-2 min-w-0">
+                <Calendar className="h-4 w-4 text-[#ff8f84] shrink-0" />
+                <span className="text-xs font-medium text-white truncate">
+                  Quer uma demonstração exclusiva com o criador?
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setModoAgendamento(true)}
+                className="bg-gradient-to-r from-[#ea3829] to-[#d42d20] hover:from-[#f0493b] hover:to-[#ea3829] text-white font-bold text-xs px-3.5 py-1.5 rounded-xl shadow-xs transition hover:scale-[1.02] cursor-pointer shrink-0"
+              >
+                Agendar Reunião
+              </button>
+            </div>
+          )}
 
           {/* Barra de Suporte Concierge Telegram 24/7 */}
           <div className="px-4 py-2 border-b border-[#242650] bg-[#12132b] flex items-center justify-between text-xs shrink-0">
@@ -705,14 +726,14 @@ export function CopilotoIA() {
               onChange={(e) => setInputMessage(e.target.value)}
               onKeyDown={handleKeyPress}
               placeholder="Pergunte ao Copiloto IA da Equipe Marco Roza..."
-              className="flex-1 px-3.5 py-2.5 text-xs rounded-xl bg-[#141633] border border-[#272952] text-white placeholder-zinc-500 focus:outline-none focus:border-[#ea3829] transition-all"
+              className="flex-1 h-11 px-3.5 text-xs rounded-xl bg-[#141633] border border-[#272952] text-white placeholder-zinc-500 focus:outline-none focus:border-[#ea3829] transition-all"
             />
             <Button
               type="button"
               size="icon"
               onClick={() => handleSendMessage()}
               disabled={!inputMessage.trim()}
-              className="h-9 w-9 rounded-xl bg-gradient-to-r from-[#2d2b82] to-[#ea3829] hover:from-[#373599] hover:to-[#f0493b] text-white shrink-0 disabled:opacity-40 cursor-pointer shadow-md"
+              className="h-11 w-11 rounded-xl bg-gradient-to-r from-[#2d2b82] to-[#ea3829] hover:from-[#373599] hover:to-[#f0493b] text-white shrink-0 disabled:opacity-40 cursor-pointer shadow-md"
               aria-label="Enviar mensagem"
             >
               <Send className="w-4 h-4" />
