@@ -567,73 +567,68 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
               }`}
             >
               <div className="relative rounded-[22px] bg-gradient-to-b from-slate-900 via-slate-950 to-black p-4 pb-3.5 sm:p-5 sm:pb-4 overflow-hidden flex flex-col justify-between">
-                {/* Efeito de Reflexo de Vidro e Luz */}
-                <div
-                  className={`absolute top-0 right-0 -mr-16 -mt-16 w-48 h-48 rounded-full blur-3xl pointer-events-none ${
-                    athleteStats.isOnFire ? "bg-orange-500/20" : "bg-amber-400/10"
-                  }`}
-                />
-                <div className="absolute bottom-0 left-0 -ml-16 -mb-16 w-48 h-48 rounded-full bg-emerald-500/10 blur-3xl pointer-events-none" />
-
                 {/* Cabeçalho do Card */}
-                <div className="flex items-start justify-between relative z-10">
-                  <div className="flex flex-col">
-                    <div className="flex items-baseline gap-1.5">
-                      <span className="text-5xl font-black tracking-tighter text-amber-300 drop-shadow-[0_2px_10px_rgba(245,158,11,0.55)] select-none font-mono">
+                <div className="flex items-center justify-between relative z-10 pb-1">
+                  <div className="flex items-center gap-3">
+                    {/* OVR Grande */}
+                    <div className="flex flex-col items-center justify-center leading-none">
+                      <span className="text-4xl sm:text-5xl font-black text-amber-300 font-mono tracking-tight leading-none drop-shadow-[0_2px_8px_rgba(245,158,11,0.5)] select-none">
                         {athleteStats.ovr}
                       </span>
-                      {athleteStats.ovrBoost > 0 && (
-                        <span className="text-[10px] font-black text-emerald-300 bg-emerald-500/25 border border-emerald-500/40 px-1.5 py-0.5 rounded-full flex items-center gap-0.5 shadow-sm">
-                          +{athleteStats.ovrBoost} FORMA 🔥
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-1.5 mt-0.5">
-                      <span className="text-xs font-black uppercase tracking-widest text-amber-400/90">
+                      <span className="text-[9px] font-black uppercase tracking-widest text-amber-400/90 mt-1">
                         OVR
                       </span>
-                      <Badge
-                        variant="outline"
-                        className="text-[10px] border-amber-400/40 text-amber-300 px-1.5 py-0"
-                      >
-                        {student.categoria}
-                      </Badge>
                     </div>
 
-                    {athleteStats.isOnFire ? (
-                      <Badge className="mt-1.5 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black text-[9px] border-orange-400/40 shadow-sm gap-1 w-fit animate-pulse">
-                        <Flame className="h-2.5 w-2.5 fill-current text-yellow-200" />
-                        ON FIRE 🔥
-                      </Badge>
-                    ) : (
-                      <Badge
-                        variant="outline"
-                        className="mt-1.5 text-[9px] border-white/20 text-slate-300 gap-1 w-fit"
-                      >
-                        <Zap className="h-2.5 w-2.5 text-amber-400" />
-                        EM RITMO
-                      </Badge>
-                    )}
+                    {/* Divisória Vertical sutil */}
+                    <div className="h-10 w-[1px] bg-white/10 shrink-0" />
+
+                    {/* Badges e Informações da Categoria / Forma */}
+                    <div className="flex flex-col gap-1.5">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="text-[10px] font-extrabold uppercase tracking-wider text-amber-200 bg-amber-500/20 border border-amber-500/40 px-2 py-0.5 rounded-md leading-none">
+                          {student.categoria}
+                        </span>
+                        {athleteStats.ovrBoost > 0 && (
+                          <span className="text-[9px] font-black text-emerald-300 bg-emerald-500/20 border border-emerald-500/40 px-1.5 py-0.5 rounded-md leading-none flex items-center gap-0.5">
+                            +{athleteStats.ovrBoost} FORMA 🔥
+                          </span>
+                        )}
+                      </div>
+
+                      {athleteStats.isOnFire ? (
+                        <div className="flex items-center gap-1 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black text-[9px] border border-orange-400/50 px-2 py-0.5 rounded-full shadow-sm w-fit leading-none">
+                          <Flame className="h-2.5 w-2.5 fill-current text-yellow-200" />
+                          <span>ON FIRE 🔥</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-1 text-[9px] border border-white/20 text-slate-300 px-2 py-0.5 rounded-full w-fit leading-none">
+                          <Zap className="h-2.5 w-2.5 text-amber-400" />
+                          <span>EM RITMO</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
-                  <div className="flex flex-col items-center">
+                  {/* Logo Equipe Marco Roza */}
+                  <div className="flex flex-col items-center shrink-0">
                     <img
                       src={logo}
                       alt="Marco Roza"
-                      className="h-12 w-auto object-contain drop-shadow-[0_4px_12px_rgba(234,179,8,0.3)]"
+                      className="h-11 w-auto object-contain drop-shadow-[0_4px_10px_rgba(234,179,8,0.25)]"
                     />
-                    <span className="text-[8px] uppercase tracking-widest text-slate-400 font-bold mt-1">
-                      Equipe Marco Roza
+                    <span className="text-[8px] uppercase tracking-wider text-slate-400 font-bold mt-1 text-center">
+                      Marco Roza
                     </span>
                   </div>
                 </div>
 
-                {/* Nome do Atleta */}
-                <div className="my-2.5 text-center border-y border-amber-500/30 py-1.5 relative z-10">
-                  <h3 className="text-base sm:text-lg font-extrabold uppercase tracking-wider text-white truncate px-1">
+                {/* Nome do Atleta (Sem truncate para não cortar caracteres no canvas) */}
+                <div className="my-2 text-center border-y border-amber-500/30 py-1.5 relative z-10 overflow-visible">
+                  <h3 className="text-base sm:text-lg font-black uppercase text-white px-2 overflow-visible leading-tight tracking-wide">
                     {student.nome}
                   </h3>
-                  <p className="text-[9px] text-amber-300/80 font-medium tracking-widest uppercase">
+                  <p className="text-[9px] text-amber-300/90 font-bold tracking-widest uppercase mt-0.5">
                     RACKET PRO ATHLETE
                   </p>
                 </div>
@@ -754,45 +749,45 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
                 </div>
 
                 {/* HUD dos Itens 7, 8 e 9: Assiduidade, Sequência & Miniliga */}
-                <div className="mt-2.5 pt-2 border-t border-white/10 grid grid-cols-3 gap-1 text-center">
+                <div className="mt-2.5 pt-2 border-t border-white/10 grid grid-cols-3 gap-1.5 text-center">
                   {/* 7. Assiduidade */}
-                  <div className="bg-gradient-to-br from-amber-500/10 to-orange-500/5 rounded-lg p-1 border border-amber-500/20 flex flex-col justify-between">
-                    <div className="flex items-center justify-center gap-0.5 text-[8.5px] text-amber-300 font-semibold mb-0.5">
-                      <CalendarCheck className="h-2 w-2" />
+                  <div className="bg-slate-900/95 rounded-xl p-1.5 border border-amber-500/25 flex flex-col justify-between min-h-[58px] shadow-sm">
+                    <div className="flex items-center justify-center gap-1 text-[8.5px] text-amber-300 font-bold leading-none">
+                      <CalendarCheck className="h-2.5 w-2.5 text-amber-400" />
                       Assiduidade
                     </div>
-                    <div className="text-xs font-black text-white font-mono">
+                    <div className="text-sm font-black text-white font-mono leading-none my-1">
                       {athleteStats.attendanceRate}%
                     </div>
-                    <div className="text-[7.5px] text-slate-400">
+                    <div className="text-[8px] text-slate-400 font-medium leading-none">
                       {athleteStats.attendedClasses} aulas
                     </div>
                   </div>
 
                   {/* 8. Sequência */}
-                  <div className="bg-gradient-to-br from-orange-500/10 to-red-500/5 rounded-lg p-1 border border-orange-500/20 flex flex-col justify-between">
-                    <div className="flex items-center justify-center gap-0.5 text-[8.5px] text-orange-300 font-semibold mb-0.5">
-                      <Flame className="h-2 w-2" />
+                  <div className="bg-slate-900/95 rounded-xl p-1.5 border border-orange-500/25 flex flex-col justify-between min-h-[58px] shadow-sm">
+                    <div className="flex items-center justify-center gap-1 text-[8.5px] text-orange-300 font-bold leading-none">
+                      <Flame className="h-2.5 w-2.5 text-orange-400" />
                       Sequência
                     </div>
-                    <div className="text-xs font-black text-white font-mono">
-                      {athleteStats.effectiveStreak} seguidas
+                    <div className="text-sm font-black text-white font-mono leading-none my-1">
+                      {athleteStats.effectiveStreak} <span className="text-[9px] font-semibold text-slate-300">aulas</span>
                     </div>
-                    <div className="text-[7.5px] text-slate-400">
+                    <div className="text-[8px] text-orange-300 font-bold leading-none">
                       {athleteStats.isOnFire ? "🔥 ON FIRE" : "sem faltas"}
                     </div>
                   </div>
 
-                  {/* 9. Miniliga (Contador à parte somando os pontos) */}
-                  <div className="bg-gradient-to-br from-amber-500/20 via-yellow-500/10 to-slate-900 rounded-lg p-1 border border-amber-400/40 shadow-sm flex flex-col justify-between">
-                    <div className="flex items-center justify-center gap-0.5 text-[8.5px] text-amber-300 font-black mb-0.5">
-                      <Trophy className="h-2 w-2 text-amber-400 fill-current" />
+                  {/* 9. Miniliga */}
+                  <div className="bg-slate-900/95 rounded-xl p-1.5 border border-amber-400/40 flex flex-col justify-between min-h-[58px] shadow-sm">
+                    <div className="flex items-center justify-center gap-1 text-[8.5px] text-amber-300 font-black leading-none">
+                      <Trophy className="h-2.5 w-2.5 text-amber-400 fill-current" />
                       Miniliga
                     </div>
-                    <div className="text-xs font-black text-amber-300 font-mono">
-                      {athleteStats.miniligaPontos} pts
+                    <div className="text-sm font-black text-amber-300 font-mono leading-none my-1">
+                      {athleteStats.miniligaPontos} <span className="text-[9px] font-semibold">pts</span>
                     </div>
-                    <div className="text-[7.5px] text-slate-300 font-medium">
+                    <div className="text-[8px] text-slate-400 font-medium leading-none">
                       {athleteStats.miniligas} {athleteStats.miniligas === 1 ? "torneio" : "torneios"}
                     </div>
                   </div>
