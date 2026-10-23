@@ -144,6 +144,7 @@ const Students = () => {
   const currentMonthValue = String(today.getMonth() + 1).padStart(2, "0");
   const currentDayStr = String(today.getDate()).padStart(2, "0");
   const currentDayNum = today.getDate();
+  const [selectedBirthdayMonth, setSelectedBirthdayMonth] = useState<string>(currentMonthValue);
 
   const getBirthInfo = (dateStr: string) => {
     if (!dateStr) return null;
