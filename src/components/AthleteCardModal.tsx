@@ -24,6 +24,7 @@ import {
   Camera,
   Loader2,
   Share2,
+  ShieldCheck,
 } from "lucide-react";
 import logo from "@/assets/logo.png";
 import { toast } from "sonner";
@@ -47,6 +48,29 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
   const [cachedBlob, setCachedBlob] = useState<Blob | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
 
+  // Função unificada para captura do Card em alta resolução e formato perfeito para WhatsApp / Redes
+  const captureCardCanvas = async (element: HTMLElement) => {
+    const html2canvas = (await import("html2canvas")).default;
+    return await html2canvas(element, {
+      scale: 2.5, // Resolução ultra nítida para WhatsApp
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: null, // Cantos arredondados transparentes
+      scrollX: 0,
+      scrollY: 0,
+      logging: false,
+      windowWidth: 1200, // Renderização padronizada sem distorções de viewport mobile
+      onclone: (clonedDoc) => {
+        const clonedCard = clonedDoc.querySelector("[data-athlete-card='true']") as HTMLElement;
+        if (clonedCard) {
+          clonedCard.style.width = "340px";
+          clonedCard.style.maxWidth = "340px";
+          clonedCard.style.margin = "0 auto";
+        }
+      },
+    });
+  };
+
   // Pré-renderização em background do card assim que o modal abre (declarado no topo para respeitar as regras de hooks do React)
   useEffect(() => {
     let isMounted = true;
@@ -54,14 +78,7 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
       const timer = setTimeout(async () => {
         if (!cardRef.current) return;
         try {
-          const html2canvas = (await import("html2canvas")).default;
-          const canvas = await html2canvas(cardRef.current, {
-            scale: 2.2,
-            useCORS: true,
-            allowTaint: true,
-            backgroundColor: "#030712",
-            logging: false,
-          });
+          const canvas = await captureCardCanvas(cardRef.current);
           canvas.toBlob((blob) => {
             if (isMounted && blob) {
               setCachedBlob(blob);
@@ -70,7 +87,7 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
         } catch (e) {
           console.warn("Pré-geração do card falhou:", e);
         }
-      }, 350);
+      }, 400);
 
       return () => {
         isMounted = false;
@@ -311,15 +328,7 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
     if (cachedBlob) return cachedBlob;
     if (!cardRef.current) return null;
     try {
-      const html2canvas = (await import("html2canvas")).default;
-      const canvas = await html2canvas(cardRef.current, {
-        scale: 2.2, // Ultra HD para ficar nítido e perfeito no WhatsApp e impressão
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: "#030712",
-        logging: false,
-      });
-
+      const canvas = await captureCardCanvas(cardRef.current);
       return new Promise<Blob | null>((resolve) => {
         canvas.toBlob((blob) => {
           if (blob) setCachedBlob(blob);
@@ -550,13 +559,14 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
           <div className="md:col-span-5 flex flex-col items-center">
             <div
               ref={cardRef}
+              data-athlete-card="true"
               className={`relative mx-auto w-full max-w-[340px] rounded-3xl p-1 shadow-2xl transition-all duration-300 ${
                 athleteStats.isOnFire
                   ? "bg-gradient-to-b from-orange-400 via-amber-500 to-amber-950 shadow-orange-500/30 ring-1 ring-orange-400/40"
                   : "bg-gradient-to-b from-amber-300 via-yellow-600 to-amber-950 shadow-yellow-500/20"
               }`}
             >
-              <div className="relative rounded-[22px] bg-gradient-to-b from-slate-900 via-slate-950 to-black p-4 sm:p-5 overflow-hidden">
+              <div className="relative rounded-[22px] bg-gradient-to-b from-slate-900 via-slate-950 to-black p-4 pb-3.5 sm:p-5 sm:pb-4 overflow-hidden flex flex-col justify-between">
                 {/* Efeito de Reflexo de Vidro e Luz */}
                 <div
                   className={`absolute top-0 right-0 -mr-16 -mt-16 w-48 h-48 rounded-full blur-3xl pointer-events-none ${
@@ -569,7 +579,7 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
                 <div className="flex items-start justify-between relative z-10">
                   <div className="flex flex-col">
                     <div className="flex items-baseline gap-1.5">
-                      <span className="text-5xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-amber-200 via-yellow-400 to-amber-600 drop-shadow-md">
+                      <span className="text-5xl font-black tracking-tighter text-amber-300 drop-shadow-[0_2px_10px_rgba(245,158,11,0.55)] select-none font-mono">
                         {athleteStats.ovr}
                       </span>
                       {athleteStats.ovrBoost > 0 && (
@@ -807,6 +817,17 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
                       }}
                     />
                   </div>
+                </div>
+
+                {/* Rodapé Oficial do Card com respiro de segurança */}
+                <div className="mt-3 pt-2 border-t border-white/10 flex items-center justify-between text-[8px] text-slate-400 uppercase tracking-widest font-semibold px-0.5">
+                  <span className="text-amber-400/90 flex items-center gap-1 font-bold">
+                    <ShieldCheck className="h-2.5 w-2.5 text-amber-400" />
+                    Racket Pro Athlete
+                  </span>
+                  <span className="text-slate-400 font-medium">
+                    Equipe Marco Roza
+                  </span>
                 </div>
               </div>
             </div>
