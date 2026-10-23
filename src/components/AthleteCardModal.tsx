@@ -568,25 +568,23 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
             >
               <div className="relative rounded-[22px] bg-gradient-to-b from-slate-900 via-slate-950 to-black p-4 pb-3.5 sm:p-5 sm:pb-4 overflow-hidden flex flex-col justify-between">
                 {/* Cabeçalho do Card */}
-                <div className="flex items-center justify-between relative z-10 pb-1">
-                  <div className="flex items-center gap-3">
-                    {/* OVR Grande */}
-                    <div className="flex flex-col items-center justify-center leading-none">
-                      <span className="text-4xl sm:text-5xl font-black text-amber-300 font-mono tracking-tight leading-none drop-shadow-[0_2px_8px_rgba(245,158,11,0.5)] select-none">
+                <div className="flex items-center justify-between relative z-10 pb-1.5">
+                  {/* Bloco Esquerdo: Rating OVR & Status */}
+                  <div className="flex items-center gap-2.5">
+                    {/* Badge OVR Destacado */}
+                    <div className="flex flex-col items-center justify-center bg-gradient-to-b from-amber-500/20 to-amber-500/5 border border-amber-400/35 rounded-xl px-2.5 py-1.5 min-w-[54px] shadow-sm">
+                      <span className="text-3xl font-black text-amber-300 font-mono leading-none tracking-tight">
                         {athleteStats.ovr}
                       </span>
-                      <span className="text-[9px] font-black uppercase tracking-widest text-amber-400/90 mt-1">
+                      <span className="text-[8px] font-black uppercase tracking-widest text-amber-400/90 leading-none mt-1">
                         OVR
                       </span>
                     </div>
 
-                    {/* Divisória Vertical sutil */}
-                    <div className="h-10 w-[1px] bg-white/10 shrink-0" />
-
-                    {/* Badges e Informações da Categoria / Forma */}
-                    <div className="flex flex-col gap-1.5">
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="text-[10px] font-extrabold uppercase tracking-wider text-amber-200 bg-amber-500/20 border border-amber-500/40 px-2 py-0.5 rounded-md leading-none">
+                    {/* Coluna de Tags Pedagógicas e Status */}
+                    <div className="flex flex-col gap-1 justify-center">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[10px] font-extrabold uppercase tracking-wide text-amber-200 bg-amber-500/20 border border-amber-500/40 px-2 py-0.5 rounded-md leading-none">
                           {student.categoria}
                         </span>
                         {athleteStats.ovrBoost > 0 && (
@@ -597,12 +595,12 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
                       </div>
 
                       {athleteStats.isOnFire ? (
-                        <div className="flex items-center gap-1 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black text-[9px] border border-orange-400/50 px-2 py-0.5 rounded-full shadow-sm w-fit leading-none">
+                        <div className="flex items-center gap-1 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black text-[9px] border border-orange-400/50 px-2 py-0.5 rounded-full shadow-sm leading-none w-fit">
                           <Flame className="h-2.5 w-2.5 fill-current text-yellow-200" />
                           <span>ON FIRE 🔥</span>
                         </div>
                       ) : (
-                        <div className="flex items-center gap-1 text-[9px] border border-white/20 text-slate-300 px-2 py-0.5 rounded-full w-fit leading-none">
+                        <div className="flex items-center gap-1 text-[9px] border border-white/20 text-slate-300 px-2 py-0.5 rounded-full leading-none w-fit">
                           <Zap className="h-2.5 w-2.5 text-amber-400" />
                           <span>EM RITMO</span>
                         </div>
@@ -610,21 +608,21 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
                     </div>
                   </div>
 
-                  {/* Logo Equipe Marco Roza */}
-                  <div className="flex flex-col items-center shrink-0">
+                  {/* Bloco Direito: Escudo Equipe Marco Roza */}
+                  <div className="flex flex-col items-center justify-center bg-slate-900/80 border border-white/10 rounded-xl px-2.5 py-1.5 min-w-[68px] shadow-sm">
                     <img
                       src={logo}
                       alt="Marco Roza"
-                      className="h-11 w-auto object-contain drop-shadow-[0_4px_10px_rgba(234,179,8,0.25)]"
+                      className="h-9 w-auto object-contain drop-shadow-[0_2px_8px_rgba(234,179,8,0.25)]"
                     />
-                    <span className="text-[8px] uppercase tracking-wider text-slate-400 font-bold mt-1 text-center">
+                    <span className="text-[7.5px] uppercase tracking-wider text-slate-300 font-bold mt-1 text-center leading-none">
                       Marco Roza
                     </span>
                   </div>
                 </div>
 
                 {/* Nome do Atleta (Sem truncate para não cortar caracteres no canvas) */}
-                <div className="my-2 text-center border-y border-amber-500/30 py-1.5 relative z-10 overflow-visible">
+                <div className="my-2.5 text-center border-y border-amber-500/30 py-1.5 relative z-10 overflow-visible">
                   <h3 className="text-base sm:text-lg font-black uppercase text-white px-2 overflow-visible leading-tight tracking-wide">
                     {student.nome}
                   </h3>
