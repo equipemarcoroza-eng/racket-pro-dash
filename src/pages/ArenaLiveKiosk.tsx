@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useAppContext } from "@/contexts/AppContext";
+import { CLASS_LIMIT } from "@/data/mockData";
 import logo from "@/assets/logo.png";
 import {
   Tv,
@@ -18,6 +19,12 @@ import {
   Pause,
   Play,
   ArrowLeft,
+  Medal,
+  Flame,
+  Crown,
+  Star,
+  CheckCircle2,
+  UserCheck,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { format } from "date-fns";
@@ -36,11 +43,12 @@ const diasSemanaMap: Record<number, string> = {
 };
 
 export const ArenaLiveKiosk: React.FC = () => {
-  const { schedule, students, enrollments, activities, testResults } = useAppContext();
+  const { schedule, students, enrollments, activities, testResults, attendanceLogs } = useAppContext();
   const [currentSlide, setCurrentSlide] = useState<number>(0);
   const [isPaused, setIsPaused] = useState<boolean>(false);
   const [currentTime, setCurrentTime] = useState<Date>(new Date());
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
+  const [selectedHour, setSelectedHour] = useState<string | null>(null);
 
   // Relógio ao vivo atualizado a cada segundo
   useEffect(() => {
@@ -76,39 +84,143 @@ export const ArenaLiveKiosk: React.FC = () => {
   const currentDayOfWeek = diasSemanaMap[currentTime.getDay()] || "Seg";
   const currentHourStr = format(currentTime, "HH:00");
 
-  // Quadras ativas no horário atual ou próximo
-  const courtsStatus = useMemo(() => {
-    const courtsList = ["Quadra 1", "Quadra 2", "Quadra 3", "Quadra 4"];
+  // ==========================================
+  // SLIDE 0: HALL DA FAMA (TOP 3 POR CATEGORIA)
+  // Infantil, Juvenil e Adulto
+  // ==========================================
+  const categoryRankings = useMemo(() => {
+    const categories: Array<"Infantil" | "Juvenil" | "Adulto"> = ["Infantil", "Juvenil", "Adulto"];
 
-    return courtsList.map((courtName) => {
-      // Busca aulas de hoje nessa quadra
-      const todaySlots = schedule.filter(
-        (s) => s.quadra.toLowerCase() === courtName.toLowerCase() && s.dia === currentDayOfWeek
+    const result: Record<
+      "Infantil" | "Juvenil" | "Adulto",
+      Array<{
+        student: any;
+        score: number;
+        scoreLabel: string;
+        scoreSub: string;
+        testsCount: number;
+        totalHits: number;
+      }>
+    > = {
+      Infantil: [],
+      Juvenil: [],
+      Adulto: [],
+    };
+
+    categories.forEach((cat) => {
+      const activeInCat = students.filter(
+        (s) => s.status === "Ativo" && s.categoria === cat
       );
 
-      // Aula atual mais próxima
-      const currentSlot = todaySlots.find((s) => s.horario === currentHourStr) || todaySlots[0];
+      const scored = activeInCat.map((student) => {
+        // Testes técnicos
+        const sTests = testResults.filter((tr) => tr.alunoId === student.id);
+        const totalHits = sTests.reduce((acc, tr) => acc + (tr.acertos || 0), 0);
+        const testsCount = sTests.length;
 
-      let enrolledList: string[] = [];
-      if (currentSlot) {
-        const studentIds = enrollments
-          .filter((e) => e.turmaId === currentSlot.id)
-          .map((e) => e.alunoId);
-        enrolledList = students
-          .filter((s) => studentIds.includes(s.id))
-          .map((s) => s.nome);
-      }
+        // Miniligas e Presenças
+        const sLogs = attendanceLogs.filter((log) => log.alunoId === student.id);
+        const miniligaPontos = sLogs.reduce((acc, l) => acc + (l.miniligaPontos || 0), 0);
+        const presencas = sLogs.filter(
+          (l) => l.presente === "Presente" || l.presente === "Reposição" || l.presente === "Miniliga"
+        ).length;
 
-      return {
-        courtName,
-        slot: currentSlot,
-        students: enrolledList,
-        isLiveNow: !!currentSlot,
-      };
+        let score = 0;
+        let scoreLabel = "";
+        let scoreSub = "";
+
+        if (totalHits > 0) {
+          score = totalHits * 100 + miniligaPontos * 10 + presencas;
+          scoreLabel = `${totalHits} bolas`;
+          scoreSub = `${testsCount} ${testsCount === 1 ? "teste realizado" : "testes realizados"}`;
+        } else if (miniligaPontos > 0) {
+          score = miniligaPontos * 10 + presencas;
+          scoreLabel = `${miniligaPontos} pts`;
+          scoreSub = "Pontos na Miniliga";
+        } else if (presencas > 0) {
+          score = presencas * 5;
+          scoreLabel = `${presencas} treinos`;
+          scoreSub = "Frequência exemplar";
+        } else {
+          score = 1;
+          scoreLabel = "Atleta Ativo";
+          scoreSub = "Ritmo em evolução";
+        }
+
+        return {
+          student,
+          score,
+          scoreLabel,
+          scoreSub,
+          testsCount,
+          totalHits,
+        };
+      });
+
+      // Ordena decrescente pelo score e destaca os 3 primeiros
+      result[cat] = scored.sort((a, b) => b.score - a.score).slice(0, 3);
     });
-  }, [schedule, enrollments, students, currentDayOfWeek, currentHourStr]);
 
-  // Aniversariantes do mês atual
+    return result;
+  }, [students, testResults, attendanceLogs]);
+
+  // ==========================================
+  // SLIDE 1: GRADE DE HORÁRIOS
+  // Exibição do Horário Atual / Selecionado com Cards Largos
+  // ==========================================
+  const todaySlots = useMemo(() => {
+    const direct = schedule.filter((s) => s.dia === currentDayOfWeek);
+    if (direct.length > 0) return direct;
+    // Se o dia atual não tiver aulas cadastradas (ex: domingo ou dia livre),
+    // busca o primeiro dia que contenha turmas para nunca exibir tela vazia no totem
+    const firstDayWithSlots = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"].find((d) =>
+      schedule.some((s) => s.dia === d)
+    );
+    return firstDayWithSlots ? schedule.filter((s) => s.dia === firstDayWithSlots) : schedule;
+  }, [schedule, currentDayOfWeek]);
+
+  // Lista de horários disponíveis no dia de hoje
+  const availableHours = useMemo(() => {
+    return Array.from(new Set(todaySlots.map((s) => s.horario))).sort();
+  }, [todaySlots]);
+
+  // Horário ativo sendo exibido
+  const activeHour = useMemo(() => {
+    if (selectedHour && availableHours.includes(selectedHour)) {
+      return selectedHour;
+    }
+    if (availableHours.includes(currentHourStr)) {
+      return currentHourStr;
+    }
+    const upcoming = availableHours.find((h) => h >= currentHourStr);
+    if (upcoming) return upcoming;
+    return availableHours[0] || currentHourStr;
+  }, [selectedHour, availableHours, currentHourStr]);
+
+  // Turmas do horário ativo
+  const classesInActiveHour = useMemo(() => {
+    const slots = todaySlots.filter((s) => s.horario === activeHour);
+    return slots.sort((a, b) => a.quadra.localeCompare(b.quadra));
+  }, [todaySlots, activeHour]);
+
+  // Navegação entre horários
+  const handlePrevHour = () => {
+    if (availableHours.length === 0) return;
+    const currentIndex = availableHours.indexOf(activeHour);
+    const prevIndex = currentIndex > 0 ? currentIndex - 1 : availableHours.length - 1;
+    setSelectedHour(availableHours[prevIndex]);
+  };
+
+  const handleNextHour = () => {
+    if (availableHours.length === 0) return;
+    const currentIndex = availableHours.indexOf(activeHour);
+    const nextIndex = currentIndex < availableHours.length - 1 ? currentIndex + 1 : 0;
+    setSelectedHour(availableHours[nextIndex]);
+  };
+
+  // ==========================================
+  // SLIDE 2: ANIVERSARIANTES DO MÊS
+  // ==========================================
   const birthdayStudents = useMemo(() => {
     const currentMonth = String(currentTime.getMonth() + 1).padStart(2, "0");
     return students
@@ -120,37 +232,17 @@ export const ArenaLiveKiosk: React.FC = () => {
       });
   }, [students, currentTime]);
 
-  // Top Atletas em Desempenho Técnico
-  const topAthletes = useMemo(() => {
-    const studentScores: Record<string, { student: any; totalHits: number; testsCount: number }> = {};
-
-    testResults.forEach((tr) => {
-      const student = students.find((s) => s.id === tr.alunoId);
-      if (!student || student.status !== "Ativo") return;
-
-      if (!studentScores[tr.alunoId]) {
-        studentScores[tr.alunoId] = { student, totalHits: 0, testsCount: 0 };
-      }
-      studentScores[tr.alunoId].totalHits += tr.acertos;
-      studentScores[tr.alunoId].testsCount += 1;
-    });
-
-    return Object.values(studentScores)
-      .sort((a, b) => b.totalHits - a.totalHits)
-      .slice(0, 5);
-  }, [testResults, students]);
-
   return (
     <div className="min-h-screen bg-slate-950 text-white flex flex-col justify-between overflow-hidden select-none font-sans relative">
       {/* Background futurista com gradientes dinâmicos */}
-      <div className="absolute top-0 left-1/4 w-[600px] h-[600px] rounded-full bg-blue-600/10 blur-[140px] pointer-events-none" />
-      <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] rounded-full bg-amber-500/10 blur-[140px] pointer-events-none" />
+      <div className="absolute top-0 left-1/4 w-[650px] h-[650px] rounded-full bg-blue-600/10 blur-[150px] pointer-events-none" />
+      <div className="absolute bottom-0 right-1/4 w-[650px] h-[650px] rounded-full bg-amber-500/10 blur-[150px] pointer-events-none" />
 
       {/* Barra de Progresso do Slide no topo */}
       <div className="w-full bg-slate-900 h-1.5 overflow-hidden">
         <div
           key={currentSlide}
-          className="bg-gradient-to-r from-amber-400 to-yellow-500 h-full animate-[progress_12s_linear_infinite]"
+          className="bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 h-full animate-[progress_12s_linear_infinite]"
           style={{
             animationDuration: `${SLIDE_DURATION}ms`,
             animationPlayState: isPaused ? "paused" : "running",
@@ -163,7 +255,7 @@ export const ArenaLiveKiosk: React.FC = () => {
         <div className="flex items-center gap-4">
           <Link
             to="/bi-history"
-            className="p-2 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 text-slate-300 hover:text-white transition-all"
+            className="p-2.5 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 text-slate-300 hover:text-white transition-all shadow-sm"
             title="Voltar ao Painel"
           >
             <ArrowLeft className="h-5 w-5" />
@@ -177,7 +269,7 @@ export const ArenaLiveKiosk: React.FC = () => {
                 Arena Live Kiosk
               </Badge>
             </h1>
-            <p className="text-xs text-slate-400">Painel Oficial de Quadras & Atletas</p>
+            <p className="text-xs text-slate-400">Painel Oficial de Quadras, Destaques & Atletas</p>
           </div>
         </div>
 
@@ -192,7 +284,7 @@ export const ArenaLiveKiosk: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5 bg-white/5 p-1 rounded-xl border border-white/10">
+          <div className="flex items-center gap-1.5 bg-white/5 p-1 rounded-xl border border-white/10 shadow-sm">
             <Button
               variant="ghost"
               size="icon"
@@ -216,96 +308,577 @@ export const ArenaLiveKiosk: React.FC = () => {
       </header>
 
       {/* CONTEÚDO PRINCIPAL (SLIDES DINÂMICOS) */}
-      <main className="flex-1 p-8 flex items-center justify-center relative z-10">
-        {/* SLIDE 1: STATUS DAS QUADRAS AO VIVO */}
+      <main className="flex-1 p-6 md:p-8 flex items-center justify-center relative z-10 overflow-y-auto">
+        {/* ======================================================== */}
+        {/* SLIDE 0: HALL DA FAMA - TOP 3 POR CATEGORIA              */}
+        {/* (Infantil, Juvenil e Adulto)                             */}
+        {/* ======================================================== */}
         {currentSlide === 0 && (
-          <div className="w-full max-w-7xl space-y-6 animate-in fade-in zoom-in-95 duration-500">
-            <div className="flex items-center justify-between">
-              <div>
-                <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/40 text-xs uppercase tracking-wider mb-1">
-                  Transmissão ao Vivo das Quadras
-                </Badge>
-                <h2 className="text-3xl font-black tracking-tight text-white flex items-center gap-2">
-                  <Tv className="h-7 w-7 text-blue-400" />
-                  Grade de Treinos em Andamento ({currentDayOfWeek})
-                </h2>
-              </div>
-              <span className="text-sm text-slate-400 font-medium">
-                Próxima atualização automática em instantes
-              </span>
+          <div className="w-full max-w-7xl space-y-6 animate-in fade-in zoom-in-95 duration-500 py-2">
+            <div className="text-center space-y-2">
+              <Badge className="bg-amber-500/20 text-amber-300 border-amber-500/40 text-xs uppercase tracking-widest px-3 py-1">
+                🏆 Quadro de Honra & Destaques Oficiais
+              </Badge>
+              <h2 className="text-3xl md:text-4xl font-black tracking-tight text-white flex items-center justify-center gap-3">
+                <Trophy className="h-8 w-8 md:h-10 md:w-10 text-amber-400 drop-shadow-md" />
+                Hall da Fama • Top 3 por Categoria
+              </h2>
+              <p className="text-slate-300 text-sm max-w-2xl mx-auto">
+                Reconhecimento aos atletas que mais se destacaram em precisão técnica, frequência e pontuação nas três categorias da academia.
+              </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {courtsStatus.map((court, idx) => (
-                <div
-                  key={court.courtName}
-                  className="rounded-3xl border border-white/10 bg-slate-900/60 backdrop-blur-xl p-6 flex flex-col justify-between shadow-2xl relative overflow-hidden group hover:border-amber-400/50 transition-all"
-                >
-                  <div className="absolute top-0 right-0 p-4">
-                    <span className="flex h-3 w-3 rounded-full bg-emerald-500 animate-pulse" />
-                  </div>
-
-                  <div className="space-y-3">
-                    <div className="space-y-1">
-                      <span className="text-xs font-black uppercase tracking-widest text-amber-400">
-                        Espaço de Jogo
-                      </span>
-                      <h3 className="text-2xl font-black text-white">{court.courtName}</h3>
+            {/* 3 Colunas: Infantil, Juvenil e Adulto */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* CATEGORIA 1: INFANTIL */}
+              <div className="rounded-3xl border border-cyan-500/30 bg-slate-900/70 backdrop-blur-xl p-6 shadow-2xl flex flex-col justify-between space-y-4 relative overflow-hidden group hover:border-cyan-400/60 transition-all">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/10 rounded-full blur-2xl pointer-events-none" />
+                
+                <div className="flex items-center justify-between pb-3 border-b border-cyan-500/20">
+                  <div className="flex items-center gap-2.5">
+                    <div className="p-2 rounded-xl bg-cyan-500/20 border border-cyan-500/40 text-cyan-300">
+                      <Sparkles className="h-5 w-5" />
                     </div>
-
-                    <div className="bg-black/40 rounded-2xl p-3 border border-white/5 space-y-1">
-                      <div className="flex items-center justify-between text-xs text-slate-400 font-semibold">
-                        <span className="flex items-center gap-1">
-                          <Clock className="h-3.5 w-3.5 text-blue-400" /> Horário
-                        </span>
-                        <span className="font-mono text-white text-sm">
-                          {court.slot ? court.slot.horario : currentHourStr}
-                        </span>
-                      </div>
-                      <div className="text-xs text-slate-300 font-medium">
-                        Turma: <strong className="text-white">{court.slot ? court.slot.turmaId : "Treino Livre"}</strong>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2 pt-2">
-                      <p className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                        <Users className="h-3.5 w-3.5 text-slate-400" /> Atletas em Quadra:
-                      </p>
-                      {court.students.length > 0 ? (
-                        <div className="space-y-1.5">
-                          {court.students.map((name, i) => (
-                            <div
-                              key={i}
-                              className="text-xs bg-white/5 px-2.5 py-1.5 rounded-lg border border-white/5 flex items-center gap-2 font-medium"
-                            >
-                              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-                              <span className="truncate">{name}</span>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="text-xs text-slate-500 italic py-2">
-                          Nenhum atleta listado neste horário.
-                        </p>
-                      )}
+                    <div>
+                      <h3 className="text-xl font-black text-white uppercase tracking-wider">Infantil</h3>
+                      <p className="text-[11px] text-cyan-300 font-semibold">Até 12 anos • Nova Geração</p>
                     </div>
                   </div>
-
-                  <div className="mt-4 pt-4 border-t border-white/5 flex items-center justify-between text-[11px] text-slate-400">
-                    <span>Equipe Marco Roza</span>
-                    <Badge variant="outline" className="text-[10px] text-emerald-400 border-emerald-400/30">
-                      Quadra Ativa
-                    </Badge>
-                  </div>
+                  <Badge variant="outline" className="text-[10px] uppercase font-bold text-cyan-300 border-cyan-500/40">
+                    Podium Kids
+                  </Badge>
                 </div>
-              ))}
+
+                {/* Lista Top 3 Infantil */}
+                <div className="space-y-3 flex-1 flex flex-col justify-center">
+                  {categoryRankings.Infantil.length > 0 ? (
+                    categoryRankings.Infantil.map((item, index) => {
+                      const isGold = index === 0;
+                      const isSilver = index === 1;
+                      const isBronze = index === 2;
+
+                      return (
+                        <div
+                          key={item.student.id}
+                          className={`p-4 rounded-2xl border transition-all flex items-center justify-between gap-3 relative overflow-hidden ${
+                            isGold
+                              ? "bg-gradient-to-r from-amber-500/20 via-slate-900/90 to-slate-900/90 border-amber-400/60 shadow-lg shadow-amber-500/10 scale-[1.02]"
+                              : isSilver
+                              ? "bg-slate-900/80 border-slate-300/40"
+                              : "bg-slate-900/60 border-amber-700/40"
+                          }`}
+                        >
+                          <div className="flex items-center gap-3 min-w-0">
+                            {/* Medalha / Posição */}
+                            <div
+                              className={`h-11 w-11 rounded-xl flex items-center justify-center font-black text-base shrink-0 shadow-md ${
+                                isGold
+                                  ? "bg-gradient-to-tr from-amber-400 to-yellow-500 text-slate-950"
+                                  : isSilver
+                                  ? "bg-gradient-to-tr from-slate-200 to-slate-400 text-slate-950"
+                                  : "bg-gradient-to-tr from-amber-700 to-yellow-800 text-white"
+                              }`}
+                            >
+                              {isGold ? "🥇 1º" : isSilver ? "🥈 2º" : "🥉 3º"}
+                            </div>
+
+                            <div className="min-w-0">
+                              <h4 className="text-base md:text-lg font-black text-white truncate">
+                                {item.student.nome}
+                              </h4>
+                              <p className="text-xs text-slate-400 truncate">
+                                {item.scoreSub}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="text-right shrink-0">
+                            <span
+                              className={`font-mono font-black text-sm md:text-base ${
+                                isGold ? "text-amber-300" : isSilver ? "text-slate-200" : "text-amber-500"
+                              }`}
+                            >
+                              {item.scoreLabel}
+                            </span>
+                            <div className="text-[10px] uppercase font-bold text-slate-500">
+                              {isGold ? "Líder" : "Destaque"}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <div className="text-center py-8 text-slate-500 text-xs italic bg-black/20 rounded-2xl border border-white/5">
+                      Nenhum atleta infantil com dados nesta semana.
+                    </div>
+                  )}
+
+                  {/* Complemento caso haja menos de 3 atletas */}
+                  {categoryRankings.Infantil.length > 0 && categoryRankings.Infantil.length < 3 && (
+                    <div className="p-3 rounded-2xl border border-dashed border-cyan-500/20 bg-cyan-500/5 text-center text-xs text-cyan-300/80 font-medium">
+                      ⭐ Vaga aberta no pódio para os próximos treinos!
+                    </div>
+                  )}
+                </div>
+
+                <div className="pt-2 text-center text-[11px] text-cyan-400/80 font-semibold border-t border-white/5">
+                  Top 3 Atletas Categoria Infantil
+                </div>
+              </div>
+
+              {/* CATEGORIA 2: JUVENIL */}
+              <div className="rounded-3xl border border-purple-500/30 bg-slate-900/70 backdrop-blur-xl p-6 shadow-2xl flex flex-col justify-between space-y-4 relative overflow-hidden group hover:border-purple-400/60 transition-all">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 rounded-full blur-2xl pointer-events-none" />
+                
+                <div className="flex items-center justify-between pb-3 border-b border-purple-500/20">
+                  <div className="flex items-center gap-2.5">
+                    <div className="p-2 rounded-xl bg-purple-500/20 border border-purple-500/40 text-purple-300">
+                      <Flame className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-black text-white uppercase tracking-wider">Juvenil</h3>
+                      <p className="text-[11px] text-purple-300 font-semibold">13 a 17 anos • Alta Performance</p>
+                    </div>
+                  </div>
+                  <Badge variant="outline" className="text-[10px] uppercase font-bold text-purple-300 border-purple-500/40">
+                    Podium Teens
+                  </Badge>
+                </div>
+
+                {/* Lista Top 3 Juvenil */}
+                <div className="space-y-3 flex-1 flex flex-col justify-center">
+                  {categoryRankings.Juvenil.length > 0 ? (
+                    categoryRankings.Juvenil.map((item, index) => {
+                      const isGold = index === 0;
+                      const isSilver = index === 1;
+                      const isBronze = index === 2;
+
+                      return (
+                        <div
+                          key={item.student.id}
+                          className={`p-4 rounded-2xl border transition-all flex items-center justify-between gap-3 relative overflow-hidden ${
+                            isGold
+                              ? "bg-gradient-to-r from-amber-500/20 via-slate-900/90 to-slate-900/90 border-amber-400/60 shadow-lg shadow-amber-500/10 scale-[1.02]"
+                              : isSilver
+                              ? "bg-slate-900/80 border-slate-300/40"
+                              : "bg-slate-900/60 border-amber-700/40"
+                          }`}
+                        >
+                          <div className="flex items-center gap-3 min-w-0">
+                            {/* Medalha / Posição */}
+                            <div
+                              className={`h-11 w-11 rounded-xl flex items-center justify-center font-black text-base shrink-0 shadow-md ${
+                                isGold
+                                  ? "bg-gradient-to-tr from-amber-400 to-yellow-500 text-slate-950"
+                                  : isSilver
+                                  ? "bg-gradient-to-tr from-slate-200 to-slate-400 text-slate-950"
+                                  : "bg-gradient-to-tr from-amber-700 to-yellow-800 text-white"
+                              }`}
+                            >
+                              {isGold ? "🥇 1º" : isSilver ? "🥈 2º" : "🥉 3º"}
+                            </div>
+
+                            <div className="min-w-0">
+                              <h4 className="text-base md:text-lg font-black text-white truncate">
+                                {item.student.nome}
+                              </h4>
+                              <p className="text-xs text-slate-400 truncate">
+                                {item.scoreSub}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="text-right shrink-0">
+                            <span
+                              className={`font-mono font-black text-sm md:text-base ${
+                                isGold ? "text-amber-300" : isSilver ? "text-slate-200" : "text-amber-500"
+                              }`}
+                            >
+                              {item.scoreLabel}
+                            </span>
+                            <div className="text-[10px] uppercase font-bold text-slate-500">
+                              {isGold ? "Líder" : "Destaque"}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <div className="text-center py-8 text-slate-500 text-xs italic bg-black/20 rounded-2xl border border-white/5">
+                      Nenhum atleta juvenil com dados nesta semana.
+                    </div>
+                  )}
+
+                  {/* Complemento caso haja menos de 3 atletas */}
+                  {categoryRankings.Juvenil.length > 0 && categoryRankings.Juvenil.length < 3 && (
+                    <div className="p-3 rounded-2xl border border-dashed border-purple-500/20 bg-purple-500/5 text-center text-xs text-purple-300/80 font-medium">
+                      ⭐ Vaga aberta no pódio para os próximos treinos!
+                    </div>
+                  )}
+                </div>
+
+                <div className="pt-2 text-center text-[11px] text-purple-400/80 font-semibold border-t border-white/5">
+                  Top 3 Atletas Categoria Juvenil
+                </div>
+              </div>
+
+              {/* CATEGORIA 3: ADULTO */}
+              <div className="rounded-3xl border border-amber-500/30 bg-slate-900/70 backdrop-blur-xl p-6 shadow-2xl flex flex-col justify-between space-y-4 relative overflow-hidden group hover:border-amber-400/60 transition-all">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 rounded-full blur-2xl pointer-events-none" />
+                
+                <div className="flex items-center justify-between pb-3 border-b border-amber-500/20">
+                  <div className="flex items-center gap-2.5">
+                    <div className="p-2 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-300">
+                      <Crown className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-black text-white uppercase tracking-wider">Adulto</h3>
+                      <p className="text-[11px] text-amber-300 font-semibold">+18 anos • Mestres & Elite</p>
+                    </div>
+                  </div>
+                  <Badge variant="outline" className="text-[10px] uppercase font-bold text-amber-300 border-amber-500/40">
+                    Podium Adulto
+                  </Badge>
+                </div>
+
+                {/* Lista Top 3 Adulto */}
+                <div className="space-y-3 flex-1 flex flex-col justify-center">
+                  {categoryRankings.Adulto.length > 0 ? (
+                    categoryRankings.Adulto.map((item, index) => {
+                      const isGold = index === 0;
+                      const isSilver = index === 1;
+                      const isBronze = index === 2;
+
+                      return (
+                        <div
+                          key={item.student.id}
+                          className={`p-4 rounded-2xl border transition-all flex items-center justify-between gap-3 relative overflow-hidden ${
+                            isGold
+                              ? "bg-gradient-to-r from-amber-500/20 via-slate-900/90 to-slate-900/90 border-amber-400/60 shadow-lg shadow-amber-500/10 scale-[1.02]"
+                              : isSilver
+                              ? "bg-slate-900/80 border-slate-300/40"
+                              : "bg-slate-900/60 border-amber-700/40"
+                          }`}
+                        >
+                          <div className="flex items-center gap-3 min-w-0">
+                            {/* Medalha / Posição */}
+                            <div
+                              className={`h-11 w-11 rounded-xl flex items-center justify-center font-black text-base shrink-0 shadow-md ${
+                                isGold
+                                  ? "bg-gradient-to-tr from-amber-400 to-yellow-500 text-slate-950"
+                                  : isSilver
+                                  ? "bg-gradient-to-tr from-slate-200 to-slate-400 text-slate-950"
+                                  : "bg-gradient-to-tr from-amber-700 to-yellow-800 text-white"
+                              }`}
+                            >
+                              {isGold ? "🥇 1º" : isSilver ? "🥈 2º" : "🥉 3º"}
+                            </div>
+
+                            <div className="min-w-0">
+                              <h4 className="text-base md:text-lg font-black text-white truncate">
+                                {item.student.nome}
+                              </h4>
+                              <p className="text-xs text-slate-400 truncate">
+                                {item.scoreSub}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="text-right shrink-0">
+                            <span
+                              className={`font-mono font-black text-sm md:text-base ${
+                                isGold ? "text-amber-300" : isSilver ? "text-slate-200" : "text-amber-500"
+                              }`}
+                            >
+                              {item.scoreLabel}
+                            </span>
+                            <div className="text-[10px] uppercase font-bold text-slate-500">
+                              {isGold ? "Líder" : "Destaque"}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <div className="text-center py-8 text-slate-500 text-xs italic bg-black/20 rounded-2xl border border-white/5">
+                      Nenhum atleta adulto com dados nesta semana.
+                    </div>
+                  )}
+
+                  {/* Complemento caso haja menos de 3 atletas */}
+                  {categoryRankings.Adulto.length > 0 && categoryRankings.Adulto.length < 3 && (
+                    <div className="p-3 rounded-2xl border border-dashed border-amber-500/20 bg-amber-500/5 text-center text-xs text-amber-300/80 font-medium">
+                      ⭐ Vaga aberta no pódio para os próximos treinos!
+                    </div>
+                  )}
+                </div>
+
+                <div className="pt-2 text-center text-[11px] text-amber-400/80 font-semibold border-t border-white/5">
+                  Top 3 Atletas Categoria Adulto
+                </div>
+              </div>
             </div>
           </div>
         )}
 
-        {/* SLIDE 2: ANIVERSARIANTES DO MÊS */}
+        {/* ======================================================== */}
+        {/* SLIDE 1: GRADE DE HORÁRIOS COM CARDS LARGOS              */}
+        {/* Alunos da(s) Turma(s) do Horário em Exibição             */}
+        {/* ======================================================== */}
         {currentSlide === 1 && (
-          <div className="w-full max-w-6xl space-y-6 animate-in fade-in zoom-in-95 duration-500">
+          <div className="w-full max-w-7xl space-y-6 animate-in fade-in zoom-in-95 duration-500 py-2">
+            {/* Header do Horário e Seletor */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-white/10">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/40 text-xs uppercase tracking-wider">
+                    Grade de Horários ({currentDayOfWeek})
+                  </Badge>
+                  {activeHour === currentHourStr ? (
+                    <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/40 text-xs uppercase tracking-wider animate-pulse flex items-center gap-1.5 font-bold">
+                      <span className="h-2 w-2 rounded-full bg-emerald-400 animate-ping" />
+                      Ao Vivo Agora
+                    </Badge>
+                  ) : (
+                    <Badge variant="outline" className="text-xs text-slate-400 border-white/20">
+                      Horário Programado
+                    </Badge>
+                  )}
+                </div>
+                <h2 className="text-3xl md:text-4xl font-black tracking-tight text-white flex items-center gap-3">
+                  <Clock className="h-8 w-8 text-amber-400" />
+                  Turmas das {activeHour}
+                </h2>
+              </div>
+
+              {/* Barra de Seleção Rápida de Horários */}
+              <div className="flex items-center gap-2 bg-slate-900/80 p-1.5 rounded-2xl border border-white/10 shadow-lg">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-slate-300 hover:text-white"
+                  onClick={handlePrevHour}
+                  title="Horário Anterior"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+
+                <div className="flex items-center gap-1.5 overflow-x-auto max-w-xs md:max-w-md py-1 px-1">
+                  {availableHours.map((hour) => {
+                    const isCurrent = hour === activeHour;
+                    const isRealNow = hour === currentHourStr;
+
+                    return (
+                      <button
+                        key={hour}
+                        onClick={() => setSelectedHour(hour)}
+                        className={`px-3 py-1 rounded-xl text-xs font-mono font-bold transition-all shrink-0 ${
+                          isCurrent
+                            ? "bg-amber-400 text-slate-950 shadow-md font-black"
+                            : isRealNow
+                            ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-500/30"
+                            : "bg-white/5 text-slate-400 hover:text-white hover:bg-white/10"
+                        }`}
+                      >
+                        {hour}
+                        {isRealNow && " 🔴"}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-slate-300 hover:text-white"
+                  onClick={handleNextHour}
+                  title="Próximo Horário"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+
+            {/* Cards Largos das Turmas deste Horário */}
+            {classesInActiveHour.length === 0 ? (
+              <div className="text-center py-16 text-slate-400 bg-slate-900/40 rounded-3xl border border-white/10 space-y-3">
+                <Clock className="h-12 w-12 text-slate-600 mx-auto" />
+                <h3 className="text-xl font-bold text-white">Nenhuma turma escalada para as {activeHour}</h3>
+                <p className="text-sm text-slate-400 max-w-md mx-auto">
+                  Utilize os botões acima para navegar pelos demais horários do dia.
+                </p>
+                {availableHours.length > 0 && (
+                  <Button
+                    variant="outline"
+                    className="border-amber-400/40 text-amber-300 hover:bg-amber-400/10 mt-2"
+                    onClick={() => setSelectedHour(availableHours[0])}
+                  >
+                    Ver Primeiro Horário ({availableHours[0]})
+                  </Button>
+                )}
+              </div>
+            ) : (
+              <div
+                className={`grid gap-8 ${
+                  classesInActiveHour.length === 1
+                    ? "grid-cols-1 max-w-4xl mx-auto"
+                    : "grid-cols-1 lg:grid-cols-2"
+                }`}
+              >
+                {classesInActiveHour.map((slot) => {
+                  // Alunos matriculados nesta turma específica
+                  const studentIds = enrollments
+                    .filter((e) => e.turmaId === slot.id)
+                    .map((e) => e.alunoId);
+                  const enrolledStudents = students.filter((s) => studentIds.includes(s.id));
+                  const isCourt1 = slot.quadra.toLowerCase().includes("1");
+
+                  return (
+                    <div
+                      key={slot.id}
+                      className="rounded-3xl border border-white/10 bg-slate-900/80 backdrop-blur-xl p-6 md:p-8 flex flex-col justify-between shadow-2xl relative overflow-hidden group hover:border-amber-400/50 transition-all"
+                    >
+                      {/* Top Header do Card Largo */}
+                      <div className="flex items-start justify-between gap-4 pb-4 border-b border-white/10">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <span className="flex h-3 w-3 rounded-full bg-emerald-400 animate-pulse" />
+                            <Badge
+                              className={`text-xs uppercase font-black tracking-widest px-3 py-1 ${
+                                isCourt1
+                                  ? "bg-amber-400 text-slate-950 border-amber-300"
+                                  : "bg-blue-500 text-white border-blue-400"
+                              }`}
+                            >
+                              {slot.quadra}
+                            </Badge>
+                          </div>
+                          <h3 className="text-2xl md:text-3xl font-black text-white tracking-wide">
+                            Turma {slot.turmaId}
+                          </h3>
+                        </div>
+
+                        <div className="text-right space-y-1">
+                          <div className="inline-flex items-center gap-2 bg-black/60 px-4 py-2 rounded-2xl border border-white/10 font-mono text-lg font-black text-amber-300 shadow-inner">
+                            <Clock className="h-4 w-4 text-amber-400" />
+                            {slot.horario}
+                          </div>
+                          <div className="text-xs text-slate-400 font-bold uppercase tracking-wider">
+                            {enrolledStudents.length} de {CLASS_LIMIT} Atletas Matriculados
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Grade de Alunos com Cards Largos e Nomes Bem Visíveis */}
+                      <div className="py-6 flex-1">
+                        <p className="text-xs font-bold uppercase tracking-widest text-slate-400 flex items-center gap-2 mb-4">
+                          <Users className="h-4 w-4 text-amber-400" /> Atletas Escalados na Turma:
+                        </p>
+
+                        {enrolledStudents.length > 0 ? (
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                            {enrolledStudents.map((student) => {
+                              const isInfantil = student.categoria === "Infantil";
+                              const isJuvenil = student.categoria === "Juvenil";
+
+                              return (
+                                <div
+                                  key={student.id}
+                                  className="p-3.5 rounded-2xl bg-slate-950/70 border border-white/10 hover:border-amber-400/40 flex items-center justify-between gap-3 shadow-md hover:bg-slate-900/90 transition-all"
+                                >
+                                  <div className="flex items-center gap-3 min-w-0">
+                                    {/* Avatar com Iniciais */}
+                                    <div
+                                      className={`h-11 w-11 rounded-xl flex items-center justify-center font-black text-base text-white shrink-0 shadow-md ${
+                                        isInfantil
+                                          ? "bg-gradient-to-tr from-cyan-600 to-blue-500"
+                                          : isJuvenil
+                                          ? "bg-gradient-to-tr from-purple-600 to-indigo-500"
+                                          : "bg-gradient-to-tr from-amber-500 to-red-600"
+                                      }`}
+                                    >
+                                      {student.nome.slice(0, 2).toUpperCase()}
+                                    </div>
+
+                                    {/* Nome Grande e Bem Visível na TV */}
+                                    <div className="min-w-0">
+                                      <h4 className="text-lg xl:text-xl font-black text-white tracking-wide truncate">
+                                        {student.nome}
+                                      </h4>
+                                      <div className="flex items-center gap-1.5 mt-0.5">
+                                        <Badge
+                                          variant="outline"
+                                          className={`text-[10px] uppercase font-bold py-0 px-1.5 ${
+                                            isInfantil
+                                              ? "text-cyan-300 border-cyan-500/40"
+                                              : isJuvenil
+                                              ? "text-purple-300 border-purple-500/40"
+                                              : "text-amber-300 border-amber-500/40"
+                                          }`}
+                                        >
+                                          {student.categoria}
+                                        </Badge>
+                                        <span className="text-[10px] text-slate-500 font-medium">Equipe MR</span>
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  <div className="shrink-0 flex items-center text-emerald-400" title="Atleta Confirmado">
+                                    <CheckCircle2 className="h-5 w-5" />
+                                  </div>
+                                </div>
+                              );
+                            })}
+
+                            {/* Indicadores de Vagas Restantes na Turma */}
+                            {Array.from({ length: Math.max(0, CLASS_LIMIT - enrolledStudents.length) }).map((_, idx) => (
+                              <div
+                                key={idx}
+                                className="p-3.5 rounded-2xl border border-dashed border-white/10 bg-white/[0.02] flex items-center gap-3 text-slate-500"
+                              >
+                                <div className="h-11 w-11 rounded-xl border border-dashed border-white/20 flex items-center justify-center text-xs font-mono font-bold text-slate-600">
+                                  #{enrolledStudents.length + idx + 1}
+                                </div>
+                                <div>
+                                  <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                                    Vaga Aberta
+                                  </span>
+                                  <p className="text-[10px] text-slate-600 font-medium">Disponível para matrícula</p>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="text-center py-10 text-slate-400 bg-black/30 rounded-2xl border border-white/5 space-y-2">
+                            <Users className="h-8 w-8 text-slate-600 mx-auto" />
+                            <p className="text-sm font-semibold text-slate-300">
+                              Nenhum atleta matriculado nesta turma até o momento.
+                            </p>
+                            <p className="text-xs text-slate-500">Turma pronta para receber alunos.</p>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Rodapé do Card Largo */}
+                      <div className="pt-4 border-t border-white/5 flex items-center justify-between text-xs text-slate-400">
+                        <span className="font-medium">Arena Oficial Marco Roza</span>
+                        <Badge variant="outline" className="text-[11px] text-emerald-400 border-emerald-400/40 font-bold">
+                          Espaço Ativo
+                        </Badge>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ======================================================== */}
+        {/* SLIDE 2: ANIVERSARIANTES DO MÊS                          */}
+        {/* ======================================================== */}
+        {currentSlide === 2 && (
+          <div className="w-full max-w-6xl space-y-6 animate-in fade-in zoom-in-95 duration-500 py-2">
             <div className="text-center space-y-2">
               <Badge className="bg-pink-500/20 text-pink-300 border-pink-500/40 text-xs uppercase tracking-wider">
                 Celebração Especial
@@ -351,74 +924,6 @@ export const ArenaLiveKiosk: React.FC = () => {
             )}
           </div>
         )}
-
-        {/* SLIDE 3: HALL DA FAMA / DESTAQUES TÉCNICOS */}
-        {currentSlide === 2 && (
-          <div className="w-full max-w-6xl space-y-6 animate-in fade-in zoom-in-95 duration-500">
-            <div className="text-center space-y-2">
-              <Badge className="bg-amber-500/20 text-amber-300 border-amber-500/40 text-xs uppercase tracking-wider">
-                Quadro de Honra & Aproveitamento
-              </Badge>
-              <h2 className="text-4xl font-black tracking-tight text-white flex items-center justify-center gap-3">
-                <Trophy className="h-9 w-9 text-amber-400" />
-                Hall da Fama | Destaques Técnicos da Semana
-              </h2>
-              <p className="text-slate-300 text-sm max-w-xl mx-auto">
-                Reconhecimento aos atletas com maior pontuação e aproveitamento nos testes práticos de precisão e controle de bola.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {topAthletes.slice(0, 3).map((item, index) => (
-                <div
-                  key={item.student.id}
-                  className={`rounded-3xl p-6 border backdrop-blur-xl flex flex-col justify-between shadow-2xl relative overflow-hidden ${
-                    index === 0
-                      ? "bg-gradient-to-b from-amber-950/60 via-slate-900 to-black border-amber-400/50 shadow-yellow-500/20 scale-105"
-                      : "bg-slate-900/60 border-white/10"
-                  }`}
-                >
-                  <div className="flex items-start justify-between">
-                    <span
-                      className={`text-4xl font-black font-mono ${
-                        index === 0
-                          ? "text-amber-400"
-                          : index === 1
-                          ? "text-slate-300"
-                          : "text-amber-700"
-                      }`}
-                    >
-                      #{index + 1}
-                    </span>
-                    <Badge
-                      className={`text-xs uppercase font-black ${
-                        index === 0
-                          ? "bg-amber-400 text-slate-950"
-                          : "bg-white/10 text-white"
-                      }`}
-                    >
-                      {index === 0 ? "Campeão da Semana" : "Top Atleta"}
-                    </Badge>
-                  </div>
-
-                  <div className="my-6 space-y-1">
-                    <h3 className="text-2xl font-black text-white">{item.student.nome}</h3>
-                    <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider">
-                      {item.student.categoria} • {item.testsCount} Testes Concluídos
-                    </p>
-                  </div>
-
-                  <div className="bg-black/50 p-3 rounded-2xl border border-white/5 flex items-center justify-between">
-                    <span className="text-xs text-slate-400 font-medium">Acertos Acumulados</span>
-                    <span className="text-xl font-black font-mono text-amber-300">
-                      {item.totalHits} bolas
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
       </main>
 
       {/* FOOTER DA ARENA LIVE */}
@@ -430,15 +935,28 @@ export const ArenaLiveKiosk: React.FC = () => {
         </div>
 
         {/* Indicadores de Slide */}
-        <div className="flex items-center gap-2">
-          {[0, 1, 2].map((idx) => (
+        <div className="flex items-center gap-3">
+          {[
+            { idx: 0, label: "🏆 Hall da Fama (Categorias)" },
+            { idx: 1, label: "📅 Grade de Horários" },
+            { idx: 2, label: "🎉 Aniversariantes" },
+          ].map((item) => (
             <button
-              key={idx}
-              onClick={() => setCurrentSlide(idx)}
-              className={`h-2.5 rounded-full transition-all cursor-pointer ${
-                currentSlide === idx ? "w-8 bg-amber-400" : "w-2.5 bg-white/20 hover:bg-white/40"
+              key={item.idx}
+              onClick={() => setCurrentSlide(item.idx)}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-full transition-all cursor-pointer text-xs font-semibold ${
+                currentSlide === item.idx
+                  ? "bg-amber-400 text-slate-950 font-bold shadow-md"
+                  : "bg-white/10 text-slate-400 hover:text-white hover:bg-white/20"
               }`}
-            />
+            >
+              <span
+                className={`h-2 w-2 rounded-full ${
+                  currentSlide === item.idx ? "bg-slate-950" : "bg-white/40"
+                }`}
+              />
+              <span>{item.label}</span>
+            </button>
           ))}
         </div>
       </footer>
