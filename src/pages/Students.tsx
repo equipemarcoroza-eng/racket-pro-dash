@@ -143,18 +143,41 @@ const Students = () => {
   const today = new Date();
   const currentMonthValue = String(today.getMonth() + 1).padStart(2, "0");
   const currentDayStr = String(today.getDate()).padStart(2, "0");
-  const [selectedBirthdayMonth, setSelectedBirthdayMonth] = useState<string>(currentMonthValue);
+  const currentDayNum = today.getDate();
+
+  const getBirthInfo = (dateStr: string) => {
+    if (!dateStr) return null;
+    let day = 0;
+    let month = "";
+    if (dateStr.includes("/")) {
+      const parts = dateStr.split("/");
+      day = parseInt(parts[0], 10);
+      month = parts[1]?.padStart(2, "0") || "";
+    } else if (dateStr.includes("-")) {
+      const parts = dateStr.split("-");
+      day = parseInt(parts[2], 10);
+      month = parts[1]?.padStart(2, "0") || "";
+    }
+    if (!month || isNaN(day) || day <= 0) return null;
+    return { day, month };
+  };
 
   const birthdayStudents = students
     .filter((s) => {
-      if (s.status !== "Ativo") return false;
-      if (!s.dataNascimento) return false;
-      const parts = s.dataNascimento.split("-");
-      return parts.length >= 2 && parts[1] === selectedBirthdayMonth;
+      if (s.status !== "Ativo" || !s.dataNascimento) return false;
+      const info = getBirthInfo(s.dataNascimento);
+      if (!info) return false;
+      if (info.month !== selectedBirthdayMonth) return false;
+
+      // Se for o mês atual, retira os aniversariantes dos dias que já passaram
+      if (selectedBirthdayMonth === currentMonthValue && info.day < currentDayNum) {
+        return false;
+      }
+      return true;
     })
     .sort((a, b) => {
-      const dayA = parseInt(a.dataNascimento.split("-")[2]) || 0;
-      const dayB = parseInt(b.dataNascimento.split("-")[2]) || 0;
+      const dayA = getBirthInfo(a.dataNascimento)?.day || 0;
+      const dayB = getBirthInfo(b.dataNascimento)?.day || 0;
       return dayA - dayB;
     });
 
@@ -559,7 +582,9 @@ const Students = () => {
                   </Badge>
                 </div>
                 <p className="text-xs text-slate-700 dark:text-slate-300 font-medium mt-0.5">
-                  Acompanhe e parabenize os alunos que celebram mais um ano de vida neste mês.
+                  {selectedBirthdayMonth === currentMonthValue
+                    ? "Próximos aniversariantes do mês (a partir de hoje)."
+                    : `Acompanhe e parabenize os alunos que celebram mais um ano de vida em ${selectedMonthObj.label}.`}
                 </p>
               </div>
             </div>
@@ -596,7 +621,9 @@ const Students = () => {
             <div className="py-5 px-4 text-center flex flex-col items-center justify-center">
               <p className="text-xs text-slate-600 dark:text-slate-400 italic flex items-center gap-1.5">
                 <PartyPopper className="w-4 h-4 text-amber-500/70" />
-                Nenhum aniversariante cadastrado para o mês de {selectedMonthObj.label}.
+                {selectedBirthdayMonth === currentMonthValue
+                  ? "Nenhum aniversário restante para os próximos dias deste mês."
+                  : `Nenhum aniversariante cadastrado para o mês de ${selectedMonthObj.label}.`}
               </p>
               {selectedBirthdayMonth !== currentMonthValue && (
                 <Button
@@ -612,8 +639,9 @@ const Students = () => {
           ) : (
             <div className="pt-3.5 flex items-center gap-3 overflow-x-auto pb-1 scrollbar-thin">
               {birthdayStudents.map((s) => {
-                const day = s.dataNascimento?.split("-")[2] || "--";
-                const isToday = day === currentDayStr && selectedBirthdayMonth === currentMonthValue;
+                const info = getBirthInfo(s.dataNascimento);
+                const day = info ? String(info.day).padStart(2, "0") : "--";
+                const isToday = info?.day === currentDayNum && selectedBirthdayMonth === currentMonthValue;
                 const age = calculateAge(s.dataNascimento);
                 const hasPhone = !!(s.whatsappAluno || s.whatsappResponsavel);
 
