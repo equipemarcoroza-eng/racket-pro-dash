@@ -187,10 +187,10 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
     let overallCalculated = baselineOvr;
     let forehand = baselineOvr - 2;
     let backhand = baselineOvr - 5;
-    let saqueSmash = baselineOvr + 1;
-    let voleio = baselineOvr - 4;
-    let agilidade = baselineOvr + 3 + bonusAgilidade;
-    let consistencia = baselineOvr + bonusConsistencia;
+    let lob = baselineOvr - 3;
+    let curta = baselineOvr - 4;
+    let saque = baselineOvr + 1;
+    let smash = baselineOvr + 2;
 
     if (studentResults.length > 0) {
       // Calcula média real dos testes
@@ -210,10 +210,14 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
           forehand = Math.max(60, scorePct);
         } else if (name.includes("backhand") || name.includes("esquerda")) {
           backhand = Math.max(60, scorePct);
-        } else if (name.includes("saque") || name.includes("smash")) {
-          saqueSmash = Math.max(60, scorePct);
-        } else if (name.includes("voleio") || name.includes("rede")) {
-          voleio = Math.max(60, scorePct);
+        } else if (name.includes("lob")) {
+          lob = Math.max(60, scorePct);
+        } else if (name.includes("curta") || name.includes("curtinha") || name.includes("drop")) {
+          curta = Math.max(60, scorePct);
+        } else if (name.includes("saque") || name.includes("serviço")) {
+          saque = Math.max(60, scorePct);
+        } else if (name.includes("smash")) {
+          smash = Math.max(60, scorePct);
         }
       });
 
@@ -223,15 +227,9 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
           99,
           Math.max(65, Math.round(avgPct * 0.4 + baselineOvr * 0.6))
         );
-        consistencia = Math.min(
-          99,
-          Math.max(
-            65,
-            overallCalculated + (totalAcertos > 15 ? 4 : -2) + bonusConsistencia
-          )
-        );
-        agilidade = Math.min(99, Math.max(65, agilidade + bonusAgilidade));
       }
+    } else {
+      overallCalculated = Math.round((forehand + backhand + lob + curta + saque + smash) / 6);
     }
 
     const finalOvr = Math.min(99, Math.max(60, overallCalculated + ovrBoost));
@@ -258,16 +256,18 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
       progressToNextLevel,
       reposicoes,
       miniligas,
+      miniligaPontos,
       attendedClasses,
+      totalValidClasses,
       bonusConsistencia,
       bonusAgilidade,
       attributes: [
         { label: "FOR", name: "Forehand", value: Math.min(99, forehand), boost: 0 },
         { label: "BCK", name: "Backhand", value: Math.min(99, backhand), boost: 0 },
-        { label: "SRV", name: "Saque & Smash", value: Math.min(99, saqueSmash), boost: 0 },
-        { label: "VOL", name: "Voleio & Rede", value: Math.min(99, voleio), boost: 0 },
-        { label: "AGI", name: "Agilidade", value: Math.min(99, agilidade), boost: bonusAgilidade },
-        { label: "CON", name: "Consistência", value: Math.min(99, consistencia), boost: bonusConsistencia },
+        { label: "LOB", name: "Lob", value: Math.min(99, lob), boost: 0 },
+        { label: "CUR", name: "Curta", value: Math.min(99, curta), boost: 0 },
+        { label: "SAQ", name: "Saque", value: Math.min(99, saque), boost: 0 },
+        { label: "SMH", name: "Smash", value: Math.min(99, smash), boost: 0 },
       ],
     };
   }, [student, testResults, activities, attendanceLogs]);
@@ -399,19 +399,16 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
           ? ` [Boost +${athleteStats.ovrBoost} Forma Física 🔥]`
           : ""
       }\n` +
-      `📊 *Categoria:* ${student.categoria}\n` +
-      `🔥 *Status:* ${fireText} • Assiduidade: ${athleteStats.attendanceRate}%\n` +
-      `⚡ *Temporada 2026:* Nível ${athleteStats.seasonLevel} (${athleteStats.totalXp} XP)\n\n` +
-      `🎾 *Atributos Técnicos:*\n` +
+      `📊 *Categoria:* ${student.categoria} • ${fireText}\n\n` +
+      `🎾 *Fundamentos Técnicos (Provas Bimestrais):*\n` +
       athleteStats.attributes
-        .map(
-          (a) =>
-            `• ${a.label} (${a.name}): ${a.value}${
-              a.boost > 0 ? ` ↗ (+${a.boost} Ritmo)` : ""
-            }`
-        )
+        .map((a) => `• ${a.label} (${a.name}): *${a.value}*`)
         .join("\n") +
-      `\n\nEquipe Marco Roza • Racket Pro Performance 🔥`;
+      `\n\n📅 *Frequência & Miniliga:*\n` +
+      `• 7. Assiduidade: *${athleteStats.attendanceRate}%* (${athleteStats.attendedClasses} aulas)\n` +
+      `• 8. Sequência: *${athleteStats.effectiveStreak} aulas seguidas* ${athleteStats.isOnFire ? "🔥 ON FIRE" : "sem faltas"}\n` +
+      `• 9. Miniliga: *${athleteStats.miniligaPontos} pts acumulados* (${athleteStats.miniligas} ${athleteStats.miniligas === 1 ? "torneio" : "torneios"})\n\n` +
+      `Equipe Marco Roza • Racket Pro Performance 🔥`;
 
     try {
       await navigator.clipboard.writeText(text);
@@ -436,18 +433,16 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
           ? ` (+${athleteStats.ovrBoost} Boost de Frequência 🔥)`
           : ""
       }\n` +
-      `🔥 *Status Atual:* *${fireEmoji}* (${athleteStats.attendanceRate}% de Presença)\n` +
-      `⚡ *Temporada 2026:* Nível ${athleteStats.seasonLevel} • *${athleteStats.totalXp} XP*\n\n` +
-      `📊 *Seus Fundamentos Técnicos:*\n` +
+      `🔥 *Status Atual:* *${fireEmoji}*\n\n` +
+      `📊 *Fundamentos Técnicos (Provas Bimestrais):*\n` +
       athleteStats.attributes
-        .map(
-          (a) =>
-            `• ${a.name}: *${a.value}*${
-              a.boost > 0 ? ` ↗ (+${a.boost} Ritmo)` : ""
-            }`
-        )
+        .map((a) => `• ${a.name}: *${a.value}*`)
         .join("\n") +
-      `\n\nParabéns pela dedicação nos treinos! Continue marcando presença para manter o boost ativo! 🚀🏆`;
+      `\n\n📅 *Frequência & Miniligas:*\n` +
+      `• 7. Assiduidade: *${athleteStats.attendanceRate}%* de presença\n` +
+      `• 8. Sequência de Aulas: *${athleteStats.effectiveStreak} aulas seguidas* sem faltas\n` +
+      `• 9. Miniliga Marco Roza: *${athleteStats.miniligaPontos} pontos acumulados* (${athleteStats.miniligas} ${athleteStats.miniligas === 1 ? "torneio" : "torneios"})\n\n` +
+      `Parabéns pela dedicação nos treinos! Continue marcando presença e somando pontos nas miniligas! 🚀🏆`;
 
     setIsGenerating(true);
     const blob = await generateCardBlob();
@@ -729,7 +724,7 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
                   </svg>
                 </div>
 
-                {/* Grid com Atributos Numéricos */}
+                {/* Grid com Atributos Numéricos dos 6 Fundamentos Técnicos */}
                 <div className="grid grid-cols-3 gap-1.5 mt-1 pt-2 border-t border-white/10 text-center">
                   {athleteStats.attributes.map((attr) => (
                     <div
@@ -743,23 +738,15 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
                         <span className="text-xs font-black text-amber-300 font-mono">
                           {attr.value}
                         </span>
-                        {attr.boost > 0 && (
-                          <span
-                            className="text-[8px] text-emerald-400 font-bold flex items-center"
-                            title={`Boost de frequência e ritmo: +${attr.boost}`}
-                          >
-                            <TrendingUp className="h-2 w-2 inline" />
-                            +{attr.boost}
-                          </span>
-                        )}
                       </div>
                     </div>
                   ))}
                 </div>
 
-                {/* HUD de Ritmo & Temporada */}
+                {/* HUD dos Itens 7, 8 e 9: Assiduidade, Sequência & Miniliga */}
                 <div className="mt-2.5 pt-2 border-t border-white/10 grid grid-cols-3 gap-1 text-center">
-                  <div className="bg-gradient-to-br from-amber-500/10 to-orange-500/5 rounded-lg p-1 border border-amber-500/20">
+                  {/* 7. Assiduidade */}
+                  <div className="bg-gradient-to-br from-amber-500/10 to-orange-500/5 rounded-lg p-1 border border-amber-500/20 flex flex-col justify-between">
                     <div className="flex items-center justify-center gap-0.5 text-[8.5px] text-amber-300 font-semibold mb-0.5">
                       <CalendarCheck className="h-2 w-2" />
                       Assiduidade
@@ -772,7 +759,8 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
                     </div>
                   </div>
 
-                  <div className="bg-gradient-to-br from-orange-500/10 to-red-500/5 rounded-lg p-1 border border-orange-500/20">
+                  {/* 8. Sequência */}
+                  <div className="bg-gradient-to-br from-orange-500/10 to-red-500/5 rounded-lg p-1 border border-orange-500/20 flex flex-col justify-between">
                     <div className="flex items-center justify-center gap-0.5 text-[8.5px] text-orange-300 font-semibold mb-0.5">
                       <Flame className="h-2 w-2" />
                       Sequência
@@ -780,36 +768,42 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
                     <div className="text-xs font-black text-white font-mono">
                       {athleteStats.effectiveStreak} seguidas
                     </div>
-                    <div className="text-[7.5px] text-slate-400">sem faltas</div>
+                    <div className="text-[7.5px] text-slate-400">
+                      {athleteStats.isOnFire ? "🔥 ON FIRE" : "sem faltas"}
+                    </div>
                   </div>
 
-                  <div className="bg-gradient-to-br from-yellow-500/10 to-amber-500/5 rounded-lg p-1 border border-yellow-500/20">
-                    <div className="flex items-center justify-center gap-0.5 text-[8.5px] text-yellow-300 font-semibold mb-0.5">
-                      <Sparkles className="h-2 w-2" />
-                      Temporada
+                  {/* 9. Miniliga (Contador à parte somando os pontos) */}
+                  <div className="bg-gradient-to-br from-amber-500/20 via-yellow-500/10 to-slate-900 rounded-lg p-1 border border-amber-400/40 shadow-sm flex flex-col justify-between">
+                    <div className="flex items-center justify-center gap-0.5 text-[8.5px] text-amber-300 font-black mb-0.5">
+                      <Trophy className="h-2 w-2 text-amber-400 fill-current" />
+                      Miniliga
                     </div>
-                    <div className="text-xs font-black text-white font-mono">
-                      Nível {athleteStats.seasonLevel}
+                    <div className="text-xs font-black text-amber-300 font-mono">
+                      {athleteStats.miniligaPontos} pts
                     </div>
-                    <div className="text-[7.5px] text-slate-400">
-                      {athleteStats.totalXp} XP
+                    <div className="text-[7.5px] text-slate-300 font-medium">
+                      {athleteStats.miniligas} {athleteStats.miniligas === 1 ? "torneio" : "torneios"}
                     </div>
                   </div>
                 </div>
 
-                {/* Barra de Progresso de XP da Temporada */}
+                {/* Barra de Pontuação da Miniliga */}
                 <div className="mt-2 px-1">
                   <div className="flex justify-between items-center text-[8.5px] text-slate-400 font-medium mb-1">
-                    <span>Rumo ao Nível {athleteStats.seasonLevel + 1}</span>
-                    <span className="text-amber-400 font-bold">
-                      {athleteStats.progressToNextLevel}/100 XP
+                    <span className="flex items-center gap-1 text-amber-300 font-semibold">
+                      <Trophy className="h-2.5 w-2.5 text-amber-400" />
+                      Pontos Acumulados Miniliga
+                    </span>
+                    <span className="text-amber-400 font-bold font-mono">
+                      {athleteStats.miniligaPontos} pts
                     </span>
                   </div>
-                  <div className="w-full bg-slate-800/80 rounded-full h-1 overflow-hidden border border-white/5">
+                  <div className="w-full bg-slate-800/80 rounded-full h-1.5 overflow-hidden border border-white/5">
                     <div
-                      className="bg-gradient-to-r from-amber-400 via-orange-500 to-yellow-400 h-full rounded-full transition-all duration-500"
+                      className="bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 h-full rounded-full transition-all duration-500"
                       style={{
-                        width: `${Math.max(8, athleteStats.progressToNextLevel)}%`,
+                        width: `${Math.min(100, Math.max(10, athleteStats.miniligaPontos > 0 ? (athleteStats.miniligaPontos % 100 || 100) : 0))}%`,
                       }}
                     />
                   </div>
@@ -882,33 +876,29 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
                 </div>
               </div>
 
-              {/* Progressão de Fundamentos Técnicos Detalhada */}
+              {/* Progressão dos 6 Fundamentos Técnicos das Provas Bimestrais */}
               <div className="pt-2 border-t border-white/5 space-y-2">
                 <div className="text-[11px] font-bold text-slate-300 uppercase tracking-wide flex items-center justify-between">
-                  <span>Fundamentos Técnicos & Físicos</span>
-                  <span className="text-[10px] text-slate-500">Escala 60-99</span>
+                  <span>Fundamentos Técnicos Bimestrais (1 ao 6)</span>
+                  <span className="text-[10px] text-slate-500">Escala 60-99 • Provas de Quadra</span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                  {athleteStats.attributes.map((attr) => (
+                  {athleteStats.attributes.map((attr, idx) => (
                     <div
                       key={attr.label}
                       className="bg-slate-950/60 rounded-xl p-2.5 border border-white/5 flex flex-col gap-1"
                     >
                       <div className="flex items-center justify-between text-xs">
-                        <span className="text-slate-300 font-medium">
-                          <strong className="text-amber-400 font-mono mr-1.5">
+                        <span className="text-slate-300 font-medium flex items-center gap-1.5">
+                          <span className="text-[10px] text-slate-500 font-mono">#{idx + 1}</span>
+                          <strong className="text-amber-400 font-mono">
                             {attr.label}
                           </strong>
                           {attr.name}
                         </span>
                         <div className="flex items-center gap-1 font-mono font-bold text-white">
                           <span>{attr.value}</span>
-                          {attr.boost > 0 && (
-                            <span className="text-[9px] text-emerald-400 font-normal">
-                              (+{attr.boost})
-                            </span>
-                          )}
                         </div>
                       </div>
                       <div className="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
@@ -929,18 +919,76 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
                   ))}
                 </div>
               </div>
+
+              {/* Frequência, Sequência & Miniliga (Itens 7, 8 e 9) */}
+              <div className="pt-3 border-t border-white/5 space-y-2">
+                <div className="text-[11px] font-bold text-slate-300 uppercase tracking-wide flex items-center justify-between">
+                  <span>Frequência, Sequência & Miniliga (7, 8 e 9)</span>
+                  <span className="text-[10px] text-amber-400 font-semibold">Engajamento & Competição</span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                  {/* Item 7: Assiduidade */}
+                  <div className="bg-slate-950/70 rounded-xl p-2.5 border border-amber-500/20 flex flex-col justify-between shadow-sm">
+                    <span className="text-[10px] text-slate-400 font-semibold uppercase flex items-center gap-1">
+                      <CalendarCheck className="h-3 w-3 text-amber-400" />
+                      7. Assiduidade
+                    </span>
+                    <div className="mt-1 flex items-baseline justify-between">
+                      <span className="text-lg font-black font-mono text-white">
+                        {athleteStats.attendanceRate}%
+                      </span>
+                      <span className="text-[10px] text-slate-400 font-medium">
+                        {athleteStats.attendedClasses} aulas
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Item 8: Sequência de Aulas */}
+                  <div className="bg-slate-950/70 rounded-xl p-2.5 border border-orange-500/20 flex flex-col justify-between shadow-sm">
+                    <span className="text-[10px] text-slate-400 font-semibold uppercase flex items-center gap-1">
+                      <Flame className="h-3 w-3 text-orange-400" />
+                      8. Sequência
+                    </span>
+                    <div className="mt-1 flex items-baseline justify-between">
+                      <span className="text-lg font-black font-mono text-white">
+                        {athleteStats.effectiveStreak}
+                      </span>
+                      <span className="text-[10px] text-orange-300 font-bold">
+                        {athleteStats.isOnFire ? "🔥 ON FIRE" : "sem faltas"}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Item 9: Miniliga */}
+                  <div className="bg-gradient-to-br from-amber-500/15 via-slate-950 to-slate-950 rounded-xl p-2.5 border border-amber-400/40 shadow-sm flex flex-col justify-between">
+                    <span className="text-[10px] text-amber-300 font-black uppercase flex items-center gap-1">
+                      <Trophy className="h-3 w-3 text-amber-400 fill-current" />
+                      9. Miniliga
+                    </span>
+                    <div className="mt-1 flex items-baseline justify-between">
+                      <span className="text-lg font-black font-mono text-amber-300">
+                        {athleteStats.miniligaPontos} <span className="text-xs font-bold">pts</span>
+                      </span>
+                      <span className="text-[10px] text-slate-400 font-medium">
+                        {athleteStats.miniligas} {athleteStats.miniligas === 1 ? "torneio" : "torneios"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Dica Informativa de Engajamento e Evolução Semanal */}
             <div className="flex items-start gap-2.5 bg-gradient-to-r from-amber-500/10 via-orange-500/5 to-transparent border border-amber-500/25 rounded-2xl p-3.5 text-xs text-amber-200/95 shadow-sm">
               <Info className="h-4 w-4 shrink-0 text-amber-400 mt-0.5" />
               <div className="leading-relaxed">
-                <strong className="text-amber-300">Evolução Contínua:</strong> Entre
-                as avaliações bimestrais, o card evolui a cada semana! Presenças,
-                reposições e miniligas impulsionam a{" "}
-                <span className="text-white font-bold">Consistência (+5)</span>, o{" "}
-                <span className="text-white font-bold">Ritmo (+3)</span> e ativam o status{" "}
-                <span className="text-orange-300 font-bold">ON FIRE 🔥 (+2 OVR)</span>.
+                <strong className="text-amber-300">Estrutura Pedagógica Marco Roza:</strong> Os itens{" "}
+                <span className="text-white font-bold">1 ao 6</span> são os fundamentos das provas bimestrais (Forehand, Backhand, Lob, Curta, Saque e Smash). A{" "}
+                <span className="text-white font-bold">Assiduidade (7)</span> e a{" "}
+                <span className="text-white font-bold">Sequência (8)</span> derivam das frequências em aula ativando o status{" "}
+                <span className="text-orange-300 font-bold">ON FIRE 🔥 (+2 OVR)</span>, e a{" "}
+                <span className="text-amber-300 font-bold">Miniliga (9)</span> possui seu contador à parte acumulando os pontos ganhos a cada partida e torneio disputado!
               </div>
             </div>
 
