@@ -218,18 +218,27 @@ export const ArenaLiveKiosk: React.FC = () => {
     setSelectedHour(availableHours[nextIndex]);
   };
 
-  // ==========================================
-  // SLIDE 2: ANIVERSARIANTES DO MÊS
-  // ==========================================
+  // Aniversariantes do mês atual (suporta YYYY-MM-DD e DD/MM/YYYY)
   const birthdayStudents = useMemo(() => {
     const currentMonth = String(currentTime.getMonth() + 1).padStart(2, "0");
     return students
-      .filter((s) => s.status === "Ativo" && s.dataNascimento && s.dataNascimento.split("-")[1] === currentMonth)
-      .sort((a, b) => {
-        const dayA = parseInt(a.dataNascimento.split("-")[2]);
-        const dayB = parseInt(b.dataNascimento.split("-")[2]);
-        return dayA - dayB;
-      });
+      .filter((s) => s.status === "Ativo" && s.dataNascimento)
+      .map((s) => {
+        let day = 0;
+        let month = "";
+        if (s.dataNascimento.includes("/")) {
+          const parts = s.dataNascimento.split("/");
+          day = parseInt(parts[0], 10);
+          month = parts[1]?.padStart(2, "0") || "";
+        } else if (s.dataNascimento.includes("-")) {
+          const parts = s.dataNascimento.split("-");
+          day = parseInt(parts[2], 10);
+          month = parts[1]?.padStart(2, "0") || "";
+        }
+        return { student: s, day, month };
+      })
+      .filter((item) => item.month === currentMonth && !isNaN(item.day) && item.day > 0)
+      .sort((a, b) => a.day - b.day);
   }, [students, currentTime]);
 
   return (
@@ -878,17 +887,17 @@ export const ArenaLiveKiosk: React.FC = () => {
         {/* SLIDE 2: ANIVERSARIANTES DO MÊS                          */}
         {/* ======================================================== */}
         {currentSlide === 2 && (
-          <div className="w-full max-w-6xl space-y-6 animate-in fade-in zoom-in-95 duration-500 py-2">
+          <div className="w-full max-w-7xl space-y-5 animate-in fade-in zoom-in-95 duration-500 py-2">
             <div className="text-center space-y-2">
               <Badge className="bg-pink-500/20 text-pink-300 border-pink-500/40 text-xs uppercase tracking-wider">
                 Celebração Especial
               </Badge>
-              <h2 className="text-4xl font-black tracking-tight text-white flex items-center justify-center gap-3">
-                <Cake className="h-9 w-9 text-pink-400 animate-bounce" />
+              <h2 className="text-3xl md:text-4xl font-black tracking-tight text-white flex items-center justify-center gap-3">
+                <Cake className="h-8 w-8 md:h-10 md:w-10 text-pink-400 animate-bounce" />
                 Aniversariantes do Mês da Equipe! 🎉
               </h2>
               <p className="text-slate-300 text-sm max-w-xl mx-auto">
-                Parabéns a todos os nossos atletas que comemoram mais um ano de vida neste mês! Que não faltem pontos vencedores e muita saúde!
+                Parabéns a todos os nossos {birthdayStudents.length} atletas que comemoram mais um ano de vida neste mês! Que não faltem pontos vencedores e muita saúde!
               </p>
             </div>
 
@@ -897,24 +906,24 @@ export const ArenaLiveKiosk: React.FC = () => {
                 Nenhum aniversariante cadastrado neste mês.
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {birthdayStudents.slice(0, 8).map((student) => (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3.5 max-h-[66vh] overflow-y-auto pr-1">
+                {birthdayStudents.map(({ student, day }) => (
                   <div
                     key={student.id}
-                    className="p-5 rounded-2xl bg-gradient-to-br from-slate-900/90 to-purple-950/40 border border-pink-500/30 backdrop-blur-xl shadow-xl flex items-center gap-4 relative overflow-hidden group hover:scale-[1.02] transition-transform"
+                    className="p-4 rounded-2xl bg-gradient-to-br from-slate-900/90 to-purple-950/40 border border-pink-500/30 backdrop-blur-xl shadow-xl flex items-center gap-3.5 relative overflow-hidden group hover:scale-[1.02] transition-transform"
                   >
-                    <div className="h-14 w-14 rounded-2xl bg-gradient-to-tr from-pink-500 to-amber-400 flex flex-col items-center justify-center font-black text-white shadow-lg shrink-0">
-                      <span className="text-xs uppercase tracking-tighter">DIA</span>
-                      <span className="text-xl leading-none">
-                        {student.dataNascimento.split("-")[2]}
+                    <div className="h-12 w-12 rounded-2xl bg-gradient-to-tr from-pink-500 to-amber-400 flex flex-col items-center justify-center font-black text-white shadow-lg shrink-0">
+                      <span className="text-[10px] uppercase tracking-tighter">DIA</span>
+                      <span className="text-lg leading-none font-mono">
+                        {String(day).padStart(2, "0")}
                       </span>
                     </div>
 
                     <div className="min-w-0">
-                      <h4 className="font-extrabold text-base text-white truncate">
+                      <h4 className="font-extrabold text-sm md:text-base text-white truncate">
                         {student.nome}
                       </h4>
-                      <p className="text-xs text-pink-300 font-medium">
+                      <p className="text-xs text-pink-300 font-medium truncate">
                         {student.categoria} • Equipe MR
                       </p>
                     </div>
