@@ -16,6 +16,7 @@ import {
   RotateCcw,
   Tv,
   Sparkles,
+  Trophy,
 } from "lucide-react";
 import logo from "@/assets/logo.png";
 import andersonPhoto from "@/assets/anderson-profile-02.png";
@@ -37,6 +38,7 @@ const navItems = [
   { to: "/attendance", label: "Controle de Presença", icon: ClipboardCheck },
   { to: "/frequency", label: "Frequência", icon: BarChart3 },
   { to: "/class-replacements", label: "Reposição de Aulas", icon: RotateCcw },
+  { to: "/miniliga", label: "Miniliga", icon: Trophy },
   { to: "/lesson-plan", label: "Plano de Aulas", icon: ClipboardList },
   { to: "/tests", label: "Provas", icon: ClipboardCheck },
   { to: "/finance/revenue", label: "Contas a Receber", icon: TrendingUp },

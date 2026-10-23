@@ -19,6 +19,7 @@ import Birthdays from "./pages/Birthdays";
 import FinancialProjection from "./pages/FinancialProjection";
 import LessonPlan from "./pages/LessonPlan";
 import Tests from "./pages/Tests";
+import Miniliga from "./pages/Miniliga";
 import BiDashboard from "./pages/BiDashboard";
 import BiHistory from "./pages/BiHistory";
 import ArenaLiveKiosk from "./pages/ArenaLiveKiosk";
@@ -56,6 +57,8 @@ const App = () => (
                 <Route path="/class-replacements" element={<ClassReplacements />} />
                 <Route path="/replacement-classes" element={<Navigate to="/class-replacements" replace />} />
                 <Route path="/reposicao-aulas" element={<Navigate to="/class-replacements" replace />} />
+                <Route path="/miniliga" element={<Miniliga />} />
+                <Route path="/miniligas" element={<Navigate to="/miniliga" replace />} />
                 <Route path="/lesson-plan" element={<LessonPlan />} />
                 <Route path="/tests" element={<Tests />} />
                 <Route path="/finance/revenue" element={<Revenue />} />

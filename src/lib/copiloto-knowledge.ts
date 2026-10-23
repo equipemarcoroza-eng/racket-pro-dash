@@ -441,8 +441,8 @@ export const BASE_CONHECIMENTO: IntencaoCopiloto[] = [
         "  - *Empate no 1º lugar:* Partida Extra de Simples (1º vs 2º) para decidir o título na bola!\n" +
         "  - *Tempo de sobra na aula:* Grande Final cruzada entre duplas (1º+3º vs 2º+4º).\n" +
         "• **Histórico & Edição:** Salva edições anteriores com opção de *Reabrir / Editar* e envio do pódio formatado direto para o WhatsApp dos alunos.",
-      rotaSugerida: "/class-replacements",
-      labelRota: "Acessar Miniligas (Aba Reposição)",
+      rotaSugerida: "/miniliga",
+      labelRota: "Acessar Miniligas Marco Roza",
       topicosRelacionados: [
         "Reposição de Aulas",
         "Card do Atleta",
