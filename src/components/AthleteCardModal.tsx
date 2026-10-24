@@ -252,6 +252,7 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
     );
     const torneiosOficiais = officialTournamentLogs.length;
     const miniligaAulas = miniligaLogs.length;
+    const miniligas = miniligaAulas;
     // Pontos de classificação: campo numérico ou, em registros antigos, o texto "(+N pts no Card)"
     const miniligaPontos = miniligaLogs.reduce((acc, l) => {
       if (typeof l.miniligaPontos === "number") return acc + l.miniligaPontos;
