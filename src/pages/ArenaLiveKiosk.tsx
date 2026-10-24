@@ -192,23 +192,36 @@ export const ArenaLiveKiosk: React.FC = () => {
         if (student.categoria === "Juvenil") baselineOvr = 78;
         if (student.categoria === "Adulto") baselineOvr = 82;
 
-        let overallCalculated = baselineOvr;
+        let forehand = baselineOvr - 2;
+        let backhand = baselineOvr - 5;
+        let lob = baselineOvr - 3;
+        let curta = baselineOvr - 4;
+        let saque = baselineOvr + 1;
+        let smash = baselineOvr + 2;
+
         if (sTests.length > 0) {
-          let totalAcertos = 0;
-          let totalBase = 0;
           sTests.forEach((res) => {
             const act = activities.find((a) => a.id === res.atividadeId);
             const base = act?.quantidadeLancamentos || 10;
-            totalAcertos += res.acertos;
-            totalBase += base;
+            const name = (act?.nome || "").toLowerCase();
+            const scorePct = Math.min(99, Math.round((res.acertos / base) * 100));
+            if (name.includes("forehand") || name.includes("direita")) {
+              forehand = Math.max(60, scorePct);
+            } else if (name.includes("backhand") || name.includes("esquerda")) {
+              backhand = Math.max(60, scorePct);
+            } else if (name.includes("lob")) {
+              lob = Math.max(60, scorePct);
+            } else if (name.includes("curta") || name.includes("curtinha") || name.includes("drop")) {
+              curta = Math.max(60, scorePct);
+            } else if (name.includes("saque") || name.includes("serviço")) {
+              saque = Math.max(60, scorePct);
+            } else if (name.includes("smash")) {
+              smash = Math.max(60, scorePct);
+            }
           });
-          if (totalBase > 0) {
-            const avgPct = Math.round((totalAcertos / totalBase) * 100);
-            overallCalculated = Math.min(
-              99,
-              Math.max(65, Math.round(avgPct * 0.4 + baselineOvr * 0.6))
-            );
-          }
+          overallCalculated = Math.round((forehand + backhand + lob + curta + saque + smash) / 6);
+        } else {
+          overallCalculated = baselineOvr;
         }
 
         const ovr = Math.min(99, Math.max(60, overallCalculated + ovrBoost));
