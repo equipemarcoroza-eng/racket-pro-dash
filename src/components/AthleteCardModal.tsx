@@ -253,12 +253,12 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
 
     const tier =
       finalOvr >= 90
-        ? "ELITE WORLD CLASS"
-        : finalOvr >= 84
-        ? "MASTER OURO"
-        : finalOvr >= 76
-        ? "PRO PRATA"
-        : "TALENTO BRONZE";
+        ? "DIAMANTE"
+        : finalOvr >= 80
+        ? "OURO"
+        : finalOvr >= 67
+        ? "PRATA"
+        : "BRONZE";
 
     return {
       ovr: finalOvr,
@@ -547,7 +547,17 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
                 ON FIRE
               </Badge>
             )}
-            <Badge className="bg-amber-500/20 text-amber-300 border-amber-500/40 text-xs font-bold">
+            <Badge
+              className={`${
+                athleteStats.ovr >= 90
+                  ? "bg-cyan-500/20 text-cyan-300 border-cyan-500/40"
+                  : athleteStats.ovr >= 80
+                  ? "bg-amber-500/20 text-amber-300 border-amber-500/40"
+                  : athleteStats.ovr >= 67
+                  ? "bg-slate-400/20 text-slate-200 border-slate-400/40"
+                  : "bg-amber-800/25 text-amber-500 border-amber-700/40"
+              } text-xs font-bold`}
+            >
               {athleteStats.tier}
             </Badge>
           </div>
@@ -563,7 +573,13 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
               className={`relative mx-auto w-full max-w-[340px] rounded-3xl p-1 shadow-2xl transition-all duration-300 ${
                 athleteStats.isOnFire
                   ? "bg-gradient-to-b from-orange-400 via-amber-500 to-amber-950 shadow-orange-500/30 ring-1 ring-orange-400/40"
-                  : "bg-gradient-to-b from-amber-300 via-yellow-600 to-amber-950 shadow-yellow-500/20"
+                  : athleteStats.ovr >= 90
+                  ? "bg-gradient-to-b from-cyan-300 via-sky-500 to-blue-950 shadow-cyan-500/25 ring-1 ring-cyan-400/40"
+                  : athleteStats.ovr >= 80
+                  ? "bg-gradient-to-b from-amber-300 via-yellow-600 to-amber-950 shadow-yellow-500/20 ring-1 ring-yellow-400/30"
+                  : athleteStats.ovr >= 67
+                  ? "bg-gradient-to-b from-slate-200 via-slate-400 to-slate-800 shadow-slate-400/20 ring-1 ring-slate-400/30"
+                  : "bg-gradient-to-b from-amber-700 via-amber-800 to-stone-900 shadow-amber-900/20"
               }`}
             >
               <div className="relative rounded-[22px] bg-gradient-to-b from-slate-900 via-slate-950 to-black p-4 pb-3.5 sm:p-5 sm:pb-4 overflow-hidden flex flex-col justify-between">
