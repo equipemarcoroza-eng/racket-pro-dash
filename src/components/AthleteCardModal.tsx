@@ -30,6 +30,143 @@ import logo from "@/assets/logo.png";
 import { toast } from "sonner";
 import { cleanPhoneNumber } from "@/lib/whatsapp";
 
+// Cores, gradientes e estilos dinâmicos exclusivos para cada Raridade de Carta (Diamante, Ouro, Prata e Bronze)
+export const getCardTheme = (ovr: number, isOnFire: boolean) => {
+  if (ovr >= 90) {
+    // 💎 DIAMANTE (OVR >= 90) - Efeito Platina Ciano / Safira Cristalina
+    return {
+      tier: "DIAMANTE",
+      badgeIcon: "💎",
+      outerFrame: isOnFire
+        ? "bg-gradient-to-b from-cyan-300 via-sky-400 to-amber-900 shadow-cyan-500/40 ring-2 ring-cyan-300/70"
+        : "bg-gradient-to-b from-cyan-200 via-sky-400 to-blue-950 shadow-cyan-500/35 ring-1 ring-cyan-300/60",
+      innerBg: "bg-gradient-to-b from-slate-950 via-[#071a2e] to-[#030d1a]",
+      accentGlow: "bg-cyan-400/20",
+      ovrBadgeBg: "bg-gradient-to-b from-cyan-500/25 to-blue-500/10 border-cyan-400/50",
+      ovrText: "text-transparent bg-clip-text bg-gradient-to-br from-cyan-100 via-cyan-300 to-sky-400 drop-shadow-[0_0_12px_rgba(34,211,238,0.6)]",
+      ovrLabel: "text-cyan-300 font-black",
+      categoryTag: "text-cyan-200 bg-cyan-500/20 border-cyan-400/40",
+      nameBorder: "border-cyan-400/35",
+      nameSub: "text-cyan-300/90",
+      radarFill: "rgba(6, 182, 212, 0.38)",
+      radarStroke: "#22d3ee",
+      radarPointFill: "#a5f3fc",
+      radarPointStroke: "#0e7490",
+      radarLabel: "#cffafe",
+      attrValue: "text-cyan-300",
+      attrCardBg: "bg-cyan-950/30 border-cyan-500/20",
+      hudCardBg: "border-cyan-500/30",
+      hudText: "text-cyan-300",
+      hudIcon: "text-cyan-400",
+      miniligaProgress: "bg-gradient-to-r from-cyan-400 via-sky-400 to-blue-500",
+      headerBadge: "bg-cyan-500/20 text-cyan-300 border-cyan-400/40 shadow-sm",
+      headerIconBox: "bg-cyan-500/10 border-cyan-500/30 text-cyan-400",
+      footerText: "text-cyan-400/90",
+      footerIcon: "text-cyan-400",
+    };
+  }
+
+  if (ovr >= 80) {
+    // 🥇 OURO (80 <= OVR < 90) - Clássico Master Dourado EA
+    return {
+      tier: "OURO",
+      badgeIcon: "🥇",
+      outerFrame: isOnFire
+        ? "bg-gradient-to-b from-orange-400 via-amber-500 to-amber-950 shadow-orange-500/30 ring-2 ring-orange-400/60"
+        : "bg-gradient-to-b from-amber-200 via-yellow-500 to-amber-950 shadow-yellow-500/25 ring-1 ring-yellow-400/40",
+      innerBg: "bg-gradient-to-b from-slate-900 via-slate-950 to-black",
+      accentGlow: "bg-amber-400/20",
+      ovrBadgeBg: "bg-gradient-to-b from-amber-500/25 to-amber-500/5 border-amber-400/45",
+      ovrText: "text-transparent bg-clip-text bg-gradient-to-br from-amber-200 via-yellow-400 to-amber-500 drop-shadow-[0_0_12px_rgba(251,191,36,0.5)]",
+      ovrLabel: "text-amber-400/90 font-black",
+      categoryTag: "text-amber-200 bg-amber-500/20 border-amber-500/40",
+      nameBorder: "border-amber-500/30",
+      nameSub: "text-amber-300/90",
+      radarFill: "rgba(234, 179, 8, 0.35)",
+      radarStroke: "#f59e0b",
+      radarPointFill: "#fbbf24",
+      radarPointStroke: "#78350f",
+      radarLabel: "#fde68a",
+      attrValue: "text-amber-300",
+      attrCardBg: "bg-white/5 border-white/5",
+      hudCardBg: "border-amber-500/25",
+      hudText: "text-amber-300",
+      hudIcon: "text-amber-400",
+      miniligaProgress: "bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500",
+      headerBadge: "bg-amber-500/20 text-amber-300 border-amber-500/40 shadow-sm",
+      headerIconBox: "bg-amber-500/10 border-amber-500/30 text-amber-400",
+      footerText: "text-amber-400/90",
+      footerIcon: "text-amber-400",
+    };
+  }
+
+  if (ovr >= 67) {
+    // 🥈 PRATA (67 <= OVR < 80) - Aço Cromado e Titânio Metálico
+    return {
+      tier: "PRATA",
+      badgeIcon: "🥈",
+      outerFrame: isOnFire
+        ? "bg-gradient-to-b from-orange-400 via-slate-300 to-slate-900 shadow-slate-300/30 ring-2 ring-orange-400/60"
+        : "bg-gradient-to-b from-slate-100 via-slate-300 to-slate-800 shadow-slate-400/20 ring-1 ring-slate-400/30",
+      innerBg: "bg-gradient-to-b from-slate-900 via-[#131722] to-[#0c0f17]",
+      accentGlow: "bg-slate-300/20",
+      ovrBadgeBg: "bg-gradient-to-b from-slate-300/25 to-slate-400/10 border-slate-300/50",
+      ovrText: "text-transparent bg-clip-text bg-gradient-to-br from-white via-slate-200 to-slate-400 drop-shadow-[0_0_12px_rgba(241,245,249,0.5)]",
+      ovrLabel: "text-slate-300 font-black",
+      categoryTag: "text-slate-200 bg-slate-400/20 border-slate-400/40",
+      nameBorder: "border-slate-400/35",
+      nameSub: "text-slate-300/90",
+      radarFill: "rgba(148, 163, 184, 0.35)",
+      radarStroke: "#cbd5e1",
+      radarPointFill: "#e2e8f0",
+      radarPointStroke: "#334155",
+      radarLabel: "#f1f5f9",
+      attrValue: "text-slate-200",
+      attrCardBg: "bg-slate-800/30 border-slate-500/20",
+      hudCardBg: "border-slate-400/25",
+      hudText: "text-slate-300",
+      hudIcon: "text-slate-300",
+      miniligaProgress: "bg-gradient-to-r from-slate-300 via-slate-200 to-slate-400",
+      headerBadge: "bg-slate-400/20 text-slate-200 border-slate-400/40 shadow-sm",
+      headerIconBox: "bg-slate-400/10 border-slate-400/30 text-slate-300",
+      footerText: "text-slate-300/90",
+      footerIcon: "text-slate-300",
+    };
+  }
+
+  // 🥉 BRONZE (OVR < 67) - Bronze Nobre e Cobre Metálico
+  return {
+    tier: "BRONZE",
+    badgeIcon: "🥉",
+    outerFrame: isOnFire
+      ? "bg-gradient-to-b from-orange-400 via-amber-700 to-stone-950 shadow-orange-950/40 ring-2 ring-orange-400/60"
+      : "bg-gradient-to-b from-amber-600 via-orange-800 to-stone-950 shadow-amber-900/20 ring-1 ring-amber-700/30",
+    innerBg: "bg-gradient-to-b from-stone-900 via-[#1c130d] to-[#120a06]",
+    accentGlow: "bg-amber-700/20",
+    ovrBadgeBg: "bg-gradient-to-b from-amber-700/30 to-amber-900/15 border-amber-600/50",
+    ovrText: "text-transparent bg-clip-text bg-gradient-to-br from-amber-300 via-amber-500 to-amber-700 drop-shadow-[0_0_10px_rgba(217,119,6,0.4)]",
+    ovrLabel: "text-amber-400 font-black",
+    categoryTag: "text-amber-300 bg-amber-700/25 border-amber-600/40",
+    nameBorder: "border-amber-700/40",
+    nameSub: "text-amber-400/80",
+    radarFill: "rgba(180, 83, 9, 0.35)",
+    radarStroke: "#d97706",
+    radarPointFill: "#f59e0b",
+    radarPointStroke: "#78350f",
+    radarLabel: "#fcd34d",
+    attrValue: "text-amber-400",
+    attrCardBg: "bg-amber-950/30 border-amber-800/30",
+    hudCardBg: "border-amber-700/25",
+    hudText: "text-amber-400",
+    hudIcon: "text-amber-500",
+    miniligaProgress: "bg-gradient-to-r from-amber-600 via-amber-500 to-amber-700",
+    headerBadge: "bg-amber-800/25 text-amber-400 border-amber-700/40 shadow-sm",
+    headerIconBox: "bg-amber-800/15 border-amber-700/30 text-amber-500",
+    footerText: "text-amber-400/90",
+    footerIcon: "text-amber-400",
+  };
+};
+
 interface AthleteCardModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -291,6 +428,9 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
 
   if (!student || !athleteStats) return null;
 
+  // Tema de cores do card baseado no OVR e status
+  const cardTheme = getCardTheme(athleteStats.ovr, athleteStats.isOnFire);
+
   // Cálculo dos pontos do Polígono Radar (6 eixos)
   const size = 240;
   const center = size / 2;
@@ -523,42 +663,45 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl lg:max-w-5xl w-full p-0 overflow-hidden bg-slate-950 border-amber-500/30 text-white max-h-[92vh] flex flex-col shadow-2xl">
-        {/* Top Header */}
-        <DialogHeader className="px-5 py-3.5 border-b border-white/10 flex flex-row items-center justify-between shrink-0 bg-slate-900/80 backdrop-blur-md">
-          <div className="flex items-center gap-2.5">
-            <div className="p-1.5 rounded-lg bg-amber-500/10 border border-amber-500/30">
-              <Trophy className="h-5 w-5 text-amber-400" />
+      <DialogContent className="max-w-4xl lg:max-w-5xl w-full p-0 overflow-hidden bg-slate-950 border-white/10 text-white max-h-[92vh] flex flex-col shadow-2xl">
+        {/* Top Header - Responsivo com explicação detalhada do OVR */}
+        <DialogHeader className="px-4 sm:px-5 py-3 sm:py-3.5 border-b border-white/10 flex flex-col sm:flex-row sm:items-center justify-between shrink-0 bg-slate-900/90 backdrop-blur-md gap-2">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className={`p-1.5 rounded-lg border shrink-0 ${cardTheme.headerIconBox}`}>
+              <Trophy className="h-5 w-5" />
             </div>
-            <div>
-              <DialogTitle className="text-amber-400 font-black text-lg sm:text-xl tracking-wide flex items-center gap-2">
-                Card Oficial do Atleta
-                <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest hidden sm:inline">
+            <div className="min-w-0">
+              <DialogTitle className="text-white font-black text-base sm:text-xl tracking-wide flex items-center gap-2">
+                <span>Card Oficial do Atleta</span>
+                <span className="text-[10px] sm:text-xs font-semibold text-slate-400 uppercase tracking-widest hidden sm:inline">
                   | EA Performance
                 </span>
               </DialogTitle>
+              {/* Explicação visível no cabeçalho (especialmente útil no telefone responsivo) */}
+              <div className="flex items-center gap-1.5 flex-wrap text-[11px] sm:text-xs text-slate-300 mt-0.5">
+                <span className="font-bold text-amber-300 flex items-center gap-1">
+                  <span>⭐ OVR (Overall):</span>
+                </span>
+                <span>Nível Geral de Habilidade</span>
+                <span className="text-slate-400">•</span>
+                <span className="font-semibold text-white flex items-center gap-1">
+                  <span>{cardTheme.badgeIcon}</span>
+                  <span>Carta {athleteStats.tier}</span>
+                </span>
+              </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 pr-6 sm:pr-8">
+          <div className="flex items-center gap-2 pr-6 sm:pr-8 self-end sm:self-auto">
             {athleteStats.isOnFire && (
               <Badge className="bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black text-[10px] border-orange-400/50 shadow-md gap-1">
                 <Flame className="h-3 w-3 fill-current text-yellow-200 animate-pulse" />
                 ON FIRE
               </Badge>
             )}
-            <Badge
-              className={`${
-                athleteStats.ovr >= 90
-                  ? "bg-cyan-500/20 text-cyan-300 border-cyan-500/40"
-                  : athleteStats.ovr >= 80
-                  ? "bg-amber-500/20 text-amber-300 border-amber-500/40"
-                  : athleteStats.ovr >= 67
-                  ? "bg-slate-400/20 text-slate-200 border-slate-400/40"
-                  : "bg-amber-800/25 text-amber-500 border-amber-700/40"
-              } text-xs font-bold`}
-            >
-              {athleteStats.tier}
+            <Badge className={`${cardTheme.headerBadge} text-xs font-bold gap-1`}>
+              <span>{cardTheme.badgeIcon}</span>
+              <span>{athleteStats.tier}</span>
             </Badge>
           </div>
         </DialogHeader>
@@ -570,37 +713,30 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
             <div
               ref={cardRef}
               data-athlete-card="true"
-              className={`relative mx-auto w-full max-w-[340px] rounded-3xl p-1 shadow-2xl transition-all duration-300 ${
-                athleteStats.isOnFire
-                  ? "bg-gradient-to-b from-orange-400 via-amber-500 to-amber-950 shadow-orange-500/30 ring-1 ring-orange-400/40"
-                  : athleteStats.ovr >= 90
-                  ? "bg-gradient-to-b from-cyan-300 via-sky-500 to-blue-950 shadow-cyan-500/25 ring-1 ring-cyan-400/40"
-                  : athleteStats.ovr >= 80
-                  ? "bg-gradient-to-b from-amber-300 via-yellow-600 to-amber-950 shadow-yellow-500/20 ring-1 ring-yellow-400/30"
-                  : athleteStats.ovr >= 67
-                  ? "bg-gradient-to-b from-slate-200 via-slate-400 to-slate-800 shadow-slate-400/20 ring-1 ring-slate-400/30"
-                  : "bg-gradient-to-b from-amber-700 via-amber-800 to-stone-900 shadow-amber-900/20"
-              }`}
+              className={`relative mx-auto w-full max-w-[340px] rounded-3xl p-1 shadow-2xl transition-all duration-300 ${cardTheme.outerFrame}`}
             >
-              <div className="relative rounded-[22px] bg-gradient-to-b from-slate-900 via-slate-950 to-black p-4 pb-3.5 sm:p-5 sm:pb-4 overflow-hidden flex flex-col justify-between">
+              <div className={`relative rounded-[22px] ${cardTheme.innerBg} p-4 pb-3.5 sm:p-5 sm:pb-4 overflow-hidden flex flex-col justify-between`}>
+                {/* Efeito de Reflexo de Vidro e Luz */}
+                <div className={`absolute top-0 right-0 -mr-16 -mt-16 w-48 h-48 rounded-full ${cardTheme.accentGlow} blur-3xl pointer-events-none`} />
+
                 {/* Cabeçalho do Card */}
                 <div className="flex items-center justify-between relative z-10 pb-1.5">
                   {/* Bloco Esquerdo: Rating OVR & Status */}
                   <div className="flex items-center gap-2.5">
-                    {/* Badge OVR Destacado */}
-                    <div className="flex flex-col items-center justify-center bg-gradient-to-b from-amber-500/20 to-amber-500/5 border border-amber-400/35 rounded-xl px-2.5 py-1.5 min-w-[54px] shadow-sm">
-                      <span className="text-3xl font-black text-amber-300 font-mono leading-none tracking-tight">
+                    {/* Badge OVR Destacado com cores dinâmicas da carta */}
+                    <div className={`flex flex-col items-center justify-center ${cardTheme.ovrBadgeBg} rounded-xl px-2.5 py-1.5 min-w-[56px] shadow-sm`}>
+                      <span className={`text-3xl font-black font-mono leading-none tracking-tight ${cardTheme.ovrText}`}>
                         {athleteStats.ovr}
                       </span>
-                      <span className="text-[8px] font-black uppercase tracking-widest text-amber-400/90 leading-none mt-1">
-                        OVR
+                      <span className={`text-[7.5px] font-black uppercase tracking-widest ${cardTheme.ovrLabel} leading-none mt-1`}>
+                        OVR • OVERALL
                       </span>
                     </div>
 
                     {/* Coluna de Tags Pedagógicas e Status */}
                     <div className="flex flex-col gap-1 justify-center">
                       <div className="flex items-center gap-1.5">
-                        <span className="text-[10px] font-extrabold uppercase tracking-wide text-amber-200 bg-amber-500/20 border border-amber-500/40 px-2 py-0.5 rounded-md leading-none">
+                        <span className={`text-[10px] font-extrabold uppercase tracking-wide px-2 py-0.5 rounded-md leading-none ${cardTheme.categoryTag}`}>
                           {student.categoria}
                         </span>
                         {athleteStats.ovrBoost > 0 && (
@@ -617,7 +753,7 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
                         </div>
                       ) : (
                         <div className="flex items-center gap-1 text-[9px] border border-white/20 text-slate-300 px-2 py-0.5 rounded-full leading-none w-fit">
-                          <Zap className="h-2.5 w-2.5 text-amber-400" />
+                          <Zap className={`h-2.5 w-2.5 ${cardTheme.hudIcon}`} />
                           <span>EM RITMO</span>
                         </div>
                       )}
@@ -638,12 +774,14 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
                 </div>
 
                 {/* Nome do Atleta (Sem truncate para não cortar caracteres no canvas) */}
-                <div className="my-2.5 text-center border-y border-amber-500/30 py-1.5 relative z-10 overflow-visible">
+                <div className={`my-2.5 text-center border-y ${cardTheme.nameBorder} py-1.5 relative z-10 overflow-visible`}>
                   <h3 className="text-base sm:text-lg font-black uppercase text-white px-2 overflow-visible leading-tight tracking-wide">
                     {student.nome}
                   </h3>
-                  <p className="text-[9px] text-amber-300/90 font-bold tracking-widest uppercase mt-0.5">
-                    RACKET PRO ATHLETE
+                  <p className={`text-[9px] ${cardTheme.nameSub} font-bold tracking-widest uppercase mt-0.5 flex items-center justify-center gap-1.5`}>
+                    <span>RACKET PRO ATHLETE</span>
+                    <span>•</span>
+                    <span>{cardTheme.badgeIcon} CARTA {athleteStats.tier}</span>
                   </p>
                 </div>
 
@@ -690,12 +828,8 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
                     {/* Polígono de Desempenho do Aluno */}
                     <polygon
                       points={polygonPoints}
-                      fill={
-                        athleteStats.isOnFire
-                          ? "rgba(249, 115, 22, 0.38)"
-                          : "rgba(234, 179, 8, 0.35)"
-                      }
-                      stroke={athleteStats.isOnFire ? "#f97316" : "#f59e0b"}
+                      fill={cardTheme.radarFill}
+                      stroke={cardTheme.radarStroke}
                       strokeWidth="2.5"
                       className="drop-shadow-[0_0_10px_rgba(245,158,11,0.6)]"
                     />
@@ -712,8 +846,8 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
                           cx={x}
                           cy={y}
                           r="3"
-                          fill={attr.boost > 0 ? "#34d399" : "#fbbf24"}
-                          stroke="#78350f"
+                          fill={attr.boost > 0 ? "#34d399" : cardTheme.radarPointFill}
+                          stroke={cardTheme.radarPointStroke}
                           strokeWidth="1.5"
                         />
                       );
@@ -731,7 +865,7 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
                           x={x}
                           y={y}
                           textAnchor="middle"
-                          fill="#fde68a"
+                          fill={cardTheme.radarLabel}
                           fontSize="9.5"
                           fontWeight="bold"
                           className="select-none font-mono tracking-wider"
@@ -748,13 +882,13 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
                   {athleteStats.attributes.map((attr) => (
                     <div
                       key={attr.label}
-                      className="bg-white/5 rounded-lg p-1 border border-white/5 flex flex-col justify-center"
+                      className={`${cardTheme.attrCardBg} rounded-lg p-1 border flex flex-col justify-center`}
                     >
                       <div className="text-[9px] text-slate-400 font-medium">
                         {attr.name}
                       </div>
                       <div className="flex items-center justify-center gap-1">
-                        <span className="text-xs font-black text-amber-300 font-mono">
+                        <span className={`text-xs font-black font-mono ${cardTheme.attrValue}`}>
                           {attr.value}
                         </span>
                       </div>
@@ -765,9 +899,9 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
                 {/* HUD dos Itens 7, 8 e 9: Assiduidade, Sequência & Miniliga */}
                 <div className="mt-2.5 pt-2 border-t border-white/10 grid grid-cols-3 gap-1.5 text-center">
                   {/* 7. Assiduidade */}
-                  <div className="bg-slate-900/95 rounded-xl p-1.5 border border-amber-500/25 flex flex-col justify-between min-h-[58px] shadow-sm">
-                    <div className="flex items-center justify-center gap-1 text-[8.5px] text-amber-300 font-bold leading-none">
-                      <CalendarCheck className="h-2.5 w-2.5 text-amber-400" />
+                  <div className={`bg-slate-900/95 rounded-xl p-1.5 border ${cardTheme.hudCardBg} flex flex-col justify-between min-h-[58px] shadow-sm`}>
+                    <div className={`flex items-center justify-center gap-1 text-[8.5px] ${cardTheme.hudText} font-bold leading-none`}>
+                      <CalendarCheck className={`h-2.5 w-2.5 ${cardTheme.hudIcon}`} />
                       Assiduidade
                     </div>
                     <div className="text-sm font-black text-white font-mono leading-none my-1">
@@ -793,12 +927,12 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
                   </div>
 
                   {/* 9. Miniliga */}
-                  <div className="bg-slate-900/95 rounded-xl p-1.5 border border-amber-400/40 flex flex-col justify-between min-h-[58px] shadow-sm">
-                    <div className="flex items-center justify-center gap-1 text-[8.5px] text-amber-300 font-black leading-none">
-                      <Trophy className="h-2.5 w-2.5 text-amber-400 fill-current" />
+                  <div className={`bg-slate-900/95 rounded-xl p-1.5 border ${cardTheme.hudCardBg} flex flex-col justify-between min-h-[58px] shadow-sm`}>
+                    <div className={`flex items-center justify-center gap-1 text-[8.5px] ${cardTheme.hudText} font-black leading-none`}>
+                      <Trophy className={`h-2.5 w-2.5 ${cardTheme.hudIcon} fill-current`} />
                       Miniliga
                     </div>
-                    <div className="text-sm font-black text-amber-300 font-mono leading-none my-1">
+                    <div className={`text-sm font-black font-mono leading-none my-1 ${cardTheme.hudText}`}>
                       {athleteStats.miniligaPontos} <span className="text-[9px] font-semibold">pts</span>
                     </div>
                     <div className="text-[8px] text-slate-400 font-medium leading-none">
@@ -810,17 +944,17 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
                 {/* Barra de Pontuação da Miniliga */}
                 <div className="mt-2 px-1">
                   <div className="flex justify-between items-center text-[8.5px] text-slate-400 font-medium mb-1">
-                    <span className="flex items-center gap-1 text-amber-300 font-semibold">
-                      <Trophy className="h-2.5 w-2.5 text-amber-400" />
+                    <span className={`flex items-center gap-1 ${cardTheme.hudText} font-semibold`}>
+                      <Trophy className={`h-2.5 w-2.5 ${cardTheme.hudIcon}`} />
                       Pontos Acumulados Miniliga
                     </span>
-                    <span className="text-amber-400 font-bold font-mono">
+                    <span className={`font-bold font-mono ${cardTheme.hudText}`}>
                       {athleteStats.miniligaPontos} pts
                     </span>
                   </div>
                   <div className="w-full bg-slate-800/80 rounded-full h-1.5 overflow-hidden border border-white/5">
                     <div
-                      className="bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 h-full rounded-full transition-all duration-500"
+                      className={`${cardTheme.miniligaProgress} h-full rounded-full transition-all duration-500`}
                       style={{
                         width: `${Math.min(100, Math.max(10, athleteStats.miniligaPontos > 0 ? (athleteStats.miniligaPontos % 100 || 100) : 0))}%`,
                       }}
@@ -830,8 +964,8 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
 
                 {/* Rodapé Oficial do Card com respiro de segurança */}
                 <div className="mt-3 pt-2 border-t border-white/10 flex items-center justify-between text-[8px] text-slate-400 uppercase tracking-widest font-semibold px-0.5">
-                  <span className="text-amber-400/90 flex items-center gap-1 font-bold">
-                    <ShieldCheck className="h-2.5 w-2.5 text-amber-400" />
+                  <span className={`${cardTheme.footerText} flex items-center gap-1 font-bold`}>
+                    <ShieldCheck className={`h-2.5 w-2.5 ${cardTheme.footerIcon}`} />
                     Racket Pro Athlete
                   </span>
                   <span className="text-slate-400 font-medium">
