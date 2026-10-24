@@ -88,6 +88,8 @@ export const ArenaLiveKiosk: React.FC = () => {
   // SLIDE 0: HALL DA FAMA (TOP 3 POR CATEGORIA)
   // Infantil, Juvenil e Adulto
   // ==========================================
+  // SLIDE 0: HALL DA FAMA (Top 3 por Categoria baseado no OVR Oficial)
+  // ==========================================
   const categoryRankings = useMemo(() => {
     const categories: Array<"Infantil" | "Juvenil" | "Adulto"> = ["Infantil", "Juvenil", "Adulto"];
 
@@ -95,11 +97,13 @@ export const ArenaLiveKiosk: React.FC = () => {
       "Infantil" | "Juvenil" | "Adulto",
       Array<{
         student: any;
-        score: number;
-        scoreLabel: string;
+        ovr: number;
         scoreSub: string;
         testsCount: number;
         totalHits: number;
+        miniligaPontos: number;
+        presencas: number;
+        isOnFire: boolean;
       }>
     > = {
       Infantil: [],
@@ -113,56 +117,142 @@ export const ArenaLiveKiosk: React.FC = () => {
       );
 
       const scored = activeInCat.map((student) => {
-        // Testes técnicos
+        // Testes técnicos bimestrais
         const sTests = testResults.filter((tr) => tr.alunoId === student.id);
         const totalHits = sTests.reduce((acc, tr) => acc + (tr.acertos || 0), 0);
         const testsCount = sTests.length;
 
-        // Miniligas e Presenças
-        const sLogs = attendanceLogs.filter((log) => log.alunoId === student.id);
-        const miniligaPontos = sLogs.reduce((acc, l) => acc + (l.miniligaPontos || 0), 0);
-        const presencas = sLogs.filter(
-          (l) => l.presente === "Presente" || l.presente === "Reposição" || l.presente === "Miniliga"
-        ).length;
+        // Frequência, Miniligas e Presenças
+        const studentLogs = attendanceLogs.filter((l) => l.alunoId === student.id);
+        const presencas = studentLogs.filter((l) => l.presente === "Presente").length;
+        const reposicoes = studentLogs.filter((l) => l.presente === "Reposição").length;
+        const miniligaLogs = studentLogs.filter((l) => l.presente === "Miniliga");
+        const miniligas = miniligaLogs.length;
+        const miniligaPontos = miniligaLogs.reduce((acc, l) => {
+          if (typeof l.miniligaPontos === "number") return acc + l.miniligaPontos;
+          const legado = l.motivoCancelamento?.match(/\+(\d+) pts/);
+          return acc + (legado ? Number(legado[1]) : 0);
+        }, 0);
+        const faltas = studentLogs.filter((l) => l.presente === "Falta").length;
 
-        let score = 0;
-        let scoreLabel = "";
-        let scoreSub = "";
+        const attendedClasses = presencas + reposicoes + miniligas;
+        const totalValidClasses = attendedClasses + faltas;
 
-        if (totalHits > 0) {
-          score = totalHits * 100 + miniligaPontos * 10 + presencas;
-          scoreLabel = `${totalHits} bolas`;
-          scoreSub = `${testsCount} ${testsCount === 1 ? "teste realizado" : "testes realizados"}`;
-        } else if (miniligaPontos > 0) {
-          score = miniligaPontos * 10 + presencas;
-          scoreLabel = `${miniligaPontos} pts`;
-          scoreSub = "Pontos na Miniliga";
-        } else if (presencas > 0) {
-          score = presencas * 5;
-          scoreLabel = `${presencas} treinos`;
-          scoreSub = "Frequência exemplar";
+        const attendanceRate =
+          totalValidClasses > 0
+            ? Math.round((attendedClasses / totalValidClasses) * 100)
+            : 100;
+
+        // Sequência sem faltas (Streak)
+        const sortedLogs = [...studentLogs].sort(
+          (a, b) => new Date(b.data).getTime() - new Date(a.data).getTime()
+        );
+        let streakCount = 0;
+        for (const log of sortedLogs) {
+          if (
+            log.presente === "Presente" ||
+            log.presente === "Reposição" ||
+            log.presente === "Miniliga"
+          ) {
+            streakCount++;
+          } else if (log.presente === "Falta") {
+            break;
+          }
+        }
+        const effectiveStreak = totalValidClasses === 0 ? 3 : streakCount;
+
+        const isOnFire =
+          (effectiveStreak >= 2 && attendanceRate >= 80) ||
+          (reposicoes > 0 && attendanceRate >= 75) ||
+          (student.status === "Ativo" && totalValidClasses === 0);
+
+        // Bônus contínuo no OVR
+        let bonusConsistencia = 0;
+        if (attendanceRate >= 90 && attendedClasses >= 2) {
+          bonusConsistencia = 5;
+        } else if (attendanceRate >= 75) {
+          bonusConsistencia = 3;
+        } else if (totalValidClasses >= 3 && attendanceRate < 60) {
+          bonusConsistencia = -3;
         } else {
-          score = 1;
-          scoreLabel = "Atleta Ativo";
-          scoreSub = "Ritmo em evolução";
+          bonusConsistencia = 1;
+        }
+
+        let ovrBoost = 0;
+        if (isOnFire) {
+          ovrBoost = 2;
+        } else if (bonusConsistencia > 0) {
+          ovrBoost = 1;
+        } else if (bonusConsistencia < 0) {
+          ovrBoost = -1;
+        }
+
+        // Baseline por categoria pedagógica
+        let baselineOvr = 75;
+        if (student.categoria === "Juvenil") baselineOvr = 78;
+        if (student.categoria === "Adulto") baselineOvr = 82;
+
+        let overallCalculated = baselineOvr;
+        if (sTests.length > 0) {
+          let totalAcertos = 0;
+          let totalBase = 0;
+          sTests.forEach((res) => {
+            const act = activities.find((a) => a.id === res.atividadeId);
+            const base = act?.quantidadeLancamentos || 10;
+            totalAcertos += res.acertos;
+            totalBase += base;
+          });
+          if (totalBase > 0) {
+            const avgPct = Math.round((totalAcertos / totalBase) * 100);
+            overallCalculated = Math.min(
+              99,
+              Math.max(65, Math.round(avgPct * 0.4 + baselineOvr * 0.6))
+            );
+          }
+        }
+
+        const ovr = Math.min(99, Math.max(60, overallCalculated + ovrBoost));
+
+        // Subtítulo comprovante com detalhes técnicos
+        let scoreSub = "";
+        if (testsCount > 0 && miniligaPontos > 0) {
+          scoreSub = `${testsCount} ${testsCount === 1 ? "teste" : "testes"} • ${totalHits} bolas • ${miniligaPontos} pts liga`;
+        } else if (testsCount > 0) {
+          scoreSub = `${testsCount} ${testsCount === 1 ? "teste" : "testes"} • ${totalHits} bolas`;
+        } else if (miniligaPontos > 0) {
+          scoreSub = `${miniligaPontos} pts na Miniliga`;
+        } else if (attendedClasses > 0) {
+          scoreSub = `${attendedClasses} aulas • Frequência`;
+        } else {
+          scoreSub = "Atleta Ativo • Em evolução";
         }
 
         return {
           student,
-          score,
-          scoreLabel,
+          ovr,
           scoreSub,
           testsCount,
           totalHits,
+          miniligaPontos,
+          presencas: attendedClasses,
+          isOnFire,
         };
       });
 
-      // Ordena decrescente pelo score e destaca os 3 primeiros
-      result[cat] = scored.sort((a, b) => b.score - a.score).slice(0, 3);
+      // Ordena decrescente pelo OVR (desempate: total de bolas acertadas, pontos de miniliga e aulas)
+      result[cat] = scored
+        .sort(
+          (a, b) =>
+            b.ovr - a.ovr ||
+            b.totalHits - a.totalHits ||
+            b.miniligaPontos - a.miniligaPontos ||
+            b.presencas - a.presencas
+        )
+        .slice(0, 3);
     });
 
     return result;
-  }, [students, testResults, attendanceLogs]);
+  }, [students, testResults, attendanceLogs, activities]);
 
   // ==========================================
   // SLIDE 1: GRADE DE HORÁRIOS
@@ -333,7 +423,7 @@ export const ArenaLiveKiosk: React.FC = () => {
                 Hall da Fama • Top 3 por Categoria
               </h2>
               <p className="text-slate-300 text-sm max-w-2xl mx-auto">
-                Reconhecimento aos atletas que mais se destacaram em precisão técnica, frequência e pontuação nas três categorias da academia.
+                Reconhecimento aos atletas com maior OVR e destaque técnico nas três categorias da academia.
               </p>
             </div>
 
@@ -395,20 +485,26 @@ export const ArenaLiveKiosk: React.FC = () => {
                               <h4 className="text-base md:text-lg font-black text-white truncate">
                                 {item.student.nome}
                               </h4>
-                              <p className="text-xs text-slate-400 truncate">
-                                {item.scoreSub}
+                              <p className="text-xs text-slate-400 truncate flex items-center gap-1">
+                                {item.isOnFire && <span className="text-orange-400 font-bold text-[10px]">🔥</span>}
+                                <span>{item.scoreSub}</span>
                               </p>
                             </div>
                           </div>
 
                           <div className="text-right shrink-0">
-                            <span
-                              className={`font-mono font-black text-sm md:text-base ${
-                                isGold ? "text-amber-300" : isSilver ? "text-slate-200" : "text-amber-500"
-                              }`}
-                            >
-                              {item.scoreLabel}
-                            </span>
+                            <div className="flex items-baseline justify-end gap-1 font-mono font-black">
+                              <span
+                                className={`text-xl md:text-2xl font-black ${
+                                  isGold ? "text-amber-300 drop-shadow-sm" : isSilver ? "text-slate-100" : "text-amber-400"
+                                }`}
+                              >
+                                {item.ovr}
+                              </span>
+                              <span className="text-[10px] font-black tracking-wider text-amber-400/80 uppercase">
+                                OVR
+                              </span>
+                            </div>
                             <div className="text-[10px] uppercase font-bold text-slate-500">
                               {isGold ? "Líder" : "Destaque"}
                             </div>
@@ -491,20 +587,26 @@ export const ArenaLiveKiosk: React.FC = () => {
                               <h4 className="text-base md:text-lg font-black text-white truncate">
                                 {item.student.nome}
                               </h4>
-                              <p className="text-xs text-slate-400 truncate">
-                                {item.scoreSub}
+                              <p className="text-xs text-slate-400 truncate flex items-center gap-1">
+                                {item.isOnFire && <span className="text-orange-400 font-bold text-[10px]">🔥</span>}
+                                <span>{item.scoreSub}</span>
                               </p>
                             </div>
                           </div>
 
                           <div className="text-right shrink-0">
-                            <span
-                              className={`font-mono font-black text-sm md:text-base ${
-                                isGold ? "text-amber-300" : isSilver ? "text-slate-200" : "text-amber-500"
-                              }`}
-                            >
-                              {item.scoreLabel}
-                            </span>
+                            <div className="flex items-baseline justify-end gap-1 font-mono font-black">
+                              <span
+                                className={`text-xl md:text-2xl font-black ${
+                                  isGold ? "text-amber-300 drop-shadow-sm" : isSilver ? "text-slate-100" : "text-amber-400"
+                                }`}
+                              >
+                                {item.ovr}
+                              </span>
+                              <span className="text-[10px] font-black tracking-wider text-amber-400/80 uppercase">
+                                OVR
+                              </span>
+                            </div>
                             <div className="text-[10px] uppercase font-bold text-slate-500">
                               {isGold ? "Líder" : "Destaque"}
                             </div>
@@ -587,20 +689,26 @@ export const ArenaLiveKiosk: React.FC = () => {
                               <h4 className="text-base md:text-lg font-black text-white truncate">
                                 {item.student.nome}
                               </h4>
-                              <p className="text-xs text-slate-400 truncate">
-                                {item.scoreSub}
+                              <p className="text-xs text-slate-400 truncate flex items-center gap-1">
+                                {item.isOnFire && <span className="text-orange-400 font-bold text-[10px]">🔥</span>}
+                                <span>{item.scoreSub}</span>
                               </p>
                             </div>
                           </div>
 
                           <div className="text-right shrink-0">
-                            <span
-                              className={`font-mono font-black text-sm md:text-base ${
-                                isGold ? "text-amber-300" : isSilver ? "text-slate-200" : "text-amber-500"
-                              }`}
-                            >
-                              {item.scoreLabel}
-                            </span>
+                            <div className="flex items-baseline justify-end gap-1 font-mono font-black">
+                              <span
+                                className={`text-xl md:text-2xl font-black ${
+                                  isGold ? "text-amber-300 drop-shadow-sm" : isSilver ? "text-slate-100" : "text-amber-400"
+                                }`}
+                              >
+                                {item.ovr}
+                              </span>
+                              <span className="text-[10px] font-black tracking-wider text-amber-400/80 uppercase">
+                                OVR
+                              </span>
+                            </div>
                             <div className="text-[10px] uppercase font-bold text-slate-500">
                               {isGold ? "Líder" : "Destaque"}
                             </div>
