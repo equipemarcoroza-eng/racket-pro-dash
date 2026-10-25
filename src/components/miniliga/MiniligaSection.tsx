@@ -5,6 +5,7 @@ import {
   MiniligaParticipant,
   MiniligaParticipantCount,
   MiniligaModelType,
+  formatLocalDate,
 } from "@/types/miniliga";
 import {
   generateMiniligaMatches,
@@ -1593,14 +1594,16 @@ export const MiniligaSection: React.FC = () => {
                       </div>
 
                       <div className="text-xs text-muted-foreground flex items-center gap-3">
-                        <span>📅 {new Date(h.date).toLocaleDateString("pt-BR")}</span>
+                        <span className="font-semibold text-slate-700 dark:text-slate-300">
+                          📅 {formatLocalDate(h.date)}
+                        </span>
                         {champ && (
-                          <span className="font-bold text-amber-400">
+                          <span className="font-bold text-amber-500 dark:text-amber-400">
                             🥇 1º {champ.name} ({champ.wins ?? 0} {(champ.wins ?? 0) === 1 ? "vitória" : "vitórias"})
                           </span>
                         )}
                         {vice && (
-                          <span className="text-slate-300">
+                          <span className="text-slate-600 dark:text-slate-300 font-semibold">
                             🥈 2º {vice.name}
                           </span>
                         )}

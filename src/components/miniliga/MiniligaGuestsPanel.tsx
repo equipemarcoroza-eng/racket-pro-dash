@@ -1,5 +1,4 @@
-import React, { useState } from "react";
-import { MiniligaSession, MiniligaGuestLead } from "@/types/miniliga";
+import { MiniligaSession, MiniligaGuestLead, formatLocalDate } from "@/types/miniliga";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -175,7 +174,7 @@ export const MiniligaGuestsPanel: React.FC<MiniligaGuestsPanelProps> = ({
                     <div className="flex items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-900 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800">
                       <span className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400">
                         <Calendar className="h-3.5 w-3.5 text-slate-500" />
-                        <span>{new Date(g.date).toLocaleDateString("pt-BR")}</span>
+                        <span>{formatLocalDate(g.date)}</span>
                       </span>
                       {g.rank && (
                         <span className="font-black text-amber-700 dark:text-amber-300 bg-amber-200/80 dark:bg-amber-500/20 px-2.5 py-0.5 rounded-lg border border-amber-300/80 dark:border-amber-500/30">

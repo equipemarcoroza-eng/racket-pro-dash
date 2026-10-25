@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { useAppContext } from "@/contexts/AppContext";
-import { MiniligaSession, MiniligaParticipant, MiniligaMatch } from "@/types/miniliga";
+import { MiniligaSession, MiniligaParticipant, MiniligaMatch, formatLocalDate } from "@/types/miniliga";
 import {
   PREPARSED_MARCO_ROZA_MINILIGAS,
   ParsedTournamentData,
@@ -310,7 +310,7 @@ export const MiniligaImportModal: React.FC<MiniligaImportModalProps> = ({
               <div className="flex items-center gap-4 flex-wrap">
                 <span className="flex items-center gap-1.5 text-slate-300">
                   <Calendar className="h-4 w-4 text-amber-400" />
-                  <strong>Data:</strong> {new Date(currentTournament.date).toLocaleDateString("pt-BR")}
+                  <strong>Data:</strong> {formatLocalDate(currentTournament.date)}
                 </span>
                 <span className="flex items-center gap-1.5 text-slate-300">
                   <Trophy className="h-4 w-4 text-amber-400" />

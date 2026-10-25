@@ -1,5 +1,4 @@
-import React, { useState } from "react";
-import { MiniligaSession } from "@/types/miniliga";
+import { MiniligaSession, formatLocalDate } from "@/types/miniliga";
 import {
   Dialog,
   DialogContent,
@@ -50,7 +49,7 @@ export const MiniligaSummaryModal: React.FC<MiniligaSummaryModalProps> = ({
   const generateWhatsAppText = () => {
     let text = `🏆 *RESULTADO DA MINILIGA DE BEACH TENNIS* 🏆\n`;
     text += `*Equipe Marco Roza* • ${session.title}\n`;
-    text += `📅 ${new Date(session.date).toLocaleDateString("pt-BR")}\n\n`;
+    text += `📅 ${formatLocalDate(session.date)}\n\n`;
 
     text += `🥇 *CAMPEÃO:* ${champion?.name} (${formatWins(champion?.wins)})\n`;
     if (vice) text += `🥈 *VICE-CAMPEÃO:* ${vice?.name} (${formatWins(vice?.wins)})\n`;

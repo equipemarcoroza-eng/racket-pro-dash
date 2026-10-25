@@ -105,3 +105,15 @@ export interface MiniligaSession {
   createdAt: string;
   updatedAt: string;
 }
+
+// Utilitário para formatar datas (YYYY-MM-DD) sem efeito colateral de fuso horário / timezone UTC
+export const formatLocalDate = (dateStr?: string | null): string => {
+  if (!dateStr) return "—";
+  if (dateStr.includes("/")) return dateStr;
+  const parts = dateStr.split("T")[0].split("-");
+  if (parts.length === 3) {
+    const [y, m, d] = parts;
+    return `${d.padStart(2, "0")}/${m.padStart(2, "0")}/${y}`;
+  }
+  return dateStr;
+};
