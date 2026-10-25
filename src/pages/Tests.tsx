@@ -249,25 +249,27 @@ const Tests = () => {
         : 0;
 
       // Frequência, Sequência e Boost de Rendimento (idêntico ao Card Oficial)
-      const studentLogs = attendanceLogs.filter((al) => al.alunoId === student.id);
+      const studentLogs = (attendanceLogs || []).filter((al) => al?.alunoId === student.id);
       let presencas = 0;
       let reposicoes = 0;
       let faltas = 0;
       studentLogs.forEach((l) => {
-        if (l.presente === "Presente") presencas++;
-        else if (l.presente === "Reposição") reposicoes++;
-        else if (l.presente === "Falta") faltas++;
+        if (l?.presente === "Presente") presencas++;
+        else if (l?.presente === "Reposição") reposicoes++;
+        else if (l?.presente === "Falta") faltas++;
       });
       const attendedClasses = presencas + reposicoes;
       const totalValidClasses = attendedClasses + faltas;
       const attendanceRate = totalValidClasses > 0 ? Math.round((attendedClasses / totalValidClasses) * 100) : 100;
 
-      const sortedLogs = [...studentLogs].sort((a, b) => b.dataAula.localeCompare(a.dataAula));
+      const sortedLogs = [...studentLogs].sort(
+        (a, b) => new Date(b?.data || 0).getTime() - new Date(a?.data || 0).getTime()
+      );
       let streakCount = 0;
       for (const log of sortedLogs) {
-        if (log.presente === "Presente" || log.presente === "Reposição" || log.presente === "Miniliga") {
+        if (log?.presente === "Presente" || log?.presente === "Reposição" || log?.presente === "Miniliga") {
           streakCount++;
-        } else if (log.presente === "Falta") {
+        } else if (log?.presente === "Falta") {
           break;
         }
       }
