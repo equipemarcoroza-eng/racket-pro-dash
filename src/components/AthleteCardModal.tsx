@@ -34,139 +34,96 @@ import { miniligaStorage } from "@/lib/miniliga-storage";
 import { matchStudentByName } from "@/lib/miniliga-excel-parser";
 
 // Cores, gradientes e estilos dinâmicos exclusivos para cada Raridade de Carta (Diamante, Ouro, Prata e Bronze)
+// Paleta Oficial Equipe Marco Roza: Fundo Azul Escuro nobre, esportivo, leve e harmonioso
 export const getCardTheme = (ovr: number, isOnFire: boolean) => {
+  // Base institucional Azul Escuro Marco Roza compartilhada (suave, sem contrastes agressivos)
+  const marcoRozaNavyBase = {
+    innerBg: "bg-[#091528]",
+    accentGlow: "bg-blue-500/15",
+    ovrBadgeBg: "bg-slate-900/90 border border-blue-400/30 shadow-inner",
+    ovrText: "text-amber-300 font-black drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]",
+    ovrLabel: "text-blue-300 font-black",
+    categoryTag: "text-blue-200 bg-blue-500/20 border-blue-400/30",
+    nameBorder: "border-blue-500/25",
+    nameSub: "text-blue-200/80",
+    attrValue: "text-white font-bold",
+    attrCardBg: "bg-blue-950/40 border-blue-500/20",
+    hudCardBg: "border-blue-500/25",
+    hudText: "text-blue-100",
+    hudIcon: "text-amber-400",
+    miniligaProgress: "bg-gradient-to-r from-blue-500 via-sky-400 to-amber-400",
+    footerText: "text-blue-200/80",
+    footerIcon: "text-blue-400",
+  };
+
+  const outerFrame = isOnFire
+    ? "bg-gradient-to-b from-amber-400/80 via-blue-500/40 to-blue-950 shadow-blue-950/40 ring-1 ring-amber-400/40"
+    : "bg-gradient-to-b from-blue-400/60 via-blue-600/30 to-blue-950 shadow-blue-950/40 ring-1 ring-blue-500/25";
+
   if (ovr >= 90) {
-    // 💎 DIAMANTE (OVR >= 90) - Efeito Platina Ciano / Safira Cristalina
+    // 💎 DIAMANTE (OVR >= 90)
     return {
+      ...marcoRozaNavyBase,
       tier: "DIAMANTE",
       badgeIcon: "💎",
-      outerFrame: isOnFire
-        ? "bg-gradient-to-b from-cyan-300 via-sky-400 to-amber-900 shadow-cyan-500/40 ring-2 ring-cyan-300/70"
-        : "bg-gradient-to-b from-cyan-200 via-sky-400 to-blue-950 shadow-cyan-500/35 ring-1 ring-cyan-300/60",
-      innerBg: "bg-gradient-to-b from-slate-950 via-[#071a2e] to-[#030d1a]",
-      accentGlow: "bg-cyan-400/20",
-      ovrBadgeBg: "bg-slate-900/90 border border-cyan-400/50 shadow-inner",
-      ovrText: "text-cyan-300 font-black drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]",
-      ovrLabel: "text-cyan-400 font-black",
-      categoryTag: "text-cyan-200 bg-cyan-500/20 border-cyan-400/40",
-      nameBorder: "border-cyan-400/35",
-      nameSub: "text-cyan-300/90",
-      radarFill: "rgba(6, 182, 212, 0.38)",
-      radarStroke: "#22d3ee",
-      radarPointFill: "#a5f3fc",
-      radarPointStroke: "#0e7490",
-      radarLabel: "#cffafe",
-      attrValue: "text-cyan-300",
-      attrCardBg: "bg-cyan-950/30 border-cyan-500/20",
-      hudCardBg: "border-cyan-500/30",
-      hudText: "text-cyan-300",
-      hudIcon: "text-cyan-400",
-      miniligaProgress: "bg-gradient-to-r from-cyan-400 via-sky-400 to-blue-500",
-      headerBadge: "bg-cyan-500/20 text-cyan-300 border-cyan-400/40 shadow-sm",
-      headerIconBox: "bg-cyan-500/10 border-cyan-500/30 text-cyan-400",
-      footerText: "text-cyan-400/90",
-      footerIcon: "text-cyan-400",
+      outerFrame,
+      radarFill: "rgba(56, 189, 248, 0.32)",
+      radarStroke: "#38bdf8",
+      radarPointFill: "#bae6fd",
+      radarPointStroke: "#0284c7",
+      radarLabel: "#e0f2fe",
+      headerBadge: "bg-blue-500/20 text-sky-300 border-sky-400/40 shadow-sm",
+      headerIconBox: "bg-sky-500/10 border-sky-400/30 text-sky-400",
     };
   }
 
   if (ovr >= 80) {
-    // 🥇 OURO (80 <= OVR < 90) - Clássico Master Dourado EA
+    // 🥇 OURO (80 <= OVR < 90)
     return {
+      ...marcoRozaNavyBase,
       tier: "OURO",
       badgeIcon: "🥇",
-      outerFrame: isOnFire
-        ? "bg-gradient-to-b from-orange-400 via-amber-500 to-amber-950 shadow-orange-500/30 ring-2 ring-orange-400/60"
-        : "bg-gradient-to-b from-amber-200 via-yellow-500 to-amber-950 shadow-yellow-500/25 ring-1 ring-yellow-400/40",
-      innerBg: "bg-gradient-to-b from-slate-900 via-slate-950 to-black",
-      accentGlow: "bg-amber-400/20",
-      ovrBadgeBg: "bg-slate-900/90 border border-amber-400/50 shadow-inner",
-      ovrText: "text-amber-300 font-black drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]",
-      ovrLabel: "text-amber-400 font-black",
-      categoryTag: "text-amber-200 bg-amber-500/20 border-amber-500/40",
-      nameBorder: "border-amber-500/30",
-      nameSub: "text-amber-300/90",
-      radarFill: "rgba(234, 179, 8, 0.35)",
+      outerFrame,
+      radarFill: "rgba(245, 158, 11, 0.32)",
       radarStroke: "#f59e0b",
-      radarPointFill: "#fbbf24",
-      radarPointStroke: "#78350f",
-      radarLabel: "#fde68a",
-      attrValue: "text-amber-300",
-      attrCardBg: "bg-white/5 border-white/5",
-      hudCardBg: "border-amber-500/25",
-      hudText: "text-amber-300",
-      hudIcon: "text-amber-400",
-      miniligaProgress: "bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500",
+      radarPointFill: "#fde68a",
+      radarPointStroke: "#b45309",
+      radarLabel: "#fef3c7",
       headerBadge: "bg-amber-500/20 text-amber-300 border-amber-500/40 shadow-sm",
       headerIconBox: "bg-amber-500/10 border-amber-500/30 text-amber-400",
-      footerText: "text-amber-400/90",
-      footerIcon: "text-amber-400",
     };
   }
 
   if (ovr >= 67) {
-    // 🥈 PRATA (67 <= OVR < 80) - Aço Cromado e Titânio Metálico
+    // 🥈 PRATA (67 <= OVR < 80)
     return {
+      ...marcoRozaNavyBase,
       tier: "PRATA",
       badgeIcon: "🥈",
-      outerFrame: isOnFire
-        ? "bg-gradient-to-b from-orange-400 via-slate-300 to-slate-900 shadow-slate-300/30 ring-2 ring-orange-400/60"
-        : "bg-gradient-to-b from-slate-100 via-slate-300 to-slate-800 shadow-slate-400/20 ring-1 ring-slate-400/30",
-      innerBg: "bg-gradient-to-b from-slate-900 via-[#131722] to-[#0c0f17]",
-      accentGlow: "bg-slate-300/20",
-      ovrBadgeBg: "bg-slate-900/90 border border-slate-300/50 shadow-inner",
-      ovrText: "text-white font-black drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]",
-      ovrLabel: "text-slate-300 font-black",
-      categoryTag: "text-slate-200 bg-slate-400/20 border-slate-400/40",
-      nameBorder: "border-slate-400/35",
-      nameSub: "text-slate-300/90",
-      radarFill: "rgba(148, 163, 184, 0.35)",
+      outerFrame,
+      radarFill: "rgba(148, 163, 184, 0.32)",
       radarStroke: "#cbd5e1",
-      radarPointFill: "#e2e8f0",
-      radarPointStroke: "#334155",
-      radarLabel: "#f1f5f9",
-      attrValue: "text-slate-200",
-      attrCardBg: "bg-slate-800/30 border-slate-500/20",
-      hudCardBg: "border-slate-400/25",
-      hudText: "text-slate-300",
-      hudIcon: "text-slate-300",
-      miniligaProgress: "bg-gradient-to-r from-slate-300 via-slate-200 to-slate-400",
-      headerBadge: "bg-slate-400/20 text-slate-200 border-slate-400/40 shadow-sm",
-      headerIconBox: "bg-slate-400/10 border-slate-400/30 text-slate-300",
-      footerText: "text-slate-300/90",
-      footerIcon: "text-slate-300",
+      radarPointFill: "#f1f5f9",
+      radarPointStroke: "#475569",
+      radarLabel: "#f8fafc",
+      headerBadge: "bg-slate-500/20 text-slate-200 border-slate-400/40 shadow-sm",
+      headerIconBox: "bg-slate-500/10 border-slate-400/30 text-slate-300",
     };
   }
 
-  // 🥉 BRONZE (OVR < 67) - Bronze Nobre e Cobre Metálico
+  // 🥉 BRONZE (OVR < 67)
   return {
+    ...marcoRozaNavyBase,
     tier: "BRONZE",
     badgeIcon: "🥉",
-    outerFrame: isOnFire
-      ? "bg-gradient-to-b from-orange-400 via-amber-700 to-stone-950 shadow-orange-950/40 ring-2 ring-orange-400/60"
-      : "bg-gradient-to-b from-amber-600 via-orange-800 to-stone-950 shadow-amber-900/20 ring-1 ring-amber-700/30",
-    innerBg: "bg-gradient-to-b from-stone-900 via-[#1c130d] to-[#120a06]",
-    accentGlow: "bg-amber-700/20",
-    ovrBadgeBg: "bg-slate-900/90 border border-amber-700/50 shadow-inner",
-    ovrText: "text-amber-400 font-black drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]",
-    ovrLabel: "text-amber-500 font-black",
-    categoryTag: "text-amber-300 bg-amber-700/25 border-amber-600/40",
-    nameBorder: "border-amber-700/40",
-    nameSub: "text-amber-400/80",
-    radarFill: "rgba(180, 83, 9, 0.35)",
+    outerFrame,
+    radarFill: "rgba(217, 119, 6, 0.28)",
     radarStroke: "#d97706",
-    radarPointFill: "#f59e0b",
+    radarPointFill: "#fcd34d",
     radarPointStroke: "#78350f",
-    radarLabel: "#fcd34d",
-    attrValue: "text-amber-400",
-    attrCardBg: "bg-amber-950/30 border-amber-800/30",
-    hudCardBg: "border-amber-700/25",
-    hudText: "text-amber-400",
-    hudIcon: "text-amber-500",
-    miniligaProgress: "bg-gradient-to-r from-amber-600 via-amber-500 to-amber-700",
-    headerBadge: "bg-amber-800/25 text-amber-400 border-amber-700/40 shadow-sm",
-    headerIconBox: "bg-amber-800/15 border-amber-700/30 text-amber-500",
-    footerText: "text-amber-400/90",
-    footerIcon: "text-amber-400",
+    radarLabel: "#fef3c7",
+    headerBadge: "bg-amber-900/30 text-amber-300 border-amber-700/40 shadow-sm",
+    headerIconBox: "bg-amber-900/20 border-amber-700/30 text-amber-400",
   };
 };
 
@@ -814,10 +771,11 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
               className={`relative mx-auto w-full max-w-[340px] rounded-3xl p-1 shadow-2xl transition-all duration-300 ${cardTheme.outerFrame}`}
             >
               <div
-                className={`relative rounded-[22px] ${cardTheme.innerBg} p-4 pb-3.5 sm:p-5 sm:pb-4 overflow-hidden flex flex-col justify-between`}
+                className="relative rounded-[22px] p-4 pb-3.5 sm:p-5 sm:pb-4 overflow-hidden flex flex-col justify-between"
                 style={{
+                  backgroundColor: "#091528",
                   backgroundImage:
-                    "radial-gradient(circle at 85% 15%, rgba(255, 255, 255, 0.08) 0%, transparent 60%)",
+                    "radial-gradient(circle at 85% 15%, rgba(56, 189, 248, 0.12) 0%, transparent 55%), linear-gradient(180deg, #0e1e38 0%, #091528 50%, #050b17 100%)",
                 }}
               >
                 {/* Efeito de Reflexo de Vidro e Luz (ignorado no canvas para evitar artefatos de blur no Safari/iOS) */}
