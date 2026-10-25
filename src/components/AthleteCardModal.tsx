@@ -8,6 +8,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import type { Student } from "@/data/mockData";
+import type { MiniligaSession } from "@/types/miniliga";
 import { useAppContext } from "@/contexts/AppContext";
 import {
   Trophy,
@@ -29,6 +30,8 @@ import {
 import logo from "@/assets/logo.png";
 import { toast } from "sonner";
 import { cleanPhoneNumber } from "@/lib/whatsapp";
+import { miniligaStorage } from "@/lib/miniliga-storage";
+import { matchStudentByName } from "@/lib/miniliga-excel-parser";
 
 // Cores, gradientes e estilos dinâmicos exclusivos para cada Raridade de Carta (Diamante, Ouro, Prata e Bronze)
 export const getCardTheme = (ovr: number, isOnFire: boolean) => {
@@ -183,7 +186,25 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
   const [copiedImage, setCopiedImage] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [cachedBlob, setCachedBlob] = useState<Blob | null>(null);
+  const [historySessions, setHistorySessions] = useState<MiniligaSession[]>(() =>
+    miniligaStorage.getHistory()
+  );
   const cardRef = useRef<HTMLDivElement>(null);
+
+  // Sincronizar sessões de Miniliga oficiais (Local + Lovable Cloud) ao abrir o modal
+  useEffect(() => {
+    if (open) {
+      setHistorySessions(miniligaStorage.getHistory());
+      miniligaStorage
+        .fetchCloudHistory()
+        .then((sessions) => {
+          if (sessions && sessions.length > 0) {
+            setHistorySessions(sessions);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [open]);
 
   // Função unificada para captura do Card em alta resolução e formato perfeito para WhatsApp / Redes
   const captureCardCanvas = async (element: HTMLElement) => {
@@ -246,21 +267,76 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
     const presencas = studentLogs.filter((l) => l.presente === "Presente").length;
     const reposicoes = studentLogs.filter((l) => l.presente === "Reposição").length;
     const miniligaLogs = studentLogs.filter((l) => l.presente === "Miniliga");
-    // Torneios oficiais com sessão vinculada ou pontuação atribuída
-    const officialTournamentLogs = miniligaLogs.filter(
-      (l) => Boolean(l.miniligaSessionId) || (typeof l.miniligaPontos === "number" && l.miniligaPontos > 0)
+
+    // 2. Torneios Oficiais disputados (extraídos diretamente do histórico oficial da Miniliga com cruzamento inteligente de nomes e apelidos)
+    const realSessions = (historySessions || []).filter((s) => !s.isSimulation);
+    const officialTournaments = realSessions
+      .map((session) => {
+        const p = (session.participants || []).find((part) => {
+          if (part.studentId && part.studentId === student.id) return true;
+          const matched = matchStudentByName(part.name, [student]);
+          return matched && matched.id === student.id;
+        });
+        if (!p) return null;
+        const points =
+          typeof p.cardPointsAwarded === "number" && p.cardPointsAwarded > 0
+            ? p.cardPointsAwarded
+            : p.rank
+            ? Math.max(1, 11 - p.rank)
+            : 3;
+        return {
+          sessionId: session.id,
+          title: session.title,
+          date: session.date,
+          rank: p.rank ?? 0,
+          points,
+          wins: p.wins ?? 0,
+          matchesPlayed: p.matchesPlayed ?? 0,
+        };
+      })
+      .filter(Boolean) as {
+      sessionId: string;
+      title: string;
+      date: string;
+      rank: number;
+      points: number;
+      wins: number;
+      matchesPlayed: number;
+    }[];
+
+    const officialTournamentSessionIds = new Set(
+      officialTournaments.map((t) => t.sessionId)
     );
-    const torneiosOficiais = officialTournamentLogs.length;
-    const miniligaAulas = miniligaLogs.length;
-    const miniligas = miniligaAulas;
-    // Pontos de classificação: campo numérico, legado ou pontuação base (+3 pts por presença de liga sem súmula)
-    const miniligaPontos = miniligaLogs.reduce((acc, l) => {
+
+    // Aulas de liga avulsas no log de presença que NÃO correspondem a uma sessão oficial já computada
+    const standaloneLigaLogs = miniligaLogs.filter(
+      (l) => l.miniligaSessionId && !officialTournamentSessionIds.has(l.miniligaSessionId)
+    );
+
+    const tournamentPoints = officialTournaments.reduce((acc, t) => acc + t.points, 0);
+    const standaloneLigaPoints = standaloneLigaLogs.reduce((acc, l) => {
       if (typeof l.miniligaPontos === "number" && l.miniligaPontos > 0) return acc + l.miniligaPontos;
       const legado = l.motivoCancelamento?.match(/\+(\d+) pts/);
       if (legado) return acc + Number(legado[1]);
-      // Pontuação de participação por presença em Miniliga sem súmula detalhada
-      return acc + 3;
+      return 3;
     }, 0);
+
+    // Se o atleta tiver participações em torneios oficiais com súmula, prevalece a pontuação oficial
+    const miniligaPontos =
+      tournamentPoints > 0
+        ? tournamentPoints + standaloneLigaPoints
+        : miniligaLogs.reduce((acc, l) => {
+            if (typeof l.miniligaPontos === "number" && l.miniligaPontos > 0) return acc + l.miniligaPontos;
+            const legado = l.motivoCancelamento?.match(/\+(\d+) pts/);
+            if (legado) return acc + Number(legado[1]);
+            return 3;
+          }, 0);
+
+    const torneiosOficiais = officialTournaments.length;
+    const titulosOficiais = officialTournaments.filter((t) => t.rank === 1).length;
+    const podiosOficiais = officialTournaments.filter((t) => t.rank > 0 && t.rank <= 3).length;
+    const miniligaAulas = Math.max(torneiosOficiais, miniligaLogs.length);
+    const miniligas = miniligaAulas;
     const faltas = studentLogs.filter((l) => l.presente === "Falta").length;
 
     const attendedClasses = presencas + reposicoes + miniligas;
@@ -414,10 +490,13 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
       seasonLevel,
       progressToNextLevel,
       reposicoes,
-      miniligas: torneiosOficiais,
+      miniligas: torneiosOficiais > 0 ? torneiosOficiais : miniligaAulas,
       torneiosOficiais,
+      titulosOficiais,
+      podiosOficiais,
       miniligaAulas,
       miniligaPontos,
+      officialTournaments,
       attendedClasses,
       totalValidClasses,
       bonusConsistencia,
@@ -431,7 +510,7 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
         { label: "SMH", name: "Smash", value: Math.min(99, smash), boost: 0 },
       ],
     };
-  }, [student, testResults, activities, attendanceLogs]);
+  }, [student, testResults, activities, attendanceLogs, historySessions]);
 
   if (!student || !athleteStats) return null;
 
@@ -564,10 +643,8 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
       `• 7. Assiduidade: *${athleteStats.attendanceRate}%* (${athleteStats.attendedClasses} aulas)\n` +
       `• 8. Sequência: *${athleteStats.effectiveStreak} aulas seguidas* ${athleteStats.isOnFire ? "🔥 ON FIRE" : "sem faltas"}\n` +
       `• 9. Miniliga: *${athleteStats.miniligaPontos} pts acumulados* (${
-        athleteStats.torneiosOficiais > 0 && athleteStats.miniligaAulas > athleteStats.torneiosOficiais
-          ? `${athleteStats.torneiosOficiais} ${athleteStats.torneiosOficiais === 1 ? "torneio oficial" : "torneios oficiais"} (${athleteStats.miniligaAulas} presenças em liga)`
-          : athleteStats.torneiosOficiais > 0
-          ? `${athleteStats.torneiosOficiais} ${athleteStats.torneiosOficiais === 1 ? "torneio oficial" : "torneios oficiais"}`
+        athleteStats.torneiosOficiais > 0
+          ? `${athleteStats.torneiosOficiais} ${athleteStats.torneiosOficiais === 1 ? "torneio oficial" : "torneios oficiais"}${athleteStats.titulosOficiais > 0 ? `, ${athleteStats.titulosOficiais} título 🏆` : ""}`
           : athleteStats.miniligaAulas > 0
           ? `${athleteStats.miniligaAulas} ${athleteStats.miniligaAulas === 1 ? "aula temática" : "aulas de liga"}`
           : "sem torneios disputados"
@@ -606,10 +683,8 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
       `• 7. Assiduidade: *${athleteStats.attendanceRate}%* de presença\n` +
       `• 8. Sequência de Aulas: *${athleteStats.effectiveStreak} aulas seguidas* sem faltas\n` +
       `• 9. Miniliga Marco Roza: *${athleteStats.miniligaPontos} pontos acumulados* (${
-        athleteStats.torneiosOficiais > 0 && athleteStats.miniligaAulas > athleteStats.torneiosOficiais
-          ? `${athleteStats.torneiosOficiais} ${athleteStats.torneiosOficiais === 1 ? "torneio oficial" : "torneios oficiais"} (${athleteStats.miniligaAulas} presenças em liga)`
-          : athleteStats.torneiosOficiais > 0
-          ? `${athleteStats.torneiosOficiais} ${athleteStats.torneiosOficiais === 1 ? "torneio oficial" : "torneios oficiais"}`
+        athleteStats.torneiosOficiais > 0
+          ? `${athleteStats.torneiosOficiais} ${athleteStats.torneiosOficiais === 1 ? "torneio oficial" : "torneios oficiais"}${athleteStats.titulosOficiais > 0 ? `, ${athleteStats.titulosOficiais} título 🏆` : ""}`
           : athleteStats.miniligaAulas > 0
           ? `${athleteStats.miniligaAulas} ${athleteStats.miniligaAulas === 1 ? "aula temática" : "aulas de liga"}`
           : "sem torneios disputados"
@@ -959,10 +1034,8 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
                       {athleteStats.miniligaPontos} <span className="text-[9px] font-semibold">pts</span>
                     </div>
                     <div className="text-[8px] text-slate-400 font-medium leading-none">
-                      {athleteStats.torneiosOficiais > 0 && athleteStats.miniligaAulas > athleteStats.torneiosOficiais
-                        ? `${athleteStats.torneiosOficiais} ${athleteStats.torneiosOficiais === 1 ? "oficial" : "oficiais"} (${athleteStats.miniligaAulas} presenças)`
-                        : athleteStats.torneiosOficiais > 0
-                        ? `${athleteStats.torneiosOficiais} ${athleteStats.torneiosOficiais === 1 ? "torneio" : "torneios"}`
+                      {athleteStats.torneiosOficiais > 0
+                        ? `${athleteStats.torneiosOficiais} ${athleteStats.torneiosOficiais === 1 ? "torneio" : "torneios"}${athleteStats.titulosOficiais > 0 ? " 🏆" : ""}`
                         : athleteStats.miniligaAulas > 0
                         ? `${athleteStats.miniligaAulas} ${athleteStats.miniligaAulas === 1 ? "aula temática" : "aulas de liga"}`
                         : "sem torneios"}
@@ -1164,10 +1237,8 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
                         {athleteStats.miniligaPontos} <span className="text-xs font-bold">pts</span>
                       </span>
                       <span className="text-[10px] text-slate-400 font-medium">
-                        {athleteStats.torneiosOficiais > 0 && athleteStats.miniligaAulas > athleteStats.torneiosOficiais
-                          ? `${athleteStats.torneiosOficiais} ${athleteStats.torneiosOficiais === 1 ? "torneio oficial" : "torneios oficiais"} (${athleteStats.miniligaAulas} participações)`
-                          : athleteStats.torneiosOficiais > 0
-                          ? `${athleteStats.torneiosOficiais} ${athleteStats.torneiosOficiais === 1 ? "torneio oficial" : "torneios oficiais"}`
+                        {athleteStats.torneiosOficiais > 0
+                          ? `${athleteStats.torneiosOficiais} ${athleteStats.torneiosOficiais === 1 ? "torneio oficial" : "torneios oficiais"}${athleteStats.titulosOficiais > 0 ? ` (${athleteStats.titulosOficiais} 🏆 Título)` : ""}`
                           : athleteStats.miniligaAulas > 0
                           ? `${athleteStats.miniligaAulas} ${athleteStats.miniligaAulas === 1 ? "aula temática" : "aulas de liga"}`
                           : "sem torneios"}
@@ -1175,6 +1246,36 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
                     </div>
                   </div>
                 </div>
+
+                {/* Torneios Oficiais Disputados pelo Atleta */}
+                {athleteStats.officialTournaments && athleteStats.officialTournaments.length > 0 && (
+                  <div className="pt-2">
+                    <div className="text-[10px] text-amber-400 font-bold uppercase tracking-wider mb-1.5 flex items-center gap-1">
+                      <Trophy className="h-3 w-3 text-amber-400" />
+                      Histórico Oficial de Torneios
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {athleteStats.officialTournaments.map((t, idx) => (
+                        <div
+                          key={t.sessionId || idx}
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10.5px] border ${
+                            t.rank === 1
+                              ? "bg-amber-500/15 border-amber-400/50 text-amber-200"
+                              : t.rank <= 3
+                              ? "bg-slate-800/80 border-slate-600 text-slate-200"
+                              : "bg-slate-900/60 border-slate-700/60 text-slate-300"
+                          }`}
+                        >
+                          <Trophy className={`h-3 w-3 ${t.rank === 1 ? "text-amber-400 fill-current" : "text-amber-400/80"}`} />
+                          <span className="font-medium text-slate-300">{t.title}:</span>
+                          <strong className="text-white font-bold">{t.rank}º lugar</strong>
+                          <span className="text-amber-400 font-mono font-bold">(+{t.points} pts)</span>
+                          {t.rank === 1 && <span className="text-xs">🏆</span>}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 

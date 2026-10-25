@@ -223,7 +223,7 @@ export const MiniligaImportModal: React.FC<MiniligaImportModalProps> = ({
         sessionParticipants.forEach((p) => {
           if (p.studentId && !p.isGuest) {
             newAttendanceLogs.push({
-              id: `att-${sessionId}-${p.studentId}`,
+              id: crypto.randomUUID(),
               alunoId: p.studentId,
               turmaId: "miniliga",
               data: t.date,

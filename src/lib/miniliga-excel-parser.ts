@@ -194,7 +194,9 @@ const normalizeStr = (s: string) =>
 
 // Dicionário de equivalências conhecidas da planilha do Marco Roza
 const PLAYER_NAME_ALIASES: { [key: string]: string[] } = {
-  "daniela roza": ["daniela de carvalho da roza", "daniela carvalho roza", "daniela roza"],
+  "daniela roza": ["daniela de carvalho da roza", "daniela carvalho roza", "daniela roza", "dani roza", "dani"],
+  "dani roza": ["daniela de carvalho da roza", "daniela carvalho roza", "daniela roza", "dani roza", "dani"],
+  "dani": ["daniela de carvalho da roza", "daniela carvalho roza", "daniela roza", "dani roza", "dani"],
   "juliano vecchi": ["juliano vecchi", "juliano"],
   "alexandre": ["alexandre takatsu", "alexandre"],
   "henri": ["henri fogagnoli", "henri"],
