@@ -178,40 +178,101 @@ export const PREPARSED_MARCO_ROZA_MINILIGAS: ParsedTournamentData[] = [
   },
 ];
 
+// Conjunto dos 3 convidados oficiais indicados pelo Marco Roza na planilha
+export const KNOWN_OFFICIAL_GUESTS = new Set([
+  "ida maria",
+  "valdeci silva",
+  "fabiele de paulo",
+]);
+
+const normalizeStr = (s: string) =>
+  s
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9\s]/g, "")
+    .trim();
+
+// Dicionário de equivalências conhecidas da planilha do Marco Roza
+const PLAYER_NAME_ALIASES: { [key: string]: string[] } = {
+  "daniela roza": ["daniela de carvalho da roza", "daniela carvalho roza", "daniela roza"],
+  "juliano vecchi": ["juliano vecchi", "juliano"],
+  "alexandre": ["alexandre takatsu", "alexandre"],
+  "henri": ["henri fogagnoli", "henri"],
+  "luigi": ["luigi de bortoli", "luigi"],
+  "francisco": ["francisco furlan", "francisco"],
+  "mary": ["mariana", "mary"],
+  "mateus": ["matheus", "mateus"],
+  "matheus": ["matheus", "mateus"],
+  "isabel": ["isabel", "isabela", "maria isabel"],
+  "camila": ["camila"],
+  "antonio": ["antonio", "antônio"],
+  "davi": ["davi", "david"],
+  "emerson": ["emerson"],
+};
+
 // Função inteligente de cruzamento de nome do jogador da planilha com alunos cadastrados
 export function matchStudentByName(playerName: string, students: Student[]): Student | null {
   if (!playerName || !students || students.length === 0) return null;
-  const clean = playerName.trim().toLowerCase();
+  const pNorm = normalizeStr(playerName);
 
-  // 1. Busca exata (case insensitive)
-  const exact = students.find((s) => s.nome.trim().toLowerCase() === clean);
-  if (exact) return exact;
-
-  // 2. Busca pelo primeiro nome ou se o nome completo contiver o termo
-  const cleanParts = clean.split(/\s+/);
-  const firstName = cleanParts[0];
-
-  // Match específico para os nomes abreviados das miniligas do Marco
-  const candidates = students.filter((s) => {
-    const sClean = s.nome.trim().toLowerCase();
-    const sParts = sClean.split(/\s+/);
-    const sFirst = sParts[0];
-
-    // Se o primeiro nome bater e não houver ambiguidade evidente
-    if (firstName.length >= 3 && sFirst === firstName) {
-      if (cleanParts.length === 1) return true;
-      // Se houver sobrenome na busca, confere se o sobrenome bate
-      const lastName = cleanParts[cleanParts.length - 1];
-      if (sClean.includes(lastName)) return true;
-    }
-
-    return false;
-  });
-
-  if (candidates.length === 1) {
-    return candidates[0];
+  // 1. Não vincular se for comprovadamente convidado oficial
+  if (KNOWN_OFFICIAL_GUESTS.has(pNorm)) {
+    return null;
   }
 
-  // Fallback: substring
-  return students.find((s) => s.nome.toLowerCase().includes(clean)) || null;
+  // 2. Busca exata após normalização
+  const exact = students.find((s) => normalizeStr(s.nome) === pNorm);
+  if (exact) return exact;
+
+  // 3. Checagem por Dicionário de Apelidos/Abreviações
+  const aliases = PLAYER_NAME_ALIASES[pNorm];
+  if (aliases) {
+    for (const alias of aliases) {
+      const aliasNorm = normalizeStr(alias);
+      const matched = students.find((s) => {
+        const sNorm = normalizeStr(s.nome);
+        return sNorm === aliasNorm || sNorm.includes(aliasNorm);
+      });
+      if (matched) return matched;
+    }
+  }
+
+  // 4. Busca por primeiro nome + sobrenome
+  const pParts = pNorm.split(/\s+/);
+  const pFirst = pParts[0];
+  const pLast = pParts.length > 1 ? pParts[pParts.length - 1] : "";
+
+  // Se tiver primeiro e último nome
+  if (pFirst && pLast) {
+    const fullMatch = students.find((s) => {
+      const sNorm = normalizeStr(s.nome);
+      return sNorm.includes(pFirst) && sNorm.includes(pLast);
+    });
+    if (fullMatch) return fullMatch;
+  }
+
+  // 5. Match pelo primeiro nome se houver correspondência
+  if (pFirst.length >= 3) {
+    const firstMatches = students.filter((s) => {
+      const sParts = normalizeStr(s.nome).split(/\s+/);
+      return sParts[0] === pFirst || (sParts[1] && sParts[1] === pFirst);
+    });
+
+    if (firstMatches.length === 1) {
+      return firstMatches[0];
+    }
+    // Se houver mais de um aluno com esse primeiro nome, prioriza o ativo
+    if (firstMatches.length > 1) {
+      const active = firstMatches.find((s) => s.status === "Ativo");
+      if (active) return active;
+      return firstMatches[0];
+    }
+  }
+
+  // 6. Fallback: substring em qualquer parte do nome
+  const substringMatch = students.find((s) => normalizeStr(s.nome).includes(pNorm));
+  if (substringMatch) return substringMatch;
+
+  return null;
 }
