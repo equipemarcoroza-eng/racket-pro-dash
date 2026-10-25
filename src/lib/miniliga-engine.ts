@@ -587,16 +587,22 @@ export function recalculateMiniligaStandings(
  * Desempate estável: TotalScore (Games Pró + Vitórias)
  */
 export function compareMiniligaParticipants(a: MiniligaParticipant, b: MiniligaParticipant): number {
-  // 1º critério: Número de vitórias
-  if (b.wins !== a.wins) return b.wins - a.wins;
-  // 2º critério: Saldo de games
-  if (b.pointsBalance !== a.pointsBalance) return b.pointsBalance - a.pointsBalance;
-  // 3º critério: Número de games vencidos
-  if (b.pointsFor !== a.pointsFor) return b.pointsFor - a.pointsFor;
-  // 4º critério: Menor número de games perdidos
-  if (a.pointsAgainst !== b.pointsAgainst) return a.pointsAgainst - b.pointsAgainst;
-  // Desempate estável
-  return b.totalScore - a.totalScore;
+  if (!a && !b) return 0;
+  if (!a) return 1;
+  if (!b) return -1;
+  const aWins = a.wins ?? 0;
+  const bWins = b.wins ?? 0;
+  if (bWins !== aWins) return bWins - aWins;
+  const aBal = a.pointsBalance ?? 0;
+  const bBal = b.pointsBalance ?? 0;
+  if (bBal !== aBal) return bBal - aBal;
+  const aPf = a.pointsFor ?? 0;
+  const bPf = b.pointsFor ?? 0;
+  if (bPf !== aPf) return bPf - aPf;
+  const aPa = a.pointsAgainst ?? 0;
+  const bPa = b.pointsAgainst ?? 0;
+  if (aPa !== bPa) return aPa - bPa;
+  return (b.totalScore ?? 0) - (a.totalScore ?? 0);
 }
 
 /**
@@ -710,13 +716,14 @@ export function getPlayerGroupCode(
   participants: MiniligaParticipant[],
   modelType?: MiniligaModelType
 ): string | null {
+  if (!participants || !Array.isArray(participants) || !participantId) return null;
   if (modelType === "intergrupos" && participants.length === 8) {
-    const idx = participants.findIndex((p) => p.id === participantId);
+    const idx = participants.findIndex((p) => p && p.id === participantId);
     if (idx >= 0 && idx < 4) return `A${idx + 1}`;
     if (idx >= 4 && idx < 8) return `B${idx - 3}`;
   }
   if (modelType === "intergrupos" && participants.length === 10) {
-    const idx = participants.findIndex((p) => p.id === participantId);
+    const idx = participants.findIndex((p) => p && p.id === participantId);
     if (idx >= 0 && idx < 5) return `A${idx + 1}`;
     if (idx >= 5 && idx < 10) return `B${idx - 4}`;
   }

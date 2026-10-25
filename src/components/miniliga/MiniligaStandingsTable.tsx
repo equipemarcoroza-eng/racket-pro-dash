@@ -14,14 +14,15 @@ export const MiniligaStandingsTable: React.FC<MiniligaStandingsTableProps> = ({
   standings,
   hasTiebreakWarning,
 }) => {
+  const safeStandings = standings || [];
   const hasGroups =
-    standings.some((p) => p.groupNumber === 1) &&
-    standings.some((p) => p.groupNumber === 2);
+    safeStandings.some((p) => p && p.groupNumber === 1) &&
+    safeStandings.some((p) => p && p.groupNumber === 2);
 
   const [viewMode, setViewMode] = useState<"geral" | "grupos">("geral");
 
-  const groupA = standings.filter((p) => p.groupNumber === 1).sort(compareMiniligaParticipants);
-  const groupB = standings.filter((p) => p.groupNumber === 2).sort(compareMiniligaParticipants);
+  const groupA = safeStandings.filter((p) => p && p.groupNumber === 1).sort(compareMiniligaParticipants);
+  const groupB = safeStandings.filter((p) => p && p.groupNumber === 2).sort(compareMiniligaParticipants);
 
   const renderTableRows = (list: MiniligaParticipant[], isGroupA?: boolean, isGroupB?: boolean) => {
     const isGroup = isGroupA || isGroupB;
@@ -82,11 +83,11 @@ export const MiniligaStandingsTable: React.FC<MiniligaStandingsTableProps> = ({
           <td className="py-3 px-3 font-semibold text-foreground">
             <div className="flex items-center gap-2">
               <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-primary/30 to-primary/10 border border-primary/20 flex items-center justify-center text-xs font-black text-primary shrink-0">
-                {p.name.charAt(0)}
+                {(p.name || "?").charAt(0)}
               </div>
               <div className="flex flex-col">
                 <span className="truncate max-w-[130px] sm:max-w-[190px]">
-                  {p.name}
+                  {p.name || "Atleta"}
                 </span>
                 <div className="flex items-center gap-1.5 mt-0.5">
                   {!isGroup && p.groupNumber && (

@@ -98,15 +98,15 @@ export const AllMatchesOverview: React.FC<AllMatchesOverviewProps> = ({
         {/* Lista dos jogos da bateria em Grid */}
         <div className={`grid grid-cols-1 ${roundMatches.length >= 3 ? "lg:grid-cols-3 md:grid-cols-2" : "md:grid-cols-2"} gap-3`}>
           {roundMatches.map((m) => {
-            const p1A = participantsMap.get(m.teamA.player1Id);
-            const p2A = m.teamA.player2Id ? participantsMap.get(m.teamA.player2Id) : null;
-            const p1B = participantsMap.get(m.teamB.player1Id);
-            const p2B = m.teamB.player2Id ? participantsMap.get(m.teamB.player2Id) : null;
+            const p1A = m.teamA?.player1Id ? participantsMap.get(m.teamA.player1Id) : null;
+            const p2A = m.teamA?.player2Id ? participantsMap.get(m.teamA.player2Id) : null;
+            const p1B = m.teamB?.player1Id ? participantsMap.get(m.teamB.player1Id) : null;
+            const p2B = m.teamB?.player2Id ? participantsMap.get(m.teamB.player2Id) : null;
 
-            const codeP1A = getPlayerGroupCode(m.teamA.player1Id, participants, modelType);
-            const codeP2A = m.teamA.player2Id ? getPlayerGroupCode(m.teamA.player2Id, participants, modelType) : null;
-            const codeP1B = getPlayerGroupCode(m.teamB.player1Id, participants, modelType);
-            const codeP2B = m.teamB.player2Id ? getPlayerGroupCode(m.teamB.player2Id, participants, modelType) : null;
+            const codeP1A = m.teamA?.player1Id ? getPlayerGroupCode(m.teamA.player1Id, participants, modelType) : null;
+            const codeP2A = m.teamA?.player2Id ? getPlayerGroupCode(m.teamA.player2Id, participants, modelType) : null;
+            const codeP1B = m.teamB?.player1Id ? getPlayerGroupCode(m.teamB.player1Id, participants, modelType) : null;
+            const codeP2B = m.teamB?.player2Id ? getPlayerGroupCode(m.teamB.player2Id, participants, modelType) : null;
 
             const aWinning = (m.scoreA ?? 0) > (m.scoreB ?? 0);
             const bWinning = (m.scoreB ?? 0) > (m.scoreA ?? 0);
@@ -328,7 +328,7 @@ export const AllMatchesOverview: React.FC<AllMatchesOverviewProps> = ({
                             {pair.tag} ({pair.codeA} + {pair.codeB})
                           </span>
                           <span className="text-xs font-bold text-white truncate">
-                            {p1 ? p1.name.split(" ")[0] : pair.codeA} & {p2 ? p2.name.split(" ")[0] : pair.codeB}
+                            {p1?.name ? p1.name.split(" ")[0] : pair.codeA} & {p2?.name ? p2.name.split(" ")[0] : pair.codeB}
                           </span>
                         </div>
                       );
@@ -519,7 +519,7 @@ export const AllMatchesOverview: React.FC<AllMatchesOverviewProps> = ({
                               {pair.codeA} + {pair.codeB}
                             </span>
                             <span className="text-xs font-bold text-white truncate">
-                              {p1 ? p1.name.split(" ")[0] : pair.codeA} & {p2 ? p2.name.split(" ")[0] : pair.codeB}
+                              {p1?.name ? p1.name.split(" ")[0] : pair.codeA} & {p2?.name ? p2.name.split(" ")[0] : pair.codeB}
                             </span>
                           </div>
                         );
@@ -533,7 +533,7 @@ export const AllMatchesOverview: React.FC<AllMatchesOverviewProps> = ({
                         💤 Folgam Nesta Rodada:
                       </span>
                       <span className="text-xs font-extrabold text-amber-300">
-                        [{cycleInfo.restingDescription.codeA}] {restingP1 ? restingP1.name.split(" ")[0] : ""} & [{cycleInfo.restingDescription.codeB}] {restingP2 ? restingP2.name.split(" ")[0] : ""}
+                        [{cycleInfo.restingDescription.codeA}] {restingP1?.name ? restingP1.name.split(" ")[0] : ""} & [{cycleInfo.restingDescription.codeB}] {restingP2?.name ? restingP2.name.split(" ")[0] : ""}
                       </span>
                     </div>
                   )}

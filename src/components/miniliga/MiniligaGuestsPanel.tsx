@@ -82,7 +82,7 @@ export const MiniligaGuestsPanel: React.FC<MiniligaGuestsPanelProps> = ({
 
     const updatedSession = { ...sessionToUpdate, participants: updatedParticipants };
     await miniligaStorage.saveSession(updatedSession);
-    toast.success(`Telefone de ${guest.name} salvo com sucesso!`);
+    toast.success(`Telefone de ${guest.name || "visitante"} salvo com sucesso!`);
     if (onRefresh) onRefresh();
   };
 
@@ -90,7 +90,7 @@ export const MiniligaGuestsPanel: React.FC<MiniligaGuestsPanelProps> = ({
     const rawPhone = editingPhone[guest.id] ?? guest.phone ?? "";
     const cleanPhone = rawPhone.replace(/\D/g, "");
 
-    const firstName = guest.name.split(" ")[0];
+    const firstName = guest.name ? guest.name.split(" ")[0] : "Visitante";
     const performanceText =
       guest.rank && guest.rank <= 3
         ? `Você arrebentou e foi destaque ficando em ${guest.rank}º lugar`

@@ -3,6 +3,7 @@ import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Trophy } from "lucide-react";
 import { MiniligaSection } from "@/components/miniliga/MiniligaSection";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import logo from "@/assets/logo.png";
 
 const Miniliga: React.FC = () => {
@@ -41,8 +42,10 @@ const Miniliga: React.FC = () => {
         </CardHeader>
       </Card>
 
-      {/* Conteúdo Completo do Sistema de Miniliga */}
-      <MiniligaSection />
+      {/* Conteúdo Completo do Sistema de Miniliga com Error Boundary */}
+      <ErrorBoundary fallbackTitle="Instabilidade ao carregar a Mesa de Miniligas">
+        <MiniligaSection />
+      </ErrorBoundary>
     </div>
   );
 };

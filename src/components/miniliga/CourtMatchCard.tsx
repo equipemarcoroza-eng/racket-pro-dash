@@ -20,16 +20,16 @@ export const CourtMatchCard: React.FC<CourtMatchCardProps> = ({
   modelType,
   onScoreChange,
 }) => {
-  const p1A = participantsMap.get(match.teamA.player1Id);
-  const p2A = match.teamA.player2Id ? participantsMap.get(match.teamA.player2Id) : null;
+  const p1A = match.teamA?.player1Id ? participantsMap.get(match.teamA.player1Id) : null;
+  const p2A = match.teamA?.player2Id ? participantsMap.get(match.teamA.player2Id) : null;
 
-  const p1B = participantsMap.get(match.teamB.player1Id);
-  const p2B = match.teamB.player2Id ? participantsMap.get(match.teamB.player2Id) : null;
+  const p1B = match.teamB?.player1Id ? participantsMap.get(match.teamB.player1Id) : null;
+  const p2B = match.teamB?.player2Id ? participantsMap.get(match.teamB.player2Id) : null;
 
-  const codeP1A = getPlayerGroupCode(match.teamA.player1Id, participants, modelType);
-  const codeP2A = match.teamA.player2Id ? getPlayerGroupCode(match.teamA.player2Id, participants, modelType) : null;
-  const codeP1B = getPlayerGroupCode(match.teamB.player1Id, participants, modelType);
-  const codeP2B = match.teamB.player2Id ? getPlayerGroupCode(match.teamB.player2Id, participants, modelType) : null;
+  const codeP1A = match.teamA?.player1Id ? getPlayerGroupCode(match.teamA.player1Id, participants, modelType) : null;
+  const codeP2A = match.teamA?.player2Id ? getPlayerGroupCode(match.teamA.player2Id, participants, modelType) : null;
+  const codeP1B = match.teamB?.player1Id ? getPlayerGroupCode(match.teamB.player1Id, participants, modelType) : null;
+  const codeP2B = match.teamB?.player2Id ? getPlayerGroupCode(match.teamB.player2Id, participants, modelType) : null;
 
   const handleScoreAChange = (val: string) => {
     const num = val === "" ? null : Math.max(0, parseInt(val, 10) || 0);

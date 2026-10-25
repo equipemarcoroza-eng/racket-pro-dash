@@ -307,27 +307,29 @@ export const MiniligaSection: React.FC = () => {
 
   const participantsMap = useMemo(() => {
     const map = new Map<string, MiniligaParticipant>();
-    if (!session) return map;
-    session.participants.forEach((p) => map.set(p.id, p));
+    if (!session || !session.participants) return map;
+    session.participants.forEach((p) => {
+      if (p && p.id) map.set(p.id, p);
+    });
     return map;
   }, [session]);
 
   const currentRoundMatches = useMemo(() => {
-    if (!session) return [];
-    return session.matches.filter((m) => m.roundNumber === session.currentRound);
+    if (!session || !session.matches) return [];
+    return session.matches.filter((m) => m && m.roundNumber === session.currentRound);
   }, [session]);
 
   const restingPlayers = useMemo(() => {
-    if (!session) return [];
+    if (!session || !session.participants) return [];
     const playingIds = new Set<string>();
     currentRoundMatches.forEach((m) => {
-      playingIds.add(m.teamA.player1Id);
-      if (m.teamA.player2Id) playingIds.add(m.teamA.player2Id);
-      playingIds.add(m.teamB.player1Id);
-      if (m.teamB.player2Id) playingIds.add(m.teamB.player2Id);
+      if (m?.teamA?.player1Id) playingIds.add(m.teamA.player1Id);
+      if (m?.teamA?.player2Id) playingIds.add(m.teamA.player2Id);
+      if (m?.teamB?.player1Id) playingIds.add(m.teamB.player1Id);
+      if (m?.teamB?.player2Id) playingIds.add(m.teamB.player2Id);
     });
 
-    return session.participants.filter((p) => !playingIds.has(p.id));
+    return session.participants.filter((p) => p && !playingIds.has(p.id));
   }, [session, currentRoundMatches]);
 
   // Atualizar placar de um jogo (1 por 1 direto na grade)
@@ -430,15 +432,16 @@ export const MiniligaSection: React.FC = () => {
   };
 
   const hasTieInFirstPlace = useMemo(() => {
-    if (!session || session.participants.length < 2) return false;
+    if (!session || !session.participants || session.participants.length < 2) return false;
     const p1 = session.participants[0];
     const p2 = session.participants[1];
+    if (!p1 || !p2) return false;
     return (
       p1.wins === p2.wins &&
       p1.pointsBalance === p2.pointsBalance &&
       p1.pointsFor === p2.pointsFor &&
       p1.pointsAgainst === p2.pointsAgainst &&
-      p1.wins > 0
+      (p1.wins ?? 0) > 0
     );
   }, [session]);
 
@@ -1362,7 +1365,7 @@ export const MiniligaSection: React.FC = () => {
                               <strong className="text-amber-400 mr-1">
                                 {pair.codeA}+{pair.codeB}
                               </strong>
-                              {p1 ? p1.name.split(" ")[0] : pair.codeA}&{p2 ? p2.name.split(" ")[0] : pair.codeB}
+                              {p1?.name ? p1.name.split(" ")[0] : pair.codeA}&{p2?.name ? p2.name.split(" ")[0] : pair.codeB}
                             </span>
                           );
                         })}
@@ -1473,7 +1476,7 @@ export const MiniligaSection: React.FC = () => {
                               className="text-[11px] font-semibold bg-zinc-900 border border-zinc-800 px-2 py-0.5 rounded-lg text-zinc-300"
                             >
                               <strong className="text-amber-400 mr-1">{pair.codeA}+{pair.codeB}</strong>
-                              {p1 ? p1.name.split(" ")[0] : pair.codeA}&{p2 ? p2.name.split(" ")[0] : pair.codeB}
+                              {p1?.name ? p1.name.split(" ")[0] : pair.codeA}&{p2?.name ? p2.name.split(" ")[0] : pair.codeB}
                             </span>
                           );
                         })}
@@ -1481,7 +1484,7 @@ export const MiniligaSection: React.FC = () => {
 
                       {cycleInfo.restingDescription && (
                         <span className="text-[11px] font-semibold text-amber-300 bg-amber-500/10 border border-amber-500/30 px-2 py-0.5 rounded-lg self-start sm:self-auto">
-                          💤 Folgam: [{cycleInfo.restingDescription.codeA}] {session.participants[cycleInfo.restingDescription.p1Index]?.name.split(" ")[0]} & [{cycleInfo.restingDescription.codeB}] {session.participants[cycleInfo.restingDescription.p2Index]?.name.split(" ")[0]}
+                          💤 Folgam: [{cycleInfo.restingDescription.codeA}] {session.participants[cycleInfo.restingDescription.p1Index]?.name?.split(" ")[0] || cycleInfo.restingDescription.codeA} & [{cycleInfo.restingDescription.codeB}] {session.participants[cycleInfo.restingDescription.p2Index]?.name?.split(" ")[0] || cycleInfo.restingDescription.codeB}
                         </span>
                       )}
                     </div>
@@ -1615,6 +1618,7 @@ export const MiniligaSection: React.FC = () => {
                         size="sm"
                         onClick={() => {
                           setSession(h);
+                          setActiveView("quadra");
                           setHistoryOpen(false);
                           toast.success(`Miniliga "${h.title}" carregada na mesa para consulta e edição!`);
                         }}
