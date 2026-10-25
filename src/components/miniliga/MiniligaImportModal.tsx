@@ -253,9 +253,10 @@ export const MiniligaImportModal: React.FC<MiniligaImportModalProps> = ({
       );
       onOpenChange(false);
       if (onImportComplete) onImportComplete();
-    } catch (err) {
-      console.error("Erro ao importar miniligas:", err);
-      toast.error("Erro ao importar miniligas. Verifique a conexão com o banco.");
+    } catch (err: any) {
+      console.error("Erro detalhado ao importar miniligas:", err);
+      const msg = err?.message || "Verifique a conexão com o banco.";
+      toast.error(`Erro ao importar: ${msg}`);
     } finally {
       setIsProcessing(false);
     }

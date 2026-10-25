@@ -140,6 +140,16 @@ export const miniligaStorage = {
     }
   },
 
+  // 3.1 Salvar sessão completa (Histórico local + Lovable Cloud com resiliência para importação)
+  async saveSession(session: MiniligaSession): Promise<void> {
+    this.saveToHistory(session);
+    try {
+      await this.saveCloudNow(session);
+    } catch (e) {
+      console.warn("Aviso ao sincronizar sessão na nuvem (mantida no histórico local):", e);
+    }
+  },
+
   // 4. Limpar a mesa. Na nuvem só apaga sessões reais ainda em andamento;
   //    uma Miniliga validada continua no histórico
   clearActiveSession(session?: MiniligaSession | null): void {
