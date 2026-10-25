@@ -1374,17 +1374,26 @@ export const MiniligaSection: React.FC = () => {
                   </div>
                 );
               })() : session.participantCount === 10 && session.modelType === "intergrupos" ? (() => {
-                const isPlayoff = session.currentRound > 14;
-                const cycleInfo = get10PlayersCycleInfo(session.currentRound);
+                const isPlayoff =
+                  session.currentRound > 14 ||
+                  session.matches.some(
+                    (m) => m.roundNumber === session.currentRound && (m.isSemifinal || m.isBonusFinal || m.isTiebreakSimples)
+                  );
+                const is14BateriasFormat = session.matches.some(
+                  (m) => !m.isSemifinal && !m.isBonusFinal && !m.isTiebreakSimples && m.roundNumber > 6
+                );
+                const sampleRound = is14BateriasFormat ? session.currentRound : (session.currentRound - 1) * 2 + 1;
+                const cycleInfo = get10PlayersCycleInfo(sampleRound);
 
                 if (isPlayoff) {
                   const isFinal = session.matches.some(m => m.roundNumber === session.currentRound && m.isBonusFinal);
+                  const isSemi = session.matches.some(m => m.roundNumber === session.currentRound && m.isSemifinal);
                   return (
                     <div className="flex flex-col gap-3 p-4 rounded-2xl bg-amber-500/15 border border-amber-500/40">
                       <div className="flex flex-wrap items-center justify-between gap-3">
                         <div className="flex items-center gap-2 flex-wrap">
                           <Badge className="bg-amber-500 text-black font-black text-xs px-3 py-1 uppercase shadow">
-                            {isFinal ? "🏆 GRANDE FINAL (PLAYOFFS)" : "🏆 SEMIFINAIS (PLAYOFFS)"}
+                            {isFinal ? "🏆 GRANDE FINAL (PLAYOFFS)" : isSemi ? "🏆 SEMIFINAIS (PLAYOFFS)" : "⚡ DESEMPATE SIMPLES"}
                           </Badge>
                         </div>
                         {session.currentRound < session.totalRounds && (
@@ -1617,7 +1626,12 @@ export const MiniligaSection: React.FC = () => {
                       <Button
                         size="sm"
                         onClick={() => {
-                          setSession(h);
+                          const maxR = Math.max(
+                            ...(h.matches || []).map((m) => m.roundNumber),
+                            h.totalRounds || 1
+                          );
+                          const updatedH = { ...h, totalRounds: maxR };
+                          setSession(updatedH);
                           setActiveView("quadra");
                           setHistoryOpen(false);
                           toast.success(`Miniliga "${h.title}" carregada na mesa para consulta e edição!`);
