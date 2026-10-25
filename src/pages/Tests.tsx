@@ -192,40 +192,61 @@ const Tests = () => {
         };
       }).sort((a, b) => b.testDate.localeCompare(a.testDate));
 
-      // Fundamentos idênticos à regra oficial do AthleteCardModal
-      let baselineOvr = 75;
-      if (student.categoria === "Juvenil") baselineOvr = 78;
-      if (student.categoria === "Adulto") baselineOvr = 82;
+      // Regra Oficial Marco Roza:
+      // 1) Se não tem nota de prova para o fundamento, recebe zero (0);
+      // 2) Aluno novo que não tem nota de nada, tudo com zero (0) em relação aos fundamentos de provas.
+      let forehand = 0;
+      let backhand = 0;
+      let lob = 0;
+      let curta = 0;
+      let saque = 0;
+      let smash = 0;
 
-      let forehand = baselineOvr - 2;
-      let backhand = baselineOvr - 5;
-      let lob = baselineOvr - 3;
-      let curta = baselineOvr - 4;
-      let saque = baselineOvr + 1;
-      let smash = baselineOvr + 2;
+      let hasForehand = false;
+      let hasBackhand = false;
+      let hasLob = false;
+      let hasCurta = false;
+      let hasSaque = false;
+      let hasSmash = false;
 
       results.forEach((res) => {
         const act = activities.find((a) => a.id === res.atividadeId);
         const base = act?.quantidadeLancamentos || 10;
         const name = (act?.nome || "").toLowerCase();
-        const scorePct = Math.min(99, Math.round((res.acertos / Math.max(1, base)) * 100));
+        const scorePct = Math.min(100, Math.round((res.acertos / Math.max(1, base)) * 100));
 
         if (name.includes("forehand") || name.includes("direita")) {
-          forehand = Math.max(60, scorePct);
+          forehand = scorePct;
+          hasForehand = true;
         } else if (name.includes("backhand") || name.includes("esquerda")) {
-          backhand = Math.max(60, scorePct);
+          backhand = scorePct;
+          hasBackhand = true;
         } else if (name.includes("lob")) {
-          lob = Math.max(60, scorePct);
+          lob = scorePct;
+          hasLob = true;
         } else if (name.includes("curta") || name.includes("curtinha") || name.includes("drop")) {
-          curta = Math.max(60, scorePct);
+          curta = scorePct;
+          hasCurta = true;
         } else if (name.includes("saque") || name.includes("serviço")) {
-          saque = Math.max(60, scorePct);
+          saque = scorePct;
+          hasSaque = true;
         } else if (name.includes("smash")) {
-          smash = Math.max(60, scorePct);
+          smash = scorePct;
+          hasSmash = true;
         }
       });
 
-      const ovr = Math.round((forehand + backhand + lob + curta + saque + smash) / 6);
+      const evaluatedScores: number[] = [];
+      if (hasForehand) evaluatedScores.push(forehand);
+      if (hasBackhand) evaluatedScores.push(backhand);
+      if (hasLob) evaluatedScores.push(lob);
+      if (hasCurta) evaluatedScores.push(curta);
+      if (hasSaque) evaluatedScores.push(saque);
+      if (hasSmash) evaluatedScores.push(smash);
+
+      const ovr = evaluatedScores.length > 0
+        ? Math.round(evaluatedScores.reduce((acc, val) => acc + val, 0) / evaluatedScores.length)
+        : 0;
 
       return {
         student,
@@ -671,37 +692,37 @@ const Tests = () => {
                         <div className="grid grid-cols-6 gap-1 sm:gap-2 text-center bg-white dark:bg-slate-950 p-2 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs">
                           <div className="px-1.5">
                             <span className="text-[9px] font-bold text-slate-500 block uppercase">FOR</span>
-                            <span className={`text-xs font-black ${fundamentals.forehand >= 80 ? "text-emerald-600 dark:text-emerald-400" : fundamentals.forehand >= 65 ? "text-blue-600 dark:text-blue-400" : "text-amber-600 dark:text-amber-400"}`}>
+                            <span className={`text-xs font-black ${fundamentals.forehand === 0 ? "text-slate-400 dark:text-slate-600 font-medium" : fundamentals.forehand >= 80 ? "text-emerald-600 dark:text-emerald-400" : fundamentals.forehand >= 65 ? "text-blue-600 dark:text-blue-400" : "text-amber-600 dark:text-amber-400"}`}>
                               {fundamentals.forehand}
                             </span>
                           </div>
                           <div className="px-1.5 border-l border-slate-100 dark:border-slate-800">
                             <span className="text-[9px] font-bold text-slate-500 block uppercase">BCK</span>
-                            <span className={`text-xs font-black ${fundamentals.backhand >= 80 ? "text-emerald-600 dark:text-emerald-400" : fundamentals.backhand >= 65 ? "text-blue-600 dark:text-blue-400" : "text-amber-600 dark:text-amber-400"}`}>
+                            <span className={`text-xs font-black ${fundamentals.backhand === 0 ? "text-slate-400 dark:text-slate-600 font-medium" : fundamentals.backhand >= 80 ? "text-emerald-600 dark:text-emerald-400" : fundamentals.backhand >= 65 ? "text-blue-600 dark:text-blue-400" : "text-amber-600 dark:text-amber-400"}`}>
                               {fundamentals.backhand}
                             </span>
                           </div>
                           <div className="px-1.5 border-l border-slate-100 dark:border-slate-800">
                             <span className="text-[9px] font-bold text-slate-500 block uppercase">LOB</span>
-                            <span className={`text-xs font-black ${fundamentals.lob >= 80 ? "text-emerald-600 dark:text-emerald-400" : fundamentals.lob >= 65 ? "text-blue-600 dark:text-blue-400" : "text-amber-600 dark:text-amber-400"}`}>
+                            <span className={`text-xs font-black ${fundamentals.lob === 0 ? "text-slate-400 dark:text-slate-600 font-medium" : fundamentals.lob >= 80 ? "text-emerald-600 dark:text-emerald-400" : fundamentals.lob >= 65 ? "text-blue-600 dark:text-blue-400" : "text-amber-600 dark:text-amber-400"}`}>
                               {fundamentals.lob}
                             </span>
                           </div>
                           <div className="px-1.5 border-l border-slate-100 dark:border-slate-800">
                             <span className="text-[9px] font-bold text-slate-500 block uppercase">CUR</span>
-                            <span className={`text-xs font-black ${fundamentals.curta >= 80 ? "text-emerald-600 dark:text-emerald-400" : fundamentals.curta >= 65 ? "text-blue-600 dark:text-blue-400" : "text-amber-600 dark:text-amber-400"}`}>
+                            <span className={`text-xs font-black ${fundamentals.curta === 0 ? "text-slate-400 dark:text-slate-600 font-medium" : fundamentals.curta >= 80 ? "text-emerald-600 dark:text-emerald-400" : fundamentals.curta >= 65 ? "text-blue-600 dark:text-blue-400" : "text-amber-600 dark:text-amber-400"}`}>
                               {fundamentals.curta}
                             </span>
                           </div>
                           <div className="px-1.5 border-l border-slate-100 dark:border-slate-800">
                             <span className="text-[9px] font-bold text-slate-500 block uppercase">SAQ</span>
-                            <span className={`text-xs font-black ${fundamentals.saque >= 80 ? "text-emerald-600 dark:text-emerald-400" : fundamentals.saque >= 65 ? "text-blue-600 dark:text-blue-400" : "text-amber-600 dark:text-amber-400"}`}>
+                            <span className={`text-xs font-black ${fundamentals.saque === 0 ? "text-slate-400 dark:text-slate-600 font-medium" : fundamentals.saque >= 80 ? "text-emerald-600 dark:text-emerald-400" : fundamentals.saque >= 65 ? "text-blue-600 dark:text-blue-400" : "text-amber-600 dark:text-amber-400"}`}>
                               {fundamentals.saque}
                             </span>
                           </div>
                           <div className="px-1.5 border-l border-slate-100 dark:border-slate-800">
                             <span className="text-[9px] font-bold text-slate-500 block uppercase">SMH</span>
-                            <span className={`text-xs font-black ${fundamentals.smash >= 80 ? "text-emerald-600 dark:text-emerald-400" : fundamentals.smash >= 65 ? "text-blue-600 dark:text-blue-400" : "text-amber-600 dark:text-amber-400"}`}>
+                            <span className={`text-xs font-black ${fundamentals.smash === 0 ? "text-slate-400 dark:text-slate-600 font-medium" : fundamentals.smash >= 80 ? "text-emerald-600 dark:text-emerald-400" : fundamentals.smash >= 65 ? "text-blue-600 dark:text-blue-400" : "text-amber-600 dark:text-amber-400"}`}>
                               {fundamentals.smash}
                             </span>
                           </div>

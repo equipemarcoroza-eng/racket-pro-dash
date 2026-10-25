@@ -189,44 +189,68 @@ export const ArenaLiveKiosk: React.FC = () => {
           ovrBoost = -1;
         }
 
-        // Baseline por categoria pedagógica
-        let baselineOvr = 75;
-        if (student.categoria === "Juvenil") baselineOvr = 78;
-        if (student.categoria === "Adulto") baselineOvr = 82;
+        // Regra Oficial Marco Roza:
+        // 1) Se não tem nota de prova para o fundamento, recebe zero (0);
+        // 2) Aluno novo que não tem nota de nada, tudo com zero (0) em relação aos fundamentos de provas.
+        let forehand = 0;
+        let backhand = 0;
+        let lob = 0;
+        let curta = 0;
+        let saque = 0;
+        let smash = 0;
 
-        let forehand = baselineOvr - 2;
-        let backhand = baselineOvr - 5;
-        let lob = baselineOvr - 3;
-        let curta = baselineOvr - 4;
-        let saque = baselineOvr + 1;
-        let smash = baselineOvr + 2;
+        let hasForehand = false;
+        let hasBackhand = false;
+        let hasLob = false;
+        let hasCurta = false;
+        let hasSaque = false;
+        let hasSmash = false;
 
         if (sTests.length > 0) {
           sTests.forEach((res) => {
             const act = activities.find((a) => a.id === res.atividadeId);
             const base = act?.quantidadeLancamentos || 10;
             const name = (act?.nome || "").toLowerCase();
-            const scorePct = Math.min(99, Math.round((res.acertos / base) * 100));
+            const scorePct = Math.min(100, Math.round((res.acertos / Math.max(1, base)) * 100));
             if (name.includes("forehand") || name.includes("direita")) {
-              forehand = Math.max(60, scorePct);
+              forehand = scorePct;
+              hasForehand = true;
             } else if (name.includes("backhand") || name.includes("esquerda")) {
-              backhand = Math.max(60, scorePct);
+              backhand = scorePct;
+              hasBackhand = true;
             } else if (name.includes("lob")) {
-              lob = Math.max(60, scorePct);
+              lob = scorePct;
+              hasLob = true;
             } else if (name.includes("curta") || name.includes("curtinha") || name.includes("drop")) {
-              curta = Math.max(60, scorePct);
+              curta = scorePct;
+              hasCurta = true;
             } else if (name.includes("saque") || name.includes("serviço")) {
-              saque = Math.max(60, scorePct);
+              saque = scorePct;
+              hasSaque = true;
             } else if (name.includes("smash")) {
-              smash = Math.max(60, scorePct);
+              smash = scorePct;
+              hasSmash = true;
             }
           });
-          overallCalculated = Math.round((forehand + backhand + lob + curta + saque + smash) / 6);
+
+          const evaluatedScores: number[] = [];
+          if (hasForehand) evaluatedScores.push(forehand);
+          if (hasBackhand) evaluatedScores.push(backhand);
+          if (hasLob) evaluatedScores.push(lob);
+          if (hasCurta) evaluatedScores.push(curta);
+          if (hasSaque) evaluatedScores.push(saque);
+          if (hasSmash) evaluatedScores.push(smash);
+
+          overallCalculated = evaluatedScores.length > 0
+            ? Math.round(evaluatedScores.reduce((acc, val) => acc + val, 0) / evaluatedScores.length)
+            : 0;
         } else {
-          overallCalculated = baselineOvr;
+          overallCalculated = 0;
         }
 
-        const ovr = Math.min(99, Math.max(60, overallCalculated + ovrBoost));
+        const ovr = overallCalculated > 0
+          ? Math.min(99, Math.max(1, overallCalculated + ovrBoost))
+          : 0;
 
         // Subtítulo comprovante com detalhes técnicos
         let scoreSub = "";

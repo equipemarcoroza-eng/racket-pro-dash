@@ -383,21 +383,27 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
       ovrBoost = -1;
     }
 
-    // Baseline da Categoria
-    let baselineOvr = 75;
-    if (student.categoria === "Juvenil") baselineOvr = 78;
-    if (student.categoria === "Adulto") baselineOvr = 82;
+    // Regra Oficial Marco Roza:
+    // 1) Se não tem nota de prova para o fundamento, recebe zero (0);
+    // 2) Aluno novo que não tem nota de nada, tudo com zero (0) em relação aos fundamentos de provas.
+    let forehand = 0;
+    let backhand = 0;
+    let lob = 0;
+    let curta = 0;
+    let saque = 0;
+    let smash = 0;
 
-    let overallCalculated = baselineOvr;
-    let forehand = baselineOvr - 2;
-    let backhand = baselineOvr - 5;
-    let lob = baselineOvr - 3;
-    let curta = baselineOvr - 4;
-    let saque = baselineOvr + 1;
-    let smash = baselineOvr + 2;
+    let hasForehand = false;
+    let hasBackhand = false;
+    let hasLob = false;
+    let hasCurta = false;
+    let hasSaque = false;
+    let hasSmash = false;
+
+    let overallCalculated = 0;
 
     if (studentResults.length > 0) {
-      // Calcula média real dos testes
+      // Calcula média real dos testes e distribui pelos fundamentos
       let totalAcertos = 0;
       let totalBase = 0;
 
@@ -409,31 +415,47 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
 
         // Distribui para atributos se o nome da atividade der pistas
         const name = (act?.nome || "").toLowerCase();
-        const scorePct = Math.min(99, Math.round((res.acertos / base) * 100));
+        const scorePct = Math.min(100, Math.round((res.acertos / Math.max(1, base)) * 100));
         if (name.includes("forehand") || name.includes("direita")) {
-          forehand = Math.max(60, scorePct);
+          forehand = scorePct;
+          hasForehand = true;
         } else if (name.includes("backhand") || name.includes("esquerda")) {
-          backhand = Math.max(60, scorePct);
+          backhand = scorePct;
+          hasBackhand = true;
         } else if (name.includes("lob")) {
-          lob = Math.max(60, scorePct);
+          lob = scorePct;
+          hasLob = true;
         } else if (name.includes("curta") || name.includes("curtinha") || name.includes("drop")) {
-          curta = Math.max(60, scorePct);
+          curta = scorePct;
+          hasCurta = true;
         } else if (name.includes("saque") || name.includes("serviço")) {
-          saque = Math.max(60, scorePct);
+          saque = scorePct;
+          hasSaque = true;
         } else if (name.includes("smash")) {
-          smash = Math.max(60, scorePct);
+          smash = scorePct;
+          hasSmash = true;
         }
       });
 
-      // O OVR é derivado diretamente e fielmente da média dos 6 fundamentos técnicos que aparecem no Card
-      overallCalculated = Math.round(
-        (forehand + backhand + lob + curta + saque + smash) / 6
-      );
+      // Média baseada nos fundamentos avaliados
+      const evaluatedScores: number[] = [];
+      if (hasForehand) evaluatedScores.push(forehand);
+      if (hasBackhand) evaluatedScores.push(backhand);
+      if (hasLob) evaluatedScores.push(lob);
+      if (hasCurta) evaluatedScores.push(curta);
+      if (hasSaque) evaluatedScores.push(saque);
+      if (hasSmash) evaluatedScores.push(smash);
+
+      overallCalculated = evaluatedScores.length > 0
+        ? Math.round(evaluatedScores.reduce((acc, val) => acc + val, 0) / evaluatedScores.length)
+        : 0;
     } else {
-      overallCalculated = Math.round((forehand + backhand + lob + curta + saque + smash) / 6);
+      overallCalculated = 0;
     }
 
-    const finalOvr = Math.min(99, Math.max(60, overallCalculated + ovrBoost));
+    const finalOvr = overallCalculated > 0
+      ? Math.min(99, Math.max(1, overallCalculated + ovrBoost))
+      : 0;
 
     const tier =
       finalOvr >= 90
@@ -962,7 +984,7 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
                         {attr.name}
                       </div>
                       <div className="flex items-center justify-center gap-1">
-                        <span className={`text-xs font-black font-mono ${cardTheme.attrValue}`}>
+                        <span className={`text-xs font-black font-mono ${attr.value === 0 ? "text-slate-500 font-normal" : cardTheme.attrValue}`}>
                           {attr.value}
                         </span>
                       </div>
@@ -1122,7 +1144,7 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
               <div className="pt-2 border-t border-white/5 space-y-2">
                 <div className="text-[11px] font-bold text-slate-300 uppercase tracking-wide flex items-center justify-between">
                   <span>Fundamentos Técnicos Bimestrais (1 ao 6)</span>
-                  <span className="text-[10px] text-slate-500">Escala 60-99 • Provas de Quadra</span>
+                  <span className="text-[10px] text-slate-500">Escala 0-100 • Provas de Quadra</span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -1139,21 +1161,25 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
                           </strong>
                           {attr.name}
                         </span>
-                        <div className="flex items-center gap-1 font-mono font-bold text-white">
-                          <span>{attr.value}</span>
+                        <div className="flex items-center gap-1 font-mono font-bold">
+                          <span className={attr.value === 0 ? "text-slate-500 font-normal" : "text-white"}>
+                            {attr.value === 0 ? "0 (Sem prova)" : attr.value}
+                          </span>
                         </div>
                       </div>
                       <div className="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
                         <div
-                          className={`h-full rounded-full ${
-                            attr.value >= 85
+                          className={`h-full rounded-full transition-all duration-500 ${
+                            attr.value === 0
+                              ? "bg-slate-700/40"
+                              : attr.value >= 85
                               ? "bg-gradient-to-r from-amber-400 to-yellow-300"
                               : attr.value >= 75
                               ? "bg-gradient-to-r from-amber-500 to-orange-400"
                               : "bg-gradient-to-r from-slate-500 to-amber-600"
                           }`}
                           style={{
-                            width: `${Math.min(100, Math.max(10, ((attr.value - 50) / 50) * 100))}%`,
+                            width: `${attr.value > 0 ? Math.min(100, Math.max(5, attr.value)) : 0}%`,
                           }}
                         />
                       </div>
