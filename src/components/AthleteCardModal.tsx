@@ -229,7 +229,7 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
     });
   };
 
-  // Pré-renderização em background do card assim que o modal abre (declarado no topo para respeitar as regras de hooks do React)
+  // Pré-renderização em background do card assim que o modal abre (para resposta instantânea no WhatsApp mobile)
   useEffect(() => {
     let isMounted = true;
     if (open && student) {
@@ -245,7 +245,7 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
         } catch (e) {
           console.warn("Pré-geração do card falhou:", e);
         }
-      }, 400);
+      }, 250);
 
       return () => {
         isMounted = false;
@@ -254,7 +254,7 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
     } else {
       setCachedBlob(null);
     }
-  }, [open, student?.id]);
+  }, [open, student?.id, historySessions.length, attendanceLogs.length, testResults.length]);
 
   // Atributos, notas, frequência e evolução contínua do atleta
   const athleteStats = useMemo(() => {
@@ -549,8 +549,9 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
   };
 
 
-  // Gerador da imagem do Card em HD usando html2canvas (sempre gerando com dados e placares mais atualizados)
+  // Gerador da imagem do Card em HD usando html2canvas (retorno imediato com cache para preservar user gesture no mobile)
   const generateCardBlob = async (): Promise<Blob | null> => {
+    if (cachedBlob) return cachedBlob;
     if (!cardRef.current) return null;
     try {
       const canvas = await captureCardCanvas(cardRef.current);
