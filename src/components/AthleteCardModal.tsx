@@ -147,7 +147,7 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
     }
   };
 
-  const { activities, testResults, attendanceLogs } = useAppContext();
+  const { activities, tests, testResults, attendanceLogs } = useAppContext();
   const [copiedText, setCopiedText] = useState(false);
   const [copiedImage, setCopiedImage] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -402,12 +402,23 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
 
     let overallCalculated = 0;
 
+    let latestDates = {
+      forehand: "",
+      backhand: "",
+      lob: "",
+      curta: "",
+      saque: "",
+      smash: "",
+    };
+
     if (studentResults.length > 0) {
-      // Calcula média real dos testes e distribui pelos fundamentos
+      // Calcula média real dos testes e distribui pelos fundamentos considerando a prova mais recente
       let totalAcertos = 0;
       let totalBase = 0;
 
       studentResults.forEach((res) => {
+        const test = (tests || []).find((t) => t.id === res.testId);
+        const testDate = test?.data || "";
         const act = activities.find((a) => a.id === res.atividadeId);
         const base = act?.quantidadeLancamentos || 10;
         totalAcertos += res.acertos;
@@ -416,24 +427,55 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
         // Distribui para atributos se o nome da atividade der pistas
         const name = (act?.nome || "").toLowerCase();
         const scorePct = Math.min(100, Math.round((res.acertos / Math.max(1, base)) * 100));
+
         if (name.includes("forehand") || name.includes("direita")) {
-          forehand = scorePct;
-          hasForehand = true;
+          if (!hasForehand || testDate > latestDates.forehand) {
+            forehand = scorePct;
+            latestDates.forehand = testDate;
+            hasForehand = true;
+          } else if (testDate === latestDates.forehand) {
+            forehand = Math.max(forehand, scorePct);
+          }
         } else if (name.includes("backhand") || name.includes("esquerda")) {
-          backhand = scorePct;
-          hasBackhand = true;
+          if (!hasBackhand || testDate > latestDates.backhand) {
+            backhand = scorePct;
+            latestDates.backhand = testDate;
+            hasBackhand = true;
+          } else if (testDate === latestDates.backhand) {
+            backhand = Math.max(backhand, scorePct);
+          }
         } else if (name.includes("lob")) {
-          lob = scorePct;
-          hasLob = true;
+          if (!hasLob || testDate > latestDates.lob) {
+            lob = scorePct;
+            latestDates.lob = testDate;
+            hasLob = true;
+          } else if (testDate === latestDates.lob) {
+            lob = Math.max(lob, scorePct);
+          }
         } else if (name.includes("curta") || name.includes("curtinha") || name.includes("drop")) {
-          curta = scorePct;
-          hasCurta = true;
+          if (!hasCurta || testDate > latestDates.curta) {
+            curta = scorePct;
+            latestDates.curta = testDate;
+            hasCurta = true;
+          } else if (testDate === latestDates.curta) {
+            curta = Math.max(curta, scorePct);
+          }
         } else if (name.includes("saque") || name.includes("serviço")) {
-          saque = scorePct;
-          hasSaque = true;
+          if (!hasSaque || testDate > latestDates.saque) {
+            saque = scorePct;
+            latestDates.saque = testDate;
+            hasSaque = true;
+          } else if (testDate === latestDates.saque) {
+            saque = Math.max(saque, scorePct);
+          }
         } else if (name.includes("smash")) {
-          smash = scorePct;
-          hasSmash = true;
+          if (!hasSmash || testDate > latestDates.smash) {
+            smash = scorePct;
+            latestDates.smash = testDate;
+            hasSmash = true;
+          } else if (testDate === latestDates.smash) {
+            smash = Math.max(smash, scorePct);
+          }
         }
       });
 
@@ -498,7 +540,7 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
         { label: "SMH", name: "Smash", value: Math.min(99, smash), boost: 0 },
       ],
     };
-  }, [student, testResults, activities, attendanceLogs, historySessions]);
+  }, [student, testResults, activities, attendanceLogs, historySessions, tests]);
 
   if (!student || !athleteStats) return null;
 

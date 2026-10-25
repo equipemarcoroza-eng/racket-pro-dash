@@ -43,7 +43,7 @@ const diasSemanaMap: Record<number, string> = {
 };
 
 export const ArenaLiveKiosk: React.FC = () => {
-  const { schedule, students, enrollments, activities, testResults, attendanceLogs } = useAppContext();
+  const { schedule, students, enrollments, activities, tests, testResults, attendanceLogs } = useAppContext();
   const [currentSlide, setCurrentSlide] = useState<number>(0);
   const [isPaused, setIsPaused] = useState<boolean>(false);
   const [currentTime, setCurrentTime] = useState<Date>(new Date());
@@ -206,30 +206,72 @@ export const ArenaLiveKiosk: React.FC = () => {
         let hasSaque = false;
         let hasSmash = false;
 
+        let latestDates = {
+          forehand: "",
+          backhand: "",
+          lob: "",
+          curta: "",
+          saque: "",
+          smash: "",
+        };
+
         if (sTests.length > 0) {
           sTests.forEach((res) => {
+            const test = (tests || []).find((t) => t.id === res.testId);
+            const testDate = test?.data || "";
             const act = activities.find((a) => a.id === res.atividadeId);
             const base = act?.quantidadeLancamentos || 10;
             const name = (act?.nome || "").toLowerCase();
             const scorePct = Math.min(100, Math.round((res.acertos / Math.max(1, base)) * 100));
+
             if (name.includes("forehand") || name.includes("direita")) {
-              forehand = scorePct;
-              hasForehand = true;
+              if (!hasForehand || testDate > latestDates.forehand) {
+                forehand = scorePct;
+                latestDates.forehand = testDate;
+                hasForehand = true;
+              } else if (testDate === latestDates.forehand) {
+                forehand = Math.max(forehand, scorePct);
+              }
             } else if (name.includes("backhand") || name.includes("esquerda")) {
-              backhand = scorePct;
-              hasBackhand = true;
+              if (!hasBackhand || testDate > latestDates.backhand) {
+                backhand = scorePct;
+                latestDates.backhand = testDate;
+                hasBackhand = true;
+              } else if (testDate === latestDates.backhand) {
+                backhand = Math.max(backhand, scorePct);
+              }
             } else if (name.includes("lob")) {
-              lob = scorePct;
-              hasLob = true;
+              if (!hasLob || testDate > latestDates.lob) {
+                lob = scorePct;
+                latestDates.lob = testDate;
+                hasLob = true;
+              } else if (testDate === latestDates.lob) {
+                lob = Math.max(lob, scorePct);
+              }
             } else if (name.includes("curta") || name.includes("curtinha") || name.includes("drop")) {
-              curta = scorePct;
-              hasCurta = true;
+              if (!hasCurta || testDate > latestDates.curta) {
+                curta = scorePct;
+                latestDates.curta = testDate;
+                hasCurta = true;
+              } else if (testDate === latestDates.curta) {
+                curta = Math.max(curta, scorePct);
+              }
             } else if (name.includes("saque") || name.includes("serviço")) {
-              saque = scorePct;
-              hasSaque = true;
+              if (!hasSaque || testDate > latestDates.saque) {
+                saque = scorePct;
+                latestDates.saque = testDate;
+                hasSaque = true;
+              } else if (testDate === latestDates.saque) {
+                saque = Math.max(saque, scorePct);
+              }
             } else if (name.includes("smash")) {
-              smash = scorePct;
-              hasSmash = true;
+              if (!hasSmash || testDate > latestDates.smash) {
+                smash = scorePct;
+                latestDates.smash = testDate;
+                hasSmash = true;
+              } else if (testDate === latestDates.smash) {
+                smash = Math.max(smash, scorePct);
+              }
             }
           });
 
