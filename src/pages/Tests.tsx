@@ -244,9 +244,61 @@ const Tests = () => {
       if (hasSaque) evaluatedScores.push(saque);
       if (hasSmash) evaluatedScores.push(smash);
 
-      const ovr = evaluatedScores.length > 0
+      const technicalOvr = evaluatedScores.length > 0
         ? Math.round(evaluatedScores.reduce((acc, val) => acc + val, 0) / evaluatedScores.length)
         : 0;
+
+      // Frequência, Sequência e Boost de Rendimento (idêntico ao Card Oficial)
+      const studentLogs = attendanceLogs.filter((al) => al.alunoId === student.id);
+      let presencas = 0;
+      let reposicoes = 0;
+      let faltas = 0;
+      studentLogs.forEach((l) => {
+        if (l.presente === "Presente") presencas++;
+        else if (l.presente === "Reposição") reposicoes++;
+        else if (l.presente === "Falta") faltas++;
+      });
+      const attendedClasses = presencas + reposicoes;
+      const totalValidClasses = attendedClasses + faltas;
+      const attendanceRate = totalValidClasses > 0 ? Math.round((attendedClasses / totalValidClasses) * 100) : 100;
+
+      const sortedLogs = [...studentLogs].sort((a, b) => b.dataAula.localeCompare(a.dataAula));
+      let streakCount = 0;
+      for (const log of sortedLogs) {
+        if (log.presente === "Presente" || log.presente === "Reposição" || log.presente === "Miniliga") {
+          streakCount++;
+        } else if (log.presente === "Falta") {
+          break;
+        }
+      }
+      const effectiveStreak = totalValidClasses === 0 ? 3 : streakCount;
+
+      const isOnFire =
+        (effectiveStreak >= 2 && attendanceRate >= 80) ||
+        (reposicoes > 0 && attendanceRate >= 75) ||
+        (student.status === "Ativo" && totalValidClasses === 0);
+
+      let bonusConsistencia = 0;
+      if (attendanceRate >= 90 && attendedClasses >= 2) {
+        bonusConsistencia = 5;
+      } else if (attendanceRate >= 75) {
+        bonusConsistencia = 3;
+      } else if (totalValidClasses >= 3 && attendanceRate < 60) {
+        bonusConsistencia = -3;
+      } else {
+        bonusConsistencia = 1;
+      }
+
+      let ovrBoost = 0;
+      if (isOnFire) {
+        ovrBoost = 2;
+      } else if (bonusConsistencia > 0) {
+        ovrBoost = 1;
+      } else if (bonusConsistencia < 0) {
+        ovrBoost = -1;
+      }
+
+      const finalOvr = technicalOvr > 0 ? Math.min(99, Math.max(1, technicalOvr + ovrBoost)) : 0;
 
       return {
         student,
@@ -260,11 +312,14 @@ const Tests = () => {
           curta,
           saque,
           smash,
-          ovr,
+          technicalOvr,
+          ovr: finalOvr,
+          ovrBoost,
+          isOnFire,
         },
       };
     }).sort((a, b) => a.student.nome.localeCompare(b.student.nome));
-  }, [students, testResults, tests, schedule, activities]);
+  }, [students, testResults, tests, schedule, activities, attendanceLogs]);
 
   // Lista com filtros aplicados
   const filteredEvaluatedStudents = useMemo(() => {
@@ -728,12 +783,26 @@ const Tests = () => {
                           </div>
                         </div>
 
-                        {/* OVR Geral */}
-                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500/10 to-amber-500/20 border border-amber-300/40 text-amber-700 dark:text-amber-300 shrink-0">
-                          <Trophy className="h-4 w-4 text-amber-500" />
+                        {/* OVR Geral Alinhado ao Card Oficial com Indicação Clara de Boost / ON FIRE */}
+                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500/10 to-amber-500/20 border border-amber-300/40 text-amber-700 dark:text-amber-300 shrink-0">
+                          <Trophy className="h-4 w-4 text-amber-500 shrink-0" />
                           <div className="text-left">
-                            <span className="text-[8px] font-black uppercase tracking-wider block">OVR Técnico</span>
-                            <span className="text-base font-black leading-none">{fundamentals.ovr}</span>
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-[8px] font-black uppercase tracking-wider block">OVR Atleta</span>
+                              {fundamentals.isOnFire && (
+                                <span className="inline-flex items-center gap-0.5 text-[8px] font-black text-orange-600 dark:text-orange-400 bg-orange-500/15 px-1 py-0.5 rounded border border-orange-500/30">
+                                  🔥 ON FIRE
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex items-baseline gap-1.5">
+                              <span className="text-base font-black leading-none">{fundamentals.ovr}</span>
+                              {fundamentals.ovrBoost !== 0 && fundamentals.technicalOvr > 0 && (
+                                <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 font-mono">
+                                  ({fundamentals.technicalOvr} {fundamentals.ovrBoost > 0 ? `+${fundamentals.ovrBoost}` : fundamentals.ovrBoost})
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </div>
 
