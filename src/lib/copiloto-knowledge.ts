@@ -204,12 +204,24 @@ export const BASE_CONHECIMENTO: IntencaoCopiloto[] = [
     },
   },
 
-  // 6. GESTÃO DE ALUNOS & CARD DO ATLETA (XP, STREAK, ON FIRE)
+  // 6. GESTÃO DE ALUNOS & CARD DO ATLETA (EA PERFORMANCE, FUNDAMENTOS & MINILIGAS)
   {
     chaves: [
       "alunos",
       "cadastro de alunos",
       "card do atleta",
+      "card",
+      "ea performance",
+      "fifa card",
+      "overall",
+      "ovr",
+      "fundamentos",
+      "forehand",
+      "backhand",
+      "lob",
+      "curta",
+      "saque",
+      "smash",
       "streak",
       "on fire",
       "temporada xp",
@@ -217,23 +229,30 @@ export const BASE_CONHECIMENTO: IntencaoCopiloto[] = [
       "conquistas",
       "perfil do aluno",
       "whatsapp aluno",
+      "compartilhar card",
       "dados do atleta",
+      "fundo azul escuro",
+      "paleta marco roza",
     ],
     resposta: {
       texto:
-        "O módulo de **Alunos** (`/students`) conta com a tecnologia exclusiva do **Card do Atleta Interativo**:\n\n" +
-        "• **Streak de Presença:** Contador dinâmico de semanas consecutivas sem faltas aos treinos.\n" +
-        "• **Status ON FIRE 🔥:** Badge de destaque para atletas engajados com assiduidade superior a 90%.\n" +
-        "• **Temporada XP:** Sistema de progressão e pontuação por treinos concluídos, avaliações e assiduidade.\n" +
-        "• **Atalho Direto para WhatsApp:** Disparo de mensagens personalizadas em 1 clique para alinhamento pedagógico ou lembretes.\n" +
-        "• **Ficha Técnica Completa:** Histórico de frequência, plano contratado, nível técnico e reposições pendentes.",
+        "O **Card Oficial do Atleta (EA Performance)** é a ferramenta máxima de valorização, engajamento e retenção dos alunos da **Equipe Marco Roza Beach Tennis**:\n\n" +
+        "• **Estrutura Pedagógica 1 a 9:**\n" +
+        "  - **Itens 1 a 6 (Fundamentos Técnicos):** Notas de 60 a 99 derivadas diretamente das Provas Bimestrais de Quadra (*#1 FOR Forehand, #2 BCK Backhand, #3 LOB Lob, #4 CUR Curta, #5 SAQ Saque e #6 SMH Smash*).\n" +
+        "  - **Item 7 (Assiduidade):** Taxa percentual de frequência do aluno nos treinos.\n" +
+        "  - **Item 8 (Sequência de Aulas / Streak):** Contador de semanas consecutivas sem faltas aos treinos, ativando o status **ON FIRE 🔥** (+2 de Boost no OVR Geral).\n" +
+        "  - **Item 9 (Miniliga Marco Roza):** Pontuação acumulada nas miniligas oficiais (+10 pts para 1º lugar 🏆, +8 vice, etc.), histórico de pódios e títulos conquistados.\n" +
+        "• **Raridades Oficiais & Paleta Nobre:** Cartas classificadas em **Diamante (90+)**, **Ouro (80-89)**, **Prata (67-79)** e **Bronze (<67)** com design exclusivo nobre em **Azul Escuro Oficial Equipe Marco Roza**, calibrado para leveza visual sem contrastes agressivos.\n" +
+        "• **Compartilhamento Inteligente no WhatsApp:** Geração instantânea de imagem PNG em alta resolução via canvas acompanhada de texto com resumo formatado dos fundamentos e miniligas para celular, tablet e desktop.\n" +
+        "• **Gráfico Radar Pentagonal:** Visualização geométrica da distribuição de força e pontos de evolução técnica do atleta.",
       rotaSugerida: "/students",
       labelRota: "Abrir Gestão de Alunos",
       topicosRelacionados: [
-        "Radar de Churn",
-        "Controle de Presença",
-        "Reposição de Aulas",
         "Provas",
+        "Miniligas Marco Roza",
+        "Controle de Presença",
+        "Radar de Churn",
+        "Suporte Concierge",
       ],
     },
   },
@@ -486,7 +505,7 @@ export const BASE_CONHECIMENTO: IntencaoCopiloto[] = [
     },
   },
 
-  // 13. PROVAS & AVALIAÇÃO DE NÍVEL
+  // 13. PROVAS & AVALIAÇÃO DE NÍVEL (LISTAGEM GERAL & 6 FUNDAMENTOS)
   {
     chaves: [
       "provas",
@@ -497,21 +516,31 @@ export const BASE_CONHECIMENTO: IntencaoCopiloto[] = [
       "graduacao",
       "criterios tecnicos",
       "tests",
+      "listagem de provas",
+      "listagem de alunos que fizeram prova",
+      "notas das provas",
+      "tarefas",
+      "notas por fundamento",
+      "forehand prova",
+      "backhand prova",
+      "imprimir provas",
+      "boletim tecnico",
     ],
     resposta: {
       texto:
-        "O módulo de **Provas & Avaliações** (`/tests`) estabelece a régua técnica de graduação da **Equipe Marco Roza**:\n\n" +
-        "• **Critérios de Nivelamento:** Avaliação de fundamentos práticos (controle de bola, direção de saque, potência de smash e leitura de jogo).\n" +
-        "• **Histórico do Aluno:** Registro da evolução do atleta desde o dia da matrícula para acompanhar seu progresso esportivo.\n" +
-        "• **Promoção de Categoria:** Segurança e critério transparente para promover alunos de Iniciante para Intermediário ou Avançado.\n" +
-        "• **Certificação:** Emissão de resultado para valorizar a conquista do aluno.",
+        "O módulo de **Provas & Avaliações Técnicas** (`/tests`) estabelece a régua pedagógica de graduação da **Equipe Marco Roza Beach Tennis**:\n\n" +
+        "• **Nova Aba 'Listagem Geral de Alunos & Provas':** Painel consolidado com a relação de todos os atletas avaliados, suas respectivas datas de prova e aproveitamento individual.\n" +
+        "• **Filtros e Busca Instantânea:** Localize qualquer aluno pelo nome ou filtre por categoria (*Adulto, Juvenil, Infantil*) e data da prova em tempo real.\n" +
+        "• **Detalhamento de Tarefas de Quadra:** Registro de cada atividade técnica aplicada (ex: Forehand Cruzado, Saque, Smash) com acertos vs lançamentos e barra de percentual de acerto.\n" +
+        "• **Régua dos 6 Fundamentos Oficiais:** Cálculo automático que alimenta o Card Oficial do Atleta (*#1 FOR Forehand, #2 BCK Backhand, #3 LOB Lob, #4 CUR Curta, #5 SAQ Saque e #6 SMH Smash*) e gera o OVR Técnico.\n" +
+        "• **Acesso Direto ao Card & Impressão:** Botão de 1 clique para abrir o Card do Atleta e botão **'Imprimir / Salvar PDF'** para reuniões de alinhamento com pais ou alunos.",
       rotaSugerida: "/tests",
       labelRota: "Abrir Provas & Avaliações",
       topicosRelacionados: [
         "Card do Atleta",
         "Plano de Aulas",
-        "Alunos",
-        "BI Comportamental",
+        "Controle de Presença",
+        "Miniligas Marco Roza",
       ],
     },
   },

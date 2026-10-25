@@ -151,6 +151,20 @@ const TODAS_SUGESTOES: SugestaoRapida[] = [
     descricao: "Casamento automático de faltas com vagas ociosas",
   },
   {
+    icone: "🏆",
+    categoria: "Atletas",
+    label: "Miniligas Marco Roza",
+    query: "Como funcionam as Miniligas, a pontuação no Card e a importação de planilhas?",
+    descricao: "Torneios de 5 a 12 atletas com pódios e pontos no Card",
+  },
+  {
+    icone: "📝",
+    categoria: "Atletas",
+    label: "Provas & 6 Fundamentos",
+    query: "Como funciona a Listagem Geral de Provas e as notas dos 6 Fundamentos?",
+    descricao: "Tarefas de quadra, aproveitamento e boletim técnico impresso",
+  },
+  {
     icone: "🏓",
     categoria: "Atletas",
     label: "Prancheta Tática & Drills",
