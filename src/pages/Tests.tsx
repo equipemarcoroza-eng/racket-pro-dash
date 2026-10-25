@@ -1178,13 +1178,12 @@ const Tests = () => {
       </Dialog>
 
       {/* Modal do Card Oficial do Atleta */}
-      {selectedStudentForCard && (
-        <AthleteCardModal
-          student={selectedStudentForCard}
-          open={!!selectedStudentForCard}
-          onClose={() => setSelectedStudentForCard(null)}
-        />
-      )}
+      <AthleteCardModal
+        student={selectedStudentForCard}
+        open={!!selectedStudentForCard}
+        onOpenChange={(isOpen) => !isOpen && setSelectedStudentForCard(null)}
+        onClose={() => setSelectedStudentForCard(null)}
+      />
     </div>
   );
 };

@@ -129,15 +129,24 @@ export const getCardTheme = (ovr: number, isOnFire: boolean) => {
 
 interface AthleteCardModalProps {
   open: boolean;
-  onOpenChange: (open: boolean) => void;
+  onOpenChange?: (open: boolean) => void;
+  onClose?: () => void;
   student: Student | null;
 }
 
 export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
   open,
   onOpenChange,
+  onClose,
   student,
 }) => {
+  const handleOpenChange = (isOpen: boolean) => {
+    onOpenChange?.(isOpen);
+    if (!isOpen && onClose) {
+      onClose();
+    }
+  };
+
   const { activities, testResults, attendanceLogs } = useAppContext();
   const [copiedText, setCopiedText] = useState(false);
   const [copiedImage, setCopiedImage] = useState(false);
@@ -717,7 +726,7 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-4xl lg:max-w-5xl w-[96vw] sm:w-[92vw] lg:w-full p-0 overflow-hidden bg-slate-950 border-white/10 text-white max-h-[92vh] flex flex-col shadow-2xl rounded-2xl sm:rounded-3xl">
         {/* Top Header - Responsivo com explicação detalhada do OVR */}
         <DialogHeader className="px-3 sm:px-5 py-2.5 sm:py-3.5 border-b border-white/10 flex flex-col sm:flex-row sm:items-center justify-between shrink-0 bg-slate-900/90 backdrop-blur-md gap-2">
