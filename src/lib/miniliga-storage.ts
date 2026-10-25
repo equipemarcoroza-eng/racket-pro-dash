@@ -4,6 +4,7 @@ import {
   MiniligaParticipant,
   MiniligaMatch,
 } from "@/types/miniliga";
+import { getDefaultOfficialSessions } from "@/lib/miniliga-excel-parser";
 
 const STORAGE_ACTIVE_KEY = "racket_miniliga_active_session";
 const STORAGE_HISTORY_KEY = "racket_miniliga_history_sessions";
@@ -175,13 +176,29 @@ export const miniligaStorage = {
     }
   },
 
-  // 5. Buscar histórico local
+  // 5. Buscar histórico local com garantia das sessões oficiais importadas (Desktop, Tablet e Celular)
   getHistory(): MiniligaSession[] {
     try {
       const data = localStorage.getItem(STORAGE_HISTORY_KEY);
-      return data ? JSON.parse(data) : [];
+      const list: MiniligaSession[] = data ? JSON.parse(data) : [];
+      const defaultOfficial = getDefaultOfficialSessions();
+      const existingIds = new Set(list.map((s) => s.id));
+      const missingDefaults = defaultOfficial.filter((d) => !existingIds.has(d.id));
+
+      if (missingDefaults.length > 0) {
+        const merged = [...list, ...missingDefaults].sort(
+          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+        );
+        try {
+          localStorage.setItem(STORAGE_HISTORY_KEY, JSON.stringify(merged.slice(0, 50)));
+        } catch (e) {
+          // ignore localStorage quota errors
+        }
+        return merged;
+      }
+      return list.length > 0 ? list : defaultOfficial;
     } catch (e) {
-      return [];
+      return getDefaultOfficialSessions();
     }
   },
 

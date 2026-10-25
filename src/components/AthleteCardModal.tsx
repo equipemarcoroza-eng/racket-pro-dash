@@ -549,9 +549,8 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
   };
 
 
-  // Gerador da imagem do Card em HD usando html2canvas (com cache para resposta instantânea)
+  // Gerador da imagem do Card em HD usando html2canvas (sempre gerando com dados e placares mais atualizados)
   const generateCardBlob = async (): Promise<Blob | null> => {
-    if (cachedBlob) return cachedBlob;
     if (!cardRef.current) return null;
     try {
       const canvas = await captureCardCanvas(cardRef.current);
@@ -761,9 +760,9 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl lg:max-w-5xl w-full p-0 overflow-hidden bg-slate-950 border-white/10 text-white max-h-[92vh] flex flex-col shadow-2xl">
+      <DialogContent className="max-w-4xl lg:max-w-5xl w-[96vw] sm:w-[92vw] lg:w-full p-0 overflow-hidden bg-slate-950 border-white/10 text-white max-h-[92vh] flex flex-col shadow-2xl rounded-2xl sm:rounded-3xl">
         {/* Top Header - Responsivo com explicação detalhada do OVR */}
-        <DialogHeader className="px-4 sm:px-5 py-3 sm:py-3.5 border-b border-white/10 flex flex-col sm:flex-row sm:items-center justify-between shrink-0 bg-slate-900/90 backdrop-blur-md gap-2">
+        <DialogHeader className="px-3 sm:px-5 py-2.5 sm:py-3.5 border-b border-white/10 flex flex-col sm:flex-row sm:items-center justify-between shrink-0 bg-slate-900/90 backdrop-blur-md gap-2">
           <div className="flex items-center gap-2.5 min-w-0">
             <div className={`p-1.5 rounded-lg border shrink-0 ${cardTheme.headerIconBox}`}>
               <Trophy className="h-5 w-5" />
@@ -804,18 +803,27 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
           </div>
         </DialogHeader>
 
-        {/* Scrollable Modal Body: 2 Columns on Desktop */}
-        <div className="p-4 sm:p-6 overflow-y-auto flex-1 grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+        {/* Scrollable Modal Body: 2 Columns on Desktop & Tablet Landscape, 1 Column on Mobile & Tablet Portrait */}
+        <div className="p-3 sm:p-5 md:p-6 overflow-y-auto flex-1 grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6 items-start">
           {/* COLUNA ESQUERDA: Card Visual Colecionável FUT EA */}
-          <div className="md:col-span-5 flex flex-col items-center">
+          <div className="lg:col-span-5 flex flex-col items-center">
             <div
               ref={cardRef}
               data-athlete-card="true"
               className={`relative mx-auto w-full max-w-[340px] rounded-3xl p-1 shadow-2xl transition-all duration-300 ${cardTheme.outerFrame}`}
             >
-              <div className={`relative rounded-[22px] ${cardTheme.innerBg} p-4 pb-3.5 sm:p-5 sm:pb-4 overflow-hidden flex flex-col justify-between`}>
-                {/* Efeito de Reflexo de Vidro e Luz */}
-                <div className={`absolute top-0 right-0 -mr-16 -mt-16 w-48 h-48 rounded-full ${cardTheme.accentGlow} blur-3xl pointer-events-none`} />
+              <div
+                className={`relative rounded-[22px] ${cardTheme.innerBg} p-4 pb-3.5 sm:p-5 sm:pb-4 overflow-hidden flex flex-col justify-between`}
+                style={{
+                  backgroundImage:
+                    "radial-gradient(circle at 85% 15%, rgba(255, 255, 255, 0.08) 0%, transparent 60%)",
+                }}
+              >
+                {/* Efeito de Reflexo de Vidro e Luz (ignorado no canvas para evitar artefatos de blur no Safari/iOS) */}
+                <div
+                  data-html2canvas-ignore="true"
+                  className={`absolute top-0 right-0 -mr-16 -mt-16 w-48 h-48 rounded-full ${cardTheme.accentGlow} blur-3xl pointer-events-none`}
+                />
 
                 {/* Cabeçalho do Card */}
                 <div className="flex items-center justify-between relative z-10 pb-1.5">
@@ -1114,7 +1122,7 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
           </div>
 
           {/* COLUNA DIREITA: Painel de Desempenho, Análise & Ações */}
-          <div className="md:col-span-7 flex flex-col gap-4">
+          <div className="lg:col-span-7 flex flex-col gap-4">
             {/* Box de Boas-Vindas & Status Geral */}
             <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 flex flex-col gap-2.5">
               <div className="flex items-start justify-between">

@@ -278,3 +278,80 @@ export function matchStudentByName(playerName: string, students: Student[]): Stu
 
   return null;
 }
+
+// Gera as 4 sessões oficiais de torneio importadas da planilha do Marco Roza
+// prontas para serem usadas de forma consistente em qualquer aparelho (Desktop, Tablet, Celular)
+export function getDefaultOfficialSessions(): MiniligaSession[] {
+  return PREPARSED_MARCO_ROZA_MINILIGAS.map((t, i) => {
+    const sessionId = `import-mr-${t.date}-${t.participantCount}p-${i}`;
+    const sessionParticipants: MiniligaParticipant[] = t.participants.map((p, idx) => ({
+      id: `p-${sessionId}-${idx + 1}`,
+      name: p.name,
+      studentId: p.studentId || null,
+      groupNumber: (idx < t.participants.length / 2 ? 1 : 2) as 1 | 2,
+      assignedNumber: idx + 1,
+      matchesPlayed: p.wins + p.losses,
+      wins: p.wins,
+      losses: p.losses,
+      pointsFor: p.pointsFor,
+      pointsAgainst: p.pointsAgainst,
+      pointsBalance: p.pointsBalance,
+      totalScore: p.pointsFor + p.wins,
+      rank: p.rank,
+      cardPointsAwarded: p.cardPointsAwarded,
+      isGuest: p.isGuest,
+    }));
+
+    const sessionMatches: MiniligaMatch[] = t.matches.map((m) => {
+      const findPId = (name?: string) => {
+        if (!name) return "";
+        const found = sessionParticipants.find(
+          (sp) => sp.name.trim().toLowerCase() === name.trim().toLowerCase()
+        );
+        return found?.id || `p-${name}`;
+      };
+
+      return {
+        id: `match-${sessionId}-${m.id}`,
+        roundNumber: m.roundNumber,
+        courtNumber: m.courtNumber,
+        teamA: {
+          player1Id: findPId(m.teamA.player1Name),
+          player2Id: m.teamA.player2Name ? findPId(m.teamA.player2Name) : undefined,
+        },
+        teamB: {
+          player1Id: findPId(m.teamB.player1Name),
+          player2Id: m.teamB.player2Name ? findPId(m.teamB.player2Name) : undefined,
+        },
+        scoreA: m.scoreA,
+        scoreB: m.scoreB,
+        isCompleted: true,
+        isBonusFinal: m.isBonusFinal || false,
+        isSemifinal: m.isSemifinal || false,
+        finishedAt: `${t.date}T12:00:00Z`,
+      };
+    });
+
+    return {
+      id: sessionId,
+      title: t.title,
+      date: t.date,
+      participantCount: t.participantCount as any,
+      modelType: t.participantCount === 10 ? "intergrupos" : "rotativo",
+      courtsCount: t.participantCount >= 8 ? 2 : 1,
+      durationSeconds: 300,
+      currentRound: Math.max(...t.matches.map((m) => m.roundNumber), 1),
+      totalRounds: Math.max(...t.matches.map((m) => m.roundNumber), 1),
+      status: "finalizada",
+      isSimulation: false,
+      hasBonusFinal: true,
+      hasTiebreakSimples: false,
+      hasSemifinais: t.participantCount === 10,
+      participants: sessionParticipants,
+      matches: sessionMatches,
+      createdAt: `${t.date}T12:00:00Z`,
+      updatedAt: `${t.date}T12:00:00Z`,
+    };
+  });
+}
+
