@@ -562,7 +562,9 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
       `• 7. Assiduidade: *${athleteStats.attendanceRate}%* (${athleteStats.attendedClasses} aulas)\n` +
       `• 8. Sequência: *${athleteStats.effectiveStreak} aulas seguidas* ${athleteStats.isOnFire ? "🔥 ON FIRE" : "sem faltas"}\n` +
       `• 9. Miniliga: *${athleteStats.miniligaPontos} pts acumulados* (${
-        athleteStats.torneiosOficiais > 0
+        athleteStats.torneiosOficiais > 0 && athleteStats.miniligaAulas > athleteStats.torneiosOficiais
+          ? `${athleteStats.torneiosOficiais} ${athleteStats.torneiosOficiais === 1 ? "torneio oficial" : "torneios oficiais"} (${athleteStats.miniligaAulas} presenças em liga)`
+          : athleteStats.torneiosOficiais > 0
           ? `${athleteStats.torneiosOficiais} ${athleteStats.torneiosOficiais === 1 ? "torneio oficial" : "torneios oficiais"}`
           : athleteStats.miniligaAulas > 0
           ? `${athleteStats.miniligaAulas} ${athleteStats.miniligaAulas === 1 ? "aula temática" : "aulas de liga"}`
@@ -602,7 +604,9 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
       `• 7. Assiduidade: *${athleteStats.attendanceRate}%* de presença\n` +
       `• 8. Sequência de Aulas: *${athleteStats.effectiveStreak} aulas seguidas* sem faltas\n` +
       `• 9. Miniliga Marco Roza: *${athleteStats.miniligaPontos} pontos acumulados* (${
-        athleteStats.torneiosOficiais > 0
+        athleteStats.torneiosOficiais > 0 && athleteStats.miniligaAulas > athleteStats.torneiosOficiais
+          ? `${athleteStats.torneiosOficiais} ${athleteStats.torneiosOficiais === 1 ? "torneio oficial" : "torneios oficiais"} (${athleteStats.miniligaAulas} presenças em liga)`
+          : athleteStats.torneiosOficiais > 0
           ? `${athleteStats.torneiosOficiais} ${athleteStats.torneiosOficiais === 1 ? "torneio oficial" : "torneios oficiais"}`
           : athleteStats.miniligaAulas > 0
           ? `${athleteStats.miniligaAulas} ${athleteStats.miniligaAulas === 1 ? "aula temática" : "aulas de liga"}`
@@ -953,7 +957,9 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
                       {athleteStats.miniligaPontos} <span className="text-[9px] font-semibold">pts</span>
                     </div>
                     <div className="text-[8px] text-slate-400 font-medium leading-none">
-                      {athleteStats.torneiosOficiais > 0
+                      {athleteStats.torneiosOficiais > 0 && athleteStats.miniligaAulas > athleteStats.torneiosOficiais
+                        ? `${athleteStats.torneiosOficiais} ${athleteStats.torneiosOficiais === 1 ? "oficial" : "oficiais"} (${athleteStats.miniligaAulas} presenças)`
+                        : athleteStats.torneiosOficiais > 0
                         ? `${athleteStats.torneiosOficiais} ${athleteStats.torneiosOficiais === 1 ? "torneio" : "torneios"}`
                         : athleteStats.miniligaAulas > 0
                         ? `${athleteStats.miniligaAulas} ${athleteStats.miniligaAulas === 1 ? "aula temática" : "aulas de liga"}`
@@ -1156,8 +1162,10 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
                         {athleteStats.miniligaPontos} <span className="text-xs font-bold">pts</span>
                       </span>
                       <span className="text-[10px] text-slate-400 font-medium">
-                        {athleteStats.torneiosOficiais > 0
-                          ? `${athleteStats.torneiosOficiais} ${athleteStats.torneiosOficiais === 1 ? "torneio" : "torneios"}`
+                        {athleteStats.torneiosOficiais > 0 && athleteStats.miniligaAulas > athleteStats.torneiosOficiais
+                          ? `${athleteStats.torneiosOficiais} ${athleteStats.torneiosOficiais === 1 ? "torneio oficial" : "torneios oficiais"} (${athleteStats.miniligaAulas} participações)`
+                          : athleteStats.torneiosOficiais > 0
+                          ? `${athleteStats.torneiosOficiais} ${athleteStats.torneiosOficiais === 1 ? "torneio oficial" : "torneios oficiais"}`
                           : athleteStats.miniligaAulas > 0
                           ? `${athleteStats.miniligaAulas} ${athleteStats.miniligaAulas === 1 ? "aula temática" : "aulas de liga"}`
                           : "sem torneios"}
@@ -1177,7 +1185,7 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
                 <span className="text-white font-bold">Assiduidade (7)</span> e a{" "}
                 <span className="text-white font-bold">Sequência (8)</span> derivam das frequências em aula ativando o status{" "}
                 <span className="text-orange-300 font-bold">ON FIRE 🔥 (+2 OVR)</span>, e a{" "}
-                <span className="text-amber-300 font-bold">Miniliga (9)</span> possui seu contador à parte acumulando os pontos ganhos a cada partida e torneio disputado!
+                <span className="text-amber-300 font-bold">Miniliga (9)</span> possui seu contador à parte acumulando os pontos ganhos a cada partida e torneio disputado, registrando tanto as presenças em quadra quanto os torneios oficiais com súmula!
               </div>
             </div>
 
