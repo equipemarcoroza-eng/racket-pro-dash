@@ -61,6 +61,25 @@ export const AllMatchesOverview: React.FC<AllMatchesOverviewProps> = ({
   const is8PIntergrupos = participantCount === 8 && modelType === "intergrupos";
   const is10PIntergrupos = participantCount === 10 && modelType === "intergrupos";
 
+  const renderGroupBadge = (code: string | null) => {
+    if (!code) return null;
+    return (
+      <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/25 mr-1 shrink-0">
+        [{code}]
+      </span>
+    );
+  };
+
+  const getInputClasses = (isWinning: boolean, isCompleted: boolean) => {
+    if (isCompleted && isWinning) {
+      return "w-11 h-9 text-center font-mono font-bold text-sm rounded-lg border border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 shadow-2xs p-1 focus:bg-background transition-colors";
+    }
+    if (isCompleted) {
+      return "w-11 h-9 text-center font-mono font-medium text-sm rounded-lg border border-border/70 bg-muted/20 text-muted-foreground p-1 focus:bg-background transition-colors";
+    }
+    return "w-11 h-9 text-center font-mono font-medium text-sm rounded-lg border border-border/60 bg-background text-foreground p-1 hover:border-primary/40 focus:border-primary transition-colors";
+  };
+
   // Renderizador da grade de cartões de jogos
   const renderMatchesGrid = (roundMatches: MiniligaMatch[]) => {
     if (!roundMatches || roundMatches.length === 0) return null;
@@ -86,41 +105,41 @@ export const AllMatchesOverview: React.FC<AllMatchesOverviewProps> = ({
               key={m.id}
               className={`p-3 rounded-xl border flex flex-col justify-between transition-all ${
                 m.isBonusFinal
-                  ? "bg-amber-500/10 border-amber-500/40 shadow-md shadow-amber-500/5"
+                  ? "bg-amber-500/5 border-amber-500/40 shadow-xs"
                   : m.isSemifinal
-                  ? "bg-purple-500/10 border-purple-500/40 shadow-md shadow-purple-500/5"
+                  ? "bg-purple-500/5 border-purple-500/35 shadow-xs"
                   : m.isTiebreakSimples
-                  ? "bg-rose-500/10 border-rose-500/40 shadow-md shadow-rose-500/5"
+                  ? "bg-rose-500/5 border-rose-500/35 shadow-xs"
                   : m.isCompleted
-                  ? "bg-background/80 border-border/80"
-                  : "bg-muted/20 border-border/50 hover:border-primary/40"
+                  ? "bg-card border-border/80 shadow-2xs"
+                  : "bg-card/70 border-border/60 hover:border-primary/40"
               }`}
             >
               {/* Topo do Card de Jogo */}
               <div className="flex items-center justify-between text-xs mb-2">
                 <Badge
                   variant="outline"
-                  className="bg-muted/40 font-bold text-[10px] uppercase text-muted-foreground"
+                  className="bg-muted/40 font-semibold text-[10px] uppercase text-muted-foreground border-border/60"
                 >
                   Quadra {m.courtNumber}
                 </Badge>
                 {m.isBonusFinal && (
-                  <span className="text-[11px] font-black text-amber-400 flex items-center gap-1">
+                  <span className="text-[11px] font-bold text-amber-700 dark:text-amber-400 flex items-center gap-1">
                     <Trophy className="w-3.5 h-3.5 fill-current" /> Grande Final
                   </span>
                 )}
                 {m.isSemifinal && (
-                  <span className="text-[11px] font-black text-purple-400 flex items-center gap-1">
+                  <span className="text-[11px] font-bold text-purple-700 dark:text-purple-400 flex items-center gap-1">
                     <Trophy className="w-3.5 h-3.5" /> Semifinal
                   </span>
                 )}
                 {m.isTiebreakSimples && (
-                  <span className="text-[11px] font-black text-rose-400 flex items-center gap-1">
-                    <Zap className="w-3.5 h-3.5" /> Desempate Simples (1º vs 2º)
+                  <span className="text-[11px] font-bold text-rose-700 dark:text-rose-400 flex items-center gap-1">
+                    <Zap className="w-3.5 h-3.5" /> Desempate Simples
                   </span>
                 )}
                 {m.supportPairPlayerIds && m.supportPairPlayerIds.length > 0 && (
-                  <span className="text-[10px] font-bold text-sky-400 bg-sky-950/40 px-2 py-0.5 rounded border border-sky-500/30 flex items-center gap-1">
+                  <span className="text-[10px] font-semibold text-sky-700 dark:text-sky-300 bg-sky-500/10 px-2 py-0.5 rounded border border-sky-500/20 flex items-center gap-1">
                     🎲 Dupla Sorteada ({m.supportPairPlayerIds.map(id => participantsMap.get(id)?.name?.split(" ")[0]).filter(Boolean).join(" & ")})
                   </span>
                 )}
@@ -130,13 +149,13 @@ export const AllMatchesOverview: React.FC<AllMatchesOverviewProps> = ({
               <div className="grid grid-cols-[1fr,auto,auto,auto,1fr] items-center gap-2">
                 {/* Time A */}
                 <div className="flex flex-col text-right truncate">
-                  <span className="text-xs font-bold text-foreground truncate">
-                    {codeP1A && <span className="text-amber-400 font-mono font-extrabold mr-1">[{codeP1A}]</span>}
+                  <span className="text-xs font-semibold text-foreground truncate">
+                    {renderGroupBadge(codeP1A)}
                     {p1A?.name ?? "P1"}
                   </span>
                   {p2A && (
-                    <span className="text-xs font-bold text-foreground truncate">
-                      {codeP2A && <span className="text-amber-400 font-mono font-extrabold mr-1">[{codeP2A}]</span>}
+                    <span className="text-xs font-semibold text-foreground truncate">
+                      {renderGroupBadge(codeP2A)}
                       {p2A.name}
                     </span>
                   )}
@@ -153,15 +172,11 @@ export const AllMatchesOverview: React.FC<AllMatchesOverviewProps> = ({
                     onScoreChange(m.id, val, m.scoreB);
                   }}
                   placeholder="0"
-                  className={`w-12 h-10 text-center font-mono font-black text-base shadow-inner p-1 ${
-                    m.isCompleted && aWinning
-                      ? "border-emerald-500 bg-emerald-500/10 text-emerald-400 font-extrabold"
-                      : ""
-                  }`}
+                  className={getInputClasses(aWinning, m.isCompleted)}
                 />
 
                 {/* X */}
-                <span className="text-xs font-bold text-muted-foreground px-0.5">x</span>
+                <span className="text-xs font-semibold text-muted-foreground px-0.5">x</span>
 
                 {/* Input B */}
                 <Input
@@ -174,22 +189,18 @@ export const AllMatchesOverview: React.FC<AllMatchesOverviewProps> = ({
                     onScoreChange(m.id, m.scoreA, val);
                   }}
                   placeholder="0"
-                  className={`w-12 h-10 text-center font-mono font-black text-base shadow-inner p-1 ${
-                    m.isCompleted && bWinning
-                      ? "border-emerald-500 bg-emerald-500/10 text-emerald-400 font-extrabold"
-                      : ""
-                  }`}
+                  className={getInputClasses(bWinning, m.isCompleted)}
                 />
 
                 {/* Time B */}
                 <div className="flex flex-col text-left truncate">
-                  <span className="text-xs font-bold text-foreground truncate">
-                    {codeP1B && <span className="text-amber-400 font-mono font-extrabold mr-1">[{codeP1B}]</span>}
+                  <span className="text-xs font-semibold text-foreground truncate">
+                    {renderGroupBadge(codeP1B)}
                     {p1B?.name ?? "P2"}
                   </span>
                   {p2B && (
-                    <span className="text-xs font-bold text-foreground truncate">
-                      {codeP2B && <span className="text-amber-400 font-mono font-extrabold mr-1">[{codeP2B}]</span>}
+                    <span className="text-xs font-semibold text-foreground truncate">
+                      {renderGroupBadge(codeP2B)}
                       {p2B.name}
                     </span>
                   )}
@@ -216,43 +227,43 @@ export const AllMatchesOverview: React.FC<AllMatchesOverviewProps> = ({
     return (
       <div
         key={roundNum}
-        className={`p-4 rounded-2xl border transition-all duration-300 backdrop-blur-md shadow-sm ${
+        className={`p-4 rounded-xl border transition-all duration-200 shadow-2xs ${
           roundCompleted
-            ? "bg-card/90 border-emerald-500/30 shadow-emerald-500/5"
-            : "bg-card/70 border-border"
+            ? "bg-card border-emerald-500/30"
+            : "bg-card/70 border-border/70"
         }`}
       >
         {/* Header da Bateria / Rodada */}
         <div className="flex flex-wrap items-center justify-between gap-2 pb-3 mb-3 border-b border-border/60">
           <div className="flex items-center gap-2 flex-wrap">
             {bateriaNumberInCycle ? (
-              <Badge className="bg-amber-500/20 text-amber-300 border border-amber-500/40 font-black text-xs px-2.5 py-0.5">
+              <Badge className="bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/30 font-bold text-xs px-2.5 py-0.5">
                 ⚡ Bateria {bateriaNumberInCycle} de {totalBateriasInCycle ?? 3}
               </Badge>
             ) : null}
 
             <Badge
-              className={`font-black text-xs px-2.5 py-0.5 ${
+              className={`font-bold text-xs px-2.5 py-0.5 ${
                 roundCompleted
-                  ? "bg-emerald-500 text-black font-extrabold"
-                  : "bg-primary/20 text-primary border border-primary/30"
+                  ? "bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30"
+                  : "bg-primary/10 text-primary border border-primary/20"
               }`}
             >
               {customTitle || `Entrada Geral ${roundNum} de ${maxRound}`}
             </Badge>
 
-            <span className="text-xs font-semibold text-muted-foreground">
+            <span className="text-xs font-medium text-muted-foreground">
               {roundMatches.length} confronto{roundMatches.length > 1 ? "s" : ""} simultâneo{roundMatches.length > 1 ? "s" : ""}
             </span>
           </div>
 
           {roundCompleted ? (
-            <span className="flex items-center gap-1 text-xs font-bold text-emerald-400">
+            <span className="flex items-center gap-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
               <CheckCircle2 className="w-3.5 h-3.5" /> {customTitle ? "Confrontos Concluídos" : "Bateria Concluída"}
             </span>
           ) : (
             <span className="flex items-center gap-1 text-xs text-muted-foreground">
-              <AlertCircle className="w-3.5 h-3.5 text-amber-400" /> Preenchendo placares
+              <AlertCircle className="w-3.5 h-3.5 text-amber-500" /> Preenchendo placares
             </span>
           )}
         </div>
@@ -267,20 +278,20 @@ export const AllMatchesOverview: React.FC<AllMatchesOverviewProps> = ({
     if (!hasPlayoffs) return null;
 
     return (
-      <div className="space-y-5 rounded-2xl border-2 border-amber-500/50 bg-gradient-to-br from-amber-500/15 via-zinc-950 to-zinc-950 p-4 sm:p-6 shadow-2xl">
-        <div className="flex items-center gap-3 pb-3 border-b border-amber-500/30">
-          <div className="p-2.5 rounded-xl bg-amber-500 text-black font-black shadow-lg shadow-amber-500/30">
-            <Trophy className="w-6 h-6 fill-current" />
+      <div className="space-y-5 rounded-2xl border border-amber-500/30 bg-gradient-to-br from-amber-500/5 via-card to-card p-4 sm:p-6 shadow-sm">
+        <div className="flex items-center gap-3 pb-3 border-b border-border/60">
+          <div className="p-2 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 text-slate-950 font-black shadow-sm">
+            <Trophy className="w-5 h-5 fill-current" />
           </div>
           <div>
-            <h3 className="text-base sm:text-lg font-black text-white flex items-center gap-2">
+            <h3 className="text-base sm:text-lg font-bold text-foreground flex items-center gap-2">
               Fase Final / Playoffs (Método Oficial Marco Roza)
-              <Badge className="bg-amber-500 text-black font-extrabold text-[10px] uppercase">
+              <Badge className="bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/30 font-bold text-[10px] uppercase">
                 Mata-Mata
               </Badge>
             </h3>
-            <p className="text-xs text-zinc-300">
-              Confrontos decisivos das Semifinais e Grande Final pelo título da Miniliga!
+            <p className="text-xs text-muted-foreground">
+              Confrontos decisivos das Semifinais e Grande Final pelo título da Miniliga
             </p>
           </div>
         </div>
@@ -288,10 +299,10 @@ export const AllMatchesOverview: React.FC<AllMatchesOverviewProps> = ({
         {semifinalMatches.length > 0 && (
           <div className="space-y-3">
             <div className="flex items-center gap-2">
-              <Badge className="bg-purple-600 text-white font-extrabold text-xs px-2.5 py-0.5 uppercase shadow">
+              <Badge className="bg-purple-500/15 text-purple-700 dark:text-purple-300 border border-purple-500/30 font-bold text-xs px-2.5 py-0.5 uppercase">
                 🏆 Semifinais
               </Badge>
-              <span className="text-xs text-purple-300 font-semibold">
+              <span className="text-xs text-muted-foreground font-medium">
                 1ºA+1ªB vs 4ºA+4ªB e 2ºA+2ªB vs 3ºA+3ªB
               </span>
             </div>
@@ -302,10 +313,10 @@ export const AllMatchesOverview: React.FC<AllMatchesOverviewProps> = ({
         {finalMatches.length > 0 && (
           <div className="space-y-3 pt-2">
             <div className="flex items-center gap-2">
-              <Badge className="bg-amber-500 text-black font-extrabold text-xs px-2.5 py-0.5 uppercase shadow">
+              <Badge className="bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/40 font-bold text-xs px-2.5 py-0.5 uppercase">
                 🥇 Grande Final
               </Badge>
-              <span className="text-xs text-amber-300 font-extrabold">
+              <span className="text-xs text-amber-700 dark:text-amber-400 font-semibold">
                 Disputa direta pelo título de Dupla Campeã da Miniliga Marco Roza!
               </span>
             </div>
@@ -316,7 +327,7 @@ export const AllMatchesOverview: React.FC<AllMatchesOverviewProps> = ({
         {tiebreakMatches.length > 0 && (
           <div className="space-y-3 pt-2">
             <div className="flex items-center gap-2">
-              <Badge className="bg-rose-600 text-white font-extrabold text-xs px-2.5 py-0.5 uppercase shadow">
+              <Badge className="bg-rose-500/15 text-rose-700 dark:text-rose-300 border border-rose-500/30 font-bold text-xs px-2.5 py-0.5 uppercase">
                 ⚡ Desempate Simples (1º vs 2º)
               </Badge>
             </div>
@@ -338,16 +349,18 @@ export const AllMatchesOverview: React.FC<AllMatchesOverviewProps> = ({
     const officialCycles = [1, 2, 3, 4];
 
     return (
-      <div className="space-y-8">
+      <div className="space-y-6">
         {/* Banner Informativo Superior */}
-        <div className="p-4 rounded-2xl bg-zinc-950/80 border border-zinc-800 text-zinc-300 flex items-start gap-3">
-          <Layers className="w-5 h-5 text-amber-400 mt-0.5 flex-shrink-0" />
+        <div className="p-4 rounded-xl bg-card border border-border/70 text-card-foreground flex items-start gap-3 shadow-2xs">
+          <div className="p-2 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 mt-0.5">
+            <Layers className="w-4 h-4" />
+          </div>
           <div className="text-xs space-y-1">
-            <span className="font-bold text-white block text-sm">
+            <span className="font-bold text-foreground block text-sm">
               Estrutura Oficial de 8 Participantes (Método Marco Roza)
             </span>
-            <p className="text-zinc-400">
-              A competição é dividida em <strong className="text-amber-300">4 Rodadas Oficiais</strong> (Ciclos de Parcerias fixas entre Grupo A e Grupo B) e Fase Final de Playoffs.
+            <p className="text-muted-foreground">
+              A competição é dividida em <strong className="text-foreground">4 Rodadas Oficiais</strong> (Ciclos de Parcerias fixas entre Grupo A e Grupo B) e Fase Final de Playoffs.
             </p>
           </div>
         </div>
@@ -376,23 +389,23 @@ export const AllMatchesOverview: React.FC<AllMatchesOverviewProps> = ({
           return (
             <div
               key={cycleNum}
-              className="space-y-4 rounded-2xl border border-zinc-800 bg-zinc-950/40 p-4 sm:p-5 shadow-lg"
+              className="space-y-4 rounded-2xl border border-border/70 bg-card/60 p-4 sm:p-5 shadow-xs"
             >
               {/* Tarja Oficial da Rodada (Estilo Planilha do Marco) */}
-              <div className="rounded-xl border border-zinc-700/80 bg-gradient-to-r from-zinc-950 via-zinc-900 to-black p-4 text-white shadow-md">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-zinc-800">
+              <div className="rounded-xl border border-slate-700/60 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 p-4 text-white shadow-sm">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-700/70">
                   <div className="flex items-center gap-3">
-                    <Badge className="bg-white text-black font-black text-xs px-3 py-1 shadow uppercase tracking-wider">
+                    <Badge className="bg-white/95 text-slate-900 hover:bg-white font-bold text-xs px-2.5 py-0.5 shadow-xs uppercase tracking-wider rounded-md">
                       RODADA OFICIAL {cycleNum}
                     </Badge>
                     <div>
-                      <h3 className="text-base font-extrabold tracking-tight flex items-center gap-2">
+                      <h3 className="text-sm sm:text-base font-bold tracking-tight flex items-center gap-2">
                         Ciclo de Parcerias {cycleNum} de 4
-                        <span className="text-xs font-semibold text-zinc-400">
+                        <span className="text-xs font-medium text-slate-300">
                           (Grupo A x Grupo B Cruzados)
                         </span>
                       </h3>
-                      <p className="text-xs text-zinc-400">
+                      <p className="text-xs text-slate-300">
                         {roundMatchesToDisplay.length} partidas registradas
                       </p>
                     </div>
@@ -400,11 +413,11 @@ export const AllMatchesOverview: React.FC<AllMatchesOverviewProps> = ({
 
                   <div className="flex items-center gap-2">
                     {cycleCompleted ? (
-                      <Badge className="bg-emerald-500 text-black font-extrabold text-xs gap-1">
+                      <Badge className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold text-xs gap-1">
                         <CheckCircle2 className="w-3.5 h-3.5" /> Rodada {cycleNum} Concluída
                       </Badge>
                     ) : (
-                      <Badge variant="outline" className="text-amber-300 border-amber-500/40 bg-amber-500/10 font-bold text-xs">
+                      <Badge variant="outline" className="text-amber-300 border-amber-500/30 bg-amber-500/10 font-medium text-xs">
                         {roundMatchesToDisplay.length} Confrontos
                       </Badge>
                     )}
@@ -413,7 +426,7 @@ export const AllMatchesOverview: React.FC<AllMatchesOverviewProps> = ({
 
                 {/* Duplas Formadas Desta Rodada Oficial */}
                 <div className="mt-3">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-400 block mb-2 flex items-center gap-1.5">
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-300 block mb-2 flex items-center gap-1.5">
                     <Users className="w-3.5 h-3.5 text-amber-400" />
                     Parcerias Fixas Deste Ciclo (Grupo A + Grupo B):
                   </span>
@@ -424,12 +437,12 @@ export const AllMatchesOverview: React.FC<AllMatchesOverviewProps> = ({
                       return (
                         <div
                           key={pIdx}
-                          className="p-2.5 rounded-xl bg-zinc-900/90 border border-zinc-800 flex flex-col gap-0.5"
+                          className="p-2 rounded-lg bg-slate-800/80 border border-slate-700/60 flex flex-col gap-0.5 hover:bg-slate-800 transition-colors"
                         >
-                          <span className="text-[10px] font-black text-amber-400 uppercase tracking-wide">
+                          <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wide">
                             {pair.tag} ({pair.codeA} + {pair.codeB})
                           </span>
-                          <span className="text-xs font-bold text-white truncate">
+                          <span className="text-xs font-medium text-slate-100 truncate">
                             {p1?.name ? p1.name.split(" ")[0] : pair.codeA} & {p2?.name ? p2.name.split(" ")[0] : pair.codeB}
                           </span>
                         </div>
@@ -473,16 +486,18 @@ export const AllMatchesOverview: React.FC<AllMatchesOverviewProps> = ({
       const officialRounds = [1, 2, 3, 4, 5, 6];
 
       return (
-        <div className="space-y-8">
+        <div className="space-y-6">
           {/* Banner Informativo Superior */}
-          <div className="p-4 rounded-2xl bg-zinc-950/80 border border-zinc-800 text-zinc-300 flex items-start gap-3">
-            <Layers className="w-5 h-5 text-amber-400 mt-0.5 flex-shrink-0" />
+          <div className="p-4 rounded-xl bg-card border border-border/70 text-card-foreground flex items-start gap-3 shadow-2xs">
+            <div className="p-2 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 mt-0.5">
+              <Layers className="w-4 h-4" />
+            </div>
             <div className="text-xs space-y-1">
-              <span className="font-bold text-white block text-sm">
+              <span className="font-bold text-foreground block text-sm">
                 Tabela de Jogos - Mini Liga Mista / Reposições (Método Marco Roza - 10 Participantes)
               </span>
-              <p className="text-zinc-400">
-                A competição conta com <strong className="text-amber-300">6 Rodadas Oficiais</strong> na fase classificatória e <strong className="text-amber-300">Fase Final de Playoffs</strong> (Semifinais e Grande Final).
+              <p className="text-muted-foreground">
+                A competição conta com <strong className="text-foreground">6 Rodadas Oficiais</strong> na fase classificatória e <strong className="text-foreground">Fase Final de Playoffs</strong> (Semifinais e Grande Final).
               </p>
             </div>
           </div>
@@ -503,20 +518,20 @@ export const AllMatchesOverview: React.FC<AllMatchesOverviewProps> = ({
             return (
               <div
                 key={`rodada-oficial-${oficialRound}`}
-                className="space-y-4 rounded-2xl border border-zinc-800 bg-zinc-950/40 p-4 sm:p-5 shadow-lg"
+                className="space-y-4 rounded-2xl border border-border/70 bg-card/60 p-4 sm:p-5 shadow-xs"
               >
                 {/* Tarja Oficial da Rodada */}
-                <div className="rounded-xl border border-zinc-700/80 bg-gradient-to-r from-zinc-950 via-zinc-900 to-black p-4 text-white shadow-md">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-zinc-800">
+                <div className="rounded-xl border border-slate-700/60 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 p-4 text-white shadow-sm">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-700/70">
                     <div className="flex items-center gap-3">
-                      <Badge className="bg-white text-black font-black text-xs px-3 py-1 shadow uppercase tracking-wider">
+                      <Badge className="bg-white/95 text-slate-900 hover:bg-white font-bold text-xs px-2.5 py-0.5 shadow-xs uppercase tracking-wider rounded-md">
                         RODADA {oficialRound}
                       </Badge>
                       <div>
-                        <h3 className="text-base font-extrabold tracking-tight flex items-center gap-2">
+                        <h3 className="text-sm sm:text-base font-bold tracking-tight flex items-center gap-2">
                           Rodada Oficial {oficialRound} de 6
                         </h3>
-                        <p className="text-xs text-zinc-400">
+                        <p className="text-xs text-slate-300">
                           {roundMatches.length} jogos registrados • 1 dupla folga nesta rodada
                         </p>
                       </div>
@@ -524,11 +539,11 @@ export const AllMatchesOverview: React.FC<AllMatchesOverviewProps> = ({
 
                     <div className="flex items-center gap-2">
                       {roundCompleted ? (
-                        <Badge className="bg-emerald-500 text-black font-extrabold text-xs gap-1">
+                        <Badge className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold text-xs gap-1">
                           <CheckCircle2 className="w-3.5 h-3.5" /> Rodada {oficialRound} Concluída
                         </Badge>
                       ) : (
-                        <Badge variant="outline" className="text-amber-300 border-amber-500/40 bg-amber-500/10 font-bold text-xs">
+                        <Badge variant="outline" className="text-amber-300 border-amber-500/30 bg-amber-500/10 font-medium text-xs">
                           {roundMatches.length} Confrontos
                         </Badge>
                       )}
@@ -538,7 +553,7 @@ export const AllMatchesOverview: React.FC<AllMatchesOverviewProps> = ({
                   {/* Duplas Formadas e Folgas da Rodada Oficial */}
                   <div className="mt-3 flex flex-col md:flex-row md:items-center justify-between gap-3">
                     <div className="flex-1">
-                      <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-400 block mb-2 flex items-center gap-1.5">
+                      <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-300 block mb-2 flex items-center gap-1.5">
                         <Users className="w-3.5 h-3.5 text-amber-400" />
                         Parcerias Desta Rodada Oficial:
                       </span>
@@ -549,12 +564,12 @@ export const AllMatchesOverview: React.FC<AllMatchesOverviewProps> = ({
                           return (
                             <div
                               key={pIdx}
-                              className="p-2 rounded-xl bg-zinc-900/90 border border-zinc-800 flex flex-col gap-0.5"
+                              className="p-2 rounded-lg bg-slate-800/80 border border-slate-700/60 flex flex-col gap-0.5 hover:bg-slate-800 transition-colors"
                             >
-                              <span className="text-[10px] font-black text-amber-400 uppercase tracking-wide">
+                              <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wide">
                                 {pair.codeA} + {pair.codeB}
                               </span>
-                              <span className="text-xs font-bold text-white truncate">
+                              <span className="text-xs font-medium text-slate-100 truncate">
                                 {p1?.name ? p1.name.split(" ")[0] : pair.codeA} & {p2?.name ? p2.name.split(" ")[0] : pair.codeB}
                               </span>
                             </div>
@@ -564,11 +579,11 @@ export const AllMatchesOverview: React.FC<AllMatchesOverviewProps> = ({
                     </div>
 
                     {cycleInfo.restingDescription && (
-                      <div className="p-2.5 rounded-xl bg-zinc-900/60 border border-zinc-800/80 md:w-56 flex flex-col justify-center">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 block mb-1">
+                      <div className="p-2.5 rounded-lg bg-slate-800/60 border border-amber-500/20 md:w-56 flex flex-col justify-center">
+                        <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-300 block mb-1">
                           💤 Folgam Nesta Rodada:
                         </span>
-                        <span className="text-xs font-extrabold text-amber-300">
+                        <span className="text-xs font-semibold text-amber-300">
                           [{cycleInfo.restingDescription.codeA}] {restingP1?.name ? restingP1.name.split(" ")[0] : ""} & [{cycleInfo.restingDescription.codeB}] {restingP2?.name ? restingP2.name.split(" ")[0] : ""}
                         </span>
                       </div>
@@ -600,16 +615,18 @@ export const AllMatchesOverview: React.FC<AllMatchesOverviewProps> = ({
     ];
 
     return (
-      <div className="space-y-8">
+      <div className="space-y-6">
         {/* Banner Informativo Superior */}
-        <div className="p-4 rounded-2xl bg-zinc-950/80 border border-zinc-800 text-zinc-300 flex items-start gap-3">
-          <Layers className="w-5 h-5 text-amber-400 mt-0.5 flex-shrink-0" />
+        <div className="p-4 rounded-xl bg-card border border-border/70 text-card-foreground flex items-start gap-3 shadow-2xs">
+          <div className="p-2 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 mt-0.5">
+            <Layers className="w-4 h-4" />
+          </div>
           <div className="text-xs space-y-1">
-            <span className="font-bold text-white block text-sm">
+            <span className="font-bold text-foreground block text-sm">
               Tabela de Jogos - Mini Liga Mista / Reposições (Método Marco Roza - 10 Participantes)
             </span>
-            <p className="text-zinc-400">
-              A competição conta com <strong className="text-amber-300">6 Rodadas Oficiais</strong> de 2 baterias cada e <strong className="text-amber-300">2 Jogos Extras de Sorteio</strong> para a dupla que folgou. Total de 26 confrontos na classificatória, garantindo exatamente <strong className="text-amber-300">10 jogos para cada um dos 10 participantes</strong>. Seguido de Semifinais e Grande Final!
+            <p className="text-muted-foreground">
+              A competição conta com <strong className="text-foreground">6 Rodadas Oficiais</strong> de 2 baterias cada e <strong className="text-foreground">2 Jogos Extras de Sorteio</strong> para a dupla que folgou. Total de 26 confrontos na classificatória, garantindo exatamente <strong className="text-foreground">10 jogos para cada um dos 10 participantes</strong>. Seguido de Semifinais e Grande Final!
             </p>
           </div>
         </div>
@@ -626,24 +643,24 @@ export const AllMatchesOverview: React.FC<AllMatchesOverviewProps> = ({
             return (
               <div
                 key={`sorteio-${b.roundNum}`}
-                className="space-y-3 rounded-2xl border border-sky-500/30 bg-sky-950/20 p-4 sm:p-5 shadow-md"
+                className="space-y-3 rounded-2xl border border-sky-500/25 bg-card/70 p-4 sm:p-5 shadow-xs"
               >
-                <div className="flex flex-wrap items-center justify-between gap-3 pb-2 border-b border-sky-500/20">
+                <div className="flex flex-wrap items-center justify-between gap-3 pb-2 border-b border-border/60">
                   <div className="flex items-center gap-2.5">
-                    <Badge className="bg-sky-500 text-black font-black text-xs px-2.5 py-0.5 shadow uppercase tracking-wide gap-1">
+                    <Badge className="bg-sky-500/15 text-sky-700 dark:text-sky-300 border border-sky-500/30 font-bold text-xs px-2.5 py-0.5 uppercase tracking-wide gap-1">
                       <Dices className="w-3.5 h-3.5" /> JOGO EXTRA DE SORTEIO
                     </Badge>
-                    <span className="text-xs font-semibold text-zinc-400">
+                    <span className="text-xs font-medium text-muted-foreground">
                       Entrada Geral {b.roundNum} de {maxRound}
                     </span>
                   </div>
 
                   {roundCompleted ? (
-                    <span className="flex items-center gap-1 text-xs font-bold text-emerald-400">
+                    <span className="flex items-center gap-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
                       <CheckCircle2 className="w-3.5 h-3.5" /> Jogo Concluído
                     </span>
                   ) : (
-                    <span className="text-xs text-sky-300/80">
+                    <span className="text-xs text-sky-700 dark:text-sky-300">
                       Jogo da dupla A5/B4 contra dupla de apoio sorteada (10º jogo de A5/B4)
                     </span>
                   )}
@@ -670,23 +687,23 @@ export const AllMatchesOverview: React.FC<AllMatchesOverviewProps> = ({
           return (
             <div
               key={`rodada-${b.oficialRound}`}
-              className="space-y-4 rounded-2xl border border-zinc-800 bg-zinc-950/40 p-4 sm:p-5 shadow-lg"
+              className="space-y-4 rounded-2xl border border-border/70 bg-card/60 p-4 sm:p-5 shadow-xs"
             >
               {/* Tarja Oficial da Rodada */}
-              <div className="rounded-xl border border-zinc-700/80 bg-gradient-to-r from-zinc-950 via-zinc-900 to-black p-4 text-white shadow-md">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-zinc-800">
+              <div className="rounded-xl border border-slate-700/60 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 p-4 text-white shadow-sm">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-700/70">
                   <div className="flex items-center gap-3">
-                    <Badge className="bg-white text-black font-black text-xs px-3 py-1 shadow uppercase tracking-wider">
+                    <Badge className="bg-white/95 text-slate-900 hover:bg-white font-bold text-xs px-2.5 py-0.5 shadow-xs uppercase tracking-wider rounded-md">
                       RODADA {b.oficialRound}
                     </Badge>
                     <div>
-                      <h3 className="text-base font-extrabold tracking-tight flex items-center gap-2">
+                      <h3 className="text-sm sm:text-base font-bold tracking-tight flex items-center gap-2">
                         Rodada Oficial {b.oficialRound} de 6
-                        <span className="text-xs font-semibold text-zinc-400">
+                        <span className="text-xs font-medium text-slate-300">
                           (2 Baterias nas Quadras 1 e 2)
                         </span>
                       </h3>
-                      <p className="text-xs text-zinc-400">
+                      <p className="text-xs text-slate-300">
                         4 duplas em quadra • 1 dupla folga nesta rodada
                       </p>
                     </div>
@@ -694,11 +711,11 @@ export const AllMatchesOverview: React.FC<AllMatchesOverviewProps> = ({
 
                   <div className="flex items-center gap-2">
                     {cycleCompleted ? (
-                      <Badge className="bg-emerald-500 text-black font-extrabold text-xs gap-1">
+                      <Badge className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold text-xs gap-1">
                         <CheckCircle2 className="w-3.5 h-3.5" /> Rodada {b.oficialRound} Concluída
                       </Badge>
                     ) : (
-                      <Badge variant="outline" className="text-amber-300 border-amber-500/40 bg-amber-500/10 font-bold text-xs">
+                      <Badge variant="outline" className="text-amber-300 border-amber-500/30 bg-amber-500/10 font-medium text-xs">
                         4 Confrontos simultâneos
                       </Badge>
                     )}
@@ -708,7 +725,7 @@ export const AllMatchesOverview: React.FC<AllMatchesOverviewProps> = ({
                 {/* Duplas Formadas e Folgas da Rodada Oficial */}
                 <div className="mt-3 flex flex-col md:flex-row md:items-center justify-between gap-3">
                   <div className="flex-1">
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-400 block mb-2 flex items-center gap-1.5">
+                    <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-300 block mb-2 flex items-center gap-1.5">
                       <Users className="w-3.5 h-3.5 text-amber-400" />
                       Parcerias Desta Rodada Oficial:
                     </span>
@@ -719,12 +736,12 @@ export const AllMatchesOverview: React.FC<AllMatchesOverviewProps> = ({
                         return (
                           <div
                             key={pIdx}
-                            className="p-2 rounded-xl bg-zinc-900/90 border border-zinc-800 flex flex-col gap-0.5"
+                            className="p-2 rounded-lg bg-slate-800/80 border border-slate-700/60 flex flex-col gap-0.5 hover:bg-slate-800 transition-colors"
                           >
-                            <span className="text-[10px] font-black text-amber-400 uppercase tracking-wide">
+                            <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wide">
                               {pair.codeA} + {pair.codeB}
                             </span>
-                            <span className="text-xs font-bold text-white truncate">
+                            <span className="text-xs font-medium text-slate-100 truncate">
                               {p1?.name ? p1.name.split(" ")[0] : pair.codeA} & {p2?.name ? p2.name.split(" ")[0] : pair.codeB}
                             </span>
                           </div>
@@ -734,11 +751,11 @@ export const AllMatchesOverview: React.FC<AllMatchesOverviewProps> = ({
                   </div>
 
                   {cycleInfo.restingDescription && (
-                    <div className="p-2.5 rounded-xl bg-zinc-900/60 border border-zinc-800/80 md:w-56 flex flex-col justify-center">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 block mb-1">
+                    <div className="p-2.5 rounded-lg bg-slate-800/60 border border-amber-500/20 md:w-56 flex flex-col justify-center">
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-300 block mb-1">
                         💤 Folgam Nesta Rodada:
                       </span>
-                      <span className="text-xs font-extrabold text-amber-300">
+                      <span className="text-xs font-semibold text-amber-300">
                         [{cycleInfo.restingDescription.codeA}] {restingP1?.name ? restingP1.name.split(" ")[0] : ""} & [{cycleInfo.restingDescription.codeB}] {restingP2?.name ? restingP2.name.split(" ")[0] : ""}
                       </span>
                     </div>
@@ -767,13 +784,15 @@ export const AllMatchesOverview: React.FC<AllMatchesOverviewProps> = ({
   return (
     <div className="space-y-5">
       {participantCount === 12 && (
-        <div className="p-4 rounded-2xl bg-zinc-950/80 border border-zinc-800 text-zinc-300 flex items-start gap-3">
-          <Layers className="w-5 h-5 text-emerald-400 mt-0.5 flex-shrink-0" />
+        <div className="p-4 rounded-xl bg-card border border-border/70 text-card-foreground flex items-start gap-3 shadow-2xs">
+          <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 mt-0.5">
+            <Layers className="w-4 h-4" />
+          </div>
           <div className="text-xs space-y-1">
-            <span className="font-bold text-white block text-sm">
+            <span className="font-bold text-foreground block text-sm">
               Modelo de 12 Participantes (11 Rodadas Completas)
             </span>
-            <p className="text-zinc-400">
+            <p className="text-muted-foreground">
               São 11 rodadas completas em 3 quadras simultâneas (100% de ocupação, zero folgas). Todos os 12 alunos jogam 11 vezes. As 66 duplas são 100% inéditas.
             </p>
           </div>

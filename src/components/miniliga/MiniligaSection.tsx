@@ -728,15 +728,6 @@ export const MiniligaSection: React.FC = () => {
 
         <div className="flex items-center gap-2 flex-wrap">
           <Button
-            onClick={() => setImportModalOpen(true)}
-            size="sm"
-            className="gap-1.5 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-slate-950 font-black text-xs shadow-md shadow-amber-500/20"
-          >
-            <FileSpreadsheet className="w-3.5 h-3.5" />
-            Importar Planilha (.xlsx)
-          </Button>
-
-          <Button
             onClick={() => {
               refreshHistory();
               setHistoryOpen(true);
@@ -1323,16 +1314,16 @@ export const MiniligaSection: React.FC = () => {
 
                 const cycleInfo = get8PlayersCycleInfo(session.currentRound);
                 return (
-                  <div className="flex flex-col gap-3 p-4 rounded-2xl bg-zinc-950/80 border border-zinc-800">
+                  <div className="flex flex-col gap-3 p-4 rounded-xl bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 border border-slate-700/60 text-white shadow-sm">
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <Badge className="bg-white text-black font-black text-xs px-3 py-1 uppercase shadow">
+                        <Badge className="bg-white/95 text-slate-900 font-bold text-xs px-2.5 py-0.5 uppercase shadow-xs">
                           RODADA OFICIAL {cycleInfo.oficialRound} DE 4
                         </Badge>
-                        <Badge className="bg-amber-500/20 text-amber-300 border border-amber-500/40 font-black text-xs px-2.5 py-1">
+                        <Badge className="bg-amber-500/20 text-amber-300 border border-amber-500/40 font-bold text-xs px-2.5 py-0.5">
                           ⚡ Bateria {cycleInfo.bateriaIndex} de 3
                         </Badge>
-                        <span className="text-xs font-semibold text-zinc-400">
+                        <span className="text-xs font-medium text-slate-300">
                           Entrada Geral {session.currentRound} de {session.totalRounds}
                         </span>
                       </div>
@@ -1341,7 +1332,7 @@ export const MiniligaSection: React.FC = () => {
                         <Button
                           onClick={handleNextRound}
                           size="sm"
-                          className="gap-1.5 font-bold text-xs bg-amber-500 hover:bg-amber-600 text-black font-extrabold"
+                          className="gap-1.5 font-bold text-xs bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold shadow-xs"
                         >
                           Próxima Bateria <ChevronRight className="w-3.5 h-3.5" />
                         </Button>
@@ -1350,7 +1341,7 @@ export const MiniligaSection: React.FC = () => {
 
                     {/* Sub-banner das duplas desta rodada oficial */}
                     <div className="flex items-center gap-2 overflow-x-auto pt-1">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 flex-shrink-0 flex items-center gap-1">
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-300 flex-shrink-0 flex items-center gap-1">
                         <Users className="w-3 h-3 text-amber-400" /> Duplas Desta Rodada:
                       </span>
                       <div className="flex items-center gap-1.5 flex-wrap">
@@ -1360,7 +1351,7 @@ export const MiniligaSection: React.FC = () => {
                           return (
                             <span
                               key={pIdx}
-                              className="text-[11px] font-semibold bg-zinc-900 border border-zinc-800 px-2 py-0.5 rounded-lg text-zinc-300"
+                              className="text-[11px] font-medium bg-slate-800/80 border border-slate-700/60 px-2 py-0.5 rounded-lg text-slate-100"
                             >
                               <strong className="text-amber-400 mr-1">
                                 {pair.codeA}+{pair.codeB}
@@ -1445,16 +1436,16 @@ export const MiniligaSection: React.FC = () => {
                 }
 
                 return (
-                  <div className="flex flex-col gap-3 p-4 rounded-2xl bg-zinc-950/80 border border-zinc-800">
+                  <div className="flex flex-col gap-3 p-4 rounded-xl bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 border border-slate-700/60 text-white shadow-sm">
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <Badge className="bg-white text-black font-black text-xs px-3 py-1 uppercase shadow">
+                        <Badge className="bg-white/95 text-slate-900 font-bold text-xs px-2.5 py-0.5 uppercase shadow-xs">
                           RODADA OFICIAL {cycleInfo.oficialRound} DE 6
                         </Badge>
-                        <Badge className="bg-amber-500/20 text-amber-300 border border-amber-500/40 font-black text-xs px-2.5 py-1">
+                        <Badge className="bg-amber-500/20 text-amber-300 border border-amber-500/40 font-bold text-xs px-2.5 py-0.5">
                           ⚡ Bateria {cycleInfo.bateriaIndex} de 2
                         </Badge>
-                        <span className="text-xs font-semibold text-zinc-400">
+                        <span className="text-xs font-medium text-slate-300">
                           Entrada Geral {session.currentRound} de {session.totalRounds}
                         </span>
                       </div>
@@ -1463,7 +1454,7 @@ export const MiniligaSection: React.FC = () => {
                         <Button
                           onClick={handleNextRound}
                           size="sm"
-                          className="gap-1.5 font-bold text-xs bg-amber-500 hover:bg-amber-600 text-black font-extrabold"
+                          className="gap-1.5 font-bold text-xs bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold shadow-xs"
                         >
                           Próxima Bateria <ChevronRight className="w-3.5 h-3.5" />
                         </Button>
@@ -1473,7 +1464,7 @@ export const MiniligaSection: React.FC = () => {
                     {/* Sub-banner das duplas desta rodada oficial e folga */}
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1 text-xs">
                       <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-1">
+                        <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-300 flex items-center gap-1">
                           <Users className="w-3 h-3 text-amber-400" /> Duplas:
                         </span>
                         {cycleInfo.pairsDescription.map((pair, pIdx) => {
@@ -1482,7 +1473,7 @@ export const MiniligaSection: React.FC = () => {
                           return (
                             <span
                               key={pIdx}
-                              className="text-[11px] font-semibold bg-zinc-900 border border-zinc-800 px-2 py-0.5 rounded-lg text-zinc-300"
+                              className="text-[11px] font-medium bg-slate-800/80 border border-slate-700/60 px-2 py-0.5 rounded-lg text-slate-100"
                             >
                               <strong className="text-amber-400 mr-1">{pair.codeA}+{pair.codeB}</strong>
                               {p1?.name ? p1.name.split(" ")[0] : pair.codeA}&{p2?.name ? p2.name.split(" ")[0] : pair.codeB}
@@ -1492,7 +1483,7 @@ export const MiniligaSection: React.FC = () => {
                       </div>
 
                       {cycleInfo.restingDescription && (
-                        <span className="text-[11px] font-semibold text-amber-300 bg-amber-500/10 border border-amber-500/30 px-2 py-0.5 rounded-lg self-start sm:self-auto">
+                        <span className="text-[11px] font-semibold text-amber-300 bg-slate-800/80 border border-amber-500/30 px-2 py-0.5 rounded-lg self-start sm:self-auto">
                           💤 Folgam: [{cycleInfo.restingDescription.codeA}] {session.participants[cycleInfo.restingDescription.p1Index]?.name?.split(" ")[0] || cycleInfo.restingDescription.codeA} & [{cycleInfo.restingDescription.codeB}] {session.participants[cycleInfo.restingDescription.p2Index]?.name?.split(" ")[0] || cycleInfo.restingDescription.codeB}
                         </span>
                       )}
