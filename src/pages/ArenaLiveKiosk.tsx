@@ -129,9 +129,11 @@ export const ArenaLiveKiosk: React.FC = () => {
         const miniligaLogs = studentLogs.filter((l) => l.presente === "Miniliga");
         const miniligas = miniligaLogs.length;
         const miniligaPontos = miniligaLogs.reduce((acc, l) => {
-          if (typeof l.miniligaPontos === "number") return acc + l.miniligaPontos;
+          if (typeof l.miniligaPontos === "number" && l.miniligaPontos > 0) return acc + l.miniligaPontos;
           const legado = l.motivoCancelamento?.match(/\+(\d+) pts/);
-          return acc + (legado ? Number(legado[1]) : 0);
+          if (legado) return acc + Number(legado[1]);
+          // Base de 3 pontos para presenças de miniliga sem placar lançado
+          return acc + 3;
         }, 0);
         const faltas = studentLogs.filter((l) => l.presente === "Falta").length;
 

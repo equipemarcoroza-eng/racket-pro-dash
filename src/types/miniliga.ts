@@ -24,6 +24,25 @@ export interface MiniligaParticipant {
   // Placement & Rewards
   rank?: number;
   cardPointsAwarded?: number; // 5, 4, 3, 2, 1...
+
+  // Convidados / Visitantes (Leads Comerciais)
+  isGuest?: boolean;
+  phone?: string;
+  notes?: string;
+  leadStatus?: "novo" | "contatado" | "convertido";
+}
+
+export interface MiniligaGuestLead {
+  id: string;
+  name: string;
+  phone?: string;
+  miniligaSessionId: string;
+  miniligaTitle: string;
+  date: string;
+  rank?: number;
+  wins?: number;
+  leadStatus?: "novo" | "contatado" | "convertido";
+  notes?: string;
 }
 
 export interface MiniligaMatch {

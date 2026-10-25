@@ -22,6 +22,8 @@ import { CourtMatchCard } from "@/components/miniliga/CourtMatchCard";
 import { AllMatchesOverview } from "@/components/miniliga/AllMatchesOverview";
 import { MiniligaStandingsTable } from "@/components/miniliga/MiniligaStandingsTable";
 import { MiniligaSummaryModal } from "@/components/miniliga/MiniligaSummaryModal";
+import { MiniligaImportModal } from "@/components/miniliga/MiniligaImportModal";
+import { MiniligaGuestsPanel } from "@/components/miniliga/MiniligaGuestsPanel";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -52,6 +54,7 @@ import {
   CheckCircle2,
   Cloud,
   LogOut,
+  FileSpreadsheet,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -79,6 +82,8 @@ export const MiniligaSection: React.FC = () => {
   const [matchViewMode, setMatchViewMode] = useState<"todos" | "rodada">("todos");
   const [historyOpen, setHistoryOpen] = useState(false);
   const [historyList, setHistoryList] = useState<MiniligaSession[]>(() => miniligaStorage.getHistory());
+  const [importModalOpen, setImportModalOpen] = useState(false);
+  const [activeView, setActiveView] = useState<"quadra" | "convidados">("quadra");
 
   const refreshHistory = () => {
     setHistoryList(miniligaStorage.getHistory());
@@ -717,18 +722,43 @@ export const MiniligaSection: React.FC = () => {
           </div>
         </div>
 
-            <Button
-              onClick={() => {
-                refreshHistory();
-                setHistoryOpen(true);
-              }}
-              variant="outline"
-              size="sm"
-              className="gap-1.5 border-border/80 text-foreground hover:bg-muted font-bold text-xs"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-              Histórico ({historyList.length})
-            </Button>
+        <div className="flex items-center gap-2 flex-wrap">
+          <Button
+            onClick={() => setImportModalOpen(true)}
+            size="sm"
+            className="gap-1.5 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-slate-950 font-black text-xs shadow-md shadow-amber-500/20"
+          >
+            <FileSpreadsheet className="w-3.5 h-3.5" />
+            Importar Planilha (.xlsx)
+          </Button>
+
+          <Button
+            onClick={() => {
+              refreshHistory();
+              setHistoryOpen(true);
+            }}
+            variant="outline"
+            size="sm"
+            className="gap-1.5 border-border/80 text-foreground hover:bg-muted font-bold text-xs"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            Histórico ({historyList.length})
+          </Button>
+
+          <Button
+            onClick={() => setActiveView((prev) => (prev === "convidados" ? "quadra" : "convidados"))}
+            variant={activeView === "convidados" ? "default" : "outline"}
+            size="sm"
+            className={`gap-1.5 font-bold text-xs ${
+              activeView === "convidados"
+                ? "bg-amber-500 text-slate-950 font-black shadow-md shadow-amber-500/20"
+                : "border-amber-500/40 text-amber-300 hover:bg-amber-500/10"
+            }`}
+          >
+            <Users className="w-3.5 h-3.5" />
+            Visitantes & Leads
+          </Button>
+        </div>
 
             {session && (
               <div className="flex items-center gap-2 flex-wrap">
@@ -803,8 +833,13 @@ export const MiniligaSection: React.FC = () => {
             )}
       </div>
 
-      {/* SETUP (QUANDO NÃO HÁ SESSÃO ATIVA) */}
-      {!session ? (
+      {/* VISTA DE CONVIDADOS / LEADS OU MESA DE MINILIGA */}
+      {activeView === "convidados" ? (
+        <MiniligaGuestsPanel
+          sessions={historyList}
+          onRefresh={refreshHistory}
+        />
+      ) : !session ? (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           <div className="lg:col-span-5 space-y-6">
             <Card className="border-border/80 bg-card/70 backdrop-blur-md shadow-xl">
@@ -1626,6 +1661,16 @@ export const MiniligaSection: React.FC = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* MODAL DE IMPORTAÇÃO DE PLANILHA */}
+      <MiniligaImportModal
+        open={importModalOpen}
+        onOpenChange={setImportModalOpen}
+        onImportComplete={() => {
+          refreshHistory();
+          setActiveView("convidados");
+        }}
+      />
     </div>
   );
 };

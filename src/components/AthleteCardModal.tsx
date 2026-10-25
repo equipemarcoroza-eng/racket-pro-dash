@@ -253,11 +253,13 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
     const torneiosOficiais = officialTournamentLogs.length;
     const miniligaAulas = miniligaLogs.length;
     const miniligas = miniligaAulas;
-    // Pontos de classificação: campo numérico ou, em registros antigos, o texto "(+N pts no Card)"
+    // Pontos de classificação: campo numérico, legado ou pontuação base (+3 pts por presença de liga sem súmula)
     const miniligaPontos = miniligaLogs.reduce((acc, l) => {
-      if (typeof l.miniligaPontos === "number") return acc + l.miniligaPontos;
+      if (typeof l.miniligaPontos === "number" && l.miniligaPontos > 0) return acc + l.miniligaPontos;
       const legado = l.motivoCancelamento?.match(/\+(\d+) pts/);
-      return acc + (legado ? Number(legado[1]) : 0);
+      if (legado) return acc + Number(legado[1]);
+      // Pontuação de participação por presença em Miniliga sem súmula detalhada
+      return acc + 3;
     }, 0);
     const faltas = studentLogs.filter((l) => l.presente === "Falta").length;
 
