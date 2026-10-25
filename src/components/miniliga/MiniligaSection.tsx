@@ -739,7 +739,7 @@ export const MiniligaSection: React.FC = () => {
             }}
             variant="outline"
             size="sm"
-            className="gap-1.5 border-border/80 text-foreground hover:bg-muted font-bold text-xs"
+            className="gap-1.5 border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 font-bold text-xs shadow-xs"
           >
             <RotateCcw className="w-3.5 h-3.5" />
             Histórico ({historyList.length})
@@ -749,10 +749,10 @@ export const MiniligaSection: React.FC = () => {
             onClick={() => setActiveView((prev) => (prev === "convidados" ? "quadra" : "convidados"))}
             variant={activeView === "convidados" ? "default" : "outline"}
             size="sm"
-            className={`gap-1.5 font-bold text-xs ${
+            className={`gap-1.5 font-black text-xs transition-all ${
               activeView === "convidados"
-                ? "bg-amber-500 text-slate-950 font-black shadow-md shadow-amber-500/20"
-                : "border-amber-500/40 text-amber-300 hover:bg-amber-500/10"
+                ? "bg-amber-500 hover:bg-amber-600 text-slate-950 font-black shadow-md shadow-amber-500/25 border border-amber-500"
+                : "border-2 border-amber-500/60 text-amber-900 dark:text-amber-300 hover:bg-amber-500/10"
             }`}
           >
             <Users className="w-3.5 h-3.5" />
