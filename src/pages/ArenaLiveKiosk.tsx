@@ -43,7 +43,15 @@ const diasSemanaMap: Record<number, string> = {
 };
 
 export const ArenaLiveKiosk: React.FC = () => {
-  const { schedule, students, enrollments, activities, tests, testResults, attendanceLogs } = useAppContext();
+  const { 
+    schedule = [], 
+    students = [], 
+    enrollments = [], 
+    activities = [], 
+    tests = [], 
+    testResults = [], 
+    attendanceLogs = [] 
+  } = useAppContext();
   const [currentSlide, setCurrentSlide] = useState<number>(0);
   const [isPaused, setIsPaused] = useState<boolean>(false);
   const [currentTime, setCurrentTime] = useState<Date>(new Date());
@@ -88,8 +96,6 @@ export const ArenaLiveKiosk: React.FC = () => {
   // SLIDE 0: HALL DA FAMA (TOP 3 POR CATEGORIA)
   // Infantil, Juvenil e Adulto
   // ==========================================
-  // SLIDE 0: HALL DA FAMA (Top 3 por Categoria baseado no OVR Oficial)
-  // ==========================================
   const categoryRankings = useMemo(() => {
     const categories: Array<"Infantil" | "Juvenil" | "Adulto"> = ["Infantil", "Juvenil", "Adulto"];
 
@@ -112,30 +118,30 @@ export const ArenaLiveKiosk: React.FC = () => {
     };
 
     categories.forEach((cat) => {
-      const activeInCat = students.filter(
-        (s) => s.status === "Ativo" && s.categoria === cat
+      const activeInCat = (students || []).filter(
+        (s) => s && s.status === "Ativo" && s.categoria === cat
       );
 
       const scored = activeInCat.map((student) => {
         // Testes técnicos bimestrais
-        const sTests = testResults.filter((tr) => tr.alunoId === student.id);
-        const totalHits = sTests.reduce((acc, tr) => acc + (tr.acertos || 0), 0);
+        const sTests = (testResults || []).filter((tr) => tr && tr.alunoId === student.id);
+        const totalHits = sTests.reduce((acc, tr) => acc + (tr?.acertos || 0), 0);
         const testsCount = sTests.length;
 
         // Frequência, Miniligas e Presenças
-        const studentLogs = attendanceLogs.filter((l) => l.alunoId === student.id);
-        const presencas = studentLogs.filter((l) => l.presente === "Presente").length;
-        const reposicoes = studentLogs.filter((l) => l.presente === "Reposição").length;
-        const miniligaLogs = studentLogs.filter((l) => l.presente === "Miniliga");
+        const studentLogs = (attendanceLogs || []).filter((l) => l && l.alunoId === student.id);
+        const presencas = studentLogs.filter((l) => l?.presente === "Presente").length;
+        const reposicoes = studentLogs.filter((l) => l?.presente === "Reposição").length;
+        const miniligaLogs = studentLogs.filter((l) => l?.presente === "Miniliga");
         const miniligas = miniligaLogs.length;
         const miniligaPontos = miniligaLogs.reduce((acc, l) => {
-          if (typeof l.miniligaPontos === "number" && l.miniligaPontos > 0) return acc + l.miniligaPontos;
-          const legado = l.motivoCancelamento?.match(/\+(\d+) pts/);
+          if (typeof l?.miniligaPontos === "number" && l.miniligaPontos > 0) return acc + l.miniligaPontos;
+          const legado = l?.motivoCancelamento?.match(/\+(\d+) pts/);
           if (legado) return acc + Number(legado[1]);
           // Base de 3 pontos para presenças de miniliga sem placar lançado
           return acc + 3;
         }, 0);
-        const faltas = studentLogs.filter((l) => l.presente === "Falta").length;
+        const faltas = studentLogs.filter((l) => l?.presente === "Falta").length;
 
         const attendedClasses = presencas + reposicoes + miniligas;
         const totalValidClasses = attendedClasses + faltas;
@@ -145,19 +151,19 @@ export const ArenaLiveKiosk: React.FC = () => {
             ? Math.round((attendedClasses / totalValidClasses) * 100)
             : 100;
 
-        // Sequência sem faltas (Streak)
+        // Sequência sem faltas (Streak) com proteção contra nulos
         const sortedLogs = [...studentLogs].sort(
-          (a, b) => new Date(b.data).getTime() - new Date(a.data).getTime()
+          (a, b) => new Date(b?.data || 0).getTime() - new Date(a?.data || 0).getTime()
         );
         let streakCount = 0;
         for (const log of sortedLogs) {
           if (
-            log.presente === "Presente" ||
-            log.presente === "Reposição" ||
-            log.presente === "Miniliga"
+            log?.presente === "Presente" ||
+            log?.presente === "Reposição" ||
+            log?.presente === "Miniliga"
           ) {
             streakCount++;
-          } else if (log.presente === "Falta") {
+          } else if (log?.presente === "Falta") {
             break;
           }
         }
@@ -189,15 +195,18 @@ export const ArenaLiveKiosk: React.FC = () => {
           ovrBoost = -1;
         }
 
-        // Regra Oficial Marco Roza:
-        // 1) Se não tem nota de prova para o fundamento, recebe zero (0);
-        // 2) Aluno novo que não tem nota de nada, tudo com zero (0) em relação aos fundamentos de provas.
-        let forehand = 0;
-        let backhand = 0;
-        let lob = 0;
-        let curta = 0;
-        let saque = 0;
-        let smash = 0;
+        // Baseline por categoria pedagógica
+        let baselineOvr = 75;
+        if (student.categoria === "Juvenil") baselineOvr = 78;
+        if (student.categoria === "Adulto") baselineOvr = 82;
+
+        let overallCalculated = baselineOvr;
+        let forehand = baselineOvr - 2;
+        let backhand = baselineOvr - 5;
+        let lob = baselineOvr - 3;
+        let curta = baselineOvr - 4;
+        let saque = baselineOvr + 1;
+        let smash = baselineOvr + 2;
 
         let hasForehand = false;
         let hasBackhand = false;
@@ -217,82 +226,70 @@ export const ArenaLiveKiosk: React.FC = () => {
 
         if (sTests.length > 0) {
           sTests.forEach((res) => {
-            const test = (tests || []).find((t) => t.id === res.testId);
+            const test = (tests || []).find((t) => t?.id === res?.testId);
             const testDate = test?.data || "";
-            const act = activities.find((a) => a.id === res.atividadeId);
+            const act = (activities || []).find((a) => a?.id === res?.atividadeId);
             const base = act?.quantidadeLancamentos || 10;
             const name = (act?.nome || "").toLowerCase();
-            const scorePct = Math.min(100, Math.round((res.acertos / Math.max(1, base)) * 100));
+            const scorePct = Math.min(99, Math.round(((res?.acertos || 0) / Math.max(1, base)) * 100));
 
             if (name.includes("forehand") || name.includes("direita")) {
               if (!hasForehand || testDate > latestDates.forehand) {
-                forehand = scorePct;
+                forehand = Math.max(60, scorePct);
                 latestDates.forehand = testDate;
                 hasForehand = true;
               } else if (testDate === latestDates.forehand) {
-                forehand = Math.max(forehand, scorePct);
+                forehand = Math.max(forehand, Math.max(60, scorePct));
               }
             } else if (name.includes("backhand") || name.includes("esquerda")) {
               if (!hasBackhand || testDate > latestDates.backhand) {
-                backhand = scorePct;
+                backhand = Math.max(60, scorePct);
                 latestDates.backhand = testDate;
                 hasBackhand = true;
               } else if (testDate === latestDates.backhand) {
-                backhand = Math.max(backhand, scorePct);
+                backhand = Math.max(backhand, Math.max(60, scorePct));
               }
             } else if (name.includes("lob")) {
               if (!hasLob || testDate > latestDates.lob) {
-                lob = scorePct;
+                lob = Math.max(60, scorePct);
                 latestDates.lob = testDate;
                 hasLob = true;
               } else if (testDate === latestDates.lob) {
-                lob = Math.max(lob, scorePct);
+                lob = Math.max(lob, Math.max(60, scorePct));
               }
             } else if (name.includes("curta") || name.includes("curtinha") || name.includes("drop")) {
               if (!hasCurta || testDate > latestDates.curta) {
-                curta = scorePct;
+                curta = Math.max(60, scorePct);
                 latestDates.curta = testDate;
                 hasCurta = true;
               } else if (testDate === latestDates.curta) {
-                curta = Math.max(curta, scorePct);
+                curta = Math.max(curta, Math.max(60, scorePct));
               }
             } else if (name.includes("saque") || name.includes("serviço")) {
               if (!hasSaque || testDate > latestDates.saque) {
-                saque = scorePct;
+                saque = Math.max(60, scorePct);
                 latestDates.saque = testDate;
                 hasSaque = true;
               } else if (testDate === latestDates.saque) {
-                saque = Math.max(saque, scorePct);
+                saque = Math.max(saque, Math.max(60, scorePct));
               }
             } else if (name.includes("smash")) {
               if (!hasSmash || testDate > latestDates.smash) {
-                smash = scorePct;
+                smash = Math.max(60, scorePct);
                 latestDates.smash = testDate;
                 hasSmash = true;
               } else if (testDate === latestDates.smash) {
-                smash = Math.max(smash, scorePct);
+                smash = Math.max(smash, Math.max(60, scorePct));
               }
             }
           });
 
-          const evaluatedScores: number[] = [];
-          if (hasForehand) evaluatedScores.push(forehand);
-          if (hasBackhand) evaluatedScores.push(backhand);
-          if (hasLob) evaluatedScores.push(lob);
-          if (hasCurta) evaluatedScores.push(curta);
-          if (hasSaque) evaluatedScores.push(saque);
-          if (hasSmash) evaluatedScores.push(smash);
-
-          overallCalculated = evaluatedScores.length > 0
-            ? Math.round(evaluatedScores.reduce((acc, val) => acc + val, 0) / evaluatedScores.length)
-            : 0;
+          overallCalculated = Math.round((forehand + backhand + lob + curta + saque + smash) / 6);
         } else {
-          overallCalculated = 0;
+          overallCalculated = baselineOvr;
         }
 
-        const ovr = overallCalculated > 0
-          ? Math.min(99, Math.max(1, overallCalculated + ovrBoost))
-          : 0;
+        const ovr = Math.min(99, Math.max(60, overallCalculated + ovrBoost));
 
         // Subtítulo comprovante com detalhes técnicos
         let scoreSub = "";
@@ -324,35 +321,36 @@ export const ArenaLiveKiosk: React.FC = () => {
       result[cat] = scored
         .sort(
           (a, b) =>
-            b.ovr - a.ovr ||
-            b.totalHits - a.totalHits ||
-            b.miniligaPontos - a.miniligaPontos ||
-            b.presencas - a.presencas
+            (b.ovr || 0) - (a.ovr || 0) ||
+            (b.totalHits || 0) - (a.totalHits || 0) ||
+            (b.miniligaPontos || 0) - (a.miniligaPontos || 0) ||
+            (b.presencas || 0) - (a.presencas || 0)
         )
         .slice(0, 3);
     });
 
     return result;
-  }, [students, testResults, attendanceLogs, activities]);
+  }, [students, testResults, attendanceLogs, activities, tests]);
 
   // ==========================================
   // SLIDE 1: GRADE DE HORÁRIOS
   // Exibição do Horário Atual / Selecionado com Cards Largos
   // ==========================================
   const todaySlots = useMemo(() => {
-    const direct = schedule.filter((s) => s.dia === currentDayOfWeek);
+    const list = schedule || [];
+    const direct = list.filter((s) => s && s.dia === currentDayOfWeek);
     if (direct.length > 0) return direct;
     // Se o dia atual não tiver aulas cadastradas (ex: domingo ou dia livre),
     // busca o primeiro dia que contenha turmas para nunca exibir tela vazia no totem
     const firstDayWithSlots = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"].find((d) =>
-      schedule.some((s) => s.dia === d)
+      list.some((s) => s && s.dia === d)
     );
-    return firstDayWithSlots ? schedule.filter((s) => s.dia === firstDayWithSlots) : schedule;
+    return firstDayWithSlots ? list.filter((s) => s && s.dia === firstDayWithSlots) : list;
   }, [schedule, currentDayOfWeek]);
 
   // Lista de horários disponíveis no dia de hoje
   const availableHours = useMemo(() => {
-    return Array.from(new Set(todaySlots.map((s) => s.horario))).sort();
+    return Array.from(new Set(todaySlots.map((s) => s?.horario).filter(Boolean))).sort();
   }, [todaySlots]);
 
   // Horário ativo sendo exibido
@@ -370,8 +368,8 @@ export const ArenaLiveKiosk: React.FC = () => {
 
   // Turmas do horário ativo
   const classesInActiveHour = useMemo(() => {
-    const slots = todaySlots.filter((s) => s.horario === activeHour);
-    return slots.sort((a, b) => a.quadra.localeCompare(b.quadra));
+    const slots = todaySlots.filter((s) => s && s.horario === activeHour);
+    return slots.sort((a, b) => (a?.quadra || "").localeCompare(b?.quadra || ""));
   }, [todaySlots, activeHour]);
 
   // Navegação entre horários
@@ -392,17 +390,18 @@ export const ArenaLiveKiosk: React.FC = () => {
   // Aniversariantes do mês atual (suporta YYYY-MM-DD e DD/MM/YYYY)
   const birthdayStudents = useMemo(() => {
     const currentMonth = String(currentTime.getMonth() + 1).padStart(2, "0");
-    return students
-      .filter((s) => s.status === "Ativo" && s.dataNascimento)
+    return (students || [])
+      .filter((s) => s && s.status === "Ativo" && typeof s.dataNascimento === "string" && s.dataNascimento.trim() !== "")
       .map((s) => {
         let day = 0;
         let month = "";
-        if (s.dataNascimento.includes("/")) {
-          const parts = s.dataNascimento.split("/");
+        const raw = s.dataNascimento || "";
+        if (raw.includes("/")) {
+          const parts = raw.split("/");
           day = parseInt(parts[0], 10);
           month = parts[1]?.padStart(2, "0") || "";
-        } else if (s.dataNascimento.includes("-")) {
-          const parts = s.dataNascimento.split("-");
+        } else if (raw.includes("-")) {
+          const parts = raw.split("-");
           day = parseInt(parts[2], 10);
           month = parts[1]?.padStart(2, "0") || "";
         }
@@ -925,11 +924,11 @@ export const ArenaLiveKiosk: React.FC = () => {
               >
                 {classesInActiveHour.map((slot) => {
                   // Alunos matriculados nesta turma específica
-                  const studentIds = enrollments
-                    .filter((e) => e.turmaId === slot.id)
+                  const studentIds = (enrollments || [])
+                    .filter((e) => e && e.turmaId === slot.id)
                     .map((e) => e.alunoId);
-                  const enrolledStudents = students.filter((s) => studentIds.includes(s.id));
-                  const isCourt1 = slot.quadra.toLowerCase().includes("1");
+                  const enrolledStudents = (students || []).filter((s) => s && studentIds.includes(s.id));
+                  const isCourt1 = (slot?.quadra || "").toLowerCase().includes("1");
 
                   return (
                     <div
@@ -995,13 +994,13 @@ export const ArenaLiveKiosk: React.FC = () => {
                                           : "bg-gradient-to-tr from-amber-500 to-red-600"
                                       }`}
                                     >
-                                      {student.nome.slice(0, 2).toUpperCase()}
+                                      {(student?.nome || "MR").slice(0, 2).toUpperCase()}
                                     </div>
 
                                     {/* Nome Grande e Bem Visível na TV */}
                                     <div className="min-w-0">
                                       <h4 className="text-lg xl:text-xl font-black text-white tracking-wide truncate">
-                                        {student.nome}
+                                        {student?.nome || "Atleta"}
                                       </h4>
                                       <div className="flex items-center gap-1.5 mt-0.5">
                                         <Badge

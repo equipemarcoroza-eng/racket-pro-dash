@@ -238,7 +238,7 @@ export const BASE_CONHECIMENTO: IntencaoCopiloto[] = [
       texto:
         "O **Card Oficial do Atleta (EA Performance)** é a ferramenta máxima de valorização, engajamento e retenção dos alunos da **Equipe Marco Roza Beach Tennis**:\n\n" +
         "• **Estrutura Pedagógica 1 a 9:**\n" +
-        "  - **Itens 1 a 6 (Fundamentos Técnicos):** Notas de 0 a 100 derivadas estritamente das Provas Bimestrais de Quadra (*#1 FOR Forehand, #2 BCK Backhand, #3 LOB Lob, #4 CUR Curta, #5 SAQ Saque e #6 SMH Smash*). Fundamentos sem avaliação realizada recebem nota 0 (zero), e alunos novos sem testes iniciam com nota 0 em todos os fundamentos e OVR 0.\n" +
+        "  - **Itens 1 a 6 (Fundamentos Técnicos):** Notas de 60 a 99 derivadas das Provas Bimestrais de Quadra com baseline pedagógico da categoria (*#1 FOR Forehand, #2 BCK Backhand, #3 LOB Lob, #4 CUR Curta, #5 SAQ Saque e #6 SMH Smash*).\n" +
         "  - **Item 7 (Assiduidade):** Taxa percentual de frequência do aluno nos treinos.\n" +
         "  - **Item 8 (Sequência de Aulas / Streak):** Contador de semanas consecutivas sem faltas aos treinos, ativando o status **ON FIRE 🔥** (+2 de Boost no OVR Geral).\n" +
         "  - **Item 9 (Miniliga Marco Roza):** Pontuação acumulada nas miniligas oficiais (+10 pts para 1º lugar 🏆, +8 vice, etc.), histórico de pódios e títulos conquistados.\n" +

@@ -383,15 +383,18 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
       ovrBoost = -1;
     }
 
-    // Regra Oficial Marco Roza:
-    // 1) Se não tem nota de prova para o fundamento, recebe zero (0);
-    // 2) Aluno novo que não tem nota de nada, tudo com zero (0) em relação aos fundamentos de provas.
-    let forehand = 0;
-    let backhand = 0;
-    let lob = 0;
-    let curta = 0;
-    let saque = 0;
-    let smash = 0;
+    // Baseline da Categoria Pedagógica
+    let baselineOvr = 75;
+    if (student.categoria === "Juvenil") baselineOvr = 78;
+    if (student.categoria === "Adulto") baselineOvr = 82;
+
+    let overallCalculated = baselineOvr;
+    let forehand = baselineOvr - 2;
+    let backhand = baselineOvr - 5;
+    let lob = baselineOvr - 3;
+    let curta = baselineOvr - 4;
+    let saque = baselineOvr + 1;
+    let smash = baselineOvr + 2;
 
     let hasForehand = false;
     let hasBackhand = false;
@@ -399,8 +402,6 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
     let hasCurta = false;
     let hasSaque = false;
     let hasSmash = false;
-
-    let overallCalculated = 0;
 
     let latestDates = {
       forehand: "",
@@ -426,78 +427,70 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
 
         // Distribui para atributos se o nome da atividade der pistas
         const name = (act?.nome || "").toLowerCase();
-        const scorePct = Math.min(100, Math.round((res.acertos / Math.max(1, base)) * 100));
+        const scorePct = Math.min(99, Math.round((res.acertos / Math.max(1, base)) * 100));
 
         if (name.includes("forehand") || name.includes("direita")) {
           if (!hasForehand || testDate > latestDates.forehand) {
-            forehand = scorePct;
+            forehand = Math.max(60, scorePct);
             latestDates.forehand = testDate;
             hasForehand = true;
           } else if (testDate === latestDates.forehand) {
-            forehand = Math.max(forehand, scorePct);
+            forehand = Math.max(forehand, Math.max(60, scorePct));
           }
         } else if (name.includes("backhand") || name.includes("esquerda")) {
           if (!hasBackhand || testDate > latestDates.backhand) {
-            backhand = scorePct;
+            backhand = Math.max(60, scorePct);
             latestDates.backhand = testDate;
             hasBackhand = true;
           } else if (testDate === latestDates.backhand) {
-            backhand = Math.max(backhand, scorePct);
+            backhand = Math.max(backhand, Math.max(60, scorePct));
           }
         } else if (name.includes("lob")) {
           if (!hasLob || testDate > latestDates.lob) {
-            lob = scorePct;
+            lob = Math.max(60, scorePct);
             latestDates.lob = testDate;
             hasLob = true;
           } else if (testDate === latestDates.lob) {
-            lob = Math.max(lob, scorePct);
+            lob = Math.max(lob, Math.max(60, scorePct));
           }
         } else if (name.includes("curta") || name.includes("curtinha") || name.includes("drop")) {
           if (!hasCurta || testDate > latestDates.curta) {
-            curta = scorePct;
+            curta = Math.max(60, scorePct);
             latestDates.curta = testDate;
             hasCurta = true;
           } else if (testDate === latestDates.curta) {
-            curta = Math.max(curta, scorePct);
+            curta = Math.max(curta, Math.max(60, scorePct));
           }
         } else if (name.includes("saque") || name.includes("serviço")) {
           if (!hasSaque || testDate > latestDates.saque) {
-            saque = scorePct;
+            saque = Math.max(60, scorePct);
             latestDates.saque = testDate;
             hasSaque = true;
           } else if (testDate === latestDates.saque) {
-            saque = Math.max(saque, scorePct);
+            saque = Math.max(saque, Math.max(60, scorePct));
           }
         } else if (name.includes("smash")) {
           if (!hasSmash || testDate > latestDates.smash) {
-            smash = scorePct;
+            smash = Math.max(60, scorePct);
             latestDates.smash = testDate;
             hasSmash = true;
           } else if (testDate === latestDates.smash) {
-            smash = Math.max(smash, scorePct);
+            smash = Math.max(smash, Math.max(60, scorePct));
           }
         }
       });
 
-      // Média baseada nos fundamentos avaliados
-      const evaluatedScores: number[] = [];
-      if (hasForehand) evaluatedScores.push(forehand);
-      if (hasBackhand) evaluatedScores.push(backhand);
-      if (hasLob) evaluatedScores.push(lob);
-      if (hasCurta) evaluatedScores.push(curta);
-      if (hasSaque) evaluatedScores.push(saque);
-      if (hasSmash) evaluatedScores.push(smash);
-
-      overallCalculated = evaluatedScores.length > 0
-        ? Math.round(evaluatedScores.reduce((acc, val) => acc + val, 0) / evaluatedScores.length)
-        : 0;
+      // O OVR é derivado diretamente e fielmente da média dos 6 fundamentos técnicos que aparecem no Card
+      overallCalculated = Math.round(
+        (forehand + backhand + lob + curta + saque + smash) / 6
+      );
     } else {
-      overallCalculated = 0;
+      overallCalculated = Math.round(
+        (forehand + backhand + lob + curta + saque + smash) / 6
+      );
     }
 
-    const finalOvr = overallCalculated > 0
-      ? Math.min(99, Math.max(1, overallCalculated + ovrBoost))
-      : 0;
+    const finalOvr = Math.min(99, Math.max(60, overallCalculated + ovrBoost));
 
     const tier =
       finalOvr >= 90
@@ -1026,7 +1019,7 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
                         {attr.name}
                       </div>
                       <div className="flex items-center justify-center gap-1">
-                        <span className={`text-xs font-black font-mono ${attr.value === 0 ? "text-slate-500 font-normal" : cardTheme.attrValue}`}>
+                        <span className={`text-xs font-black font-mono ${cardTheme.attrValue}`}>
                           {attr.value}
                         </span>
                       </div>
@@ -1186,7 +1179,7 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
               <div className="pt-2 border-t border-white/5 space-y-2">
                 <div className="text-[11px] font-bold text-slate-300 uppercase tracking-wide flex items-center justify-between">
                   <span>Fundamentos Técnicos Bimestrais (1 ao 6)</span>
-                  <span className="text-[10px] text-slate-500">Escala 0-100 • Provas de Quadra</span>
+                  <span className="text-[10px] text-slate-500">Escala 60-99 • Provas de Quadra</span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -1203,25 +1196,21 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
                           </strong>
                           {attr.name}
                         </span>
-                        <div className="flex items-center gap-1 font-mono font-bold">
-                          <span className={attr.value === 0 ? "text-slate-500 font-normal" : "text-white"}>
-                            {attr.value === 0 ? "0 (Sem prova)" : attr.value}
-                          </span>
+                        <div className="flex items-center gap-1 font-mono font-bold text-white">
+                          <span>{attr.value}</span>
                         </div>
                       </div>
                       <div className="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
                         <div
                           className={`h-full rounded-full transition-all duration-500 ${
-                            attr.value === 0
-                              ? "bg-slate-700/40"
-                              : attr.value >= 85
+                            attr.value >= 85
                               ? "bg-gradient-to-r from-amber-400 to-yellow-300"
                               : attr.value >= 75
                               ? "bg-gradient-to-r from-amber-500 to-orange-400"
                               : "bg-gradient-to-r from-slate-500 to-amber-600"
                           }`}
                           style={{
-                            width: `${attr.value > 0 ? Math.min(100, Math.max(5, attr.value)) : 0}%`,
+                            width: `${Math.min(100, Math.max(10, ((attr.value - 50) / 50) * 100))}%`,
                           }}
                         />
                       </div>

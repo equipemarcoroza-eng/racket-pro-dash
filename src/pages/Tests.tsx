@@ -192,15 +192,17 @@ const Tests = () => {
         };
       }).sort((a, b) => b.testDate.localeCompare(a.testDate));
 
-      // Regra Oficial Marco Roza:
-      // 1) Se não tem nota de prova para o fundamento, recebe zero (0);
-      // 2) Aluno novo que não tem nota de nada, tudo com zero (0) em relação aos fundamentos de provas.
-      let forehand = 0;
-      let backhand = 0;
-      let lob = 0;
-      let curta = 0;
-      let saque = 0;
-      let smash = 0;
+      // Baseline da Categoria Pedagógica
+      let baselineOvr = 75;
+      if (student.categoria === "Juvenil") baselineOvr = 78;
+      if (student.categoria === "Adulto") baselineOvr = 82;
+
+      let forehand = baselineOvr - 2;
+      let backhand = baselineOvr - 5;
+      let lob = baselineOvr - 3;
+      let curta = baselineOvr - 4;
+      let saque = baselineOvr + 1;
+      let smash = baselineOvr + 2;
 
       let hasForehand = false;
       let hasBackhand = false;
@@ -224,70 +226,60 @@ const Tests = () => {
         const act = activities.find((a) => a.id === res.atividadeId);
         const base = act?.quantidadeLancamentos || 10;
         const name = (act?.nome || "").toLowerCase();
-        const scorePct = Math.min(100, Math.round((res.acertos / Math.max(1, base)) * 100));
+        const scorePct = Math.min(99, Math.round((res.acertos / Math.max(1, base)) * 100));
 
         if (name.includes("forehand") || name.includes("direita")) {
           if (!hasForehand || testDate > latestDates.forehand) {
-            forehand = scorePct;
+            forehand = Math.max(60, scorePct);
             latestDates.forehand = testDate;
             hasForehand = true;
           } else if (testDate === latestDates.forehand) {
-            forehand = Math.max(forehand, scorePct);
+            forehand = Math.max(forehand, Math.max(60, scorePct));
           }
         } else if (name.includes("backhand") || name.includes("esquerda")) {
           if (!hasBackhand || testDate > latestDates.backhand) {
-            backhand = scorePct;
+            backhand = Math.max(60, scorePct);
             latestDates.backhand = testDate;
             hasBackhand = true;
           } else if (testDate === latestDates.backhand) {
-            backhand = Math.max(backhand, scorePct);
+            backhand = Math.max(backhand, Math.max(60, scorePct));
           }
         } else if (name.includes("lob")) {
           if (!hasLob || testDate > latestDates.lob) {
-            lob = scorePct;
+            lob = Math.max(60, scorePct);
             latestDates.lob = testDate;
             hasLob = true;
           } else if (testDate === latestDates.lob) {
-            lob = Math.max(lob, scorePct);
+            lob = Math.max(lob, Math.max(60, scorePct));
           }
         } else if (name.includes("curta") || name.includes("curtinha") || name.includes("drop")) {
           if (!hasCurta || testDate > latestDates.curta) {
-            curta = scorePct;
+            curta = Math.max(60, scorePct);
             latestDates.curta = testDate;
             hasCurta = true;
           } else if (testDate === latestDates.curta) {
-            curta = Math.max(curta, scorePct);
+            curta = Math.max(curta, Math.max(60, scorePct));
           }
         } else if (name.includes("saque") || name.includes("serviço")) {
           if (!hasSaque || testDate > latestDates.saque) {
-            saque = scorePct;
+            saque = Math.max(60, scorePct);
             latestDates.saque = testDate;
             hasSaque = true;
           } else if (testDate === latestDates.saque) {
-            saque = Math.max(saque, scorePct);
+            saque = Math.max(saque, Math.max(60, scorePct));
           }
         } else if (name.includes("smash")) {
           if (!hasSmash || testDate > latestDates.smash) {
-            smash = scorePct;
+            smash = Math.max(60, scorePct);
             latestDates.smash = testDate;
             hasSmash = true;
           } else if (testDate === latestDates.smash) {
-            smash = Math.max(smash, scorePct);
+            smash = Math.max(smash, Math.max(60, scorePct));
           }
         }
       });
 
-      const evaluatedScores: number[] = [];
-      if (hasForehand) evaluatedScores.push(forehand);
-      if (hasBackhand) evaluatedScores.push(backhand);
-      if (hasLob) evaluatedScores.push(lob);
-      if (hasCurta) evaluatedScores.push(curta);
-      if (hasSaque) evaluatedScores.push(saque);
-      if (hasSmash) evaluatedScores.push(smash);
-
-      const technicalOvr = evaluatedScores.length > 0
-        ? Math.round(evaluatedScores.reduce((acc, val) => acc + val, 0) / evaluatedScores.length)
-        : 0;
+      const technicalOvr = Math.round((forehand + backhand + lob + curta + saque + smash) / 6);
 
       // Frequência, Sequência e Boost de Rendimento (idêntico ao Card Oficial)
       const studentLogs = (attendanceLogs || []).filter((al) => al?.alunoId === student.id);
@@ -341,7 +333,7 @@ const Tests = () => {
         ovrBoost = -1;
       }
 
-      const finalOvr = technicalOvr > 0 ? Math.min(99, Math.max(1, technicalOvr + ovrBoost)) : 0;
+      const finalOvr = Math.min(99, Math.max(60, technicalOvr + ovrBoost));
 
       return {
         student,
@@ -790,37 +782,37 @@ const Tests = () => {
                         <div className="grid grid-cols-6 gap-1 sm:gap-2 text-center bg-white dark:bg-slate-950 p-2 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs">
                           <div className="px-1.5">
                             <span className="text-[9px] font-bold text-slate-500 block uppercase">FOR</span>
-                            <span className={`text-xs font-black ${fundamentals.forehand === 0 ? "text-slate-400 dark:text-slate-600 font-medium" : fundamentals.forehand >= 80 ? "text-emerald-600 dark:text-emerald-400" : fundamentals.forehand >= 65 ? "text-blue-600 dark:text-blue-400" : "text-amber-600 dark:text-amber-400"}`}>
+                            <span className={`text-xs font-black ${fundamentals.forehand >= 80 ? "text-emerald-600 dark:text-emerald-400" : fundamentals.forehand >= 65 ? "text-blue-600 dark:text-blue-400" : "text-amber-600 dark:text-amber-400"}`}>
                               {fundamentals.forehand}
                             </span>
                           </div>
                           <div className="px-1.5 border-l border-slate-100 dark:border-slate-800">
                             <span className="text-[9px] font-bold text-slate-500 block uppercase">BCK</span>
-                            <span className={`text-xs font-black ${fundamentals.backhand === 0 ? "text-slate-400 dark:text-slate-600 font-medium" : fundamentals.backhand >= 80 ? "text-emerald-600 dark:text-emerald-400" : fundamentals.backhand >= 65 ? "text-blue-600 dark:text-blue-400" : "text-amber-600 dark:text-amber-400"}`}>
+                            <span className={`text-xs font-black ${fundamentals.backhand >= 80 ? "text-emerald-600 dark:text-emerald-400" : fundamentals.backhand >= 65 ? "text-blue-600 dark:text-blue-400" : "text-amber-600 dark:text-amber-400"}`}>
                               {fundamentals.backhand}
                             </span>
                           </div>
                           <div className="px-1.5 border-l border-slate-100 dark:border-slate-800">
                             <span className="text-[9px] font-bold text-slate-500 block uppercase">LOB</span>
-                            <span className={`text-xs font-black ${fundamentals.lob === 0 ? "text-slate-400 dark:text-slate-600 font-medium" : fundamentals.lob >= 80 ? "text-emerald-600 dark:text-emerald-400" : fundamentals.lob >= 65 ? "text-blue-600 dark:text-blue-400" : "text-amber-600 dark:text-amber-400"}`}>
+                            <span className={`text-xs font-black ${fundamentals.lob >= 80 ? "text-emerald-600 dark:text-emerald-400" : fundamentals.lob >= 65 ? "text-blue-600 dark:text-blue-400" : "text-amber-600 dark:text-amber-400"}`}>
                               {fundamentals.lob}
                             </span>
                           </div>
                           <div className="px-1.5 border-l border-slate-100 dark:border-slate-800">
                             <span className="text-[9px] font-bold text-slate-500 block uppercase">CUR</span>
-                            <span className={`text-xs font-black ${fundamentals.curta === 0 ? "text-slate-400 dark:text-slate-600 font-medium" : fundamentals.curta >= 80 ? "text-emerald-600 dark:text-emerald-400" : fundamentals.curta >= 65 ? "text-blue-600 dark:text-blue-400" : "text-amber-600 dark:text-amber-400"}`}>
+                            <span className={`text-xs font-black ${fundamentals.curta >= 80 ? "text-emerald-600 dark:text-emerald-400" : fundamentals.curta >= 65 ? "text-blue-600 dark:text-blue-400" : "text-amber-600 dark:text-amber-400"}`}>
                               {fundamentals.curta}
                             </span>
                           </div>
                           <div className="px-1.5 border-l border-slate-100 dark:border-slate-800">
                             <span className="text-[9px] font-bold text-slate-500 block uppercase">SAQ</span>
-                            <span className={`text-xs font-black ${fundamentals.saque === 0 ? "text-slate-400 dark:text-slate-600 font-medium" : fundamentals.saque >= 80 ? "text-emerald-600 dark:text-emerald-400" : fundamentals.saque >= 65 ? "text-blue-600 dark:text-blue-400" : "text-amber-600 dark:text-amber-400"}`}>
+                            <span className={`text-xs font-black ${fundamentals.saque >= 80 ? "text-emerald-600 dark:text-emerald-400" : fundamentals.saque >= 65 ? "text-blue-600 dark:text-blue-400" : "text-amber-600 dark:text-amber-400"}`}>
                               {fundamentals.saque}
                             </span>
                           </div>
                           <div className="px-1.5 border-l border-slate-100 dark:border-slate-800">
                             <span className="text-[9px] font-bold text-slate-500 block uppercase">SMH</span>
-                            <span className={`text-xs font-black ${fundamentals.smash === 0 ? "text-slate-400 dark:text-slate-600 font-medium" : fundamentals.smash >= 80 ? "text-emerald-600 dark:text-emerald-400" : fundamentals.smash >= 65 ? "text-blue-600 dark:text-blue-400" : "text-amber-600 dark:text-amber-400"}`}>
+                            <span className={`text-xs font-black ${fundamentals.smash >= 80 ? "text-emerald-600 dark:text-emerald-400" : fundamentals.smash >= 65 ? "text-blue-600 dark:text-blue-400" : "text-amber-600 dark:text-amber-400"}`}>
                               {fundamentals.smash}
                             </span>
                           </div>
@@ -840,7 +832,7 @@ const Tests = () => {
                             </div>
                             <div className="flex items-baseline gap-1.5">
                               <span className="text-base font-black leading-none">{fundamentals.ovr}</span>
-                              {fundamentals.ovrBoost !== 0 && fundamentals.technicalOvr > 0 && (
+                              {fundamentals.ovrBoost !== 0 && (
                                 <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 font-mono">
                                   ({fundamentals.technicalOvr} {fundamentals.ovrBoost > 0 ? `+${fundamentals.ovrBoost}` : fundamentals.ovrBoost})
                                 </span>

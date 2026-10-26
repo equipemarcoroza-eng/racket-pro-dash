@@ -29,6 +29,7 @@ import { AppProvider } from "@/contexts/AppContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { PrivacyProvider } from "@/contexts/PrivacyContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { CopilotoIA } from "@/components/CopilotoIA";
 
 const queryClient = new QueryClient();
@@ -69,7 +70,16 @@ const App = () => (
                 <Route path="/bi-history" element={<BiHistory />} />
               </Route>
               {/* Modo TV / Arena Kiosk (Tela Cheia Dedicada) */}
-              <Route path="/arena-live" element={<ProtectedRoute><ArenaLiveKiosk /></ProtectedRoute>} />
+              <Route
+                path="/arena-live"
+                element={
+                  <ProtectedRoute>
+                    <ErrorBoundary fallbackTitle="Modo TV / Arena Live">
+                      <ArenaLiveKiosk />
+                    </ErrorBoundary>
+                  </ProtectedRoute>
+                }
+              />
               <Route path="/arena-kiosk" element={<Navigate to="/arena-live" replace />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
