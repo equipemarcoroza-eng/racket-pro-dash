@@ -182,21 +182,22 @@ export const miniligaStorage = {
       const data = localStorage.getItem(STORAGE_HISTORY_KEY);
       const list: MiniligaSession[] = data ? JSON.parse(data) : [];
       const defaultOfficial = getDefaultOfficialSessions();
-      const existingIds = new Set(list.map((s) => s.id));
+      const defaultMap = new Map(defaultOfficial.map((d) => [d.id, d]));
+
+      // Garante que sessões oficiais preparsadas reflitam definições canônicas atualizadas
+      const updatedList = list.map((s) => (defaultMap.has(s.id) ? defaultMap.get(s.id)! : s));
+      const existingIds = new Set(updatedList.map((s) => s.id));
       const missingDefaults = defaultOfficial.filter((d) => !existingIds.has(d.id));
 
-      if (missingDefaults.length > 0) {
-        const merged = [...list, ...missingDefaults].sort(
-          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-        );
-        try {
-          localStorage.setItem(STORAGE_HISTORY_KEY, JSON.stringify(merged.slice(0, 50)));
-        } catch (e) {
-          // ignore localStorage quota errors
-        }
-        return merged;
+      const merged = [...updatedList, ...missingDefaults].sort(
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+      );
+      try {
+        localStorage.setItem(STORAGE_HISTORY_KEY, JSON.stringify(merged.slice(0, 50)));
+      } catch (e) {
+        // ignore localStorage quota errors
       }
-      return list.length > 0 ? list : defaultOfficial;
+      return merged.length > 0 ? merged : defaultOfficial;
     } catch (e) {
       return getDefaultOfficialSessions();
     }

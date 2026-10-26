@@ -147,7 +147,7 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
     }
   };
 
-  const { activities, tests, testResults, attendanceLogs } = useAppContext();
+  const { students, activities, tests, testResults, attendanceLogs } = useAppContext();
   const [copiedText, setCopiedText] = useState(false);
   const [copiedImage, setCopiedImage] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -240,7 +240,10 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
       .map((session) => {
         const p = (session.participants || []).find((part) => {
           if (part.studentId && part.studentId === student.id) return true;
-          const matched = matchStudentByName(part.name, [student]);
+          const matched = matchStudentByName(
+            part.name,
+            students && students.length > 0 ? students : [student]
+          );
           return matched && matched.id === student.id;
         });
         if (!p) return null;
@@ -533,7 +536,7 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
         { label: "SMH", name: "Smash", value: Math.min(99, smash), boost: 0 },
       ],
     };
-  }, [student, testResults, activities, attendanceLogs, historySessions, tests]);
+  }, [student, students, testResults, activities, attendanceLogs, historySessions, tests]);
 
   if (!student || !athleteStats) return null;
 

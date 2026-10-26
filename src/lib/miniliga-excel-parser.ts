@@ -164,14 +164,14 @@ export const PREPARSED_MARCO_ROZA_MINILIGAS: ParsedTournamentData[] = [
       { name: "Emerson", isGuest: false, wins: 3, losses: 2, pointsFor: 66, pointsAgainst: 55, pointsBalance: 11, rank: 2, cardPointsAwarded: 8 },
       { name: "Mateus Duarte", isGuest: false, wins: 3, losses: 2, pointsFor: 66, pointsAgainst: 57, pointsBalance: 9, rank: 3, cardPointsAwarded: 6 },
       { name: "Mary", isGuest: false, wins: 2, losses: 3, pointsFor: 53, pointsAgainst: 71, pointsBalance: -18, rank: 4, cardPointsAwarded: 5 },
-      { name: "Camila", isGuest: false, wins: 0, losses: 4, pointsFor: 36, pointsAgainst: 67, pointsBalance: -31, rank: 5, cardPointsAwarded: 4 },
+      { name: "Camila M. da Silva", isGuest: false, wins: 0, losses: 4, pointsFor: 36, pointsAgainst: 67, pointsBalance: -31, rank: 5, cardPointsAwarded: 4 },
     ],
     matches: [
-      { id: "m-ts-1", roundNumber: 1, courtNumber: 1, teamA: { player1Name: "Emerson", player2Name: "Mateus Duarte" }, teamB: { player1Name: "Camila", player2Name: "Isabel" }, scoreA: 15, scoreB: 9 },
+      { id: "m-ts-1", roundNumber: 1, courtNumber: 1, teamA: { player1Name: "Emerson", player2Name: "Mateus Duarte" }, teamB: { player1Name: "Camila M. da Silva", player2Name: "Isabel" }, scoreA: 15, scoreB: 9 },
       { id: "m-ts-2", roundNumber: 2, courtNumber: 1, teamA: { player1Name: "Mateus Duarte", player2Name: "Mary" }, teamB: { player1Name: "Emerson", player2Name: "Isabel" }, scoreA: 8, scoreB: 19 },
-      { id: "m-ts-3", roundNumber: 3, courtNumber: 1, teamA: { player1Name: "Emerson", player2Name: "Camila" }, teamB: { player1Name: "Isabel", player2Name: "Mary" }, scoreA: 9, scoreB: 16 },
-      { id: "m-ts-4", roundNumber: 4, courtNumber: 1, teamA: { player1Name: "Mateus Duarte", player2Name: "Camila" }, teamB: { player1Name: "Emerson", player2Name: "Mary" }, scoreA: 12, scoreB: 15 },
-      { id: "m-ts-5", roundNumber: 5, courtNumber: 1, teamA: { player1Name: "Mateus Duarte", player2Name: "Isabel" }, teamB: { player1Name: "Camila", player2Name: "Mary" }, scoreA: 21, scoreB: 6 },
+      { id: "m-ts-3", roundNumber: 3, courtNumber: 1, teamA: { player1Name: "Emerson", player2Name: "Camila M. da Silva" }, teamB: { player1Name: "Isabel", player2Name: "Mary" }, scoreA: 9, scoreB: 16 },
+      { id: "m-ts-4", roundNumber: 4, courtNumber: 1, teamA: { player1Name: "Mateus Duarte", player2Name: "Camila M. da Silva" }, teamB: { player1Name: "Emerson", player2Name: "Mary" }, scoreA: 12, scoreB: 15 },
+      { id: "m-ts-5", roundNumber: 5, courtNumber: 1, teamA: { player1Name: "Mateus Duarte", player2Name: "Isabel" }, teamB: { player1Name: "Camila M. da Silva", player2Name: "Mary" }, scoreA: 21, scoreB: 6 },
       { id: "m-ts-6", roundNumber: 6, courtNumber: 1, teamA: { player1Name: "Isabel", player2Name: "Mateus Duarte" }, teamB: { player1Name: "Emerson", player2Name: "Mary" }, scoreA: 10, scoreB: 8, isBonusFinal: true },
     ],
   },
@@ -207,7 +207,10 @@ const PLAYER_NAME_ALIASES: { [key: string]: string[] } = {
   "mateus": ["mateus duarte", "matheus duarte", "mateus", "matheus"],
   "matheus": ["mateus duarte", "matheus duarte", "mateus", "matheus"],
   "isabel": ["isabel", "isabela", "maria isabel"],
-  "camila": ["camila"],
+  "camila": ["camila m da silva", "camila m. da silva", "camila silva"],
+  "camila m da silva": ["camila m da silva", "camila m. da silva", "camila silva"],
+  "camila m. da silva": ["camila m da silva", "camila m. da silva", "camila silva"],
+  "camila agulhon": ["camila agulhon"],
   "antonio": ["antonio", "antônio"],
   "davi": ["davi", "david"],
   "emerson": ["emerson"],
@@ -254,8 +257,8 @@ export function matchStudentByName(playerName: string, students: Student[]): Stu
     if (fullMatch) return fullMatch;
   }
 
-  // 5. Match pelo primeiro nome se houver correspondência
-  if (pFirst.length >= 3) {
+  // 5. Match pelo primeiro nome se houver correspondência e não foi especificado sobrenome diferente
+  if (pFirst.length >= 3 && !pLast) {
     const firstMatches = students.filter((s) => {
       const sParts = normalizeStr(s.nome).split(/\s+/);
       return sParts[0] === pFirst || (sParts[1] && sParts[1] === pFirst);
