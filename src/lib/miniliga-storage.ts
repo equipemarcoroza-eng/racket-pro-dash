@@ -54,6 +54,26 @@ export const dbToSession = (row: any): MiniligaSession => ({
   updatedAt: row.updated_at,
 });
 
+export function sanitizeSession(session: MiniligaSession): MiniligaSession {
+  if (session.title?.includes("TSáb 9h30")) {
+    const updatedParticipants = (session.participants || []).map((p) => {
+      const pNorm = (p.name || "").toLowerCase().trim();
+      if (pNorm === "camila" || pNorm === "camila m da silva" || pNorm === "camila m. da silva") {
+        return {
+          ...p,
+          name: "Camila M. da Silva",
+        };
+      }
+      return p;
+    });
+    return {
+      ...session,
+      participants: updatedParticipants,
+    };
+  }
+  return session;
+}
+
 export type MiniligaCloudStatus = "local" | "salvando" | "salvo" | "erro";
 
 const CLOUD_DEBOUNCE_MS = 800;
@@ -189,9 +209,9 @@ export const miniligaStorage = {
       const existingIds = new Set(updatedList.map((s) => s.id));
       const missingDefaults = defaultOfficial.filter((d) => !existingIds.has(d.id));
 
-      const merged = [...updatedList, ...missingDefaults].sort(
-        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-      );
+      const merged = [...updatedList, ...missingDefaults]
+        .map(sanitizeSession)
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
       try {
         localStorage.setItem(STORAGE_HISTORY_KEY, JSON.stringify(merged.slice(0, 50)));
       } catch (e) {
@@ -252,9 +272,9 @@ export const miniligaStorage = {
       // Do cache local entram só as simulações; as reais valem pelo que está na nuvem
       const cloudIds = new Set(cloudSessions.map((s) => s.id));
       const localSims = this.getHistory().filter((s) => s.isSimulation && !cloudIds.has(s.id));
-      const merged = [...cloudSessions, ...localSims].sort(
-        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-      );
+      const merged = [...cloudSessions, ...localSims]
+        .map(sanitizeSession)
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
       try {
         localStorage.setItem(STORAGE_HISTORY_KEY, JSON.stringify(merged.slice(0, 50)));
       } catch (e) {

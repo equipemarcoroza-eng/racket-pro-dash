@@ -241,6 +241,9 @@ export function matchStudentByName(playerName: string, students: Student[]): Stu
       });
       if (matched) return matched;
     }
+    // Se o nome está mapeado no dicionário de equivalências para atletas específicos,
+    // não deve fazer fallback permissivo para homônimos (ex: Camila genérica não pode ir para Camila Agulhon)
+    return null;
   }
 
   // 4. Busca por primeiro nome + sobrenome
@@ -265,6 +268,9 @@ export function matchStudentByName(playerName: string, students: Student[]): Stu
     });
 
     if (firstMatches.length === 1) {
+      if (pFirst === "camila" && normalizeStr(firstMatches[0].nome).includes("agulhon")) {
+        return null;
+      }
       return firstMatches[0];
     }
     // Se houver mais de um aluno com esse primeiro nome, prioriza o ativo

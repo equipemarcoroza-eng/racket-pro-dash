@@ -239,12 +239,24 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
     const officialTournaments = realSessions
       .map((session) => {
         const p = (session.participants || []).find((part) => {
-          if (part.studentId && part.studentId === student.id) return true;
+          // Bloqueio inequívoco: Camila Agulhon não participou da Mini liga TSáb 9h30
+          const isAgulhon = student.nome?.toLowerCase().includes("agulhon");
+          if (isAgulhon && session.title?.includes("TSáb 9h30")) {
+            return false;
+          }
+
+          if (part.studentId && part.studentId === student.id) {
+            const matched = matchStudentByName(
+              part.name,
+              students && students.length > 0 ? students : [student]
+            );
+            return !matched || matched.id === student.id;
+          }
           const matched = matchStudentByName(
             part.name,
             students && students.length > 0 ? students : [student]
           );
-          return matched && matched.id === student.id;
+          return Boolean(matched && matched.id === student.id);
         });
         if (!p) return null;
         const points =
