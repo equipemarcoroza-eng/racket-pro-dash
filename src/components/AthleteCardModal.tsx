@@ -398,18 +398,16 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
       ovrBoost = -1;
     }
 
-    // Baseline da Categoria Pedagógica
-    let baselineOvr = 75;
-    if (student.categoria === "Juvenil") baselineOvr = 78;
-    if (student.categoria === "Adulto") baselineOvr = 82;
+    // Baseline pedagógico unificado para alunos novos: OVR 66 (topo do Bronze, porta de entrada para a Prata)
+    const baselineOvr = 66;
 
     let overallCalculated = baselineOvr;
-    let forehand = baselineOvr - 2;
-    let backhand = baselineOvr - 5;
-    let lob = baselineOvr - 3;
-    let curta = baselineOvr - 4;
-    let saque = baselineOvr + 1;
-    let smash = baselineOvr + 2;
+    let forehand = 66;
+    let backhand = 63;
+    let lob = 65;
+    let curta = 64;
+    let saque = 68;
+    let smash = 70;
 
     let hasForehand = false;
     let hasBackhand = false;
@@ -505,7 +503,12 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
       );
     }
 
-    const finalOvr = Math.min(99, Math.max(60, overallCalculated + ovrBoost));
+    // Alunos novos sem testes iniciam com OVR exatamente 66 (topo do Bronze, porta de entrada para a Prata)
+    const finalOvr =
+      studentResults.length === 0
+        ? 66
+        : Math.min(99, Math.max(60, overallCalculated + ovrBoost));
+    const finalOvrBoost = studentResults.length === 0 ? 0 : ovrBoost;
 
     const tier =
       finalOvr >= 90
@@ -519,7 +522,7 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
     return {
       ovr: finalOvr,
       rawOvr: overallCalculated,
-      ovrBoost,
+      ovrBoost: finalOvrBoost,
       tier,
       isOnFire,
       attendanceRate,
