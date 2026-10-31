@@ -31,6 +31,7 @@ import { PrivacyProvider } from "@/contexts/PrivacyContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { CopilotoIA } from "@/components/CopilotoIA";
+import { InstallPwaBanner } from "@/components/InstallPwaBanner";
 
 const queryClient = new QueryClient();
 
@@ -84,6 +85,7 @@ const App = () => (
               <Route path="*" element={<NotFound />} />
             </Routes>
             <CopilotoIA />
+            <InstallPwaBanner />
           </AppProvider>
           </PrivacyProvider>
         </AuthProvider>
