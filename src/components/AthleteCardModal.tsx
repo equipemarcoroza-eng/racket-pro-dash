@@ -32,6 +32,7 @@ import { toast } from "sonner";
 import { cleanPhoneNumber } from "@/lib/whatsapp";
 import { miniligaStorage } from "@/lib/miniliga-storage";
 import { matchStudentByName } from "@/lib/miniliga-excel-parser";
+import { calculateSafePercentage } from "@/lib/utils";
 
 // Cores, gradientes e estilos dinâmicos exclusivos para cada Raridade de Carta (Diamante, Ouro, Prata e Bronze)
 // Paleta Oficial Equipe Marco Roza: Fundo Azul Escuro nobre, esportivo, leve e harmonioso
@@ -426,6 +427,17 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
     };
 
     if (studentResults.length > 0) {
+      // Mapeia o maior acerto registrado por teste e atividade em todo o histórico do sistema
+      // para suportar provas com rodadas múltiplas (ex: 4 rodadas de 10 lançamentos = 40 bolas)
+      const maxAcertosPerTestActivity = new Map<string, number>();
+      (testResults || []).forEach((tr) => {
+        const key = `${tr.testId}_${tr.atividadeId}`;
+        const currentMax = maxAcertosPerTestActivity.get(key) || 0;
+        if (tr.acertos > currentMax) {
+          maxAcertosPerTestActivity.set(key, tr.acertos);
+        }
+      });
+
       // Calcula média real dos testes e distribui pelos fundamentos considerando a prova mais recente
       let totalAcertos = 0;
       let totalBase = 0;
@@ -440,9 +452,12 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
 
         // Distribui para atributos se o nome da atividade der pistas
         const name = (act?.nome || "").toLowerCase();
-        const scorePct = Math.min(99, Math.round((res.acertos / Math.max(1, base)) * 100));
+        const testActKey = `${res.testId}_${res.atividadeId}`;
+        const maxAcertosInActivity = maxAcertosPerTestActivity.get(testActKey) || res.acertos;
+        const safePct = calculateSafePercentage(res.acertos, base, maxAcertosInActivity);
+        const scorePct = Math.min(99, Math.round(safePct));
 
-        if (name.includes("forehand") || name.includes("direita")) {
+        if (name.includes("forehand") || name.includes("direita") || name.includes("fh")) {
           if (!hasForehand || testDate > latestDates.forehand) {
             forehand = Math.max(60, scorePct);
             latestDates.forehand = testDate;
@@ -450,7 +465,13 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
           } else if (testDate === latestDates.forehand) {
             forehand = Math.max(forehand, Math.max(60, scorePct));
           }
-        } else if (name.includes("backhand") || name.includes("esquerda")) {
+        } else if (
+          name.includes("backhand") ||
+          name.includes("esquerda") ||
+          name.includes("revés") ||
+          name.includes("reves") ||
+          name.includes("bh")
+        ) {
           if (!hasBackhand || testDate > latestDates.backhand) {
             backhand = Math.max(60, scorePct);
             latestDates.backhand = testDate;
@@ -474,7 +495,7 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
           } else if (testDate === latestDates.curta) {
             curta = Math.max(curta, Math.max(60, scorePct));
           }
-        } else if (name.includes("saque") || name.includes("serviço")) {
+        } else if (name.includes("saque") || name.includes("serviço") || name.includes("servico")) {
           if (!hasSaque || testDate > latestDates.saque) {
             saque = Math.max(60, scorePct);
             latestDates.saque = testDate;
@@ -482,7 +503,7 @@ export const AthleteCardModal: React.FC<AthleteCardModalProps> = ({
           } else if (testDate === latestDates.saque) {
             saque = Math.max(saque, Math.max(60, scorePct));
           }
-        } else if (name.includes("smash")) {
+        } else if (name.includes("smash") || name.includes("smh")) {
           if (!hasSmash || testDate > latestDates.smash) {
             smash = Math.max(60, scorePct);
             latestDates.smash = testDate;

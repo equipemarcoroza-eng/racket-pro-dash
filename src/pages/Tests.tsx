@@ -20,6 +20,7 @@ import {
 import type { Activity, Test, TestResult, Student } from "@/data/mockData";
 import { supabase } from "@/integrations/supabase/client";
 import { AthleteCardModal } from "@/components/AthleteCardModal";
+import { calculateSafePercentage } from "@/lib/utils";
 
 const Tests = () => {
   const { 
@@ -152,6 +153,16 @@ const Tests = () => {
 
   // Lista consolidada de alunos avaliados, suas provas, notas em tarefas e notas nos 6 fundamentos
   const evaluatedStudentsList = useMemo(() => {
+    // Mapeia o maior acerto registrado por teste e atividade em todo o histórico
+    const maxAcertosPerTestActivity = new Map<string, number>();
+    testResults.forEach(tr => {
+      const key = `${tr.testId}_${tr.atividadeId}`;
+      const currentMax = maxAcertosPerTestActivity.get(key) || 0;
+      if (tr.acertos > currentMax) {
+        maxAcertosPerTestActivity.set(key, tr.acertos);
+      }
+    });
+
     const evaluatedIds = Array.from(new Set(testResults.map(tr => tr.alunoId)));
 
     return evaluatedIds.map(studentId => {
@@ -178,7 +189,9 @@ const Tests = () => {
         const act = activities.find(a => a.id === r.atividadeId);
         const actName = act ? act.nome : "Atividade #" + r.atividadeId.slice(0, 5);
         const base = act?.quantidadeLancamentos || 10;
-        const percentage = Math.round((r.acertos / Math.max(1, base)) * 100);
+        const testActKey = `${r.testId}_${r.atividadeId}`;
+        const maxAcertosInActivity = maxAcertosPerTestActivity.get(testActKey) || r.acertos;
+        const percentage = Math.round(calculateSafePercentage(r.acertos, base, maxAcertosInActivity));
 
         return {
           id: r.id,
@@ -224,9 +237,12 @@ const Tests = () => {
         const act = activities.find((a) => a.id === res.atividadeId);
         const base = act?.quantidadeLancamentos || 10;
         const name = (act?.nome || "").toLowerCase();
-        const scorePct = Math.min(99, Math.round((res.acertos / Math.max(1, base)) * 100));
+        const testActKey = `${res.testId}_${res.atividadeId}`;
+        const maxAcertosInActivity = maxAcertosPerTestActivity.get(testActKey) || res.acertos;
+        const safePct = calculateSafePercentage(res.acertos, base, maxAcertosInActivity);
+        const scorePct = Math.min(99, Math.round(safePct));
 
-        if (name.includes("forehand") || name.includes("direita")) {
+        if (name.includes("forehand") || name.includes("direita") || name.includes("fh")) {
           if (!hasForehand || testDate > latestDates.forehand) {
             forehand = Math.max(60, scorePct);
             latestDates.forehand = testDate;
@@ -234,7 +250,13 @@ const Tests = () => {
           } else if (testDate === latestDates.forehand) {
             forehand = Math.max(forehand, Math.max(60, scorePct));
           }
-        } else if (name.includes("backhand") || name.includes("esquerda")) {
+        } else if (
+          name.includes("backhand") ||
+          name.includes("esquerda") ||
+          name.includes("revés") ||
+          name.includes("reves") ||
+          name.includes("bh")
+        ) {
           if (!hasBackhand || testDate > latestDates.backhand) {
             backhand = Math.max(60, scorePct);
             latestDates.backhand = testDate;
@@ -258,7 +280,7 @@ const Tests = () => {
           } else if (testDate === latestDates.curta) {
             curta = Math.max(curta, Math.max(60, scorePct));
           }
-        } else if (name.includes("saque") || name.includes("serviço")) {
+        } else if (name.includes("saque") || name.includes("serviço") || name.includes("servico")) {
           if (!hasSaque || testDate > latestDates.saque) {
             saque = Math.max(60, scorePct);
             latestDates.saque = testDate;
@@ -266,7 +288,7 @@ const Tests = () => {
           } else if (testDate === latestDates.saque) {
             saque = Math.max(saque, Math.max(60, scorePct));
           }
-        } else if (name.includes("smash")) {
+        } else if (name.includes("smash") || name.includes("smh")) {
           if (!hasSmash || testDate > latestDates.smash) {
             smash = Math.max(60, scorePct);
             latestDates.smash = testDate;

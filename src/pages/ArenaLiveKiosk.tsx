@@ -29,6 +29,7 @@ import {
 import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { calculateSafePercentage } from "@/lib/utils";
 
 const SLIDE_DURATION = 12000; // 12 segundos por slide
 
@@ -98,6 +99,16 @@ export const ArenaLiveKiosk: React.FC = () => {
   // ==========================================
   const categoryRankings = useMemo(() => {
     const categories: Array<"Infantil" | "Juvenil" | "Adulto"> = ["Infantil", "Juvenil", "Adulto"];
+
+    // Mapeia o maior acerto registrado por teste e atividade em todo o histórico
+    const maxAcertosPerTestActivity = new Map<string, number>();
+    (testResults || []).forEach((tr) => {
+      const key = `${tr.testId}_${tr.atividadeId}`;
+      const currentMax = maxAcertosPerTestActivity.get(key) || 0;
+      if (tr.acertos > currentMax) {
+        maxAcertosPerTestActivity.set(key, tr.acertos);
+      }
+    });
 
     const result: Record<
       "Infantil" | "Juvenil" | "Adulto",
@@ -229,9 +240,12 @@ export const ArenaLiveKiosk: React.FC = () => {
             const act = (activities || []).find((a) => a?.id === res?.atividadeId);
             const base = act?.quantidadeLancamentos || 10;
             const name = (act?.nome || "").toLowerCase();
-            const scorePct = Math.min(99, Math.round(((res?.acertos || 0) / Math.max(1, base)) * 100));
+            const testActKey = `${res?.testId}_${res?.atividadeId}`;
+            const maxAcertosInActivity = maxAcertosPerTestActivity.get(testActKey) || (res?.acertos || 0);
+            const safePct = calculateSafePercentage(res?.acertos || 0, base, maxAcertosInActivity);
+            const scorePct = Math.min(99, Math.round(safePct));
 
-            if (name.includes("forehand") || name.includes("direita")) {
+            if (name.includes("forehand") || name.includes("direita") || name.includes("fh")) {
               if (!hasForehand || testDate > latestDates.forehand) {
                 forehand = Math.max(60, scorePct);
                 latestDates.forehand = testDate;
@@ -239,7 +253,13 @@ export const ArenaLiveKiosk: React.FC = () => {
               } else if (testDate === latestDates.forehand) {
                 forehand = Math.max(forehand, Math.max(60, scorePct));
               }
-            } else if (name.includes("backhand") || name.includes("esquerda")) {
+            } else if (
+              name.includes("backhand") ||
+              name.includes("esquerda") ||
+              name.includes("revés") ||
+              name.includes("reves") ||
+              name.includes("bh")
+            ) {
               if (!hasBackhand || testDate > latestDates.backhand) {
                 backhand = Math.max(60, scorePct);
                 latestDates.backhand = testDate;
@@ -263,7 +283,7 @@ export const ArenaLiveKiosk: React.FC = () => {
               } else if (testDate === latestDates.curta) {
                 curta = Math.max(curta, Math.max(60, scorePct));
               }
-            } else if (name.includes("saque") || name.includes("serviço")) {
+            } else if (name.includes("saque") || name.includes("serviço") || name.includes("servico")) {
               if (!hasSaque || testDate > latestDates.saque) {
                 saque = Math.max(60, scorePct);
                 latestDates.saque = testDate;
@@ -271,7 +291,7 @@ export const ArenaLiveKiosk: React.FC = () => {
               } else if (testDate === latestDates.saque) {
                 saque = Math.max(saque, Math.max(60, scorePct));
               }
-            } else if (name.includes("smash")) {
+            } else if (name.includes("smash") || name.includes("smh")) {
               if (!hasSmash || testDate > latestDates.smash) {
                 smash = Math.max(60, scorePct);
                 latestDates.smash = testDate;
