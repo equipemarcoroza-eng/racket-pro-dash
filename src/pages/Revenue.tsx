@@ -157,11 +157,57 @@ const Revenue = () => {
     });
   }, [receitas]);
 
+  const getRevenuePeriodicity = (r: RevenueType): "Mensalidade" | "Trimestral" | "Semestral" | "Anual" => {
+    const pNorm = normalize(r.plano);
+    if (pNorm.includes("trimestral")) return "Trimestral";
+    if (pNorm.includes("semestral")) return "Semestral";
+    if (pNorm.includes("anual")) return "Anual";
+
+    const student = students.find((s) => s.id === r.alunoId || normalize(s.nome) === normalize(r.aluno));
+    const plan = mockPlans.find((p) => p.id === student?.planoId || normalize(p.nome) === pNorm);
+    if (plan?.periodicidade) {
+      const perNorm = normalize(plan.periodicidade);
+      if (perNorm.includes("trimestral")) return "Trimestral";
+      if (perNorm.includes("semestral")) return "Semestral";
+      if (perNorm.includes("anual")) return "Anual";
+    }
+
+    return "Mensalidade";
+  };
+
+  const countsByPeriodicity = useMemo(() => {
+    const counts = { Todos: 0, Mensalidade: 0, Trimestral: 0, Semestral: 0, Anual: 0 };
+    receitas.forEach((r) => {
+      const d = parseDate(r.vencimento);
+      const mStr = String(d.getMonth() + 1).padStart(2, "0");
+      const yStr = String(d.getFullYear());
+      if (mStr !== selectedMonth || yStr !== selectedYear) return;
+
+      const student = students.find((s) => s.id === r.alunoId || s.nome === r.aluno);
+      if (!student || !["Ativo", "Passado", "Extras", "Inativo"].includes(student.status)) return;
+
+      counts.Todos++;
+      const per = getRevenuePeriodicity(r);
+      if (counts[per] !== undefined) {
+        counts[per]++;
+      }
+    });
+    return counts;
+  }, [receitas, students, selectedMonth, selectedYear, mockPlans]);
+
   const filtered = receitas
     .filter((r) => {
-      const [dia, mes, ano] = r.vencimento.split("/");
-      const matchesPeriod = mes === selectedMonth && ano === selectedYear;
-      const matchesPlan = !filter || r.plano === filter;
+      const d = parseDate(r.vencimento);
+      const mStr = String(d.getMonth() + 1).padStart(2, "0");
+      const yStr = String(d.getFullYear());
+      const matchesPeriod = mStr === selectedMonth && yStr === selectedYear;
+
+      const revPeriodicity = getRevenuePeriodicity(r);
+      const matchesPlan =
+        !filter ||
+        filter === "Todos" ||
+        revPeriodicity === filter ||
+        normalize(r.plano).includes(normalize(filter));
       
       const student = students.find(s => s.id === r.alunoId || s.nome === r.aluno);
       const isEligible = student && ["Ativo", "Passado", "Extras", "Inativo"].includes(student.status);
@@ -1032,10 +1078,38 @@ const Revenue = () => {
               <p className="text-xl font-bold">Mensalidades e planos ({selectedMonth}/{selectedYear})</p>
               <p className="text-xs text-muted-foreground mt-1">Registros ordenados por data de vencimento e depois por ordem alfabética.</p>
             </div>
-            <div className="flex gap-2 text-sm">
-              {["Mensalidade", "Trimestral", "Semestral", "Anual"].map((f) => (
-                <button key={f} className={`font-medium ${filter === f ? "text-foreground" : "text-muted-foreground"}`} onClick={() => setFilter(filter === f ? null : f)}>{f}</button>
-              ))}
+            <div className="flex items-center gap-1.5 bg-muted/60 p-1 rounded-lg border text-xs flex-wrap">
+              {[
+                { id: null, label: "Todos", count: countsByPeriodicity.Todos },
+                { id: "Mensalidade", label: "Mensal", count: countsByPeriodicity.Mensalidade },
+                { id: "Trimestral", label: "Trimestral", count: countsByPeriodicity.Trimestral },
+                { id: "Semestral", label: "Semestral", count: countsByPeriodicity.Semestral },
+                { id: "Anual", label: "Anual", count: countsByPeriodicity.Anual },
+              ].map(({ id, label, count }) => {
+                const isActive = (filter === null && id === null) || filter === id;
+                return (
+                  <button
+                    key={label}
+                    onClick={() => setFilter(filter === id ? null : id)}
+                    className={`px-3 py-1.5 rounded-md font-bold transition-all text-xs flex items-center gap-1.5 ${
+                      isActive
+                        ? "bg-white dark:bg-slate-900 text-primary shadow-sm"
+                        : "text-muted-foreground hover:text-foreground hover:bg-white/40 dark:hover:bg-slate-800/40"
+                    }`}
+                  >
+                    <span>{label}</span>
+                    <span
+                      className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold ${
+                        isActive
+                          ? "bg-primary/10 text-primary"
+                          : "bg-muted text-muted-foreground"
+                      }`}
+                    >
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           </div>
           <Table>
@@ -1045,7 +1119,14 @@ const Revenue = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filtered.map((r) => {
+              {filtered.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground italic">
+                    Nenhuma cobrança encontrada para este filtro no mês selecionado ({selectedMonth}/{selectedYear}).
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filtered.map((r) => {
                 const student = students.find(s => s.id === r.alunoId || s.nome === r.aluno);
                 return (
                   <TableRow key={r.id}>
@@ -1083,7 +1164,7 @@ const Revenue = () => {
                     </TableCell>
                   </TableRow>
                 );
-              })}
+              }))}
             </TableBody>
           </Table>
         </CardContent>
