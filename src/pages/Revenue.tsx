@@ -20,6 +20,7 @@ import {
   Clock,
   PhoneOff,
   ArrowDownCircle,
+  Trash2,
 } from "lucide-react";
 
 import {
@@ -52,9 +53,30 @@ const Revenue = () => {
     return String(now.getFullYear());
   });
 
-  const parseDate = (dateStr: string) => {
-    const [d, m, y] = dateStr.split("/").map(Number);
-    return new Date(y, m - 1, d);
+  const normalize = (str?: string | null) =>
+    (str || "")
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .trim()
+      .replace(/\s+/g, " ");
+
+  const parseDate = (dateStr?: string | null): Date => {
+    if (!dateStr) return new Date(0);
+    const cleanStr = String(dateStr).trim();
+    if (cleanStr.includes("-")) {
+      const clean = cleanStr.split("T")[0];
+      const parts = clean.split("-").map(Number);
+      if (parts.length === 3) {
+        return new Date(parts[0], parts[1] - 1, parts[2]);
+      }
+    }
+    const parts = cleanStr.split("/").map(Number);
+    if (parts.length === 3) {
+      return new Date(parts[2], parts[1] - 1, parts[0]);
+    }
+    const fallback = new Date(cleanStr);
+    return isNaN(fallback.getTime()) ? new Date(0) : fallback;
   };
 
   const handleSendWhatsAppReminder = (r: RevenueType) => {
@@ -169,27 +191,50 @@ const Revenue = () => {
       const plano = mockPlans.find((p) => p.id === aluno.planoId);
       if (!plano) continue;
 
-      // 1. Verificação de duplicidade para o mês atual (específica por plano)
+      // 1. Verificação de duplicidade para o mês atual
+      // Compara por ID ou nome normalizado do aluno, independente do formato da data
       const mesFormatado = String(targetMonth).padStart(2, "0");
-      const jaExisteEsteMes = receitas.some(
-        (r) => r.aluno === aluno.nome &&
-          r.plano === plano.nome &&
-          r.vencimento.includes(`/${mesFormatado}/${targetYear}`)
-      );
+      const jaExisteEsteMes = receitas.some((r) => {
+        const matchesAluno =
+          (r.alunoId && r.alunoId === aluno.id) ||
+          normalize(r.aluno) === normalize(aluno.nome);
+        if (!matchesAluno) return false;
+
+        const d = parseDate(r.vencimento);
+        return d.getFullYear() === targetYear && d.getMonth() + 1 === targetMonth;
+      });
+
       if (jaExisteEsteMes) continue;
 
-      // 2. Encontrar última parcela gerada para este aluno (específica para este plano)
+      // 2. Encontrar parcelas anteriores do aluno para calcular periodicidade
       const parcelasAluno = receitas
-        .filter((rec) => rec.aluno === aluno.nome && rec.plano === plano.nome)
+        .filter((rec) => {
+          const matchesAluno =
+            (rec.alunoId && rec.alunoId === aluno.id) ||
+            normalize(rec.aluno) === normalize(aluno.nome);
+          if (!matchesAluno) return false;
+
+          // Ignora avulsos e uniformes
+          const pNorm = normalize(rec.plano);
+          if (pNorm.includes("uniforme") || pNorm.includes("avulso")) return false;
+
+          // Deve coincidir com o plano atual ou conter a periodicidade (ex: trimestral)
+          const planNorm = normalize(plano.nome);
+          const periodicidadeNorm = normalize(plano.periodicidade);
+          return (
+            pNorm === planNorm ||
+            pNorm.includes(periodicidadeNorm) ||
+            rec.valor === plano.valor
+          );
+        })
         .map((rec) => ({ ...rec, date: parseDate(rec.vencimento) }))
+        .filter((rec) => !isNaN(rec.date.getTime()) && rec.date.getTime() > 0)
         .sort((a, b) => b.date.getTime() - a.date.getTime());
 
       const ultimaParcela = parcelasAluno[0];
       let deveGerar = false;
 
-      if (!ultimaParcela) {
-        deveGerar = true;
-      } else {
+      if (ultimaParcela) {
         const lastMonth = ultimaParcela.date.getMonth() + 1;
         const lastYear = ultimaParcela.date.getFullYear();
         const lastTotalMonths = lastYear * 12 + lastMonth;
@@ -200,10 +245,38 @@ const Revenue = () => {
         else if (periodicity === "Trimestral" && diffMonths >= 3) deveGerar = true;
         else if (periodicity === "Semestral" && diffMonths >= 6) deveGerar = true;
         else if (periodicity === "Anual" && diffMonths >= 12) deveGerar = true;
+        else if (!periodicity && diffMonths >= 1) deveGerar = true;
+      } else {
+        // Aluno ativo sem parcelas anteriores registradas:
+        // Usa a data de entrada do aluno para alinhar o ciclo da periodicidade
+        if (aluno.dataEntrada) {
+          const entryDate = parseDate(aluno.dataEntrada);
+          if (!isNaN(entryDate.getTime()) && entryDate.getTime() > 0) {
+            const entryMonth = entryDate.getMonth() + 1;
+            const entryYear = entryDate.getFullYear();
+            const entryTotalMonths = entryYear * 12 + entryMonth;
+            const diffFromEntry = targetTotalMonths - entryTotalMonths;
+
+            if (diffFromEntry < 0) {
+              deveGerar = false;
+            } else {
+              const periodicity = plano.periodicidade;
+              if (periodicity === "Mensal") deveGerar = true;
+              else if (periodicity === "Trimestral") deveGerar = diffFromEntry % 3 === 0;
+              else if (periodicity === "Semestral") deveGerar = diffFromEntry % 6 === 0;
+              else if (periodicity === "Anual") deveGerar = diffFromEntry % 12 === 0;
+              else deveGerar = true;
+            }
+          } else {
+            deveGerar = plano.periodicidade === "Mensal";
+          }
+        } else {
+          deveGerar = plano.periodicidade === "Mensal";
+        }
       }
 
       if (deveGerar) {
-        let dia = aluno.vencimento;
+        let dia = aluno.vencimento ? String(aluno.vencimento).trim() : "10";
         if (targetMonth === 2 && (dia === "29" || dia === "30" || dia === "31")) {
           // Ajuste básico para Fevereiro
           dia = "28";
@@ -239,6 +312,16 @@ const Revenue = () => {
   const handleIsentar = (r: RevenueType) => {
     setReceitas((prev) => prev.map((rec) => rec.id === r.id ? { ...rec, status: "Isento" } : rec));
     toast.success(`Isenção de ${r.aluno} registrada`);
+  };
+
+  const handleDeleteReceita = (r: RevenueType) => {
+    const confirmMessage = `Deseja realmente excluir esta cobrança?\n\nAluno: ${r.aluno}\nPlano: ${r.plano}\nVencimento: ${r.vencimento}\nValor: R$ ${r.valor.toFixed(2).replace(".", ",")}`;
+    if (!window.confirm(confirmMessage)) return;
+
+    setReceitas((prev) => prev.filter((item) => item.id !== r.id));
+    if (viewingReceita?.id === r.id) setViewingReceita(null);
+    if (editingReceita?.id === r.id) setEditingReceita(null);
+    toast.success(`Cobrança de ${r.aluno} excluída com sucesso!`);
   };
 
   const handleEdit = (r: RevenueType) => {
@@ -981,12 +1064,21 @@ const Revenue = () => {
                     <TableCell className="sensitive-data">R$ {r.valor.toFixed(2).replace(".", ",")}</TableCell>
                     <TableCell>{r.status}</TableCell>
                     <TableCell>
-                      <div className="flex gap-1">
+                      <div className="flex gap-1 items-center">
                         <Button variant="outline" size="sm" onClick={() => setViewingReceita(r)}>Detalhar</Button>
                         <Button variant="outline" size="sm" className="bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100" onClick={() => handleEdit(r)}>Editar</Button>
                         <Button variant="outline" size="sm" onClick={() => handleBaixar(r)} disabled={r.status === "Pago" || r.status === "Isento"}>Baixar</Button>
                         <Button variant="outline" size="sm" onClick={() => handleIsentar(r)} disabled={r.status === "Pago" || r.status === "Isento"}>Isentar</Button>
                         <Button variant="outline" size="sm" onClick={() => handleRecibo(r)}>Recibo</Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700 px-2"
+                          onClick={() => handleDeleteReceita(r)}
+                          title="Excluir Cobrança"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </Button>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -1009,6 +1101,18 @@ const Revenue = () => {
                 <div><p className="text-sm text-muted-foreground">Vencimento</p><p className="font-medium">{viewingReceita.vencimento}</p></div>
                 <div><p className="text-sm text-muted-foreground">Valor</p><p className="font-medium sensitive-data">R$ {viewingReceita.valor.toFixed(2).replace(".", ",")}</p></div>
                 <div><p className="text-sm text-muted-foreground">Status do Pagamento</p><p className="font-medium">{viewingReceita.status}</p></div>
+              </div>
+              <div className="flex justify-between items-center pt-3 border-t">
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  type="button"
+                  className="gap-1.5"
+                  onClick={() => handleDeleteReceita(viewingReceita)}
+                >
+                  <Trash2 className="w-3.5 h-3.5" /> Excluir Cobrança
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => setViewingReceita(null)}>Fechar</Button>
               </div>
             </div>
           )}
@@ -1059,9 +1163,20 @@ const Revenue = () => {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="flex justify-end gap-2 pt-2">
-                <Button variant="outline" onClick={() => setEditingReceita(null)}>Cancelar</Button>
-                <Button onClick={handleSaveEdit}>Salvar Alterações</Button>
+              <div className="flex justify-between items-center pt-2">
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  type="button"
+                  className="gap-1.5"
+                  onClick={() => handleDeleteReceita(editingReceita)}
+                >
+                  <Trash2 className="w-3.5 h-3.5" /> Excluir Parcela
+                </Button>
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={() => setEditingReceita(null)}>Cancelar</Button>
+                  <Button onClick={handleSaveEdit}>Salvar Alterações</Button>
+                </div>
               </div>
             </div>
           )}
