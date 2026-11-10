@@ -1073,11 +1073,11 @@ const Revenue = () => {
                         <Button
                           variant="outline"
                           size="sm"
-                          className="text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700 px-2"
+                          className="bg-red-50 text-red-600 border-red-200 hover:bg-red-600 hover:text-white font-medium gap-1"
                           onClick={() => handleDeleteReceita(r)}
                           title="Excluir Cobrança"
                         >
-                          <Trash2 className="w-3.5 h-3.5" />
+                          <Trash2 className="w-3.5 h-3.5" /> Excluir
                         </Button>
                       </div>
                     </TableCell>
