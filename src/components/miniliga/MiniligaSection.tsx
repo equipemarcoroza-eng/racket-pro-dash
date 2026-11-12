@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useAppContext } from "@/contexts/AppContext";
 import {
   MiniligaSession,
@@ -17,7 +17,7 @@ import {
   create10PlayersSemifinalsMatches,
   create10PlayersFinalMatch,
 } from "@/lib/miniliga-engine";
-import { miniligaStorage, MiniligaCloudStatus } from "@/lib/miniliga-storage";
+import { miniligaStorage, MiniligaCloudStatus, MAX_ACTIVE_MINILIGAS } from "@/lib/miniliga-storage";
 import { MatchTimer } from "@/components/miniliga/MatchTimer";
 import { CourtMatchCard } from "@/components/miniliga/CourtMatchCard";
 import { AllMatchesOverview } from "@/components/miniliga/AllMatchesOverview";
@@ -63,18 +63,64 @@ export const MiniligaSection: React.FC = () => {
   const { students, attendanceLogs, setAttendanceLogs } = useAppContext();
 
   // Estado da Sessão Ativa
-  const [session, setSession] = useState<MiniligaSession | null>(() => {
-    return miniligaStorage.getActiveSession();
-  });
+  // Até MAX_ACTIVE_MINILIGAS Miniligas simultâneas: lista + aba selecionada (null = aba "Nova")
+  const [sessions, setSessions] = useState<MiniligaSession[]>(() => miniligaStorage.getActiveSessions());
+  const [selectedId, setSelectedIdState] = useState<string | null>(() => sessions[0]?.id ?? null);
+  const sessionsRef = useRef(sessions);
+  const selectedIdRef = useRef(selectedId);
+  const savedRef = useRef(new Map<string, MiniligaSession>());
+
+  const commitSessions = useCallback((list: MiniligaSession[], nextSelected?: string | null) => {
+    sessionsRef.current = list;
+    setSessions(list);
+    if (nextSelected !== undefined) {
+      selectedIdRef.current = nextSelected;
+      setSelectedIdState(nextSelected);
+    }
+  }, []);
+
+  const selectSession = useCallback((id: string | null) => {
+    selectedIdRef.current = id;
+    setSelectedIdState(id);
+  }, []);
+
+  const session = useMemo(
+    () => sessions.find((s) => s.id === selectedId) ?? null,
+    [sessions, selectedId]
+  );
+
+  const openLigasCount = sessions.filter((s) => s.status !== "finalizada").length;
+
+  // Mantém a API antiga: atualiza/adiciona a liga selecionada, ou (null) remove a liga selecionada da mesa
+  const setSession = useCallback(
+    (next: MiniligaSession | null) => {
+      const list = sessionsRef.current;
+      if (!next) {
+        const cur = list.find((s) => s.id === selectedIdRef.current);
+        if (!cur) return;
+        const rest = list.filter((s) => s.id !== cur.id);
+        commitSessions(rest, rest[0]?.id ?? null);
+        return;
+      }
+      const exists = list.some((s) => s.id === next.id);
+      if (!exists && next.status !== "finalizada" && list.filter((s) => s.status !== "finalizada").length >= MAX_ACTIVE_MINILIGAS) {
+        toast.error(`Limite de ${MAX_ACTIVE_MINILIGAS} Miniligas em andamento ao mesmo tempo.`);
+        return;
+      }
+      commitSessions(exists ? list.map((s) => (s.id === next.id ? next : s)) : [...list, next], next.id);
+    },
+    [commitSessions]
+  );
 
   // Configuração inicial (Passo 1: Setup)
   const [title, setTitle] = useState("Miniliga de Reposição");
   const [selectedCount, setSelectedCount] = useState<MiniligaParticipantCount>(5);
   const [selectedModel, setSelectedModel] = useState<MiniligaModelType>("intergrupos");
   const [customPlayers, setCustomPlayers] = useState<
-    Array<{ id: string; name: string; studentId?: string }>
+    Array<{ id: string; name: string; studentId?: string; isGuest?: boolean; phone?: string }>
   >([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [guestPhone, setGuestPhone] = useState("");
   const [summaryModalOpen, setSummaryModalOpen] = useState(false);
   const [isSavingPoints, setIsSavingPoints] = useState(false);
   const [cloudStatus, setCloudStatus] = useState<MiniligaCloudStatus>("salvo");
@@ -103,17 +149,23 @@ export const MiniligaSection: React.FC = () => {
       }
     });
 
-    miniligaStorage.fetchCloudActiveSession().then((cloudSession) => {
-      if (cloudSession) {
-        setSession((prev) => {
-          if (!prev) return cloudSession;
-          if (prev.isSimulation) return prev;
-          if (new Date(cloudSession.updatedAt) > new Date(prev.updatedAt)) {
-            return cloudSession;
-          }
-          return prev;
-        });
+    // Aplica uma versão vinda da nuvem/outro aparelho sem sobrescrever o que é mais novo aqui
+    const applyRemote = (remote: MiniligaSession) => {
+      const list = sessionsRef.current;
+      const local = list.find((s) => s.id === remote.id);
+      if (local) {
+        if (local.isSimulation) return;
+        if (new Date(remote.updatedAt) > new Date(local.updatedAt)) {
+          commitSessions(list.map((s) => (s.id === remote.id ? remote : s)));
+        }
+        return;
       }
+      if (remote.status === "finalizada") return;
+      commitSessions([...list, remote], selectedIdRef.current ?? remote.id);
+    };
+
+    miniligaStorage.fetchCloudActiveSessions().then((cloudSessions) => {
+      cloudSessions.forEach(applyRemote);
     });
 
     miniligaStorage.setStatusListener(setCloudStatus);
@@ -121,19 +173,16 @@ export const MiniligaSection: React.FC = () => {
     // Tempo real: placares lançados em outro aparelho aparecem aqui sem recarregar
     const unsubscribe = miniligaStorage.subscribe({
       onUpsert: (remote) => {
-        setSession((prev) => {
-          if (prev?.isSimulation) return prev;
-          if (!prev) return remote.status === "finalizada" ? prev : remote;
-          if (prev.id !== remote.id) {
-            // Outra Miniliga real começou em outro aparelho: assume se a mesa daqui já terminou
-            return prev.status === "finalizada" && remote.status !== "finalizada" ? remote : prev;
-          }
-          return new Date(remote.updatedAt) > new Date(prev.updatedAt) ? remote : prev;
-        });
+        applyRemote(remote);
         if (remote.status === "finalizada") refreshHistory();
       },
       onDelete: (id) => {
-        setSession((prev) => (prev && !prev.isSimulation && prev.id === id ? null : prev));
+        const list = sessionsRef.current;
+        const gone = list.find((s) => s.id === id);
+        if (gone && !gone.isSimulation) {
+          const rest = list.filter((s) => s.id !== id);
+          commitSessions(rest, selectedIdRef.current === id ? rest[0]?.id ?? null : undefined);
+        }
         setHistoryList((prev) => prev.filter((h) => h.id !== id));
       },
     });
@@ -142,14 +191,17 @@ export const MiniligaSection: React.FC = () => {
       unsubscribe();
       miniligaStorage.setStatusListener(null);
     };
-  }, []);
+  }, [commitSessions]);
 
   // Auto-salvamento resiliente (Local + Lovable Cloud em Modo Real)
   useEffect(() => {
-    if (session) {
-      miniligaStorage.saveActiveSession(session);
-    }
-  }, [session]);
+    sessions.forEach((s) => {
+      if (savedRef.current.get(s.id) !== s) {
+        savedRef.current.set(s.id, s);
+        miniligaStorage.saveActiveSession(s);
+      }
+    });
+  }, [sessions]);
 
   // Alunos ATIVOS com reposições pendentes para seleção rápida
   const pendingReplacementStudents = useMemo(() => {
@@ -190,10 +242,46 @@ export const MiniligaSection: React.FC = () => {
       toast.error("Este participante já está adicionado.");
       return;
     }
+    if (studentId) {
+      const other = sessions.find(
+        (s) => s.status !== "finalizada" && s.participants.some((p) => p.studentId === studentId)
+      );
+      if (other) {
+        toast.warning(`${name} já está escalado(a) em "${other.title}" (em andamento).`);
+      }
+    }
     setCustomPlayers((prev) => [
       ...prev,
       { id: `p-${Date.now()}-${Math.random()}`, name, studentId },
     ]);
+  };
+
+  // Adicionar convidado (não-aluno) digitado no campo de busca
+  const handleAddGuest = () => {
+    const name = searchTerm.trim().replace(/\s+/g, " ");
+    if (!name) {
+      toast.error("Digite o nome do convidado no campo de busca.");
+      return;
+    }
+    if (customPlayers.length >= selectedCount) {
+      toast.error(`Limite de ${selectedCount} participantes atingido!`);
+      return;
+    }
+    if (customPlayers.some((p) => p.name.toLowerCase() === name.toLowerCase())) {
+      toast.error("Este participante já está adicionado.");
+      return;
+    }
+    setCustomPlayers((prev) => [
+      ...prev,
+      {
+        id: `g-${Date.now()}-${Math.random()}`,
+        name,
+        isGuest: true,
+        phone: guestPhone.trim() || undefined,
+      },
+    ]);
+    setSearchTerm("");
+    setGuestPhone("");
   };
 
   const handleRemovePlayer = (id: string) => {
@@ -240,6 +328,10 @@ export const MiniligaSection: React.FC = () => {
 
   // INICIAR A MINILIGA (Modo Simulação por padrão para segurança)
   const handleStartMiniliga = (isSimulation: boolean = true) => {
+    if (openLigasCount >= MAX_ACTIVE_MINILIGAS) {
+      toast.error(`Limite de ${MAX_ACTIVE_MINILIGAS} Miniligas em andamento ao mesmo tempo. Finalize ou libere uma.`);
+      return;
+    }
     if (customPlayers.length !== selectedCount) {
       toast.error(`Adicione exatamente ${selectedCount} participantes para iniciar.`);
       return;
@@ -255,8 +347,11 @@ export const MiniligaSection: React.FC = () => {
 
       return {
         id: cp.id,
-        studentId: cp.studentId,
+        studentId: cp.isGuest ? undefined : cp.studentId,
         name: cp.name,
+        ...(cp.isGuest
+          ? { isGuest: true, phone: cp.phone, leadStatus: "novo" as const }
+          : {}),
         groupNumber,
         assignedNumber: idx + 1,
         matchesPlayed: 0,
@@ -828,6 +923,60 @@ export const MiniligaSection: React.FC = () => {
             )}
       </div>
 
+      {/* ABAS: várias Miniligas simultâneas */}
+      {sessions.length > 0 && (
+        <div className="flex items-center gap-2 flex-wrap p-2 rounded-2xl bg-muted/40 border border-border/70">
+          {sessions.map((s, idx) => {
+            const active = s.id === selectedId && activeView === "quadra";
+            const finished = s.status === "finalizada";
+            return (
+              <button
+                key={s.id}
+                type="button"
+                onClick={() => {
+                  selectSession(s.id);
+                  setActiveView("quadra");
+                }}
+                className={`px-3 py-2 rounded-xl border text-left transition-all min-w-[150px] ${
+                  active
+                    ? "bg-primary text-primary-foreground border-primary shadow-md"
+                    : "bg-card hover:bg-muted/70 border-border/80 text-foreground"
+                }`}
+              >
+                <span className="flex items-center gap-1.5 text-xs font-black">
+                  <span className="opacity-70">Liga {idx + 1}</span>
+                  <span className="truncate max-w-[140px]">{s.title}</span>
+                </span>
+                <span className="flex items-center gap-1.5 text-[10px] font-bold opacity-80 mt-0.5">
+                  {s.participantCount} atletas ·{" "}
+                  {finished ? "Finalizada" : `Rodada ${s.currentRound}/${s.totalRounds}`}
+                  {s.isSimulation && " · Sandbox"}
+                </span>
+              </button>
+            );
+          })}
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              if (openLigasCount >= MAX_ACTIVE_MINILIGAS) {
+                toast.error(`Limite de ${MAX_ACTIVE_MINILIGAS} Miniligas em andamento ao mesmo tempo.`);
+                return;
+              }
+              selectSession(null);
+              setActiveView("quadra");
+            }}
+            className={`gap-1.5 text-xs font-black border-dashed border-2 ${
+              selectedId === null && activeView === "quadra" ? "border-primary text-primary" : ""
+            }`}
+          >
+            <Plus className="w-3.5 h-3.5" />
+            Nova Miniliga
+          </Button>
+        </div>
+      )}
+
       {/* VISTA DE CONVIDADOS / LEADS OU MESA DE MINILIGA */}
       {activeView === "convidados" ? (
         <MiniligaGuestsPanel
@@ -1044,12 +1193,36 @@ export const MiniligaSection: React.FC = () => {
                   </Button>
                 </div>
 
-                <Input
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Buscar aluno cadastrado ou digitar nome avulso..."
-                  className="font-medium"
-                />
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <Input
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleAddGuest();
+                      }
+                    }}
+                    placeholder="Buscar aluno ou digitar nome de convidado..."
+                    className="font-medium"
+                  />
+                  <Input
+                    value={guestPhone}
+                    onChange={(e) => setGuestPhone(e.target.value)}
+                    placeholder="WhatsApp do convidado (opcional)"
+                    className="font-medium sm:max-w-[230px]"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleAddGuest}
+                    disabled={!searchTerm.trim() || customPlayers.length >= selectedCount}
+                    className="gap-1.5 text-xs font-bold border-amber-500/60 text-amber-600 hover:bg-amber-500/10 shrink-0"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    Adicionar como convidado
+                  </Button>
+                </div>
 
                 <div className="p-3 rounded-xl bg-background/50 border border-border/80 min-h-[140px]">
                   <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground block mb-2">
@@ -1072,6 +1245,11 @@ export const MiniligaSection: React.FC = () => {
                               {idx + 1}
                             </span>
                             <span className="truncate">{player.name}</span>
+                            {player.isGuest && (
+                              <Badge className="bg-amber-100 text-amber-900 border border-amber-300 text-[10px] font-black px-1.5 py-0 shrink-0">
+                                Convidado
+                              </Badge>
+                            )}
                           </div>
                           <button
                             type="button"
@@ -1650,8 +1828,14 @@ export const MiniligaSection: React.FC = () => {
                                 );
                               }
                               if (session?.id === h.id) {
-                                miniligaStorage.clearActiveSession(null);
-                                setSession(null);
+                                const open = sessionsRef.current.find((x) => x.id === h.id);
+                                if (open) {
+                                  miniligaStorage.clearActiveSession(open);
+                                  commitSessions(
+                                    sessionsRef.current.filter((x) => x.id !== h.id),
+                                    sessionsRef.current.find((x) => x.id !== h.id)?.id ?? null
+                                  );
+                                }
                               }
                               refreshHistory();
                               toast.info("Registro removido do histórico.");

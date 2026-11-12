@@ -6,7 +6,11 @@ import {
 } from "@/types/miniliga";
 import { getDefaultOfficialSessions } from "@/lib/miniliga-excel-parser";
 
+// Chave antiga (uma única sessão) — migrada automaticamente para a lista de sessões ativas
 const STORAGE_ACTIVE_KEY = "racket_miniliga_active_session";
+const STORAGE_ACTIVES_KEY = "racket_miniliga_active_sessions";
+// Máximo de Miniligas simultâneas em andamento (espaço físico da academia)
+export const MAX_ACTIVE_MINILIGAS = 3;
 const STORAGE_HISTORY_KEY = "racket_miniliga_history_sessions";
 
 // Conversores entre o formato do Banco de Dados (Supabase/Lovable Cloud) e o Modelo da Aplicação
@@ -78,7 +82,7 @@ export type MiniligaCloudStatus = "local" | "salvando" | "salvo" | "erro";
 
 const CLOUD_DEBOUNCE_MS = 800;
 let pendingTimer: ReturnType<typeof setTimeout> | null = null;
-let pendingSession: MiniligaSession | null = null;
+const pendingSessions = new Map<string, MiniligaSession>();
 let statusListener: ((status: MiniligaCloudStatus) => void) | null = null;
 // Última versão confirmada na nuvem por sessão, para não regravar o que acabou de chegar de outro aparelho
 const syncedStamps = new Map<string, number>();
@@ -103,22 +107,38 @@ export const miniligaStorage = {
     syncedStamps.set(session.id, stampOf(session.updatedAt));
   },
 
-  // 1. Recuperar sessão ativa do cache local (imediato)
-  getActiveSession(): MiniligaSession | null {
+  // 1. Recuperar as sessões ativas (até MAX_ACTIVE_MINILIGAS) do cache local (imediato)
+  getActiveSessions(): MiniligaSession[] {
     try {
-      const data = localStorage.getItem(STORAGE_ACTIVE_KEY);
-      return data ? JSON.parse(data) : null;
+      const data = localStorage.getItem(STORAGE_ACTIVES_KEY);
+      if (data) {
+        const list = JSON.parse(data);
+        return Array.isArray(list) ? list : [];
+      }
+      // Migração: sessão única do formato antigo
+      const legacy = localStorage.getItem(STORAGE_ACTIVE_KEY);
+      if (legacy) {
+        const one = JSON.parse(legacy) as MiniligaSession | null;
+        const list = one ? [one] : [];
+        localStorage.setItem(STORAGE_ACTIVES_KEY, JSON.stringify(list));
+        localStorage.removeItem(STORAGE_ACTIVE_KEY);
+        return list;
+      }
+      return [];
     } catch (e) {
-      console.warn("Falha ao recuperar sessão ativa da Miniliga no cache local:", e);
-      return null;
+      console.warn("Falha ao recuperar sessões ativas da Miniliga no cache local:", e);
+      return [];
     }
   },
 
-  // 2. Salvar sessão ativa: cache local na hora e, no Modo Real, nuvem com pequeno atraso
-  //    (agrupa a digitação de placares em uma gravação só)
+  // 2. Salvar uma sessão ativa: cache local na hora e, no Modo Real, nuvem com pequeno atraso
+  //    (agrupa a digitação de placares em uma gravação só). Cada liga é independente.
   saveActiveSession(session: MiniligaSession): void {
     try {
-      localStorage.setItem(STORAGE_ACTIVE_KEY, JSON.stringify(session));
+      const list = this.getActiveSessions();
+      const exists = list.some((s) => s.id === session.id);
+      const next = exists ? list.map((s) => (s.id === session.id ? session : s)) : [...list, session];
+      localStorage.setItem(STORAGE_ACTIVES_KEY, JSON.stringify(next));
     } catch (e) {
       console.warn("Falha ao salvar sessão ativa da Miniliga no cache local:", e);
     }
@@ -129,15 +149,15 @@ export const miniligaStorage = {
     }
     if (syncedStamps.get(session.id) === stampOf(session.updatedAt)) return;
 
-    pendingSession = session;
+    pendingSessions.set(session.id, session);
     if (pendingTimer) clearTimeout(pendingTimer);
     notify("salvando");
     pendingTimer = setTimeout(() => {
-      const s = pendingSession;
+      const batch = Array.from(pendingSessions.values());
       pendingTimer = null;
-      pendingSession = null;
-      if (!s) return;
-      upsertCloud(s)
+      pendingSessions.clear();
+      if (batch.length === 0) return;
+      Promise.all(batch.map((s) => upsertCloud(s)))
         .then(() => notify("salvo"))
         .catch((err) => {
           console.error("Erro ao sincronizar sessão da Miniliga no Lovable Cloud:", err);
@@ -148,9 +168,11 @@ export const miniligaStorage = {
 
   // 3. Gravar na nuvem imediatamente e aguardar a confirmação (usado ao validar o torneio)
   async saveCloudNow(session: MiniligaSession): Promise<void> {
-    if (pendingTimer) clearTimeout(pendingTimer);
-    pendingTimer = null;
-    pendingSession = null;
+    pendingSessions.delete(session.id);
+    if (pendingSessions.size === 0 && pendingTimer) {
+      clearTimeout(pendingTimer);
+      pendingTimer = null;
+    }
     notify("salvando");
     try {
       await upsertCloud(session);
@@ -171,18 +193,20 @@ export const miniligaStorage = {
     }
   },
 
-  // 4. Limpar a mesa. Na nuvem só apaga sessões reais ainda em andamento;
-  //    uma Miniliga validada continua no histórico
+  // 4. Remove UMA liga da mesa. Na nuvem só apaga sessões reais ainda em andamento;
+  //    uma Miniliga validada continua no histórico. As outras ligas não são afetadas
   clearActiveSession(session?: MiniligaSession | null): void {
+    if (!session) return;
     try {
-      localStorage.removeItem(STORAGE_ACTIVE_KEY);
+      const next = this.getActiveSessions().filter((s) => s.id !== session.id);
+      localStorage.setItem(STORAGE_ACTIVES_KEY, JSON.stringify(next));
     } catch (e) {
       console.warn("Falha ao limpar sessão ativa da Miniliga:", e);
     }
-    if (pendingSession?.id === session?.id && pendingTimer) {
+    pendingSessions.delete(session.id);
+    if (pendingSessions.size === 0 && pendingTimer) {
       clearTimeout(pendingTimer);
       pendingTimer = null;
-      pendingSession = null;
     }
     if (session && !session.isSimulation && session.status !== "finalizada") {
       supabase
@@ -287,8 +311,8 @@ export const miniligaStorage = {
     }
   },
 
-  // 9. Buscar sessão ativa recente no Lovable Cloud (se houver)
-  async fetchCloudActiveSession(): Promise<MiniligaSession | null> {
+  // 9. Buscar no Lovable Cloud todas as sessões reais em andamento (até MAX_ACTIVE_MINILIGAS)
+  async fetchCloudActiveSessions(): Promise<MiniligaSession[]> {
     try {
       const { data, error } = await supabase
         .from("miniliga_sessions")
@@ -296,20 +320,20 @@ export const miniligaStorage = {
         .neq("status", "finalizada")
         .eq("is_simulation", false)
         .order("updated_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
+        .limit(MAX_ACTIVE_MINILIGAS);
 
       if (error) {
-        console.warn("Erro ao buscar sessão ativa no Lovable Cloud:", error);
-        return null;
+        console.warn("Erro ao buscar sessões ativas no Lovable Cloud:", error);
+        return [];
       }
-      if (!data) return null;
-      const session = dbToSession(data);
-      this.markSynced(session);
-      return session;
+      return (data || []).map((row) => {
+        const session = dbToSession(row);
+        this.markSynced(session);
+        return session;
+      });
     } catch (e) {
-      console.warn("Erro ao buscar sessão ativa no Lovable Cloud:", e);
-      return null;
+      console.warn("Erro ao buscar sessões ativas no Lovable Cloud:", e);
+      return [];
     }
   },
 

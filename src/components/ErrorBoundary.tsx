@@ -66,6 +66,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 onClick={() => {
                   try {
                     localStorage.removeItem("racket_miniliga_active_session");
+                    localStorage.removeItem("racket_miniliga_active_sessions");
                   } catch (e) {}
                   window.location.reload();
                 }}

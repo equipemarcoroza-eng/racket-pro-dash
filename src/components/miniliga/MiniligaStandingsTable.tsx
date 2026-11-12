@@ -95,6 +95,11 @@ export const MiniligaStandingsTable: React.FC<MiniligaStandingsTableProps> = ({
                       Grupo {p.groupNumber === 1 ? "A" : "B"}
                     </span>
                   )}
+                  {p.isGuest && (
+                    <span className="text-[10px] font-extrabold text-amber-600 bg-amber-100 border border-amber-300 px-1.5 rounded">
+                      Convidado
+                    </span>
+                  )}
                   {semiTag && (
                     <span className="text-[10px] font-extrabold text-purple-400 bg-purple-950/60 border border-purple-500/30 px-1.5 py-0.2 rounded">
                       {semiTag}

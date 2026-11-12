@@ -30,6 +30,10 @@ import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { calculateSafePercentage } from "@/lib/utils";
+import { useLiveMiniligas } from "@/hooks/use-live-miniligas";
+import { MiniligaTvSlide } from "@/components/miniliga/MiniligaTvSlide";
+
+const FIXED_SLIDES = 3; // Hall da Fama, Grade de Horários, Aniversariantes
 
 const SLIDE_DURATION = 12000; // 12 segundos por slide
 
@@ -59,6 +63,10 @@ export const ArenaLiveKiosk: React.FC = () => {
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [selectedHour, setSelectedHour] = useState<string | null>(null);
 
+  // Miniligas ao vivo (até 3 simultâneas) + finalizadas hoje: um slide por liga, como o telão do LigaSet
+  const liveMiniligas = useLiveMiniligas();
+  const totalSlides = FIXED_SLIDES + liveMiniligas.length;
+
   // Relógio ao vivo atualizado a cada segundo
   useEffect(() => {
     const timer = setInterval(() => {
@@ -72,11 +80,16 @@ export const ArenaLiveKiosk: React.FC = () => {
     if (isPaused) return;
 
     const slideTimer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % 3);
+      setCurrentSlide((prev) => (prev + 1) % totalSlides);
     }, SLIDE_DURATION);
 
     return () => clearInterval(slideTimer);
-  }, [isPaused]);
+  }, [isPaused, totalSlides]);
+
+  // Se uma liga sair do ar, volta para um slide válido
+  useEffect(() => {
+    if (currentSlide >= totalSlides) setCurrentSlide(0);
+  }, [currentSlide, totalSlides]);
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
@@ -1140,6 +1153,17 @@ export const ArenaLiveKiosk: React.FC = () => {
             )}
           </div>
         )}
+
+        {/* ======================================================== */}
+        {/* SLIDES 3+: MINILIGAS AO VIVO (uma liga por slide)        */}
+        {/* ======================================================== */}
+        {currentSlide >= FIXED_SLIDES && liveMiniligas[currentSlide - FIXED_SLIDES] && (
+          <MiniligaTvSlide
+            key={liveMiniligas[currentSlide - FIXED_SLIDES].id}
+            session={liveMiniligas[currentSlide - FIXED_SLIDES]}
+            index={currentSlide - FIXED_SLIDES}
+          />
+        )}
       </main>
 
       {/* FOOTER DA ARENA LIVE */}
@@ -1156,6 +1180,10 @@ export const ArenaLiveKiosk: React.FC = () => {
             { idx: 0, label: "🏆 Hall da Fama (Categorias)" },
             { idx: 1, label: "📅 Grade de Horários" },
             { idx: 2, label: "🎉 Aniversariantes" },
+            ...liveMiniligas.map((s, i) => ({
+              idx: FIXED_SLIDES + i,
+              label: `${s.status === "finalizada" ? "🏆" : "🔴"} Liga ${i + 1}`,
+            })),
           ].map((item) => (
             <button
               key={item.idx}
