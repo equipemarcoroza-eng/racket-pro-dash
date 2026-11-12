@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { miniligaStorage } from "@/lib/miniliga-storage";
+import { maskPhone } from "@/lib/utils";
 
 interface MiniligaGuestsPanelProps {
   sessions: MiniligaSession[];
@@ -191,9 +192,11 @@ export const MiniligaGuestsPanel: React.FC<MiniligaGuestsPanelProps> = ({
                       </label>
                       <div className="flex items-center gap-2">
                         <Input
-                          placeholder="Ex: (11) 98765-4321"
+                          placeholder="(00) 00000-0000"
+                          inputMode="tel"
+                          maxLength={15}
                           value={currentPhone}
-                          onChange={(e) => handlePhoneChange(g.id, e.target.value)}
+                          onChange={(e) => handlePhoneChange(g.id, maskPhone(e.target.value))}
                           className="h-9 text-xs font-bold bg-slate-50 dark:bg-slate-900 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white placeholder:text-slate-400 rounded-xl focus:border-emerald-500 focus:bg-white dark:focus:bg-slate-900 focus:ring-1 focus:ring-emerald-500 shadow-inner"
                         />
                         {currentPhone !== (g.phone || "") && (

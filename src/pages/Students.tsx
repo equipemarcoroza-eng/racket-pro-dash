@@ -27,6 +27,7 @@ import logo from "@/assets/logo.png";
 import { AthleteCardModal } from "@/components/AthleteCardModal";
 import { WhatsAppQuickDialog } from "@/components/WhatsAppQuickDialog";
 import { type WhatsAppMessageOptions } from "@/lib/whatsapp";
+import { maskPhone } from "@/lib/utils";
 
 const months = [
   { value: "01", label: "Janeiro" },
@@ -93,22 +94,6 @@ const statusVariant: Record<Student["status"], "default" | "secondary" | "destru
 };
 
 
-
-const maskPhone = (value: string) => {
-  if (!value) return "";
-  const numeric = value.replace(/\D/g, "");
-  if (numeric.length <= 10) {
-    return numeric
-      .replace(/^(\d{2})(\d)/, "($1) $2")
-      .replace(/(\d{4})(\d)/, "$1-$2")
-      .replace(/(-\d{4})\d+?$/, "$1");
-  } else {
-    return numeric
-      .replace(/^(\d{2})(\d)/, "($1) $2")
-      .replace(/(\d{5})(\d)/, "$1-$2")
-      .replace(/(-\d{4})\d+?$/, "$1");
-  }
-};
 
 const Students = () => {
   const { 

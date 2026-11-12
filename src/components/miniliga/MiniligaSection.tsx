@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import { maskPhone } from "@/lib/utils";
 import { useAppContext } from "@/contexts/AppContext";
 import {
   MiniligaSession,
@@ -1208,8 +1209,11 @@ export const MiniligaSection: React.FC = () => {
                   />
                   <Input
                     value={guestPhone}
-                    onChange={(e) => setGuestPhone(e.target.value)}
-                    placeholder="WhatsApp do convidado (opcional)"
+                    onChange={(e) => setGuestPhone(maskPhone(e.target.value))}
+                    placeholder="WhatsApp (00) 00000-0000"
+                    inputMode="tel"
+                    maxLength={15}
+                    aria-label="WhatsApp do convidado (opcional)"
                     className="font-medium sm:max-w-[230px]"
                   />
                   <Button
